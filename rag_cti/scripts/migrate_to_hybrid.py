@@ -1,4 +1,13 @@
-"""One-time migration: cti_chunks dense-only → named dense + BM25-sparse hybrid.
+"""DEPRECATED — use ingest.py for all new collection setup.
+
+ingest.py now owns the full collection lifecycle: it creates a hybrid schema via
+ensure_collection() and fits or loads BM25SparseEncoder automatically. Delete the
+existing collection and run `python scripts/ingest.py` to rebuild from scratch.
+
+This script remains as a recovery tool (restores from data/migrate_dump.jsonl) but
+should not be used for routine ingestion.
+
+Original purpose — one-time migration: cti_chunks dense-only → named dense + BM25-sparse hybrid.
 
 What this script does
 ─────────────────────
@@ -36,8 +45,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
-import re
 import sys
 import time
 from pathlib import Path
@@ -60,167 +67,12 @@ from qdrant_client.models import (
 
 from rag_cti._logging import configure_logging, get_logger
 from rag_cti.config import get_settings
+from rag_cti.retrieval.bm25 import BM25SparseEncoder, tokenize
 
 logger = get_logger(__name__)
 
-_K1: float = 1.5
-_B: float = 0.75
-
 _DUMP_PATH = Path("data/migrate_dump.jsonl")
 _VOCAB_PATH = Path("data/sparse_vocab.json")
-
-
-# ---------------------------------------------------------------------------
-# IOC-preserving tokenizer
-# ---------------------------------------------------------------------------
-
-# Ordered most-specific first to avoid partial matches.
-_IOC_RE = re.compile(
-    r"""
-    (?:
-      \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?:/\d{1,2})?      # IPv4 / CIDR
-    | (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}                   # MAC address
-    | CVE-\d{4}-\d{4,7}                                       # CVE ID
-    | MS\d{2}-\d{3,4}                                         # MS bulletin
-    | T\d{4}(?:\.\d{3})?                                      # ATT&CK technique
-    | [0-9a-fA-F]{64}                                         # SHA-256
-    | [0-9a-fA-F]{40}                                         # SHA-1
-    | [0-9a-fA-F]{32}                                         # MD5
-    | (?:[A-Za-z0-9\-]+\.)+(?:com|net|org|io|gov|edu|mil|int|ru|cn|uk|de|fr|jp|info|biz|co)
-                                                              # domain
-    )
-    """,
-    re.VERBOSE | re.IGNORECASE,
-)
-
-
-def _split_prose(text: str) -> list[str]:
-    """Whitespace/punctuation split; drop single-char tokens."""
-    return [t.lower() for t in re.split(r"[\s\W]+", text) if len(t) >= 2]
-
-
-def tokenize(text: str) -> list[str]:
-    """IOC-preserving tokenizer.
-
-    Extracts IOC patterns as single lowercased tokens before falling back to
-    standard prose tokenization for the surrounding text.  Ensures that
-    '1.2.3.4' is never split into ['1','2','3','4'], that 'CVE-2021-44228'
-    survives as one token, etc.
-    """
-    tokens: list[str] = []
-    pos = 0
-    for match in _IOC_RE.finditer(text):
-        tokens.extend(_split_prose(text[pos : match.start()]))
-        tokens.append(match.group().lower())
-        pos = match.end()
-    tokens.extend(_split_prose(text[pos:]))
-    return tokens
-
-
-# ---------------------------------------------------------------------------
-# BM25 sparse encoder
-# ---------------------------------------------------------------------------
-
-class BM25SparseEncoder:
-    """Two-pass BM25 encoder with a persistent vocabulary.
-
-    fit()              -- first pass: build vocab + IDF from a corpus list
-    encode_document()  -- BM25 weights for a single document
-    encode_query()     -- IDF-weighted sparse vector for a query string
-    save() / load()    -- persist to / restore from data/sparse_vocab.json
-    """
-
-    def __init__(self) -> None:
-        self.vocab: dict[str, int] = {}
-        self.idf: dict[int, float] = {}
-        self.avgdl: float = 0.0
-        self.num_docs: int = 0
-
-    def _term_id(self, term: str) -> int:
-        if term not in self.vocab:
-            self.vocab[term] = len(self.vocab)
-        return self.vocab[term]
-
-    def fit(self, corpus: list[str]) -> None:
-        """Build vocab + IDF from corpus texts (first pass)."""
-        tokenized = [tokenize(text) for text in corpus]
-        self.num_docs = len(tokenized)
-        self.avgdl = sum(len(t) for t in tokenized) / max(self.num_docs, 1)
-
-        df: dict[str, int] = {}
-        for tokens in tokenized:
-            for term in set(tokens):
-                df[term] = df.get(term, 0) + 1
-
-        for term, freq in df.items():
-            idx = self._term_id(term)
-            self.idf[idx] = math.log(
-                (self.num_docs - freq + 0.5) / (freq + 0.5) + 1
-            )
-
-        logger.info(
-            "BM25 encoder fitted",
-            vocab_size=len(self.vocab),
-            num_docs=self.num_docs,
-            avgdl=round(self.avgdl, 1),
-        )
-
-    def encode_document(self, text: str) -> tuple[list[int], list[float]]:
-        tokens = tokenize(text)
-        dl = len(tokens)
-        tf: dict[str, int] = {}
-        for token in tokens:
-            tf[token] = tf.get(token, 0) + 1
-
-        indices: list[int] = []
-        values: list[float] = []
-        for term, freq in tf.items():
-            if term not in self.vocab:
-                continue
-            idx = self.vocab[term]
-            idf = self.idf.get(idx, 0.0)
-            numerator = freq * (_K1 + 1)
-            denominator = freq + _K1 * (1 - _B + _B * dl / max(self.avgdl, 1))
-            score = idf * numerator / denominator
-            if score > 0.0:
-                indices.append(idx)
-                values.append(float(score))
-        return indices, values
-
-    def encode_query(self, text: str) -> tuple[list[int], list[float]]:
-        """IDF-weighted sparse vector for retrieval queries."""
-        seen: dict[int, float] = {}
-        for token in tokenize(text):
-            if token in self.vocab:
-                idx = self.vocab[token]
-                seen[idx] = self.idf.get(idx, 0.0)
-        return list(seen.keys()), list(seen.values())
-
-    def save(self, path: Path) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps(
-                {
-                    "vocab": self.vocab,
-                    "idf": {str(k): v for k, v in self.idf.items()},
-                    "avgdl": self.avgdl,
-                    "num_docs": self.num_docs,
-                },
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        logger.info("vocabulary saved", path=str(path), vocab_size=len(self.vocab))
-
-    @classmethod
-    def load(cls, path: Path) -> "BM25SparseEncoder":
-        data = json.loads(path.read_text(encoding="utf-8"))
-        enc = cls()
-        enc.vocab = data["vocab"]
-        enc.idf = {int(k): v for k, v in data["idf"].items()}
-        enc.avgdl = data["avgdl"]
-        enc.num_docs = data["num_docs"]
-        return enc
 
 
 # ---------------------------------------------------------------------------

@@ -29,11 +29,22 @@ class OTXConnector(HttpConnector):
         if self._modified_since:
             params["modified_since"] = self._modified_since
 
+        seen_ids: set[str] = set()
         path: str = _SUBSCRIBED_PATH
         while path:
             data = self._get(path, **params)
+            new_on_page = 0
             for pulse in data.get("results", []):
+                pulse_id = pulse.get("id", "")
+                if pulse_id in seen_ids:
+                    continue
+                seen_ids.add(pulse_id)
+                new_on_page += 1
                 yield pulse
+            logger.info("page fetched", total_on_page=len(data.get("results", [])), new=new_on_page, seen_total=len(seen_ids))
+            if new_on_page == 0:
+                # Every pulse on this page was already seen — pagination has cycled
+                break
             next_url: str | None = data.get("next")
             if next_url:
                 parsed = urlparse(next_url)

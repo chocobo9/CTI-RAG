@@ -28,10 +28,16 @@ class _FakeDistance:
 
 
 class _FakePointStruct:
-    def __init__(self, id: Any, vector: list[float], payload: dict[str, Any]) -> None:
+    def __init__(self, id: Any, vector: Any, payload: dict[str, Any]) -> None:
         self.id = id
         self.vector = vector
         self.payload = payload
+
+
+class _FakeSparseVector:
+    def __init__(self, indices: list[int], values: list[float]) -> None:
+        self.indices = indices
+        self.values = values
 
 
 class _FakeMatchValue:
@@ -58,6 +64,16 @@ class _FakeFilter:
         self.should = should or []
 
 
+class _FakeSparseIndexParams:
+    def __init__(self, on_disk: bool = False) -> None:
+        self.on_disk = on_disk
+
+
+class _FakeSparseVectorParams:
+    def __init__(self, index: Any = None) -> None:
+        self.index = index
+
+
 class _FakeCollectionInfo:
     def __init__(self, name: str) -> None:
         self.name = name
@@ -82,10 +98,17 @@ def fake_qdrant() -> dict[str, MagicMock]:
     models.Filter = _FakeFilter  # type: ignore[attr-defined]
     http.models = models  # type: ignore[attr-defined]
 
+    # qdrant_client.models is imported separately by upsert_hybrid and ensure_collection
+    qdrant_models = types.ModuleType("qdrant_client.models")
+    qdrant_models.SparseVector = _FakeSparseVector  # type: ignore[attr-defined]
+    qdrant_models.SparseIndexParams = _FakeSparseIndexParams  # type: ignore[attr-defined]
+    qdrant_models.SparseVectorParams = _FakeSparseVectorParams  # type: ignore[attr-defined]
+
     modules = {
         "qdrant_client": root,
         "qdrant_client.http": http,
         "qdrant_client.http.models": models,
+        "qdrant_client.models": qdrant_models,
     }
     with patch.dict(sys.modules, modules):
         yield {"client_cls": client_cls}
@@ -160,8 +183,10 @@ def test_ensure_collection_creates_when_absent(fake_qdrant: dict[str, MagicMock]
     client.create_collection.assert_called_once()
     _, kwargs = client.create_collection.call_args
     assert kwargs["collection_name"] == "rag-cti"
-    assert kwargs["vectors_config"].size == 384
-    assert kwargs["vectors_config"].distance == "COSINE"
+    assert isinstance(kwargs["vectors_config"], dict)
+    assert kwargs["vectors_config"]["dense"].size == 384
+    assert kwargs["vectors_config"]["dense"].distance == "COSINE"
+    assert "sparse" in kwargs["sparse_vectors_config"]
 
 
 def test_ensure_collection_noop_when_present(fake_qdrant: dict[str, MagicMock]) -> None:
@@ -349,3 +374,72 @@ def test_count_with_source_filter(fake_qdrant: dict[str, MagicMock]) -> None:
     _, kwargs = client.count.call_args
     assert kwargs["count_filter"].must[0].key == "source"
     assert kwargs["count_filter"].must[0].match.value == "otx"
+
+
+# ---------------------------------------------------------------------------
+# upsert_hybrid
+# ---------------------------------------------------------------------------
+
+class _FakeEncoder:
+    """Minimal sparse encoder stub: returns fixed indices/values."""
+    def encode_document(self, text: str) -> tuple[list[int], list[float]]:
+        return [0, 1], [1.5, 0.8]
+
+
+def test_upsert_hybrid_writes_both_vectors(fake_qdrant: dict[str, MagicMock]) -> None:
+    from rag_cti.store.qdrant_store import QdrantStore, chunk_to_point_id
+
+    client = MagicMock()
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    chunk = _make_chunk(chunk_id="hyb1")
+    vectors = np.ones((1, 4), dtype=np.float32)
+    written = store.upsert_hybrid([chunk], vectors, _FakeEncoder())
+
+    assert written == 1
+    _, kwargs = client.upsert.call_args
+    point = kwargs["points"][0]
+    assert point.id == chunk_to_point_id("hyb1")
+    assert isinstance(point.vector, dict)
+    assert "dense" in point.vector
+    assert "sparse" in point.vector
+    assert point.vector["sparse"].indices == [0, 1]
+    assert point.vector["sparse"].values == [1.5, 0.8]
+
+
+def test_upsert_hybrid_raises_on_length_mismatch(fake_qdrant: dict[str, MagicMock]) -> None:
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    client = MagicMock()
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    with pytest.raises(ValueError, match="length mismatch"):
+        store.upsert_hybrid([_make_chunk()], np.ones((2, 4), dtype=np.float32), _FakeEncoder())
+
+
+def test_upsert_hybrid_empty_returns_zero(fake_qdrant: dict[str, MagicMock]) -> None:
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    client = MagicMock()
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    assert store.upsert_hybrid([], np.zeros((0, 4), dtype=np.float32), _FakeEncoder()) == 0
+    client.upsert.assert_not_called()
+
+
+def test_upsert_hybrid_batches_at_configured_size(fake_qdrant: dict[str, MagicMock]) -> None:
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    client = MagicMock()
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti", upsert_batch_size=2)
+
+    chunks = [_make_chunk(chunk_id=f"h{i}") for i in range(5)]
+    vectors = np.ones((5, 4), dtype=np.float32)
+    store.upsert_hybrid(chunks, vectors, _FakeEncoder())
+
+    # 5 items / batch 2 → 3 calls (2, 2, 1)
+    assert client.upsert.call_count == 3

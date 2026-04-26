@@ -14,7 +14,7 @@ build/
 .venv/
 venv/
 env/
-
+cti-rag-venv/
 # Environment / secrets
 .env
 .env.local
@@ -48,3 +48,7 @@ notebooks/.ipynb_checkpoints/
 # OS
 .DS_Store
 Thumbs.db
+
+# claude
+.claude/
+

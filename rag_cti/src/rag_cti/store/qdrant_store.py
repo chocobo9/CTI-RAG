@@ -21,6 +21,7 @@ _QDRANT_ID_NAMESPACE = uuid.UUID("d7b3a5a6-4f72-4e86-9b88-2e5f5d8a1c3e")
 
 _DEFAULT_UPSERT_BATCH = 128
 _RETRIEVER_NAME = "qdrant_dense"
+_SPARSE_RETRIEVER_NAME = "qdrant_sparse"
 
 
 def chunk_to_point_id(chunk_id: str) -> str:
@@ -45,8 +46,13 @@ class QdrantStore:
         self._client = QdrantClient(url=url, api_key=api_key or None)
 
     def ensure_collection(self, vector_size: int) -> None:
-        """Create the collection if it does not exist. No-op if already present."""
+        """Create the collection if it does not exist. No-op if already present.
+
+        Creates a hybrid schema: named 'dense' (cosine) + named 'sparse' (BM25).
+        Schema matches migrate_to_hybrid.py so ingest.py is the sole lifecycle owner.
+        """
         from qdrant_client.http import models as qm  # type: ignore[import]
+        from qdrant_client.models import SparseIndexParams, SparseVectorParams  # type: ignore[import]
 
         existing = {c.name for c in self._client.get_collections().collections}
         if self.collection in existing:
@@ -55,12 +61,19 @@ class QdrantStore:
 
         self._client.create_collection(
             collection_name=self.collection,
-            vectors_config=qm.VectorParams(size=vector_size, distance=qm.Distance.COSINE),
+            vectors_config={
+                "dense": qm.VectorParams(size=vector_size, distance=qm.Distance.COSINE),
+            },
+            sparse_vectors_config={
+                "sparse": SparseVectorParams(
+                    index=SparseIndexParams(on_disk=False),
+                ),
+            },
         )
         logger.info("collection created", collection=self.collection, vector_size=vector_size)
 
     def upsert(self, chunks: list[Chunk], embeddings: np.ndarray) -> int:
-        """Upsert chunks with their embeddings. Returns the number of points written."""
+        """Upsert chunks with dense vector only. Returns the number of points written."""
         from qdrant_client.http import models as qm  # type: ignore[import]
 
         if len(chunks) != len(embeddings):
@@ -73,11 +86,48 @@ class QdrantStore:
         points = [
             qm.PointStruct(
                 id=chunk_to_point_id(chunk.id),
-                vector=embeddings[i].tolist(),
+                vector={"dense": embeddings[i].tolist()},
                 payload=_chunk_to_payload(chunk),
             )
             for i, chunk in enumerate(chunks)
         ]
+
+        written = 0
+        for batch in _batched(points, self.upsert_batch_size):
+            self._client.upsert(collection_name=self.collection, points=batch, wait=True)
+            written += len(batch)
+        return written
+
+    def upsert_hybrid(
+        self,
+        chunks: list[Chunk],
+        embeddings: np.ndarray,
+        sparse_encoder: Any,
+    ) -> int:
+        """Upsert chunks with dense + BM25 sparse vectors. Returns the number of points written."""
+        from qdrant_client.http import models as qm  # type: ignore[import]
+        from qdrant_client.models import SparseVector  # type: ignore[import]
+
+        if len(chunks) != len(embeddings):
+            raise ValueError(
+                f"chunks ({len(chunks)}) and embeddings ({len(embeddings)}) length mismatch"
+            )
+        if not chunks:
+            return 0
+
+        points = []
+        for i, chunk in enumerate(chunks):
+            sp_indices, sp_values = sparse_encoder.encode_document(chunk.content)
+            points.append(
+                qm.PointStruct(
+                    id=chunk_to_point_id(chunk.id),
+                    vector={
+                        "dense": embeddings[i].tolist(),
+                        "sparse": SparseVector(indices=sp_indices, values=sp_values),
+                    },
+                    payload=_chunk_to_payload(chunk),
+                )
+            )
 
         written = 0
         for batch in _batched(points, self.upsert_batch_size):
@@ -103,7 +153,7 @@ class QdrantStore:
 
         hits = self._client.search(
             collection_name=self.collection,
-            query_vector=query_vector.tolist(),
+            query_vector=("dense", query_vector.tolist()),
             limit=top_k,
             query_filter=query_filter,
             with_payload=True,
@@ -115,6 +165,45 @@ class QdrantStore:
                 score=float(hit.score),
                 rank=rank,
                 retriever_source=_RETRIEVER_NAME,
+            )
+            for rank, hit in enumerate(hits)
+        ]
+
+    def sparse_search(
+        self,
+        query_indices: list[int],
+        query_values: list[float],
+        top_k: int = 10,
+        source_filter: str | list[str] | None = None,
+    ) -> list[RetrievalResult]:
+        """BM25 sparse search. Optionally restrict to one or more sources."""
+        from qdrant_client.http import models as qm  # type: ignore[import]
+        from qdrant_client.models import NamedSparseVector, SparseVector  # type: ignore[import]
+
+        query_filter: qm.Filter | None = None
+        if source_filter:
+            sources = [source_filter] if isinstance(source_filter, str) else list(source_filter)
+            query_filter = qm.Filter(
+                must=[qm.FieldCondition(key="source", match=qm.MatchAny(any=sources))]
+            )
+
+        hits = self._client.search(
+            collection_name=self.collection,
+            query_vector=NamedSparseVector(
+                name="sparse",
+                vector=SparseVector(indices=query_indices, values=query_values),
+            ),
+            limit=top_k,
+            query_filter=query_filter,
+            with_payload=True,
+        )
+
+        return [
+            RetrievalResult(
+                document=_payload_to_chunk(hit.payload or {}),
+                score=float(hit.score),
+                rank=rank,
+                retriever_source=_SPARSE_RETRIEVER_NAME,
             )
             for rank, hit in enumerate(hits)
         ]
