@@ -1,7 +1,8 @@
 """RAG-powered Cyber Threat Intelligence retrieval system.
 
 Public interface:
-    query(text, k) -> QueryResult   retrieve relevant CTI chunks with scores and metadata
+    query(text, k)  -> QueryResult      retrieve relevant CTI chunks with scores and metadata
+    answer(text, k) -> GeneratedAnswer  retrieve + generate a grounded answer with cited IDs
 """
 
 from __future__ import annotations
@@ -11,9 +12,9 @@ from pathlib import Path
 
 from rag_cti.config import get_settings
 from rag_cti.retrieval import Pipeline, build_pipeline
-from rag_cti.types import QueryResult
+from rag_cti.types import GeneratedAnswer, QueryResult
 
-__all__ = ["query", "QueryResult", "Pipeline", "build_pipeline"]
+__all__ = ["query", "answer", "QueryResult", "GeneratedAnswer", "Pipeline", "build_pipeline"]
 
 __version__ = "0.1.0"
 
@@ -75,3 +76,38 @@ def query(text: str, k: int = 10) -> QueryResult:
         QueryResult with ranked chunks, scores, ranks, and timing metadata.
     """
     return _default_pipeline().run(text, top_k=k)
+
+
+@lru_cache(maxsize=1)
+def _default_generator() -> object:
+    from rag_cti.generation.client import RetryingGroqClient
+    from rag_cti.generation.generator import Generator
+    from rag_cti.generation.llm_router import LLMRouter
+
+    settings = get_settings()
+    api_key = settings.groq_api_key.get_secret_value()
+    if not api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY is required for answer generation. "
+            "Set it in your .env file or environment."
+        )
+    client = RetryingGroqClient(api_key=api_key)
+    router = LLMRouter(settings=settings)
+    return Generator(client=client, router=router, settings=settings)
+
+
+def answer(text: str, k: int = 10) -> GeneratedAnswer:
+    """Retrieve relevant CTI chunks and generate a grounded answer with cited chunk IDs.
+
+    Args:
+        text: Natural language CTI query.
+        k: Number of context chunks to retrieve before generation.
+
+    Returns:
+        GeneratedAnswer with the response text, cited chunk IDs, and the underlying QueryResult.
+    """
+    from rag_cti.generation.generator import Generator
+
+    query_result = query(text, k=k)
+    gen: Generator = _default_generator()  # type: ignore[assignment]
+    return gen.generate(text, query_result)

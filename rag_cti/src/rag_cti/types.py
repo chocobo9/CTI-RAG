@@ -54,3 +54,12 @@ class QueryResult(BaseModel, frozen=True):
     results: list[RetrievalResult]
     total_retrieved: int
     retrieval_ms: float
+
+
+class GeneratedAnswer(BaseModel, frozen=True):
+    query: str
+    answer: str
+    cited_chunk_ids: list[str]
+    query_result: QueryResult
+    generation_ms: float
+    model: str

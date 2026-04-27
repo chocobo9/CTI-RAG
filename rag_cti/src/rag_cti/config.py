@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     # Groq
     groq_api_key: SecretStr = SecretStr("")
     groq_query_model: str = "llama-3.1-8b-instant"
+    groq_analysis_model: str = "llama-3.3-70b-versatile"
+    groq_report_model: str = "llama-3.3-70b-versatile"
 
     # Data source API keys
     otx_api_key: SecretStr = SecretStr("")
@@ -40,10 +42,11 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 10
     hybrid_alpha: float = 0.5  # weight for dense vs sparse (1.0 = pure dense)
 
-    # LLM tiers
+    # Generation
+    generation_max_tokens: int = 1024
+
+    # LLM tiers (Anthropic — used by HyDE when ANTHROPIC_API_KEY is set)
     llm_routing_model: str = "claude-haiku-4-5-20251001"
-    llm_analysis_model: str = "claude-sonnet-4-6"
-    llm_report_model: str = "claude-opus-4-7"
 
     # Feature flags
     hyde_enabled: bool = True

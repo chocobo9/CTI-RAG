@@ -67,9 +67,9 @@ def test_refresh_command_raises_not_implemented() -> None:
     assert isinstance(result.exception, NotImplementedError)
 
 
-def test_eval_command_raises_not_implemented() -> None:
+def test_eval_command_unknown_suite_exits_nonzero() -> None:
     result = runner.invoke(app, ["eval", "retrieval"])
-    assert isinstance(result.exception, NotImplementedError)
+    assert result.exit_code != 0
 
 
 # ---------------------------------------------------------------------------
