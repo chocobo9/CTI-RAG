@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 
 from rag_cti._logging import get_logger
+from rag_cti.observability.tracing import traced
 from rag_cti.types import RetrievalResult
 
 logger = get_logger(__name__)
@@ -67,18 +68,24 @@ class HyDERetriever:
         )
         return results
 
+    @traced("retrieval.hyde.generate_doc", run_type="llm")
     def _generate_hypothetical_doc(self, query: str) -> str | None:
         try:
-            if self._llm_provider == "groq":
+            if self._llm_provider in ("groq", "ollama"):
+                model = (
+                    self._settings.ollama_model
+                    if self._llm_provider == "ollama"
+                    else self._settings.groq_query_model
+                )
                 resp = self._llm.chat.completions.create(
-                    model=self._settings.groq_query_model,
+                    model=model,
                     max_tokens=300,
                     messages=[
                         {"role": "system", "content": _HYDE_SYSTEM_PROMPT},
                         {"role": "user", "content": query},
                     ],
                 )
-                text = (resp.choices[0].message.content or "").strip()
+                text = (resp.choices[0].message.content or "").strip()[:2000]
                 return text if text else None
             else:
                 response = self._llm.messages.create(
@@ -87,7 +94,7 @@ class HyDERetriever:
                     system=_HYDE_SYSTEM_PROMPT,
                     messages=[{"role": "user", "content": query}],
                 )
-                return response.content[0].text.strip()
+                return response.content[0].text.strip()[:2000]
         except Exception as exc:
             logger.warning("hyde llm call failed, falling back to direct query", error=str(exc))
             return None

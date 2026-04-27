@@ -152,7 +152,7 @@ class BM25SparseEncoder:
         logger.info("vocabulary saved", path=str(path), vocab_size=len(self.vocab))
 
     @classmethod
-    def load(cls, path: Path) -> "BM25SparseEncoder":
+    def load(cls, path: Path) -> BM25SparseEncoder:
         data = json.loads(path.read_text(encoding="utf-8"))
         enc = cls()
         enc.vocab = data["vocab"]

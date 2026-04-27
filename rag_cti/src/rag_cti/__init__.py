@@ -43,17 +43,9 @@ def _default_pipeline() -> Pipeline:
     llm_client = None
     llm_provider = "anthropic"
     if settings.hyde_enabled:
-        groq_key = settings.groq_api_key.get_secret_value()
-        anthropic_key = settings.anthropic_api_key.get_secret_value()
-        if groq_key:
-            from groq import Groq  # type: ignore[import]
+        from rag_cti.generation.client import build_llm_client
 
-            llm_client = Groq(api_key=groq_key)
-            llm_provider = "groq"
-        elif anthropic_key:
-            import anthropic  # type: ignore[import]
-
-            llm_client = anthropic.Anthropic(api_key=anthropic_key)
+        llm_provider, llm_client = build_llm_client(settings)
 
     return build_pipeline(
         settings=settings,
@@ -80,18 +72,12 @@ def query(text: str, k: int = 10) -> QueryResult:
 
 @lru_cache(maxsize=1)
 def _default_generator() -> object:
-    from rag_cti.generation.client import RetryingGroqClient
+    from rag_cti.generation.client import build_llm_client
     from rag_cti.generation.generator import Generator
     from rag_cti.generation.llm_router import LLMRouter
 
     settings = get_settings()
-    api_key = settings.groq_api_key.get_secret_value()
-    if not api_key:
-        raise RuntimeError(
-            "GROQ_API_KEY is required for answer generation. "
-            "Set it in your .env file or environment."
-        )
-    client = RetryingGroqClient(api_key=api_key)
+    _provider, client = build_llm_client(settings)
     router = LLMRouter(settings=settings)
     return Generator(client=client, router=router, settings=settings)
 

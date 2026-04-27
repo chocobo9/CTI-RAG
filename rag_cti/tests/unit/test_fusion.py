@@ -7,7 +7,6 @@ import pytest
 from rag_cti.retrieval.fusion import reciprocal_rank_fusion
 from rag_cti.types import Chunk, RetrievalResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

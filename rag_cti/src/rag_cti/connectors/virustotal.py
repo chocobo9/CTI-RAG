@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
-from typing import Any, Iterator
+from collections.abc import Iterator
+from datetime import UTC, datetime
+from typing import Any
 
 from rag_cti._logging import get_logger
 from rag_cti.connectors.base import HttpConnector
@@ -45,7 +46,7 @@ class VirusTotalConnector(HttpConnector):
 
         last_mod_ts: int | None = attrs.get("last_modification_date")
         last_modified = (
-            datetime.fromtimestamp(last_mod_ts, tz=timezone.utc).isoformat()
+            datetime.fromtimestamp(last_mod_ts, tz=UTC).isoformat()
             if last_mod_ts
             else ""
         )

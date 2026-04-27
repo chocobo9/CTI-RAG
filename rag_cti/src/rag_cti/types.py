@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -63,3 +63,39 @@ class GeneratedAnswer(BaseModel, frozen=True):
     query_result: QueryResult
     generation_ms: float
     model: str
+
+
+# ---------------------------------------------------------------------------
+# Structural protocols — use for type-hinting boundaries, not isinstance checks
+# ---------------------------------------------------------------------------
+
+@runtime_checkable
+class RetrieverProto(Protocol):
+    def search(
+        self,
+        query: str,
+        top_k: int = 10,
+        source_filter: str | list[str] | None = None,
+    ) -> list[RetrievalResult]: ...
+
+
+class LLMClientProto(Protocol):
+    """Groq / OpenAI-compatible chat-completions client interface."""
+
+    class _CompletionsProto(Protocol):
+        def create(self, **kwargs: Any) -> Any: ...
+
+    class _ChatProto(Protocol):
+        completions: Any
+
+    chat: _ChatProto
+
+
+class VectorStoreProto(Protocol):
+    def upsert(self, chunks: list[Chunk], embeddings: Any) -> int: ...
+    def search(
+        self,
+        query_vector: list[float],
+        top_k: int = 10,
+        source_filter: str | None = None,
+    ) -> list[RetrievalResult]: ...

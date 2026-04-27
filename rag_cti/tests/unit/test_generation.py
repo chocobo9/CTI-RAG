@@ -3,14 +3,15 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from typing import Any
+from unittest.mock import patch
 
 import pytest
+from pydantic import ValidationError
 
 from rag_cti.generation.context_builder import build_context_messages, extract_cited_ids
 from rag_cti.generation.generator import Generator, _extract_text
 from rag_cti.generation.llm_router import LLMRouter, TaskType
 from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -48,6 +49,8 @@ def _make_query_result(results: list[RetrievalResult] | None = None) -> QueryRes
 
 
 class _FakeSettings:
+    ollama_enabled: bool = False
+    ollama_model: str = "qwen2.5"
     groq_query_model: str = "llama-3.1-8b-instant"
     groq_analysis_model: str = "llama-3.3-70b-versatile"
     groq_report_model: str = "llama-3.3-70b-versatile"
@@ -115,7 +118,8 @@ def test_router_all_task_types_return_non_empty_string() -> None:
     router = LLMRouter(_FakeSettings())
     for task in TaskType:
         model = router.model_for(task)
-        assert isinstance(model, str) and len(model) > 0
+        assert isinstance(model, str)
+        assert len(model) > 0
 
 
 # ---------------------------------------------------------------------------
@@ -345,5 +349,32 @@ def test_generated_answer_is_frozen() -> None:
         generation_ms=10.0,
         model="llama-3.3-70b-versatile",
     )
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         ga.answer = "mutated"  # type: ignore[misc]
+
+
+# ---------------------------------------------------------------------------
+# Tests — tracing integration
+# ---------------------------------------------------------------------------
+
+def test_generate_calls_add_trace_metadata_with_expected_keys() -> None:
+    client = _FakeClient("Answer citing [abc12345].")
+    gen = Generator(client=client, router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    with patch("rag_cti.generation.generator.add_trace_metadata") as mock_meta:
+        gen.generate("APT29 spearphishing", _make_query_result())
+    mock_meta.assert_called_once()
+    kwargs = mock_meta.call_args.kwargs
+    assert "model" in kwargs
+    assert "cited_chunk_ids" in kwargs
+    assert "generation_ms" in kwargs
+    assert "context_chunk_ids" in kwargs
+
+
+def test_generate_result_unchanged_when_tracing_active() -> None:
+    client = _FakeClient("Answer citing [abc12345] for detail.")
+    gen = Generator(client=client, router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    with patch("rag_cti.generation.generator.add_trace_metadata"):
+        result = gen.generate("test query", _make_query_result())
+    assert result.query == "test query"
+    assert "abc12345" in result.cited_chunk_ids
+    assert result.generation_ms >= 0.0

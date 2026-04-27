@@ -1,0 +1,231 @@
+# CTI-RAG
+
+A Retrieval-Augmented Generation system for Cyber Threat Intelligence (CTI). Given a natural-language query or an IOC string, the system retrieves the most relevant threat intelligence chunks from a hybrid vector store — spanning MITRE ATT&CK, OTX threat reports, WHOIS/pDNS records, and internal PDFs — and synthesises a cited, grounded answer via an LLM. The motivation is to make dispersed, heterogeneous CTI corpora navigable through plain-language queries, replacing ad-hoc keyword searches with semantically-aware retrieval backed by reproducible evaluation metrics.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Ingestion
+        A[MITRE ATT&CK JSON] --> P[Chunker / Normaliser]
+        B[OTX Reports] --> P
+        C[WHOIS / pDNS] --> P
+        D[Internal PDFs] --> P
+        P --> E[BGE-M3 Embedder]
+        E --> F[(Qdrant\nhybrid collection\ndense + BM25 sparse)]
+    end
+
+    subgraph Query Pipeline
+        G[User Query] --> H{HyDE?}
+        H -- yes --> I[LLM: generate\nhypothetical doc]
+        H -- no  --> J[Raw query]
+        I --> K[BGE-M3 embed]
+        J --> K
+        K --> L[Dense search]
+        G --> M[BM25 sparse\nencoder]
+        M --> N[Sparse search]
+        L & N --> O[Reciprocal Rank\nFusion]
+        O --> Q[Generator\nGroq / Ollama / Anthropic]
+        Q --> R[GeneratedAnswer\nwith cited chunk IDs]
+    end
+
+    subgraph Evaluation
+        S[TechniqueRAG\nbenchmark] --> T[evaluate_retriever]
+        U[Custom query set\nJSONL] --> V[evaluate_on_query_set]
+        T & V --> W[Hit@k · MRR · nDCG@k]
+    end
+
+    subgraph Observability
+        X[LangSmith tracing\n@traced decorator] -.-> Query Pipeline
+        Y[rag-cti metrics CLI] -.-> W
+    end
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Embedding | `BAAI/bge-m3` via `sentence-transformers` |
+| Vector store | Qdrant (hybrid: dense cosine + BM25 sparse) |
+| Sparse encoder | `rank-bm25` with custom vocab |
+| LLM (default) | Groq — `llama-3.3-70b-versatile` (analysis), `llama-3.1-8b-instant` (HyDE) |
+| LLM (alt) | Ollama (local), Anthropic Claude |
+| CTI sources | MITRE ATT&CK STIX, OTX, WHOIS, pDNS, PDF reports |
+| Evaluation | Custom `Hit@k`, `MRR`, `nDCG@k`; TechniqueRAG external benchmark |
+| Tracing | LangSmith (`@traced` + `add_trace_metadata`) |
+| CLI | Typer + Rich |
+| Config | Pydantic Settings + `.env` |
+| Testing | pytest — 435 tests, 97% coverage |
+| Linting | ruff, mypy (strict), bandit |
+
+---
+
+## Quick Start
+
+### 1. Install
+
+```bash
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+```
+
+### 2. Configure
+
+Copy `.env.example` and fill in your keys:
+
+```bash
+cp .env.example .env
+```
+
+Minimum required variables:
+
+```env
+QDRANT_URL=http://localhost:6333
+QDRANT_COLLECTION=cti_chunks
+QDRANT_API_KEY=                   # leave blank for local Qdrant
+
+GROQ_API_KEY=gsk_...              # primary LLM provider
+# ANTHROPIC_API_KEY=sk-ant-...    # optional fallback
+# OLLAMA_ENABLED=true             # set true to use local Ollama instead
+
+EMBEDDING_MODEL=BAAI/bge-m3
+
+# Optional — enables LangSmith tracing
+# LANGCHAIN_API_KEY=ls__...
+# LANGCHAIN_TRACING_V2=true
+# LANGCHAIN_PROJECT=cti-rag
+```
+
+### 3. Ingest the corpus
+
+```bash
+python scripts/seed_mitre.py          # MITRE ATT&CK techniques
+python scripts/fetch_otx.py           # OTX threat reports
+python scripts/fetch_whois_pdns.py    # WHOIS / pDNS records
+python scripts/seed_pdfs.py           # internal PDF reports
+```
+
+### 4. Query
+
+```bash
+# CLI
+rag-cti query "How does APT29 use spearphishing for initial access?"
+
+# Python API
+import rag_cti
+result = rag_cti.query("T1566 phishing techniques", top_k=10)
+answer = rag_cti.generate("Explain T1566", result)
+print(answer.answer)
+```
+
+### 5. Evaluate
+
+```bash
+# External benchmark (requires HuggingFace access)
+rag-cti eval techniquerag --config all --max-records 200
+
+# Custom query set
+rag-cti eval retrieval --query-set data/eval/query_set.jsonl --config all
+
+# Display saved metrics
+rag-cti metrics data/eval/retrieval_results.json --strict
+```
+
+---
+
+## Evaluation Results
+
+Two evaluation protocols were run. Results should be read together: the external benchmark measures generalisation to unseen queries; the custom query set provides fine-grained per-category diagnostics.
+
+### TechniqueRAG (external benchmark)
+
+Independent evaluation on the public [QCRI/TechniqueRAG-Datasets](https://huggingface.co/datasets/QCRI/TechniqueRAG-Datasets) benchmark. Queries are drawn from real CTI reports and were never seen during corpus construction, making this the primary measure of real-world generalisation ability.
+
+| Config | Hit@1 | Hit@5 | Hit@10 | MRR |
+|---|---|---|---|---|
+| dense | 0.360 | 0.620 | 0.680 | 0.484 |
+| hybrid | 0.360 | 0.620 | 0.680 | 0.484 |
+| hybrid+HyDE | 0.280 | 0.500 | 0.660 | 0.372 |
+
+### Custom Query Set (by category)
+
+64 queries generated by LLM sampling from the ingested corpus, covering three difficulty tiers. Because queries are derived from the same corpus, scores are optimistic relative to the external benchmark — treat these as a diagnostic tool, not an absolute quality measure.
+
+**Overall**
+
+| Config | Hit@1 | Hit@10 | MRR |
+|---|---|---|---|
+| dense | 0.875 | 0.984 | 0.930 |
+| hybrid | 0.875 | 0.984 | 0.930 |
+| hybrid+HyDE | 0.672 | 0.922 | 0.752 |
+
+**Per-category detail**
+
+| Category | dense Hit@10 | hybrid Hit@10 | hybrid+HyDE Hit@1 |
+|---|---|---|---|
+| Precise | **1.000** | **1.000** | 0.672 (overall) |
+| Fuzzy | 0.800 (Hit@1) | 0.800 (Hit@1) | **0.933** |
+
+### Key findings
+
+- **Dense and hybrid perform identically** on both benchmarks: BM25 sparse vectors add no measurable lift over dense-only for this corpus and query distribution.
+- **HyDE helps on fuzzy queries**: `hybrid+HyDE` raises fuzzy Hit@1 from 0.800 → 0.933, recovering vague queries that are too underspecified for direct embedding.
+- **HyDE hurts on precise queries**: the hypothetical document introduces semantic drift for well-specified queries, trading precision for recall. This trade-off is the central retrieval finding of the project.
+- **External benchmark is the primary signal**: TechniqueRAG Hit@10 of 0.68 represents genuine out-of-distribution performance; custom query set scores are inflated by in-distribution sampling.
+
+---
+
+## Future Work
+
+### RAGAS-based generation quality
+Extend evaluation with end-to-end generation metrics using [RAGAS](https://github.com/explodinggradients/ragas): `context_recall`, `faithfulness`, and `answer_relevancy`. Currently only retrieval metrics are tracked; RAGAS would close the generation quality loop and expose cases where good retrieval yields poor synthesis.
+
+### Retrieval ablation study
+Systematic ablation across:
+- Embedding models (BGE-M3 vs. E5-large vs. domain-fine-tuned CTI models)
+- Chunk size and overlap strategies (current: 600 tokens, 80-token overlap)
+- Sparse encoder vocabulary size and IDF weighting
+- RRF rank-fusion weights between dense and sparse scores
+
+### Agentic CTI analyst
+Replace the single-turn query/generate pipeline with a multi-step agent that can:
+- Decompose compound queries ("List all APT29 techniques and their mitigations")
+- Iteratively retrieve, reason, and refine across multiple tool calls
+- Cross-reference IOCs across WHOIS, OTX, and MITRE in a single reasoning chain
+- Produce structured threat reports with full traceability to source chunks
+
+### Real-time ingestion
+Streaming connectors for live OTX feeds and VirusTotal webhooks, keeping the vector store current without full re-ingestion cycles.
+
+---
+
+## Project Structure
+
+```
+src/rag_cti/
+├── connectors/        # OTX, VirusTotal data fetchers
+├── embeddings/        # BGE-M3 embedder wrapper
+├── evaluation/        # retrieval_metrics, query_set, techniquerag
+├── generation/        # Generator, LLMRouter, context_builder, client
+├── observability/     # LangSmith tracing seam
+├── preprocess/        # chunking, normalizers, pdf_parser
+├── retrieval/         # pipeline, hyde, bm25
+├── store/             # QdrantStore (dense + sparse upsert/search)
+├── cli.py             # Typer CLI (query, eval, metrics)
+├── cli_metrics.py     # Pure metrics loading/rendering
+├── config.py          # Pydantic Settings
+└── types.py           # Shared types + Protocol interfaces
+
+scripts/               # One-shot ingestion scripts
+tests/unit/            # 435 tests, 97% coverage
+data/eval/             # Query set JSONL, evaluation results
+docs/                  # Architecture and decision records
+```
+
+## License
+
+MIT

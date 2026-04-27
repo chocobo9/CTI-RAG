@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 
 from rag_cti._logging import get_logger
+from rag_cti.observability.tracing import add_trace_metadata, traced
 from rag_cti.retrieval.dense_retriever import DenseRetriever
 from rag_cti.retrieval.hybrid_retriever import HybridRetriever
 from rag_cti.retrieval.hyde import HyDERetriever
@@ -21,6 +22,7 @@ class Pipeline:
         self._reranker = reranker
         self._settings = settings
 
+    @traced("retrieval.pipeline", run_type="retriever")
     def run(
         self,
         query: str,
@@ -35,6 +37,13 @@ class Pipeline:
         results = self._reranker.rerank(query, results)
         results = results[:k]
         elapsed_ms = (time.perf_counter() - t0) * 1000
+        add_trace_metadata(
+            top_k=k,
+            returned=len(results),
+            elapsed_ms=round(elapsed_ms, 1),
+            chunk_ids=[r.document.id for r in results],
+            scores=[round(r.score, 4) for r in results],
+        )
         logger.debug(
             "pipeline run complete",
             query_len=len(query),

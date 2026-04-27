@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import re
-from enum import Enum
+from enum import StrEnum
 
 from rag_cti.types import Chunk, Document
 
 
-class ChunkStrategy(str, Enum):
+class ChunkStrategy(StrEnum):
     SEMANTIC = "semantic"      # sentence-aware, for natural language docs
     STRUCTURED = "structured"  # one chunk per record, for JSON/KV sources
     FIXED = "fixed"            # fixed-size overlap, ablation baseline

@@ -6,7 +6,7 @@ from rag_cti.preprocess.chunking import ChunkStrategy
 from rag_cti.preprocess.normalizers import source_to_strategy, validate_content
 
 
-@pytest.mark.parametrize("source,expected", [
+@pytest.mark.parametrize(("source", "expected"), [
     ("whois", ChunkStrategy.STRUCTURED),
     ("pdns", ChunkStrategy.STRUCTURED),
     ("virustotal", ChunkStrategy.STRUCTURED),

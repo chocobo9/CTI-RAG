@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 from rag_cti._logging import get_logger
 from rag_cti.connectors.base import BaseConnector

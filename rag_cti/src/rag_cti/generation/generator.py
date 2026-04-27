@@ -6,6 +6,7 @@ from typing import Any
 from rag_cti._logging import get_logger
 from rag_cti.generation.context_builder import build_context_messages, extract_cited_ids
 from rag_cti.generation.llm_router import LLMRouter, TaskType
+from rag_cti.observability.tracing import add_trace_metadata, traced
 from rag_cti.types import GeneratedAnswer, QueryResult
 
 logger = get_logger(__name__)
@@ -19,6 +20,7 @@ class Generator:
         self._router = router
         self._settings = settings
 
+    @traced("generation", run_type="llm")
     def generate(self, query: str, query_result: QueryResult) -> GeneratedAnswer:
         model = self._router.model_for(TaskType.ANALYSIS)
         messages = build_context_messages(query, query_result.results)
@@ -28,6 +30,12 @@ class Generator:
         elapsed_ms = round((time.perf_counter() - t0) * 1000, 1)
 
         cited = extract_cited_ids(answer_text)
+        add_trace_metadata(
+            model=model,
+            cited_chunk_ids=cited,
+            generation_ms=elapsed_ms,
+            context_chunk_ids=[r.document.id for r in query_result.results],
+        )
         logger.debug(
             "generation complete",
             model=model,

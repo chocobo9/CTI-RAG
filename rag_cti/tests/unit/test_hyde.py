@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-
-import pytest
+from unittest.mock import patch
 
 from rag_cti.retrieval.hyde import HyDERetriever
 from rag_cti.types import Chunk, RetrievalResult
-
 
 # ---------------------------------------------------------------------------
 # Stubs
@@ -274,3 +272,25 @@ def test_groq_provider_failure_falls_back_to_direct_query() -> None:
     query = "how does APT group use spearphishing for initial access"
     retriever.search(query)
     assert base.last_query == query
+
+
+# ---------------------------------------------------------------------------
+# Tests — tracing integration
+# ---------------------------------------------------------------------------
+
+def test_search_result_unchanged_when_traced_decorator_active() -> None:
+    expected = [_make_result(0.9), _make_result(0.7)]
+    base = _FakeBaseRetriever(expected)
+    groq = _FakeGroqClient("Hypothetical CTI passage about spearphishing.")
+    retriever = HyDERetriever(base, groq, _FakeSettings(), llm_provider="groq")
+    with patch("rag_cti.retrieval.hyde.traced", side_effect=lambda *a, **kw: (lambda f: f)):
+        results = retriever.search("how does APT group use spearphishing for initial access")
+    assert results == expected
+
+
+def test_generate_hypothetical_doc_called_through_tracing_noop() -> None:
+    base = _FakeBaseRetriever()
+    groq = _FakeGroqClient("A hypothetical threat intelligence passage.")
+    retriever = HyDERetriever(base, groq, _FakeSettings(), llm_provider="groq")
+    retriever.search("how does APT group use spearphishing for initial access")
+    assert base.last_query == "A hypothetical threat intelligence passage."

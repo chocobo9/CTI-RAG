@@ -5,7 +5,6 @@ from datetime import datetime
 from rag_cti.retrieval.hybrid_retriever import HybridRetriever
 from rag_cti.types import Chunk, RetrievalResult
 
-
 # ---------------------------------------------------------------------------
 # Stubs
 # ---------------------------------------------------------------------------

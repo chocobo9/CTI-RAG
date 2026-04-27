@@ -3,11 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 
 import numpy as np
-import pytest
 
 from rag_cti.retrieval.dense_retriever import DenseRetriever
 from rag_cti.types import Chunk, RetrievalResult
-
 
 # ---------------------------------------------------------------------------
 # Stubs

@@ -13,6 +13,11 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
+    # Ollama (local models — priority provider when ollama_enabled=True)
+    ollama_enabled: bool = True
+    ollama_base_url: str = "http://localhost:11434/v1"
+    ollama_model: str = "qwen2.5"
+
     # Anthropic
     anthropic_api_key: SecretStr = SecretStr("")
 
@@ -61,10 +66,14 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_required_secrets(self) -> Settings:
+        has_ollama = self.ollama_enabled
         has_anthropic = bool(self.anthropic_api_key.get_secret_value())
         has_groq = bool(self.groq_api_key.get_secret_value())
-        if not has_anthropic and not has_groq:
-            raise ValueError("At least one of ANTHROPIC_API_KEY or GROQ_API_KEY is required")
+        if not has_ollama and not has_anthropic and not has_groq:
+            raise ValueError(
+                "At least one LLM provider is required: "
+                "set OLLAMA_ENABLED=true, ANTHROPIC_API_KEY, or GROQ_API_KEY"
+            )
         return self
 
 

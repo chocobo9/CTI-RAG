@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from unittest.mock import patch
 
 from rag_cti.retrieval.pipeline import Pipeline, build_pipeline
 from rag_cti.types import Chunk, QueryResult, RetrievalResult
-
 
 # ---------------------------------------------------------------------------
 # Stubs
@@ -217,3 +217,38 @@ def test_build_pipeline_with_llm_client_when_hyde_disabled() -> None:
         llm_client=_FakeLLMClient(),
     )
     assert isinstance(pipeline, Pipeline)
+
+
+# ---------------------------------------------------------------------------
+# Tests — tracing integration
+# ---------------------------------------------------------------------------
+
+def test_run_calls_add_trace_metadata_with_chunk_ids_and_scores() -> None:
+    results = [_make_result("chunk-a", 0.9), _make_result("chunk-b", 0.7)]
+    pipeline = Pipeline(
+        retriever=_FakeRetriever(results),
+        reranker=_FakeReranker(),
+        settings=_FakeSettings(),
+    )
+    with patch("rag_cti.retrieval.pipeline.add_trace_metadata") as mock_meta:
+        pipeline.run("test tracing query here")
+    mock_meta.assert_called_once()
+    kwargs = mock_meta.call_args.kwargs
+    assert "chunk_ids" in kwargs
+    assert "scores" in kwargs
+    assert "elapsed_ms" in kwargs
+    assert kwargs["chunk_ids"] == ["chunk-a", "chunk-b"]
+
+
+def test_run_result_unchanged_when_tracing_metadata_added() -> None:
+    results = [_make_result("x1", 0.8)]
+    pipeline = Pipeline(
+        retriever=_FakeRetriever(results),
+        reranker=_FakeReranker(),
+        settings=_FakeSettings(),
+    )
+    with patch("rag_cti.retrieval.pipeline.add_trace_metadata"):
+        result = pipeline.run("query for tracing test")
+    assert result.query == "query for tracing test"
+    assert len(result.results) == 1
+    assert result.results[0].document.id == "x1"

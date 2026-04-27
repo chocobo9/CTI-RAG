@@ -9,6 +9,8 @@ description = "RAG-powered Cyber Threat Intelligence retrieval system"
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.40.0",
+    "instructor>=1.0.0",
+    "openai>=1.0.0",
     "groq>=0.9.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
@@ -37,6 +39,7 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "ruff>=0.4.0",
     "mypy>=1.10.0",
+    "bandit>=1.7.0",
     "ipykernel>=6.0.0",
     "jupyter>=1.0.0",
 ]
@@ -59,10 +62,13 @@ addopts = [
 
 [tool.coverage.run]
 omit = [
+    "*/rag_cti/__init__.py",
     "*/rag_cti/cli.py",
     "*/rag_cti/config.py",
     "*/rag_cti/connectors/otx.py",
     "*/rag_cti/connectors/virustotal.py",
+    "*/rag_cti/evaluation/techniquerag.py",
+    "*/rag_cti/preprocess/pdf_parser.py",
 ]
 
 [tool.ruff]
@@ -71,7 +77,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "PT"]
-ignore = ["E501"]
+ignore = ["E501", "B008"]
 
 [tool.mypy]
 python_version = "3.11"

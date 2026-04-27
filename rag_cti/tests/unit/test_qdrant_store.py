@@ -12,7 +12,6 @@ import pytest
 
 from rag_cti.types import Chunk
 
-
 # ---------------------------------------------------------------------------
 # Fake qdrant_client stand-ins — installed into sys.modules before import
 # ---------------------------------------------------------------------------

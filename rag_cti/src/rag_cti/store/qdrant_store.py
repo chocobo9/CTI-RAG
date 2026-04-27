@@ -6,13 +6,16 @@ in each point's payload is used for per-source filtering at query time.
 from __future__ import annotations
 
 import uuid
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 
 from rag_cti._logging import get_logger
 from rag_cti.types import Chunk, RetrievalResult
+
+_MAX_CONTENT_LEN = 8_000
 
 logger = get_logger(__name__)
 
@@ -52,7 +55,10 @@ class QdrantStore:
         Schema matches migrate_to_hybrid.py so ingest.py is the sole lifecycle owner.
         """
         from qdrant_client.http import models as qm  # type: ignore[import]
-        from qdrant_client.models import SparseIndexParams, SparseVectorParams  # type: ignore[import]
+        from qdrant_client.models import (  # type: ignore[import]
+            SparseIndexParams,
+            SparseVectorParams,
+        )
 
         existing = {c.name for c in self._client.get_collections().collections}
         if self.collection in existing:
@@ -245,7 +251,7 @@ def _payload_to_chunk(payload: dict[str, Any]) -> Chunk:
         id=str(payload.get("id", "")),
         parent_doc_id=str(payload.get("parent_doc_id", "")),
         source=str(payload.get("source", "")),
-        content=str(payload.get("content", "")),
+        content=str(payload.get("content", ""))[:_MAX_CONTENT_LEN],
         chunk_index=int(payload.get("chunk_index", 0)),
         metadata=dict(payload.get("metadata") or {}),
         retrieved_at=_parse_ts(payload.get("retrieved_at")),

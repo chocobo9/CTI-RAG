@@ -2,11 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-import pytest
-
 from rag_cti.retrieval.sparse_retriever import SparseRetriever
 from rag_cti.types import Chunk, RetrievalResult
-
 
 # ---------------------------------------------------------------------------
 # Stubs

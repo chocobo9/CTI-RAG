@@ -3,8 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from rag_cti.connectors.pdf_reports import PDFReportsConnector
 from rag_cti.preprocess.pdf_parser import (
     _clean,
@@ -15,7 +13,6 @@ from rag_cti.preprocess.pdf_parser import (
     parse_pdf,
 )
 from rag_cti.types import Document
-
 
 # ---------------------------------------------------------------------------
 # _clean helper
