@@ -86,11 +86,11 @@ class _RetryingOllamaCompletions:
 
 
 # ---------------------------------------------------------------------------
-# Provider factory — priority: Ollama > Groq > Anthropic
+# Provider factory — when OLLAMA_ENABLED: Ollama; else Groq if key; else Anthropic
 # ---------------------------------------------------------------------------
 
 def build_llm_client(settings: Any) -> tuple[str, Any]:
-    """Select LLM client by priority: Ollama > Groq > Anthropic.
+    """Select LLM client: local Ollama if enabled, else Groq (API), else Anthropic.
 
     Returns (provider_name, client) where provider_name is one of
     "ollama", "groq", or "anthropic".
@@ -101,7 +101,11 @@ def build_llm_client(settings: Any) -> tuple[str, Any]:
 
     groq_key = settings.groq_api_key.get_secret_value()
     if groq_key:
-        logger.info("llm provider: groq")
+        logger.info(
+            "llm provider: groq",
+            hyde_model=settings.groq_query_model,
+            analysis_model=settings.groq_analysis_model,
+        )
         return "groq", RetryingGroqClient(api_key=groq_key)
 
     anthropic_key = settings.anthropic_api_key.get_secret_value()
@@ -112,5 +116,5 @@ def build_llm_client(settings: Any) -> tuple[str, Any]:
 
     raise RuntimeError(
         "No LLM provider configured. "
-        "Set OLLAMA_ENABLED=true, GROQ_API_KEY, or ANTHROPIC_API_KEY."
+        "Set GROQ_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_ENABLED=true for local Ollama."
     )

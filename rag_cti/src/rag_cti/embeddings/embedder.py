@@ -16,6 +16,21 @@ logger = get_logger(__name__)
 
 _DEFAULT_BATCH_SIZE = 64
 
+# sentence-transformers resolves bare names under sentence-transformers/*, which breaks
+# for bge-m3 (real checkpoint is BAAI/bge-m3). Accept legacy .env values.
+_HF_MODEL_ALIASES: dict[str, str] = {
+    "bge-m3": "BAAI/bge-m3",
+}
+
+
+def _resolve_model_name(model_name: str) -> str:
+    key = model_name.strip()
+    if key in _HF_MODEL_ALIASES:
+        resolved = _HF_MODEL_ALIASES[key]
+        logger.info("embedding model id normalized", raw=model_name, resolved=resolved)
+        return resolved
+    return key
+
 
 class Embedder:
     """Embeds text into dense vectors using a sentence-transformers model."""
@@ -27,7 +42,7 @@ class Embedder:
         device: str | None = None,
         normalize: bool = True,
     ) -> None:
-        self.model_name = model_name
+        self.model_name = _resolve_model_name(model_name)
         self.batch_size = batch_size
         self.normalize = normalize
         self._device = device

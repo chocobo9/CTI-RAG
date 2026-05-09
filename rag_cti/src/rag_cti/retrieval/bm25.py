@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import unicodedata
 from pathlib import Path
 
 from rag_cti._logging import get_logger
@@ -17,11 +18,42 @@ logger = get_logger(__name__)
 _K1: float = 1.5
 _B: float = 0.75
 
+# Prose-only guard (IOC/hash/domain regex captures are exempt).
+_MAX_TOKEN_LEN: int = 64
+
+# Strict IPv4 octets (reject e.g. 1.866.320.478); mask /0–/32 only.
+_IPV4_OCTET = r"(?:25[0-5]|2[0-4]\d|[01]?\d\d?)"
+_IPV4_ADDR = rf"{_IPV4_OCTET}\.{_IPV4_OCTET}\.{_IPV4_OCTET}\.{_IPV4_OCTET}"
+_IPV4_CIDR_MASK = rf"(?:/(?:3[0-2]|[12]\d|[0-9])(?!\d))?"
+
+# NFKC collapses many compatibility ligatures; explicit map catches leftovers.
+_LIGATURE_TRANSLATIONS = str.maketrans(
+    {
+        "\ufb00": "ff",
+        "\ufb01": "fi",
+        "\ufb02": "fl",
+        "\ufb03": "ffi",
+        "\ufb04": "ffl",
+        "\ufb06": "st",
+    }
+)
+
+
+def _normalize_text(text: str) -> str:
+    """NFKC plus explicit ligature folding for tokenizer stability."""
+    s = unicodedata.normalize("NFKC", text)
+    return s.translate(_LIGATURE_TRANSLATIONS)
+
+
 # Ordered most-specific first to avoid partial matches.
+# IPv4 fragment is an f-string; the rest must be a plain raw string so `{2}` etc.
+# are not interpreted as f-string interpolation.
 _IOC_RE = re.compile(
-    r"""
+    rf"""
     (?:
-      \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?:/\d{1,2})?      # IPv4 / CIDR
+      {_IPV4_ADDR}{_IPV4_CIDR_MASK}                         # IPv4 / CIDR
+    """
+    + r"""
     | (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}                   # MAC address
     | CVE-\d{4}-\d{4,7}                                       # CVE ID
     | MS\d{2}-\d{3,4}                                         # MS bulletin
@@ -38,8 +70,15 @@ _IOC_RE = re.compile(
 
 
 def _split_prose(text: str) -> list[str]:
-    """Whitespace/punctuation split; drop single-char tokens."""
-    return [t.lower() for t in re.split(r"[\s\W]+", text) if len(t) >= 2]
+    """Whitespace/punctuation split; drop single-char and overlong prose tokens."""
+    out: list[str] = []
+    for t in re.split(r"[\s\W]+", text):
+        if len(t) < 2:
+            continue
+        if len(t) > _MAX_TOKEN_LEN:
+            continue
+        out.append(t.lower())
+    return out
 
 
 def tokenize(text: str) -> list[str]:
@@ -49,14 +88,17 @@ def tokenize(text: str) -> list[str]:
     standard prose tokenization for the surrounding text. Ensures that
     '1.2.3.4' is never split into ['1','2','3','4'], that 'CVE-2021-44228'
     survives as one token, etc.
+
+    NFKC and ligature folding apply only to prose segments between IOC matches
+    so structured IDs (CVE, ATT&CK) still match ASCII-oriented regexes.
     """
     tokens: list[str] = []
     pos = 0
     for match in _IOC_RE.finditer(text):
-        tokens.extend(_split_prose(text[pos : match.start()]))
+        tokens.extend(_split_prose(_normalize_text(text[pos : match.start()])))
         tokens.append(match.group().lower())
         pos = match.end()
-    tokens.extend(_split_prose(text[pos:]))
+    tokens.extend(_split_prose(_normalize_text(text[pos:])))
     return tokens
 
 

@@ -12,10 +12,8 @@ class TaskType(Enum):
 class LLMRouter:
     """Config-driven model selector.
 
-    Priority: Ollama (single model for all tasks) > Groq (tiered) > Anthropic.
-    HyDE     → ollama_model / groq_query_model    (fast)
-    Analysis → ollama_model / groq_analysis_model (capable)
-    Report   → ollama_model / groq_report_model   (capable)
+    When ``ollama_enabled``: one ``ollama_model`` for all tasks.
+    Otherwise (Groq): tiered — HyDE uses ``groq_query_model`` (default ``llama-3.1-8b-instant``).
     """
 
     def __init__(self, settings: object) -> None:

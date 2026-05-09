@@ -29,12 +29,24 @@ class HyDERetriever:
         base_retriever: object,
         llm_client: object,
         settings: object,
-        llm_provider: str = "anthropic",
+        llm_provider: str = "",
     ) -> None:
         self._base = base_retriever
-        self._llm = llm_client
         self._settings = settings
-        self._llm_provider = llm_provider
+        # Accept (provider, client) tuple from build_llm_client, or a bare client.
+        if isinstance(llm_client, tuple) and len(llm_client) == 2:
+            detected_provider, bare_client = llm_client  # type: ignore[misc]
+            self._llm = bare_client
+            self._llm_provider = llm_provider or str(detected_provider)
+        else:
+            self._llm = llm_client
+            if llm_provider:
+                self._llm_provider = llm_provider
+            elif hasattr(llm_client, "chat"):
+                # OpenAI-compatible interface (RetryingGroqClient or RetryingOllamaClient)
+                self._llm_provider = "ollama" if getattr(settings, "ollama_enabled", False) else "groq"
+            else:
+                self._llm_provider = "anthropic"
 
     def search(
         self,

@@ -25,6 +25,7 @@ cti-rag-venv/
 .coverage
 htmlcov/
 coverage.xml
+help/*
 
 # Type checking / linting
 .mypy_cache/

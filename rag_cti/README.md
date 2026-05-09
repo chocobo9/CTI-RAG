@@ -103,11 +103,12 @@ EMBEDDING_MODEL=BAAI/bge-m3
 ### 3. Ingest the corpus
 
 ```bash
-python scripts/seed_mitre.py          # MITRE ATT&CK techniques
-python scripts/fetch_otx.py           # OTX threat reports
-python scripts/fetch_whois_pdns.py    # WHOIS / pDNS records
-python scripts/seed_pdfs.py           # internal PDF reports
+python scripts/seed_mitre.py    # MITRE ATT&CK techniques
+python scripts/fetch_otx.py     # OTX threat reports
+python scripts/seed_pdfs.py     # internal PDF reports
 ```
+
+> WHOIS and pDNS connectors exist in `src/rag_cti/connectors/` (`whois_connector.py`, `passive_dns.py`) but no standalone ingestion script is included in this release.
 
 ### 4. Query
 

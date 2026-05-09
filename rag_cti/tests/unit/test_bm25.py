@@ -66,6 +66,60 @@ def test_tokenize_empty_string() -> None:
     assert tokenize("") == []
 
 
+@pytest.mark.parametrize(
+    "ip_token",
+    [
+        "0.0.0.0",
+        "192.168.1.254",
+        "255.255.255.255",
+        "10.0.0.0/8",
+        "172.16.0.0/32",
+    ],
+)
+def test_tokenize_ipv4_strict_octets_accepted(ip_token: str) -> None:
+    tokens = tokenize(f"src {ip_token} dst")
+    assert ip_token.lower() in tokens
+
+
+@pytest.mark.parametrize(
+    "bogus_ip",
+    [
+        "256.1.2.3",
+        "1.866.320.478",
+        "999.1.2.3",
+        "192.168.300.1",
+    ],
+)
+def test_tokenize_ipv4_strict_octets_rejected_as_single_token(bogus_ip: str) -> None:
+    tokens = tokenize(f"x {bogus_ip} y")
+    assert bogus_ip.lower() not in tokens
+
+
+def test_tokenize_ipv4_invalid_mask_splits_remainder() -> None:
+    """Mask >32 must not attach to IPv4 IOC token."""
+    tokens = tokenize("route 10.0.0.0/33 blocked")
+    assert "10.0.0.0" in tokens
+    assert "10.0.0.0/33" not in tokens
+
+
+def test_tokenize_ligature_confi_maps_to_ascii_word() -> None:
+    tokens = tokenize("remain con\uFB01dent under pressure")
+    assert "confident" in tokens
+
+
+def test_tokenize_accent_preservation_french() -> None:
+    tokens = tokenize("discussion au café ce matin")
+    assert any("caf" in t for t in tokens)
+
+
+def test_tokenize_prose_drops_overlong_token_keeps_sha256() -> None:
+    long_word = "a" * 65
+    sha = "f" * 64
+    tokens = tokenize(f"{long_word} hash {sha} end")
+    assert long_word.lower() not in tokens
+    assert sha in tokens
+
+
 # ---------------------------------------------------------------------------
 # BM25SparseEncoder.fit
 # ---------------------------------------------------------------------------

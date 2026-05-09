@@ -65,7 +65,7 @@ def mock_settings() -> MagicMock:
     settings.anthropic_api_key.get_secret_value.return_value = "sk-ant-test"
     settings.qdrant_url = "http://localhost:6333"
     settings.qdrant_collection = "cti_chunks_test"
-    settings.embedding_model = "bge-m3"
+    settings.embedding_model = "BAAI/bge-m3"
     settings.retrieval_top_k = 5
     settings.hybrid_alpha = 0.5
     settings.hyde_enabled = False

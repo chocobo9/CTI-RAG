@@ -11,12 +11,13 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
-    # Ollama (local models — priority provider when ollama_enabled=True)
-    ollama_enabled: bool = True
+    # Ollama (local OpenAI-compatible API). Default off — use GROQ_API_KEY / ANTHROPIC_API_KEY for hosted LLMs.
+    ollama_enabled: bool = False
     ollama_base_url: str = "http://localhost:11434/v1"
-    ollama_model: str = "qwen2.5"
+    ollama_model: str = "llama3.1:8b"
 
     # Anthropic
     anthropic_api_key: SecretStr = SecretStr("")
@@ -34,14 +35,15 @@ class Settings(BaseSettings):
     # LangSmith
     langsmith_api_key: SecretStr = SecretStr("")
     langsmith_project: str = "rag-cti"
+    langchain_tracing_v2: bool = True
 
     # Qdrant
     qdrant_url: str = "http://localhost:6333"
     qdrant_api_key: SecretStr = SecretStr("")
     qdrant_collection: str = "cti_chunks"
 
-    # Embedding
-    embedding_model: str = "bge-m3"
+    # Embedding (must be a HF repo id or local path; bare "bge-m3" is not valid on the Hub)
+    embedding_model: str = "BAAI/bge-m3"
 
     # Retrieval
     retrieval_top_k: int = 10
@@ -66,13 +68,17 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_required_secrets(self) -> Settings:
+        """HyDE / generation need an LLM; pure retrieval (query) does not when HyDE is off."""
+        if not self.hyde_enabled:
+            return self
         has_ollama = self.ollama_enabled
         has_anthropic = bool(self.anthropic_api_key.get_secret_value())
         has_groq = bool(self.groq_api_key.get_secret_value())
         if not has_ollama and not has_anthropic and not has_groq:
             raise ValueError(
-                "At least one LLM provider is required: "
-                "set OLLAMA_ENABLED=true, ANTHROPIC_API_KEY, or GROQ_API_KEY"
+                "HyDE is enabled but no LLM provider is configured: "
+                "set GROQ_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_ENABLED=true for local Ollama, "
+                "or set HYDE_ENABLED=false for retrieval-only."
             )
         return self
 
