@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//d/coding repo/agentic782/Agent_full/**)",
-      "Bash(python -m pytest tests/unit/test_pdf_parser.py -v --tb=long)",
-      "Bash(python -m pytest tests/unit/test_pdf_parser.py --tb=long -q)"
-    ]
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//tmp/everything-claude-code/rules/**)",
-      "Read(//c/Users/zihan/.claude/rules/**)",
-      "Bash(python -m pytest tests/unit/test_dense_retriever.py -v)"
-    ]
-  }
-}
