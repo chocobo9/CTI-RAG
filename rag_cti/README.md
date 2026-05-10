@@ -51,7 +51,7 @@ flowchart TD
 |---|---|
 | Embedding | `BAAI/bge-m3` via `sentence-transformers` |
 | Vector store | Qdrant (hybrid: dense cosine + BM25 sparse) |
-| Sparse encoder | `rank-bm25` with custom vocab |
+| Sparse encoder | Custom BM25 sparse vectors (IOC-preserving tokenizer); optional `rank-bm25` ships with `[eval]` |
 | LLM (default) | Groq — `llama-3.3-70b-versatile` (analysis), `llama-3.1-8b-instant` (HyDE) |
 | LLM (alt) | Ollama (local), Anthropic Claude |
 | CTI sources | MITRE ATT&CK STIX, OTX, WHOIS, pDNS, PDF reports |
@@ -68,10 +68,34 @@ flowchart TD
 
 ### 1. Install
 
+Create a venv from the `rag_cti/` directory (this package’s `pyproject.toml` lives here):
+
 ```bash
+cd rag_cti
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
 ```
+
+Pick an extra group (defined in `pyproject.toml`):
+
+| Goal | Command |
+|------|---------|
+| **Core only** — ingest embeddings, hybrid retrieval, no LLM / no Typer CLI | `pip install -e .` |
+| **Interactive demo** — `rag-cti query` + answer generation | `pip install -e ".[demo]"` |
+| **Everything runtime** — PDF ingest, connectors, eval, CLI, tracing | `pip install -e ".[all]"` |
+| **Contributors** — `[all]` + pytest, ruff, mypy, bandit, notebooks | `pip install -e ".[dev]"` |
+
+Composable extras (install only what you need):
+
+| Extra | Adds |
+|-------|------|
+| `generation` | Groq / Anthropic / Ollama-compatible clients, structured outputs |
+| `pdf` | PDF parsing for `scripts/seed_pdfs.py` |
+| `connectors` | STIX tooling for connector-heavy workflows |
+| `eval` | TechniqueRAG / RAGAS / datasets / optional `rank-bm25` |
+| `cli` | Typer + Rich (`rag-cti` entrypoint) |
+| `tracing` | LangSmith |
+
+Example: core retrieval plus CLI and PDFs: `pip install -e ".[cli,pdf]"`.
 
 ### 2. Configure
 
@@ -94,7 +118,7 @@ GROQ_API_KEY=gsk_...              # primary LLM provider
 
 EMBEDDING_MODEL=BAAI/bge-m3
 
-# Optional — enables LangSmith tracing
+# Optional — LangSmith tracing (pip install -e ".[tracing]")
 # LANGCHAIN_API_KEY=ls__...
 # LANGCHAIN_TRACING_V2=true
 # LANGCHAIN_PROJECT=cti-rag
@@ -102,15 +126,19 @@ EMBEDDING_MODEL=BAAI/bge-m3
 
 ### 3. Ingest the corpus
 
+Requires at least the core install; PDF ingestion needs `[pdf]`:
+
 ```bash
-python scripts/seed_mitre.py    # MITRE ATT&CK techniques
-python scripts/fetch_otx.py     # OTX threat reports
-python scripts/seed_pdfs.py     # internal PDF reports
+python scripts/seed_mitre.py    # MITRE ATT&CK techniques (core)
+python scripts/fetch_otx.py     # OTX threat reports (core)
+python scripts/seed_pdfs.py     # internal PDF reports — pip install -e ".[pdf]"
 ```
 
-> WHOIS and pDNS connectors exist in `src/rag_cti/connectors/` (`whois_connector.py`, `passive_dns.py`) but no standalone ingestion script is included in this release.
+> WHOIS and pDNS connectors exist in `src/rag_cti/connectors/` (`whois_connector.py`, `passive_dns.py`) but no standalone ingestion script is included in this release. Use `[connectors]` when working with STIX-heavy connector code paths.
 
 ### 4. Query
+
+Install `[demo]` or `[cli]` + `[generation]` so the `rag-cti` CLI and synthesis stack are available:
 
 ```bash
 # CLI
@@ -123,7 +151,11 @@ answer = rag_cti.generate("Explain T1566", result)
 print(answer.answer)
 ```
 
+Core retrieval works with `pip install -e .`; `generate` needs `[generation]`.
+
 ### 5. Evaluate
+
+Install `[eval]` and `[cli]` (or `[all]`). External benchmark needs HuggingFace access.
 
 ```bash
 # External benchmark (requires HuggingFace access)
