@@ -8,38 +8,40 @@ A Retrieval-Augmented Generation system for Cyber Threat Intelligence (CTI). Giv
 
 ```mermaid
 flowchart TD
-    subgraph Ingestion
-        A[MITRE ATT&CK JSON] --> P[Chunker / Normaliser]
-        B[OTX Reports] --> P
-        C[WHOIS / pDNS] --> P
-        D[Internal PDFs] --> P
-        P --> E[BGE-M3 Embedder]
-        E --> F[(Qdrant\nhybrid collection\ndense + BM25 sparse)]
+    subgraph ingest["Ingestion"]
+        A["MITRE ATTACK JSON"] --> P["Chunker / Normaliser"]
+        B["OTX Reports"] --> P
+        C["WHOIS / pDNS"] --> P
+        D["Internal PDFs"] --> P
+        P --> E["BGE-M3 Embedder"]
+        E --> F[(Qdrant hybrid dense + BM25 sparse)]
     end
 
-    subgraph Query Pipeline
-        G[User Query] --> H{HyDE?}
-        H -- yes --> I[LLM: generate\nhypothetical doc]
-        H -- no  --> J[Raw query]
-        I --> K[BGE-M3 embed]
+    subgraph query["Query Pipeline"]
+        G["User Query"] --> H{HyDE?}
+        H -->|yes| I["LLM hypothetical doc"]
+        H -->|no| J["Raw query"]
+        I --> K["BGE-M3 embed"]
         J --> K
-        K --> L[Dense search]
-        G --> M[BM25 sparse\nencoder]
-        M --> N[Sparse search]
-        L & N --> O[Reciprocal Rank\nFusion]
-        O --> Q[Generator\nGroq / Ollama / Anthropic]
-        Q --> R[GeneratedAnswer\nwith cited chunk IDs]
+        K --> L["Dense search"]
+        G --> M["BM25 sparse encoder"]
+        M --> N["Sparse search"]
+        L --> O["Reciprocal Rank Fusion"]
+        N --> O
+        O --> Q["Generator Groq Ollama Anthropic"]
+        Q --> R["GeneratedAnswer cited chunks"]
     end
 
-    subgraph Evaluation
-        S[TechniqueRAG\nbenchmark] --> T[evaluate_retriever]
-        U[Custom query set\nJSONL] --> V[evaluate_on_query_set]
-        T & V --> W[Hit@k · MRR · nDCG@k]
+    subgraph evaluation["Evaluation"]
+        S["TechniqueRAG benchmark"] --> T["evaluate_retriever"]
+        U["Custom query set JSONL"] --> V["evaluate_on_query_set"]
+        T --> W["Hit at k MRR nDCG"]
+        V --> W
     end
 
-    subgraph Observability
-        X[LangSmith tracing\n@traced decorator] -.-> Query Pipeline
-        Y[rag-cti metrics CLI] -.-> W
+    subgraph observability["Observability"]
+        X["LangSmith tracing"] -.-> G
+        Y["rag-cti metrics CLI"] -.-> W
     end
 ```
 
