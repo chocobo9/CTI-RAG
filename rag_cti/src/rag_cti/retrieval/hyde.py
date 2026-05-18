@@ -69,7 +69,8 @@ class HyDERetriever:
         hypothetical_doc = self._generate_hypothetical_doc(query)
         search_query = hypothetical_doc if hypothetical_doc is not None else query
         results: list[RetrievalResult] = self._base.search(
-            search_query, top_k=top_k, source_filter=source_filter
+            search_query, top_k=top_k, source_filter=source_filter,
+            sparse_query=query,
         )
         elapsed_ms = (time.perf_counter() - t0) * 1000
         logger.debug(

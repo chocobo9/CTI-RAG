@@ -252,3 +252,108 @@ def test_run_result_unchanged_when_tracing_metadata_added() -> None:
     assert result.query == "query for tracing test"
     assert len(result.results) == 1
     assert result.results[0].document.id == "x1"
+
+
+# ---------------------------------------------------------------------------
+# Tests — reranker integration (Step 4, tests 7-9)
+# ---------------------------------------------------------------------------
+
+class _FakeSettingsWithReranker:
+    def __init__(
+        self,
+        retrieval_top_k: int = 10,
+        reranker_enabled: bool = False,
+        reranker_model: str = "BAAI/bge-reranker-v2-m3",
+        reranker_candidates_k: int = 50,
+    ) -> None:
+        self.retrieval_top_k = retrieval_top_k
+        self.hyde_enabled = False
+        self.reranker_enabled = reranker_enabled
+        self.reranker_model = reranker_model
+        self.reranker_candidates_k = reranker_candidates_k
+
+
+def test_build_pipeline_reranker_enabled_uses_cross_encoder() -> None:
+    settings = _FakeSettingsWithReranker(reranker_enabled=True)
+    with patch("rag_cti.retrieval.reranker.CrossEncoderReranker") as mock_cls:
+        mock_cls.return_value = _FakeReranker()
+        pipeline = build_pipeline(
+            settings=settings,
+            store=_FakeStore(),
+            embedder=_FakeEmbedder(),
+            encoder=_FakeEncoder(),
+        )
+    mock_cls.assert_called_once_with(model_name="BAAI/bge-reranker-v2-m3")
+    assert isinstance(pipeline, Pipeline)
+
+
+def test_build_pipeline_reranker_disabled_uses_noop() -> None:
+    from rag_cti.retrieval.reranker import NoOpReranker
+
+    settings = _FakeSettingsWithReranker(reranker_enabled=False)
+    pipeline = build_pipeline(
+        settings=settings,
+        store=_FakeStore(),
+        embedder=_FakeEmbedder(),
+        encoder=_FakeEncoder(),
+    )
+    assert isinstance(pipeline._reranker, NoOpReranker)
+
+
+def test_build_pipeline_no_reranker_field_uses_noop() -> None:
+    from rag_cti.retrieval.reranker import NoOpReranker
+
+    pipeline = build_pipeline(
+        settings=_FakeSettings(),
+        store=_FakeStore(),
+        embedder=_FakeEmbedder(),
+        encoder=_FakeEncoder(),
+    )
+    assert isinstance(pipeline._reranker, NoOpReranker)
+
+
+def test_over_fetch_when_reranker_enabled() -> None:
+    retriever = _FakeRetriever()
+    settings = _FakeSettingsWithReranker(
+        retrieval_top_k=10,
+        reranker_enabled=True,
+        reranker_candidates_k=50,
+    )
+    pipeline = Pipeline(
+        retriever=retriever,
+        reranker=_FakeReranker(),
+        settings=settings,
+    )
+    pipeline.run("APT29 lateral movement techniques")
+    assert retriever.last_top_k == 50
+
+
+def test_no_over_fetch_when_reranker_disabled() -> None:
+    retriever = _FakeRetriever()
+    settings = _FakeSettingsWithReranker(
+        retrieval_top_k=10,
+        reranker_enabled=False,
+        reranker_candidates_k=50,
+    )
+    pipeline = Pipeline(
+        retriever=retriever,
+        reranker=_FakeReranker(),
+        settings=settings,
+    )
+    pipeline.run("credential access via Mimikatz")
+    assert retriever.last_top_k == 10
+
+
+def test_trace_metadata_includes_reranker_and_fetch_k() -> None:
+    retriever = _FakeRetriever([_make_result("mitre_T1566_c0")])
+    settings = _FakeSettingsWithReranker(reranker_enabled=True, reranker_candidates_k=50)
+    pipeline = Pipeline(
+        retriever=retriever,
+        reranker=_FakeReranker(),
+        settings=settings,
+    )
+    with patch("rag_cti.retrieval.pipeline.add_trace_metadata") as mock_meta:
+        pipeline.run("supply chain compromise techniques")
+    kwargs = mock_meta.call_args.kwargs
+    assert kwargs["reranker"] == "_FakeReranker"
+    assert kwargs["fetch_k"] == 50

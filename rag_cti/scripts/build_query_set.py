@@ -78,62 +78,99 @@ class FuzzyQueryResponse(BaseModel):
 
 _PRECISE_SYSTEM = """\
 You are building an evaluation test set for a Cyber Threat Intelligence retrieval system.
-Your task: given a single corpus chunk, write ONE precise search query that would retrieve this EXACT chunk.
+Your task: given a single corpus chunk, write ONE precise search query that a real SOC analyst \
+would actually type into a search box to find this information.
 
-Rules:
-- FORBIDDEN: Do NOT use ATT&CK technique IDs (T1059, T1027.006, etc.) as the query anchor — \
-they appear in hundreds of chunks and are useless for distinguishing retrieval
-- FORBIDDEN: Do NOT use the technique name alone (e.g. "Office Template Macros") — too generic
-- REQUIRED: Anchor on a CONCRETE detail unique to this specific chunk: a specific tool name, \
-malware family, exact command or registry path, CVE number, domain, IP, file hash, \
-actor group name, campaign name, or a distinctive attack scenario described in the chunk body
-- Write the query as a natural analyst search string or question, NOT a keyword dump
-- If the chunk describes a technique abstractly with no concrete examples, use the most specific \
-behavior phrase from the description (e.g. "hollowing suspended process to evade AV scan")
-- Copy the chunk_id field back EXACTLY as given — do not alter it
+CRITICAL RULES:
+- Write SHORT queries (3-10 words). Analysts do not type full sentences into search boxes.
+- Use the key identifier (malware name, CVE, tool name, actor name) plus 1-2 context words at most.
+- Do NOT paraphrase or summarize the chunk content. Do NOT write "What technique involves..." style questions.
+- Do NOT reuse distinctive phrases from the chunk body — the retrieval system should find the chunk \
+  from a realistic query, not from a copy of its own text.
+- FORBIDDEN: ATT&CK technique IDs (T1059, T1027.006, etc.) as query anchors.
 
-Good examples:
-- "What malware used Ethereum smart contracts as a C2 channel?"
-- "CVE-2023-46604 Apache ActiveMQ exploit in the wild"
-- "Kinsing cryptominer targeting Docker API"
-- "UltraVNC deployed as persistent remote access by threat actor"
-- "DGA-based botnet using registry key Performance for persistence"
+GOOD examples (short, realistic analyst searches):
+- "NGate NFC malware"
+- "CVE-2023-46604 ActiveMQ"
+- "FormBook DLL sideloading"
+- "Kinsing Docker exploit"
+- "BeigeBurrow tunneling tool"
+- "OAuth device code phishing Microsoft"
+- "Interlock rundll32 execution"
+
+BAD examples (too descriptive, paraphrasing chunk):
+- "What malware variant hides in trojanized NFC payment applications?" (full sentence, reuses chunk phrasing)
+- "What tactic involves disabling dedicated hardware encryption on network devices?" (reading comprehension)
+- "Adversaries purchasing exploits from third-party entities" (vague, not how analysts search)
+
+Copy the chunk_id field back EXACTLY as given — do not alter it.
 """
 
 _SEMANTIC_SYSTEM = """\
 You are building an evaluation test set for a Cyber Threat Intelligence retrieval system.
-Your task: given a single corpus chunk, write ONE semantic search query about the TOPIC of this chunk.
+Your task: given a single corpus chunk, write ONE conceptual question that an analyst might ask \
+when researching this CLASS of threat — without having seen this specific chunk.
 
-Rules:
-- Describe the technique, tactic, behavior, or threat type conceptually
-- Do NOT use exact IOC values, CVE IDs, specific tool names, or malware family names from the chunk
-- Phrase the query as a general question an analyst would ask about this class of threat
-- The query should retrieve this chunk AND conceptually similar chunks
-- Copy the chunk_id field back EXACTLY as given — do not alter it
+CRITICAL RULES:
+- The query must be answerable by this chunk but must NOT use specific names, IOCs, CVEs, or tool \
+  names that appear in the chunk.
+- Write it as a question a junior analyst would ask a senior colleague, not as a search engine query.
+- Keep it under 20 words.
+- Do NOT start with "What techniques are used by..." or "How do threat actors..." — these are overused \
+  and too generic. Be specific about the SCENARIO.
+- The query should be hard enough that a generic cybersecurity FAQ would NOT answer it — \
+  it should require actual CTI report content.
+
+GOOD examples:
+- "Can ransomware encrypt ESXi VMs without root access?"
+- "How would you detect C2 over DNS tunneling in enterprise logs?"
+- "What makes supply chain attacks on npm packages hard to catch?"
+- "Why do APTs prefer living-off-the-land over custom malware?"
+
+BAD examples:
+- "How are cyber threat actors evolving their tactics?" (too vague, any article answers this)
+- "What tactics are used by law enforcement to disrupt ransomware?" (generic, not CTI-specific)
+- "How do adversaries use social engineering for initial access?" (textbook question)
+
+Copy the chunk_id field back EXACTLY as given — do not alter it.
 """
 
 _FUZZY_SYSTEM = """\
-You are a CTI analyst experiencing "memory fog" — you vaguely remember reading threat reports \
-but can only recall fragments and impressions, not specifics.
+You are a CTI analyst with fragmented memory of threat reports you read weeks ago. \
+You are trying to re-find something specific but can only remember fragments.
 
-Given several corpus chunks summarised below, write ONE memory-fog search query obeying ALL rules:
+Given several corpus chunks, write ONE memory-fragment query that simulates how a real analyst \
+talks when trying to re-find a report.
 
-1. Use ONLY vague, conceptual language — NO exact technique IDs (T1059, etc.), malware names, \
-tool names, CVE numbers, or specific IOCs from the chunks
-2. Simulate PARTIAL knowledge: you know the victim industry OR threat actor region, \
-but NOT the specific tool or technique used
-3. Use hedging language such as: "something about", "I think it involved", \
-"vaguely recall", "related to", "might have been"
-4. Describe the VIBE or scenario impression — not the technical facts
-5. The query must read as natural analyst shorthand, not a technical specification
+CRITICAL RULES:
+- NO specific IOCs, CVE numbers, malware names, or ATT&CK IDs — you forgot those.
+- Write in CASUAL, FRAGMENTED style — not grammatically perfect sentences.
+- Each query MUST be structurally different. Vary between these patterns:
+  * Half-remembered detail: "that thing where they used Discord as a C2"
+  * Victim-anchored: "the one about the hospital getting hit, was it Conti?"
+  * Temporal: "something from last month about ESXi, who published that?"
+  * Visual memory: "there was a diagram showing lateral movement through RDP jump boxes"
+  * Colleague reference: "what was that report Sarah shared about banking trojans in SEA?"
+  * Partial name: "something-Locker or maybeLock-something, targeted VMware"
+- FORBIDDEN patterns (too formulaic):
+  * "something about X, vaguely recall Y, might have been Z" — this template is banned
+  * "I think it involved something about..." — banned
+  * Any query that reads like a structured sentence with hedging words inserted
+- Maximum 25 words. Real memory fragments are SHORT.
 
-Good examples of memory-fog queries:
-- "something about Eastern European actors going after bank login pages, credential theft vibes"
-- "I think I read about a healthcare breach involving file tampering, or maybe exfil?"
-- "vaguely recall a report on energy sector intrusions, remote access somehow"
-- "wasn't there something about persistence on Windows endpoints tied to a nation-state group?"
+GOOD examples:
+- "that ESXi ransomware, was it Play or BlackCat?"
+- "the one about North Korean devs on freelance platforms"
+- "hospital breach, data exfil, maybe February?"
+- "who was using Telegram bots for C2 again"
+- "cloud token theft thing, Azure AD or was it AWS"
 
-Also extract from the chunk metadata: ATT&CK technique IDs (if any) and the source tags present.
+BAD examples:
+- "I vaguely recall something about threat actors using browser modifications for persistence, \
+   might have been related to credential access" (formulaic, too long, too structured)
+- "something about nation-state actors from Asia targeting cloud services" (generic, no fragment)
+
+Extract ATT&CK technique IDs and source tags from chunk metadata.
 """
 
 # ---------------------------------------------------------------------------

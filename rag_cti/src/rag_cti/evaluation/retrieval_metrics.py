@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from rag_cti._logging import get_logger
@@ -134,11 +134,24 @@ class CategoryMetrics:
 
 
 @dataclass(frozen=True)
+class PerQueryResult:
+    query_id: str
+    query_text: str
+    category: str
+    expected_doc_ids: list[str]
+    retrieved_doc_ids: list[str]
+    hit_at_k: dict[int, bool]
+    reciprocal_rank: float
+    target_rank: int | None
+
+
+@dataclass(frozen=True)
 class QuerySetEvalResult:
     config: str
     k_values: list[int]
     overall: CategoryMetrics
     by_category: dict[str, CategoryMetrics]
+    per_query: list[PerQueryResult] = field(default_factory=list)
 
 
 def ndcg_at_k(
@@ -205,6 +218,7 @@ def evaluate_on_query_set(
     cat_ndcg: dict[str, dict[int, float]] = defaultdict(lambda: dict.fromkeys(k_values, 0.0))
     cat_rr: dict[str, float] = defaultdict(float)
     cat_n: dict[str, int] = defaultdict(int)
+    per_query_results: list[PerQueryResult] = []
 
     for i, record in enumerate(records):
         results = retriever.search(record.query, top_k=max_k)
@@ -215,11 +229,31 @@ def evaluate_on_query_set(
         def _is_rel(r: Any, _rec: QuerySetRecord = record) -> bool:
             return _is_query_set_match(r, _rec)
 
+        query_hits: dict[int, bool] = {}
         for k in k_values:
-            if _hit_at_k_qs(results, record, k):
+            hit = _hit_at_k_qs(results, record, k)
+            query_hits[k] = hit
+            if hit:
                 cat_hits[cat][k] += 1
             cat_ndcg[cat][k] += ndcg_at_k(results, _is_rel, k, n_relevant=n_rel)
-        cat_rr[cat] += _reciprocal_rank_qs(results, record)
+
+        rr = _reciprocal_rank_qs(results, record)
+        cat_rr[cat] += rr
+
+        target_rank: int | None = None
+        if rr > 0.0:
+            target_rank = round(1.0 / rr)
+
+        per_query_results.append(PerQueryResult(
+            query_id=record.query_id,
+            query_text=record.query,
+            category=cat,
+            expected_doc_ids=record.expected_chunk_ids,
+            retrieved_doc_ids=[r.document.id for r in results],
+            hit_at_k=query_hits,
+            reciprocal_rank=rr,
+            target_rank=target_rank,
+        ))
 
         if (i + 1) % 10 == 0:
             logger.info("query set eval progress", completed=i + 1, total=len(records), config=config)
@@ -252,4 +286,5 @@ def evaluate_on_query_set(
         k_values=list(k_values),
         overall=overall,
         by_category=by_category,
+        per_query=per_query_results,
     )

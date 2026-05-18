@@ -31,8 +31,13 @@ class Pipeline:
     ) -> QueryResult:
         t0 = time.perf_counter()
         k = top_k if top_k is not None else self._settings.retrieval_top_k
+
+        fetch_k = k
+        if getattr(self._settings, "reranker_enabled", False):
+            fetch_k = max(k, getattr(self._settings, "reranker_candidates_k", k))
+
         results: list[RetrievalResult] = self._retriever.search(
-            query, top_k=k, source_filter=source_filter
+            query, top_k=fetch_k, source_filter=source_filter
         )
         results = self._reranker.rerank(query, results)
         results = results[:k]
@@ -43,6 +48,8 @@ class Pipeline:
             elapsed_ms=round(elapsed_ms, 1),
             chunk_ids=[r.document.id for r in results],
             scores=[round(r.score, 4) for r in results],
+            reranker=type(self._reranker).__name__,
+            fetch_k=fetch_k,
         )
         logger.debug(
             "pipeline run complete",
@@ -80,4 +87,11 @@ def build_pipeline(
         )
     else:
         retriever = hybrid
-    return Pipeline(retriever=retriever, reranker=NoOpReranker(), settings=settings)
+    if getattr(settings, "reranker_enabled", False):
+        from rag_cti.retrieval.reranker import CrossEncoderReranker
+
+        reranker = CrossEncoderReranker(model_name=settings.reranker_model)
+    else:
+        reranker = NoOpReranker()
+
+    return Pipeline(retriever=retriever, reranker=reranker, settings=settings)

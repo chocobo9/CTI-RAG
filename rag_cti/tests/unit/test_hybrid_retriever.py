@@ -37,7 +37,8 @@ class _FakeRetriever:
 
 
 class _FakeSettings:
-    pass
+    def __init__(self, rrf_candidate_multiplier: int = 1) -> None:
+        self.rrf_candidate_multiplier = rrf_candidate_multiplier
 
 
 # ---------------------------------------------------------------------------
@@ -125,3 +126,79 @@ def test_empty_dense_returns_sparse_only() -> None:
 def test_both_empty_returns_empty() -> None:
     retriever = HybridRetriever(dense=_FakeRetriever(), sparse=_FakeRetriever(), settings=_FakeSettings())
     assert retriever.search("query") == []
+
+
+# ---------------------------------------------------------------------------
+# Tests — sparse_query routing
+# ---------------------------------------------------------------------------
+
+def test_sparse_query_routes_different_strings_to_retrievers() -> None:
+    """When sparse_query is provided, dense gets `query` and sparse gets `sparse_query`."""
+    dense = _FakeRetriever()
+    sparse = _FakeRetriever()
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=_FakeSettings())
+    retriever.search("hypothetical document about APT28", sparse_query="CVE-2023-34362 exploitation")
+    assert dense.last_query == "hypothetical document about APT28"
+    assert sparse.last_query == "CVE-2023-34362 exploitation"
+
+
+def test_sparse_query_none_falls_back_to_main_query() -> None:
+    """When sparse_query is None, both retrievers receive the same query."""
+    dense = _FakeRetriever()
+    sparse = _FakeRetriever()
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=_FakeSettings())
+    retriever.search("ransomware lateral movement", sparse_query=None)
+    assert dense.last_query == "ransomware lateral movement"
+    assert sparse.last_query == "ransomware lateral movement"
+
+
+# ---------------------------------------------------------------------------
+# Tests — RRF candidate multiplier
+# ---------------------------------------------------------------------------
+
+def test_candidate_multiplier_expands_internal_fetch_k() -> None:
+    """With top_k=5 and multiplier=3, each retriever should be asked for 15."""
+    dense = _FakeRetriever()
+    sparse = _FakeRetriever()
+    settings = _FakeSettings(rrf_candidate_multiplier=3)
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+    retriever.search("query", top_k=5)
+    assert dense.last_top_k == 15
+    assert sparse.last_top_k == 15
+
+
+def test_candidate_multiplier_output_respects_requested_top_k() -> None:
+    """Final output length must equal requested top_k, not the expanded pool."""
+    dense_results = [_make_result(f"d{i}", 1.0 - i * 0.01, i) for i in range(15)]
+    sparse_results = [_make_result(f"s{i}", 0.9 - i * 0.01, i, "sparse") for i in range(15)]
+    dense = _FakeRetriever(dense_results)
+    sparse = _FakeRetriever(sparse_results)
+    settings = _FakeSettings(rrf_candidate_multiplier=3)
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+    results = retriever.search("query", top_k=5)
+    assert len(results) <= 5
+
+
+def test_candidate_multiplier_default_1_no_expansion() -> None:
+    """With default multiplier=1, fetch_k should equal top_k."""
+    dense = _FakeRetriever()
+    sparse = _FakeRetriever()
+    settings = _FakeSettings(rrf_candidate_multiplier=1)
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+    retriever.search("query", top_k=7)
+    assert dense.last_top_k == 7
+    assert sparse.last_top_k == 7
+
+
+def test_candidate_multiplier_missing_from_settings_defaults_to_1() -> None:
+    """If settings object lacks rrf_candidate_multiplier, getattr fallback is 1."""
+
+    class _BareSettings:
+        pass
+
+    dense = _FakeRetriever()
+    sparse = _FakeRetriever()
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=_BareSettings())
+    retriever.search("query", top_k=5)
+    assert dense.last_top_k == 5
+    assert sparse.last_top_k == 5

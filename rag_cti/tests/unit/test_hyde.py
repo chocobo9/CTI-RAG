@@ -65,12 +65,14 @@ class _FakeBaseRetriever:
         self.last_query: str = ""
         self.last_top_k: int = 0
         self.last_source_filter = None
+        self.last_sparse_query: str | None = None
         self._results = results or []
 
-    def search(self, query: str, top_k: int = 10, source_filter=None) -> list[RetrievalResult]:
+    def search(self, query: str, top_k: int = 10, source_filter=None, sparse_query: str | None = None) -> list[RetrievalResult]:
         self.last_query = query
         self.last_top_k = top_k
         self.last_source_filter = source_filter
+        self.last_sparse_query = sparse_query
         return self._results
 
 
@@ -294,3 +296,47 @@ def test_generate_hypothetical_doc_called_through_tracing_noop() -> None:
     retriever = HyDERetriever(base, groq, _FakeSettings(), llm_provider="groq")
     retriever.search("how does APT group use spearphishing for initial access")
     assert base.last_query == "A hypothetical threat intelligence passage."
+
+
+# ---------------------------------------------------------------------------
+# Tests — HyDE query routing (sparse gets original query)
+# ---------------------------------------------------------------------------
+
+def test_hyde_passes_original_query_as_sparse_query() -> None:
+    """BM25 must receive the original query, not the hypothetical document."""
+    base = _FakeBaseRetriever()
+    llm = _FakeLLMClient("Hypothetical passage about CVE exploitation in the wild.")
+    query = "CVE-2023-34362 affected products and exploitation details"
+    retriever = HyDERetriever(base, llm, _FakeSettings())
+    retriever.search(query)
+    assert base.last_sparse_query == query
+    assert "CVE-2023-34362" in base.last_sparse_query
+
+
+def test_hyde_passes_hypothetical_doc_as_main_query() -> None:
+    """Dense retriever must receive the hypothetical document."""
+    base = _FakeBaseRetriever()
+    hypothetical = "The CVE-2023-34362 vulnerability in MOVEit Transfer allows unauthenticated RCE."
+    llm = _FakeLLMClient(hypothetical)
+    retriever = HyDERetriever(base, llm, _FakeSettings())
+    retriever.search("CVE-2023-34362 affected products and exploitation details")
+    assert base.last_query == hypothetical
+
+
+def test_hyde_bypass_does_not_set_sparse_query() -> None:
+    """When HyDE is disabled, sparse_query should not be set."""
+    base = _FakeBaseRetriever()
+    retriever = HyDERetriever(base, _FakeLLMClient(), _FakeSettings(hyde_enabled=False))
+    retriever.search("how does ransomware encrypt files on the network")
+    assert base.last_sparse_query is None
+
+
+def test_hyde_fallback_on_llm_failure_does_not_set_sparse_query() -> None:
+    """When LLM fails, search_query equals original query, so sparse_query is still passed."""
+    base = _FakeBaseRetriever()
+    llm = _FakeLLMClient(response_text=None)
+    query = "APT28 commonly used TTPs for lateral movement"
+    retriever = HyDERetriever(base, llm, _FakeSettings())
+    retriever.search(query)
+    assert base.last_query == query
+    assert base.last_sparse_query == query
