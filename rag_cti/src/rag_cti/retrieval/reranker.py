@@ -25,14 +25,22 @@ class CrossEncoderReranker:
 
     def __init__(self, model_name: str, device: str | None = None) -> None:
         self._model_name = model_name
-        self._device = device
+        self._device = device or self._detect_device()
         self._model = None
+
+    @staticmethod
+    def _detect_device() -> str:
+        try:
+            import torch
+            return "cuda" if torch.cuda.is_available() else "cpu"
+        except ImportError:
+            return "cpu"
 
     def _load(self):
         if self._model is None:
             from sentence_transformers import CrossEncoder
 
-            logger.info("loading cross-encoder model", model=self._model_name)
+            logger.info("loading cross-encoder model", model=self._model_name, device=self._device)
             self._model = CrossEncoder(self._model_name, device=self._device)
         return self._model
 
@@ -42,7 +50,7 @@ class CrossEncoderReranker:
 
         model = self._load()
         pairs = [[query, r.document.content] for r in results]
-        scores = model.predict(pairs, show_progress_bar=False)
+        scores = model.predict(pairs, show_progress_bar=False, batch_size=8)
 
         reranked = sorted(
             zip(results, scores),

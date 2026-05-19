@@ -383,7 +383,16 @@ def main() -> None:
         print("[dry-run] skipping LLM calls.")
         return
 
-    if settings.ollama_enabled:
+    deepseek_key = settings.deepseek_api_key.get_secret_value() if hasattr(settings, "deepseek_api_key") else ""
+    if deepseek_key:
+        from openai import OpenAI  # type: ignore[import]
+
+        raw = OpenAI(base_url="https://api.deepseek.com/v1", api_key=deepseek_key)
+        llm = instructor.from_openai(raw, mode=instructor.Mode.JSON)
+        if args.model == "llama-3.3-70b-versatile":
+            args.model = "deepseek-chat"
+        print(f"LLM provider: deepseek  model={args.model}")
+    elif settings.ollama_enabled:
         from openai import OpenAI  # type: ignore[import]
 
         raw = OpenAI(base_url=settings.ollama_base_url, api_key="ollama")
@@ -394,7 +403,7 @@ def main() -> None:
     else:
         groq_key = settings.groq_api_key.get_secret_value()
         if not groq_key:
-            print("ERROR: GROQ_API_KEY required (or set OLLAMA_ENABLED=true).", file=sys.stderr)
+            print("ERROR: DEEPSEEK_API_KEY, GROQ_API_KEY, or OLLAMA_ENABLED required.", file=sys.stderr)
             sys.exit(1)
         llm = instructor.from_groq(Groq(api_key=groq_key), mode=instructor.Mode.JSON)
         print(f"LLM provider: groq  model={args.model}")

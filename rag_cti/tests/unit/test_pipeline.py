@@ -344,6 +344,51 @@ def test_no_over_fetch_when_reranker_disabled() -> None:
     assert retriever.last_top_k == 10
 
 
+# ---------------------------------------------------------------------------
+# Tests — hybrid_alpha_override (OVERNIGHT_TASK bugfix)
+# ---------------------------------------------------------------------------
+
+def test_build_pipeline_alpha_1_uses_dense_retriever() -> None:
+    from rag_cti.retrieval.dense_retriever import DenseRetriever
+
+    pipeline = build_pipeline(
+        settings=_FakeSettings(),
+        store=_FakeStore(),
+        embedder=_FakeEmbedder(),
+        encoder=_FakeEncoder(),
+        hybrid_alpha_override=1.0,
+    )
+    assert isinstance(pipeline._retriever, DenseRetriever)
+
+
+def test_build_pipeline_alpha_05_uses_hybrid_retriever() -> None:
+    from rag_cti.retrieval.hybrid_retriever import HybridRetriever
+
+    pipeline = build_pipeline(
+        settings=_FakeSettings(),
+        store=_FakeStore(),
+        embedder=_FakeEmbedder(),
+        encoder=_FakeEncoder(),
+        hybrid_alpha_override=0.5,
+    )
+    assert isinstance(pipeline._retriever, HybridRetriever)
+
+
+def test_build_pipeline_alpha_none_uses_settings_default() -> None:
+    from rag_cti.retrieval.hybrid_retriever import HybridRetriever
+
+    settings = _FakeSettings()
+    settings.hybrid_alpha = 0.5
+    pipeline = build_pipeline(
+        settings=settings,
+        store=_FakeStore(),
+        embedder=_FakeEmbedder(),
+        encoder=_FakeEncoder(),
+        hybrid_alpha_override=None,
+    )
+    assert isinstance(pipeline._retriever, HybridRetriever)
+
+
 def test_trace_metadata_includes_reranker_and_fetch_k() -> None:
     retriever = _FakeRetriever([_make_result("mitre_T1566_c0")])
     settings = _FakeSettingsWithReranker(reranker_enabled=True, reranker_candidates_k=50)

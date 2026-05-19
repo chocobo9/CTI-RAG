@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Anthropic
     anthropic_api_key: SecretStr = SecretStr("")
 
+    # DeepSeek
+    deepseek_api_key: SecretStr = SecretStr("")
+
     # Groq
     groq_api_key: SecretStr = SecretStr("")
     groq_query_model: str = "llama-3.1-8b-instant"
@@ -56,8 +59,8 @@ class Settings(BaseSettings):
     # LLM tiers (Anthropic — used by HyDE when ANTHROPIC_API_KEY is set)
     llm_routing_model: str = "claude-haiku-4-5-20251001"
 
-    # Reranker
-    reranker_enabled: bool = False
+    # Reranker (hybrid+reranker is the recommended config — see README eval results)
+    reranker_enabled: bool = True
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
     reranker_candidates_k: int = 50
 

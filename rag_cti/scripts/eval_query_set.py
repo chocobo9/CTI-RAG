@@ -109,9 +109,12 @@ def main() -> None:
 
     eval_results: list[QuerySetEvalResult] = []
 
+    ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+
     for cfg in configs:
         print(f"\nRunning config: {cfg} ...")
         use_hyde = cfg == "hybrid+hyde"
+        alpha = ALPHA_MAP.get(cfg, 0.5)
         pipeline = build_pipeline(
             settings=settings,
             store=store,
@@ -119,6 +122,7 @@ def main() -> None:
             encoder=encoder,
             llm_client=llm_client if use_hyde else None,
             llm_provider=llm_provider if use_hyde else "anthropic",
+            hybrid_alpha_override=alpha,
         )
 
         class _Retriever:

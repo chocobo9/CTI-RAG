@@ -96,7 +96,7 @@ def metrics(
 def eval(
     suite: str = typer.Argument(
         "techniquerag",
-        help="Eval suite: techniquerag | retrieval",
+        help="Eval suite: techniquerag | retrieval | ragas",
     ),
     max_records: int = typer.Option(None, "--max-records", "-n", help="Limit dataset records for quick runs"),
     k: list[int] = typer.Option([1, 5, 10], "--k", help="Hit@k cutoffs (repeatable)"),
@@ -130,9 +130,109 @@ def eval(
     ),
 ) -> None:
     """Run an evaluation suite against the retrieval pipeline."""
-    if suite not in ("techniquerag", "retrieval"):
-        console.print(f"[red]Unknown suite: {suite!r}. Choose 'techniquerag' or 'retrieval'.[/red]")
+    if suite not in ("techniquerag", "retrieval", "ragas"):
+        console.print(f"[red]Unknown suite: {suite!r}. Choose 'techniquerag', 'retrieval', or 'ragas'.[/red]")
         raise typer.Exit(code=1)
+
+    # -------------------------------------------------------------------------
+    # ragas suite — generation quality via faithfulness + answer_relevancy
+    # -------------------------------------------------------------------------
+    if suite == "ragas":
+        import json
+        from dataclasses import asdict
+
+        from rag_cti.config import get_settings
+        from rag_cti.embeddings.embedder import Embedder
+        from rag_cti.evaluation.query_set import load_query_set
+        from rag_cti.evaluation.ragas_eval import run_ragas_eval
+        from rag_cti.generation.client import build_llm_client
+        from rag_cti.generation.generator import Generator
+        from rag_cti.generation.llm_router import LLMRouter
+        from rag_cti.retrieval import build_pipeline
+        from rag_cti.retrieval.bm25 import BM25SparseEncoder
+        from rag_cti.store.qdrant_store import QdrantStore
+        from rag_cti.types import GeneratedAnswer
+
+        n_queries = max_records or 10
+        configs_to_run = ["hybrid"] if config == "all" else [config]
+        vocab_path = Path(__file__).parent.parent.parent / "data" / "sparse_vocab.json"
+        ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+
+        console.print(f"Loading query set from [bold]{query_set}[/bold] ...")
+        records = load_query_set(query_set)
+        records = records[:n_queries]
+        console.print(f"  [green]{len(records)} records selected[/green]")
+
+        settings = get_settings()
+        store = QdrantStore(
+            url=settings.qdrant_url,
+            collection=settings.qdrant_collection,
+            api_key=settings.qdrant_api_key.get_secret_value(),
+        )
+        embedder = Embedder(model_name=settings.embedding_model)
+        encoder = BM25SparseEncoder.load(vocab_path) if vocab_path.exists() else BM25SparseEncoder()
+
+        deepseek_key = settings.deepseek_api_key.get_secret_value()
+        if deepseek_key:
+            from openai import OpenAI as _OpenAI
+
+            llm_client = _OpenAI(
+                api_key=deepseek_key,
+                base_url="https://api.deepseek.com/v1",
+            )
+            llm_provider = "deepseek"
+            console.print("LLM provider: [bold]deepseek[/bold]")
+        else:
+            llm_provider, llm_client = build_llm_client(settings)
+            console.print(f"LLM provider: [bold]{llm_provider}[/bold]")
+
+        class _DeepSeekRouter:
+            def model_for(self, task: object) -> str:
+                return "deepseek-chat"
+
+        router = _DeepSeekRouter() if llm_provider == "deepseek" else LLMRouter(settings)
+        generator = Generator(client=llm_client, router=router, settings=settings)
+
+        for cfg in configs_to_run:
+            console.print(f"\nRunning RAGAS eval config: [bold]{cfg}[/bold] ...")
+            alpha = ALPHA_MAP.get(cfg, 0.5)
+            use_hyde = cfg == "hybrid+hyde"
+            pipeline = build_pipeline(
+                settings=settings,
+                store=store,
+                embedder=embedder,
+                encoder=encoder,
+                llm_client=llm_client if use_hyde else None,
+                llm_provider=llm_provider if use_hyde else "anthropic",
+                hybrid_alpha_override=alpha,
+            )
+
+            answers: list[GeneratedAnswer] = []
+            for i, rec in enumerate(records):
+                console.print(f"  [{i+1}/{len(records)}] {rec.query[:60]}...")
+                qr = pipeline.run(rec.query)
+                ans = generator.generate(rec.query, qr)
+                answers.append(ans)
+
+            console.print(f"  Running RAGAS evaluation ({len(answers)} answers)...")
+            ragas_result = run_ragas_eval(answers, config=cfg, settings=settings)
+
+            tbl = Table(title=f"RAGAS Results — {cfg}")
+            tbl.add_column("Metric", style="cyan")
+            tbl.add_column("Score", justify="right")
+            tbl.add_row("Faithfulness", f"{ragas_result.faithfulness:.4f}")
+            tbl.add_row("Answer Relevancy", f"{ragas_result.answer_relevancy:.4f}")
+            tbl.add_row("N Queries", str(ragas_result.n_queries))
+            console.print(tbl)
+
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(
+                json.dumps(asdict(ragas_result), indent=2),
+                encoding="utf-8",
+            )
+            console.print(f"\n[green]Saved → {output}[/green]")
+
+        return
 
     # -------------------------------------------------------------------------
     # retrieval suite — evaluates against data/eval/query_set.jsonl
@@ -173,10 +273,13 @@ def eval(
         llm_provider, llm_client = build_llm_client(settings)
         console.print(f"LLM provider: [bold]{llm_provider}[/bold]")
 
+        ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+
         eval_results: list[QuerySetEvalResult] = []
         for cfg in configs_to_run:
             console.print(f"\nRunning config: [bold]{cfg}[/bold] ...")
             use_hyde = cfg == "hybrid+hyde"
+            alpha = ALPHA_MAP.get(cfg, 0.5)
             pipeline = build_pipeline(
                 settings=settings,
                 store=store,
@@ -184,6 +287,7 @@ def eval(
                 encoder=encoder,
                 llm_client=llm_client if use_hyde else None,
                 llm_provider=llm_provider if use_hyde else "anthropic",
+                hybrid_alpha_override=alpha,
             )
 
             class _Retriever:
@@ -286,10 +390,13 @@ def eval(
     except ImportError:
         pass
 
+    ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+
     results: list[EvalResult] = []
     for cfg in configs_to_run:
         console.print(f"\nRunning config: [bold]{cfg}[/bold]")
         use_hyde = cfg == "hybrid+hyde"
+        alpha = ALPHA_MAP.get(cfg, 0.5)
         pipeline = build_pipeline(
             settings=settings,
             store=store,
@@ -297,6 +404,7 @@ def eval(
             encoder=encoder,
             llm_client=groq_client if use_hyde else None,
             llm_provider="groq" if use_hyde and groq_client else "anthropic",
+            hybrid_alpha_override=alpha,
         )
 
         class _Retriever:

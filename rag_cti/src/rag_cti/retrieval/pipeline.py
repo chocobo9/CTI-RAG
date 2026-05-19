@@ -73,20 +73,28 @@ def build_pipeline(
     encoder: object,
     llm_client: object | None = None,
     llm_provider: str = "anthropic",
+    hybrid_alpha_override: float | None = None,
 ) -> Pipeline:
     """Wire the full retrieval stack from components."""
     dense = DenseRetriever(store=store, embedder=embedder)
-    sparse = SparseRetriever(store=store, encoder=encoder)
-    hybrid = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+
+    effective_alpha = hybrid_alpha_override if hybrid_alpha_override is not None else getattr(settings, "hybrid_alpha", 0.5)
+
+    if effective_alpha >= 1.0:
+        base_retriever: object = dense
+    else:
+        sparse = SparseRetriever(store=store, encoder=encoder)
+        base_retriever = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+
     if settings.hyde_enabled and llm_client is not None:
         retriever: object = HyDERetriever(
-            base_retriever=hybrid,
+            base_retriever=base_retriever,
             llm_client=llm_client,
             settings=settings,
             llm_provider=llm_provider,
         )
     else:
-        retriever = hybrid
+        retriever = base_retriever
     if getattr(settings, "reranker_enabled", False):
         from rag_cti.retrieval.reranker import CrossEncoderReranker
 
