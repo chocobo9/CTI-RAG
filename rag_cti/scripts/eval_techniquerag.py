@@ -119,9 +119,12 @@ def main() -> None:
 
     results: list[EvalResult] = []
 
+    ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+
     for config in configs_to_run:
         print(f"\nRunning config: {config}")
         use_hyde = config == "hybrid+hyde"
+        alpha = ALPHA_MAP.get(config, 0.5)
 
         pipeline = build_pipeline(
             settings=settings,
@@ -130,6 +133,7 @@ def main() -> None:
             encoder=encoder,
             llm_client=groq_client if use_hyde else None,
             llm_provider="groq" if use_hyde and groq_client else "anthropic",
+            hybrid_alpha_override=alpha,
         )
 
         retriever = _PipelineRetriever(pipeline)

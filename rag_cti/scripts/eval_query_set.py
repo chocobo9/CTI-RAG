@@ -78,6 +78,7 @@ def main() -> None:
     parser.add_argument("--output", default="data/eval/retrieval_results.json")
     parser.add_argument("--config", default="all", help="dense | hybrid | hybrid+hyde | all")
     parser.add_argument("--k", type=int, action="append", default=None)
+    parser.add_argument("--per-query-output", default=None, help="Path for per-query JSONL (e.g. data/eval/results_per_query.jsonl)")
     args = parser.parse_args()
 
     k_values = tuple(sorted(set(args.k or [1, 5, 10])))
@@ -108,9 +109,12 @@ def main() -> None:
 
     eval_results: list[QuerySetEvalResult] = []
 
+    ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+
     for cfg in configs:
         print(f"\nRunning config: {cfg} ...")
         use_hyde = cfg == "hybrid+hyde"
+        alpha = ALPHA_MAP.get(cfg, 0.5)
         pipeline = build_pipeline(
             settings=settings,
             store=store,
@@ -118,6 +122,7 @@ def main() -> None:
             encoder=encoder,
             llm_client=llm_client if use_hyde else None,
             llm_provider=llm_provider if use_hyde else "anthropic",
+            hybrid_alpha_override=alpha,
         )
 
         class _Retriever:
@@ -144,6 +149,26 @@ def main() -> None:
     }
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"\nSaved → {output_path}")
+
+    if args.per_query_output:
+        pq_path = Path(args.per_query_output)
+        pq_path.parent.mkdir(parents=True, exist_ok=True)
+        with pq_path.open("w", encoding="utf-8") as f:
+            for r in eval_results:
+                for pq in r.per_query:
+                    record = {
+                        "config": r.config,
+                        "query_id": pq.query_id,
+                        "query_text": pq.query_text,
+                        "category": pq.category,
+                        "expected_doc_ids": pq.expected_doc_ids,
+                        "retrieved_doc_ids": pq.retrieved_doc_ids,
+                        "hit_at_k": {str(k): v for k, v in pq.hit_at_k.items()},
+                        "reciprocal_rank": pq.reciprocal_rank,
+                        "target_rank": pq.target_rank,
+                    }
+                    f.write(json.dumps(record) + "\n")
+        print(f"Per-query results → {pq_path}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,8 @@
+# Claude Code local settings
+/.claude/
+
+# Development harness (RIE audit trails)
+.harness/
+
+# Qdrant snapshots
+*.snapshot

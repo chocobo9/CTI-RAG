@@ -31,8 +31,13 @@ class Pipeline:
     ) -> QueryResult:
         t0 = time.perf_counter()
         k = top_k if top_k is not None else self._settings.retrieval_top_k
+
+        fetch_k = k
+        if getattr(self._settings, "reranker_enabled", False):
+            fetch_k = max(k, getattr(self._settings, "reranker_candidates_k", k))
+
         results: list[RetrievalResult] = self._retriever.search(
-            query, top_k=k, source_filter=source_filter
+            query, top_k=fetch_k, source_filter=source_filter
         )
         results = self._reranker.rerank(query, results)
         results = results[:k]
@@ -43,6 +48,8 @@ class Pipeline:
             elapsed_ms=round(elapsed_ms, 1),
             chunk_ids=[r.document.id for r in results],
             scores=[round(r.score, 4) for r in results],
+            reranker=type(self._reranker).__name__,
+            fetch_k=fetch_k,
         )
         logger.debug(
             "pipeline run complete",
@@ -66,18 +73,33 @@ def build_pipeline(
     encoder: object,
     llm_client: object | None = None,
     llm_provider: str = "anthropic",
+    hybrid_alpha_override: float | None = None,
 ) -> Pipeline:
     """Wire the full retrieval stack from components."""
     dense = DenseRetriever(store=store, embedder=embedder)
-    sparse = SparseRetriever(store=store, encoder=encoder)
-    hybrid = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+
+    effective_alpha = hybrid_alpha_override if hybrid_alpha_override is not None else getattr(settings, "hybrid_alpha", 0.5)
+
+    if effective_alpha >= 1.0:
+        base_retriever: object = dense
+    else:
+        sparse = SparseRetriever(store=store, encoder=encoder)
+        base_retriever = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+
     if settings.hyde_enabled and llm_client is not None:
         retriever: object = HyDERetriever(
-            base_retriever=hybrid,
+            base_retriever=base_retriever,
             llm_client=llm_client,
             settings=settings,
             llm_provider=llm_provider,
         )
     else:
-        retriever = hybrid
-    return Pipeline(retriever=retriever, reranker=NoOpReranker(), settings=settings)
+        retriever = base_retriever
+    if getattr(settings, "reranker_enabled", False):
+        from rag_cti.retrieval.reranker import CrossEncoderReranker
+
+        reranker = CrossEncoderReranker(model_name=settings.reranker_model)
+    else:
+        reranker = NoOpReranker()
+
+    return Pipeline(retriever=retriever, reranker=reranker, settings=settings)

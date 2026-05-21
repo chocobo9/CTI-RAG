@@ -23,15 +23,19 @@ class HybridRetriever:
         query: str,
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        sparse_query: str | None = None,
     ) -> list[RetrievalResult]:
         t0 = time.perf_counter()
+        bm25_query = sparse_query if sparse_query is not None else query
+        multiplier = getattr(self._settings, "rrf_candidate_multiplier", 1)
+        fetch_k = top_k * max(multiplier, 1)
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             f_dense = executor.submit(
-                self._dense.search, query, top_k=top_k, source_filter=source_filter
+                self._dense.search, query, top_k=fetch_k, source_filter=source_filter
             )
             f_sparse = executor.submit(
-                self._sparse.search, query, top_k=top_k, source_filter=source_filter
+                self._sparse.search, bm25_query, top_k=fetch_k, source_filter=source_filter
             )
             dense_results = f_dense.result()
             sparse_results = f_sparse.result()

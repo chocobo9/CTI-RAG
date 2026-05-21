@@ -50,6 +50,12 @@ notebooks/.ipynb_checkpoints/
 .DS_Store
 Thumbs.db
 
-# claude
+# Claude Code
 .claude/
+
+# Development harness (RIE audit trails)
+.harness/
+
+# Ad-hoc helper scripts (not part of the public API)
+scripts/_*.py
 

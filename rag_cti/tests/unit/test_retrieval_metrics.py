@@ -7,7 +7,9 @@ import pytest
 
 from rag_cti.evaluation.query_set import QueryCategory, QuerySetRecord
 from rag_cti.evaluation.retrieval_metrics import (
+    CategoryMetrics,
     EvalResult,
+    PerQueryResult,
     QuerySetEvalResult,
     _hit_at_k_qs,
     _is_match,
@@ -420,3 +422,87 @@ def test_evaluate_on_query_set_overall_n_queries_correct() -> None:
     retriever = _FakeQSRetriever([_qs_result("c0")])
     result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1,))
     assert result.overall.n_queries == 5
+
+
+# ---------------------------------------------------------------------------
+# Per-query results
+# ---------------------------------------------------------------------------
+
+def test_per_query_results_populated() -> None:
+    records = [_qs_record(expected_ids=["chunk1"])]
+    retriever = _FakeQSRetriever([_qs_result("chunk1")])
+    result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1, 5))
+    assert len(result.per_query) == 1
+
+
+def test_per_query_result_has_required_fields() -> None:
+    records = [_qs_record(expected_ids=["chunk1"])]
+    retriever = _FakeQSRetriever([_qs_result("chunk1")])
+    result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1, 5, 10))
+    pq = result.per_query[0]
+    assert isinstance(pq, PerQueryResult)
+    assert pq.query_id == "q1"
+    assert pq.query_text == "test CTI query"
+    assert pq.category == "precise"
+    assert pq.expected_doc_ids == ["chunk1"]
+    assert isinstance(pq.retrieved_doc_ids, list)
+    assert isinstance(pq.hit_at_k, dict)
+    assert isinstance(pq.reciprocal_rank, float)
+
+
+def test_per_query_hit_at_k_reflects_actual_hits() -> None:
+    records = [_qs_record(expected_ids=["chunk1"])]
+    retriever = _FakeQSRetriever([_qs_result("miss"), _qs_result("chunk1")])
+    result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1, 5))
+    pq = result.per_query[0]
+    assert pq.hit_at_k[1] is False
+    assert pq.hit_at_k[5] is True
+
+
+def test_per_query_target_rank_on_hit() -> None:
+    records = [_qs_record(expected_ids=["chunk1"])]
+    retriever = _FakeQSRetriever([_qs_result("miss"), _qs_result("chunk1")])
+    result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1, 5))
+    pq = result.per_query[0]
+    assert pq.target_rank == 2
+    assert pq.reciprocal_rank == pytest.approx(0.5)
+
+
+def test_per_query_target_rank_none_on_miss() -> None:
+    records = [_qs_record(expected_ids=["chunk1"])]
+    retriever = _FakeQSRetriever([_qs_result("other")])
+    result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1,))
+    pq = result.per_query[0]
+    assert pq.target_rank is None
+    assert pq.reciprocal_rank == 0.0
+
+
+def test_per_query_count_matches_records() -> None:
+    records = [
+        _qs_record("precise", expected_ids=["c1"]),
+        _qs_record("fuzzy", gold_sources=["mitre"]),
+        _qs_record("semantic", expected_ids=["c2"]),
+    ]
+    retriever = _FakeQSRetriever([_qs_result("c1")])
+    result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1,))
+    assert len(result.per_query) == 3
+
+
+def test_per_query_does_not_change_aggregate_metrics() -> None:
+    """Adding per-query logging must not alter aggregate metric values."""
+    records = [_qs_record(expected_ids=["chunk1"])]
+    retriever = _FakeQSRetriever([_qs_result("chunk1")])
+    result = evaluate_on_query_set(retriever, records, config="dense", k_values=(1,))
+    assert result.overall.mrr == pytest.approx(1.0)
+    assert result.overall.top_k[1] == pytest.approx(1.0)
+
+
+def test_per_query_default_is_empty_list() -> None:
+    """QuerySetEvalResult created without per_query should default to empty list."""
+    r = QuerySetEvalResult(
+        config="test",
+        k_values=[1],
+        overall=CategoryMetrics(n_queries=0, top_k={1: 0.0}, mrr=0.0, ndcg={1: 0.0}),
+        by_category={},
+    )
+    assert r.per_query == []
