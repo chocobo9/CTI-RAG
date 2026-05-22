@@ -34,6 +34,7 @@ def _default_pipeline() -> Pipeline:
         api_key=settings.qdrant_api_key.get_secret_value(),
     )
     embedder = Embedder(model_name=settings.embedding_model)
+    embedder._load()  # eager load: avoid first-query penalty
     encoder = (
         BM25SparseEncoder.load(_VOCAB_PATH)
         if _VOCAB_PATH.exists()
@@ -47,7 +48,7 @@ def _default_pipeline() -> Pipeline:
 
         llm_provider, llm_client = build_llm_client(settings)
 
-    return build_pipeline(
+    pipeline = build_pipeline(
         settings=settings,
         store=store,
         embedder=embedder,
@@ -55,6 +56,12 @@ def _default_pipeline() -> Pipeline:
         llm_client=llm_client,
         llm_provider=llm_provider,
     )
+
+    # eager load reranker model if enabled
+    if settings.reranker_enabled and hasattr(pipeline._reranker, '_load'):
+        pipeline._reranker._load()
+
+    return pipeline
 
 
 def query(text: str, k: int = 10) -> QueryResult:

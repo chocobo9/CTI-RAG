@@ -6,6 +6,7 @@ inference once loaded.
 """
 from __future__ import annotations
 
+import threading
 from typing import Any
 
 import numpy as np
@@ -47,13 +48,16 @@ class Embedder:
         self.normalize = normalize
         self._device = device
         self._model: Any | None = None
+        self._lock = threading.Lock()
 
     def _load(self) -> Any:
         if self._model is None:
-            from sentence_transformers import SentenceTransformer  # type: ignore[import]
+            with self._lock:
+                if self._model is None:
+                    from sentence_transformers import SentenceTransformer  # type: ignore[import]
 
-            logger.info("loading embedding model", model=self.model_name, device=self._device)
-            self._model = SentenceTransformer(self.model_name, device=self._device)
+                    logger.info("loading embedding model", model=self.model_name, device=self._device)
+                    self._model = SentenceTransformer(self.model_name, device=self._device)
         return self._model
 
     @property

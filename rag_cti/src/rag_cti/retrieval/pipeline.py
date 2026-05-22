@@ -39,9 +39,17 @@ class Pipeline:
         results: list[RetrievalResult] = self._retriever.search(
             query, top_k=fetch_k, source_filter=source_filter
         )
+        t_retrieve = time.perf_counter()
         results = self._reranker.rerank(query, results)
+        t_rerank = time.perf_counter()
         results = results[:k]
         elapsed_ms = (time.perf_counter() - t0) * 1000
+        logger.info(
+            "pipeline breakdown",
+            retrieve_ms=round((t_retrieve - t0) * 1000, 1),
+            rerank_ms=round((t_rerank - t_retrieve) * 1000, 1),
+            total_ms=round(elapsed_ms, 1),
+        )
         add_trace_metadata(
             top_k=k,
             returned=len(results),
