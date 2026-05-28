@@ -42,10 +42,16 @@ class CrossEncoderReranker:
         if self._model is None:
             with self._lock:
                 if self._model is None:
+                    import torch
                     from sentence_transformers import CrossEncoder
 
                     logger.info("loading cross-encoder model", model=self._model_name, device=self._device)
-                    self._model = CrossEncoder(self._model_name, device=self._device)
+                    self._model = CrossEncoder(
+                        self._model_name,
+                        device=self._device,
+                        max_length=512,
+                        model_kwargs={"torch_dtype": torch.float16},
+                    )
         return self._model
 
     def rerank(self, query: str, results: list[RetrievalResult]) -> list[RetrievalResult]:
