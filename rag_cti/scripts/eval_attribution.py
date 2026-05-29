@@ -35,10 +35,21 @@ load_dotenv()
 from rag_cti._logging import configure_logging, get_logger
 from rag_cti.config import get_settings
 from rag_cti.embeddings.embedder import Embedder
+from rag_cti.evaluation.set_metrics import SetPRF, micro_prf_at_k
 from rag_cti.generation.client import build_llm_client
 from rag_cti.retrieval import build_pipeline
 from rag_cti.retrieval.bm25 import BM25SparseEncoder
 from rag_cti.store.qdrant_store import QdrantStore
+
+# Categories whose gold is a multi-label ATT&CK technique set → scored with
+# set-based P/R/F1@k (SPEC §M), NOT hit@k/MRR. relationship_* are listed but
+# their single-attack_id gold is UNCERTIFIED (Phase C technique gate failed),
+# so their set scores are directional only — see eval_capabilities.py.
+_ATTACK_SET_CATEGORIES = ("precise", "semantic", "relationship_direct", "relationship_reverse")
+# Single-target categories keep hit@k/MRR (SPEC §M).
+_SINGLE_TARGET_CATEGORIES = ("otx_actor",)
+# pulse-list categories → Recall@k over pulse_ids.
+_PULSE_SET_CATEGORIES = ("otx_malware",)
 
 logger = get_logger(__name__)
 
@@ -103,6 +114,20 @@ def _attack_id_match(chunk_id: str, gold_id: str) -> bool:
 def is_hit(result: object, record: QueryRecord) -> bool:
     doc = result.document  # type: ignore[attr-defined]
 
+    if record.category in ("relationship_direct", "relationship_reverse"):
+        chunk_attack = doc.metadata.get("attack_id", "")
+        if not chunk_attack:
+            return False
+        attack_ok = any(
+            _attack_id_match(str(chunk_attack), gid)
+            for gid in record.gold_attack_ids
+        )
+        actor_ok = (
+            record.gold_actor
+            and record.gold_actor.lower() in doc.content.lower()
+        )
+        return attack_ok and actor_ok
+
     if record.gold_attack_ids:
         chunk_attack = doc.metadata.get("attack_id", "")
         if chunk_attack:
@@ -115,11 +140,16 @@ def is_hit(result: object, record: QueryRecord) -> bool:
         if chunk_pulse in record.gold_pulse_ids:
             return True
 
-    if record.gold_actor:
-        if record.gold_actor.lower() in doc.content.lower():
-            return True
+    # NOTE (Phase D, SPEC §D.1): the `actor_in_content` backdoor was REMOVED here.
+    # Previously any chunk whose content merely mentioned record.gold_actor counted
+    # as a hit, inflating otx_actor toward 1.000. otx_actor now matches ONLY on the
+    # hard pulse_id identifier (handled above). Do NOT reintroduce a content
+    # substring match for actor names.
 
-    if not record.gold_attack_ids and not record.gold_pulse_ids and not record.gold_actor and not record.gold_malware:
+    # fuzzy unification (SPEC §D.1): a fuzzy query has gold_attack_ids and/or
+    # gold_sources. attack_id is matched above; here we allow the source fallback
+    # for fuzzy/source-only queries. This is the single, explicit fuzzy criterion.
+    if not record.gold_attack_ids and not record.gold_pulse_ids and not record.gold_malware:
         if record.gold_sources and doc.source in record.gold_sources:
             return True
 
@@ -145,6 +175,47 @@ def ndcg_at_k(results: list, record: QueryRecord, k: int) -> float:
     )
     idcg = 1.0 / math.log2(2)
     return round(dcg / idcg, 4) if idcg > 0 else 0.0
+
+
+# ---------------------------------------------------------------------------
+# Set-based metrics for multi-label categories (SPEC §M / §D.1).
+# These use set_metrics (normalize to T#### then EXACT set ops) — deliberately
+# NOT the parent/child wildcard _attack_id_match used by hit@k. They replace the
+# metric-mismatch (hit@k masquerading for multi-label) flagged in the eval audit.
+# ---------------------------------------------------------------------------
+
+def _ranked_attack_ids(results: list, k: int) -> list[str]:
+    """attack_ids of the top-k results in rank order (blanks dropped)."""
+    out: list[str] = []
+    for r in results[:k]:
+        aid = r.document.metadata.get("attack_id")  # type: ignore[attr-defined]
+        if aid:
+            out.append(str(aid))
+    return out
+
+
+def _ranked_pulse_ids(results: list, k: int) -> list[str]:
+    out: list[str] = []
+    for r in results[:k]:
+        pid = r.document.metadata.get("pulse_id")  # type: ignore[attr-defined]
+        if pid:
+            out.append(str(pid))
+    return out
+
+
+def _pulse_recall_at_k(
+    ranked_per_query: list[list[str]], gold_per_query: list[list[str]], k_values: tuple[int, ...]
+) -> dict[int, float]:
+    """Micro Recall@k over pulse_id sets: ΣTP / Σ|gold|."""
+    out: dict[int, float] = {}
+    for k in k_values:
+        tp = denom = 0
+        for ranked, gold in zip(ranked_per_query, gold_per_query, strict=True):
+            g = set(gold)
+            tp += len(set(ranked[:k]) & g)
+            denom += len(g)
+        out[k] = round(tp / denom, 4) if denom else 0.0
+    return out
 
 
 @dataclass
@@ -180,6 +251,11 @@ def run_eval(
     overall.init_k(k_values)
 
     per_query: list[dict] = []
+    # Collected for set-based metrics, keyed by category.
+    attack_ranked: dict[str, list[list[str]]] = defaultdict(list)
+    attack_gold: dict[str, list[list[str]]] = defaultdict(list)
+    pulse_ranked: dict[str, list[list[str]]] = defaultdict(list)
+    pulse_gold: dict[str, list[list[str]]] = defaultdict(list)
 
     for i, rec in enumerate(records):
         results = pipeline.run(rec.query, top_k=max_k).results  # type: ignore[attr-defined]
@@ -190,6 +266,13 @@ def run_eval(
         cm = cats[cat]
         cm.n += 1
         overall.n += 1
+
+        if cat in _ATTACK_SET_CATEGORIES and rec.gold_attack_ids:
+            attack_ranked[cat].append(_ranked_attack_ids(results, max_k))
+            attack_gold[cat].append(rec.gold_attack_ids)
+        if cat in _PULSE_SET_CATEGORIES and rec.gold_pulse_ids:
+            pulse_ranked[cat].append(_ranked_pulse_ids(results, max_k))
+            pulse_gold[cat].append(rec.gold_pulse_ids)
 
         rr = reciprocal_rank(results, rec)
         cm.rr_sum += rr
@@ -218,11 +301,32 @@ def run_eval(
         if (i + 1) % 10 == 0:
             logger.info("eval progress", done=i + 1, total=len(records))
 
+    # Set-based metrics for multi-label categories (technique-level, exact).
+    set_metrics: dict[str, dict[str, object]] = {}
+    for cat in attack_ranked:
+        prf: dict[int, SetPRF] = micro_prf_at_k(
+            attack_ranked[cat], attack_gold[cat], k_values=k_values, level="technique"
+        )
+        set_metrics[cat] = {
+            "metric": "attack_set_prf@k(technique)",
+            "n": len(attack_ranked[cat]),
+            "prf_at_k": {k: {"P": round(prf[k].precision, 4), "R": round(prf[k].recall, 4),
+                             "F1": round(prf[k].f1, 4)} for k in k_values},
+        }
+    for cat in pulse_ranked:
+        rec_at_k = _pulse_recall_at_k(pulse_ranked[cat], pulse_gold[cat], k_values)
+        set_metrics[cat] = {
+            "metric": "pulse_recall@k",
+            "n": len(pulse_ranked[cat]),
+            "recall_at_k": rec_at_k,
+        }
+
     return {
         "config": config_name,
         "k_values": list(k_values),
         "overall": overall.report(k_values),
         "by_category": {c: m.report(k_values) for c, m in sorted(cats.items())},
+        "set_metrics": set_metrics,
         "per_query": per_query,
     }
 
@@ -256,6 +360,23 @@ def print_report(result: dict, k_values: tuple[int, ...]) -> None:
         print(row)
 
     print("=" * len(header))
+
+    set_metrics = result.get("set_metrics") or {}
+    if set_metrics:
+        print("\nSet-based metrics (multi-label categories — SPEC §M; normalize+exact, NOT wildcard):")
+        for cat in sorted(set_metrics):
+            sm = set_metrics[cat]
+            if sm["metric"].startswith("attack_set_prf"):
+                parts = " ".join(
+                    f"@{k}:P{v['P']:.3f}/R{v['R']:.3f}/F1{v['F1']:.3f}"
+                    for k, v in sm["prf_at_k"].items()
+                )
+                note = "  [UNCERTIFIED gold: technique gate failed Phase C]" if cat.startswith("relationship") else "  [self-set LLM gold, directional]"
+                print(f"  {cat:<22} (n={sm['n']}) {parts}{note}")
+            else:
+                parts = " ".join(f"@{k}:R{v:.3f}" for k, v in sm["recall_at_k"].items())
+                print(f"  {cat:<22} (n={sm['n']}) pulse Recall {parts}  [pulse_id-grounded]")
+        print()
 
 
 def main() -> None:

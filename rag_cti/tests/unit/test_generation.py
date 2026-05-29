@@ -9,8 +9,19 @@ import pytest
 from pydantic import ValidationError
 
 from rag_cti.generation.context_builder import build_context_messages, extract_cited_ids
-from rag_cti.generation.generator import Generator, _extract_text
+from rag_cti.generation.generator import (
+    DEFAULT_CANDIDATE_K,
+    Generator,
+    _extract_text,
+    _format_candidates,
+    parse_actor_name,
+    parse_technique_ids,
+)
 from rag_cti.generation.llm_router import LLMRouter, TaskType
+from rag_cti.generation.prompts import (
+    ACTOR_ATTRIBUTION_SYSTEM,
+    TECHNIQUE_ANNOTATION_SYSTEM,
+)
 from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
 
 # ---------------------------------------------------------------------------
@@ -378,3 +389,180 @@ def test_generate_result_unchanged_when_tracing_active() -> None:
     assert result.query == "test query"
     assert "abc12345" in result.cited_chunk_ids
     assert result.generation_ms >= 0.0
+
+
+# ---------------------------------------------------------------------------
+# Phase B — parse_technique_ids (real LLM output styles)
+# ---------------------------------------------------------------------------
+
+def test_parse_technique_ids_clean_comma_list() -> None:
+    assert parse_technique_ids("T1059.001,T1027") == ["T1059.001", "T1027"]
+
+
+def test_parse_technique_ids_from_prose_noise() -> None:
+    out = "The passage describes PowerShell (T1059.001) and Obfuscated Files T1027."
+    assert parse_technique_ids(out) == ["T1059.001", "T1027"]
+
+
+def test_parse_technique_ids_none_reply_is_empty() -> None:
+    assert parse_technique_ids("NONE") == []
+
+
+def test_parse_technique_ids_empty_output_is_empty() -> None:
+    assert parse_technique_ids("") == []
+
+
+def test_parse_technique_ids_order_preserving_dedupe() -> None:
+    # Exact duplicates dropped; parent (T1059) and sub (T1059.001) are distinct IDs.
+    assert parse_technique_ids("T1059, T1059.001, T1059, T1071.001") == [
+        "T1059",
+        "T1059.001",
+        "T1071.001",
+    ]
+
+
+def test_parse_technique_ids_ignores_failure_sentinel_text() -> None:
+    # _call_llm's failure sentinel has no T-id, so parsing yields nothing.
+    assert parse_technique_ids("Unable to generate answer: LLM call failed.") == []
+
+
+# ---------------------------------------------------------------------------
+# Phase B — parse_actor_name (real LLM output styles)
+# ---------------------------------------------------------------------------
+
+def test_parse_actor_name_with_spaces_preserved() -> None:
+    assert parse_actor_name("Cozy Bear") == "Cozy Bear"
+
+
+def test_parse_actor_name_strips_quotes_and_markdown() -> None:
+    assert parse_actor_name('**Lazarus Group**') == "Lazarus Group"
+    assert parse_actor_name('"APT29"') == "APT29"
+
+
+def test_parse_actor_name_strips_trailing_period() -> None:
+    assert parse_actor_name("APT29.") == "APT29"
+
+
+def test_parse_actor_name_takes_first_nonempty_line() -> None:
+    assert parse_actor_name("\n  Sandworm Team  \nalso known as Voodoo Bear") == "Sandworm Team"
+
+
+def test_parse_actor_name_none_reply_is_empty() -> None:
+    assert parse_actor_name("NONE") == ""
+    assert parse_actor_name("unknown") == ""
+
+
+def test_parse_actor_name_empty_output_is_empty() -> None:
+    assert parse_actor_name("") == ""
+
+
+# ---------------------------------------------------------------------------
+# Phase B — _format_candidates
+# ---------------------------------------------------------------------------
+
+def _make_result_with(content: str, attack_id: str | None, source: str, rank: int) -> RetrievalResult:
+    metadata = {"attack_id": attack_id} if attack_id else {}
+    chunk = Chunk(
+        id=f"c{rank}",
+        parent_doc_id="doc1",
+        source=source,
+        content=content,
+        chunk_index=0,
+        metadata=metadata,
+        retrieved_at=datetime(2024, 1, 1),
+        embedding_model="bge-m3",
+    )
+    return RetrievalResult(document=chunk, score=0.9 - rank * 0.1, rank=rank, retriever_source="rrf")
+
+
+def test_format_candidates_includes_attack_id_and_content() -> None:
+    results = [_make_result_with("Aquatic Panda uses PowerShell (T1059.001)", "T1059.001", "mitre", 0)]
+    out = _format_candidates(results, candidate_k=10)
+    assert "attack_id=T1059.001" in out
+    assert "source=mitre" in out
+    assert "Aquatic Panda" in out
+
+
+def test_format_candidates_respects_candidate_k() -> None:
+    results = [_make_result_with(f"chunk {i} content", "T1059", "mitre", i) for i in range(5)]
+    out = _format_candidates(results, candidate_k=2)
+    assert out.count("attack_id=") == 2
+    assert "[1]" in out
+    assert "[2]" in out
+    assert "[3]" not in out
+
+
+def test_format_candidates_missing_attack_id_shown_as_dash() -> None:
+    results = [_make_result_with("APT29 phishing campaign", None, "otx", 0)]
+    out = _format_candidates(results, candidate_k=10)
+    assert "attack_id=-" in out
+
+
+def test_format_candidates_empty_results() -> None:
+    assert _format_candidates([], candidate_k=10) == "(no candidates retrieved)"
+
+
+# ---------------------------------------------------------------------------
+# Phase B — annotate_techniques / attribute_actor methods (mocked client)
+# ---------------------------------------------------------------------------
+
+def test_annotate_techniques_returns_parsed_ids() -> None:
+    gen = Generator(
+        client=_FakeClient("T1059.001, T1027"),
+        router=LLMRouter(_FakeSettings()),
+        settings=_FakeSettings(),
+    )
+    ids = gen.annotate_techniques("GLASSTOKEN web shell executes encoded PowerShell", _make_query_result())
+    assert ids == ["T1059.001", "T1027"]
+
+
+def test_annotate_techniques_uses_technique_system_prompt() -> None:
+    client = _FakeClient("T1059")
+    gen = Generator(client=client, router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    gen.annotate_techniques("some cti text", _make_query_result())
+    msgs = client._completions.last_kwargs["messages"]
+    assert msgs[0]["content"] == TECHNIQUE_ANNOTATION_SYSTEM
+    assert "some cti text" in msgs[1]["content"]
+
+
+def test_annotate_techniques_raises_on_llm_failure() -> None:
+    gen = Generator(
+        client=_FakeClient(response_content=None),
+        router=LLMRouter(_FakeSettings()),
+        settings=_FakeSettings(),
+    )
+    with pytest.raises(RuntimeError, match="annotate_techniques"):
+        gen.annotate_techniques("cti text", _make_query_result())
+
+
+def test_attribute_actor_returns_parsed_name() -> None:
+    gen = Generator(
+        client=_FakeClient("APT29"),
+        router=LLMRouter(_FakeSettings()),
+        settings=_FakeSettings(),
+    )
+    actor = gen.attribute_actor("Cozy Bear spearphishing of government entities", _make_query_result())
+    assert actor == "APT29"
+
+
+def test_attribute_actor_uses_actor_system_prompt() -> None:
+    client = _FakeClient("Lazarus Group")
+    gen = Generator(client=client, router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    actor = gen.attribute_actor("DPRK financial heist", _make_query_result())
+    assert actor == "Lazarus Group"
+    assert client._completions.last_kwargs["messages"][0]["content"] == ACTOR_ATTRIBUTION_SYSTEM
+
+
+def test_attribute_actor_raises_on_llm_failure() -> None:
+    gen = Generator(
+        client=_FakeClient(response_content=None),
+        router=LLMRouter(_FakeSettings()),
+        settings=_FakeSettings(),
+    )
+    with pytest.raises(RuntimeError, match="attribute_actor"):
+        gen.attribute_actor("cti text", _make_query_result())
+
+
+def test_default_candidate_k_is_ten() -> None:
+    # SPEC §B.1: inject top-10 reranked candidates.
+    assert DEFAULT_CANDIDATE_K == 10
