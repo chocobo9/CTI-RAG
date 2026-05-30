@@ -57,7 +57,7 @@ from rag_cti.evaluation.taa_metrics import (
 )
 from rag_cti.evaluation.techniquerag import parse_gold_ids
 from rag_cti.generation.client import build_llm_client
-from rag_cti.generation.generator import DEFAULT_CANDIDATE_K, Generator
+from rag_cti.generation.generator import DEFAULT_CANDIDATE_K, TECHNIQUE_RETRIEVE_K, Generator
 from rag_cti.generation.llm_router import LLMRouter
 from rag_cti.retrieval import build_pipeline
 from rag_cti.retrieval.bm25 import BM25SparseEncoder
@@ -130,7 +130,7 @@ def certify_techniques(
     """Retrieve + annotate each row; return per-row details (gold/pred/platform)."""
     details: list[dict[str, Any]] = []
     for i, (desc, gold, platform) in enumerate(rows, start=1):
-        qr = pipeline.run(desc, top_k=RETRIEVE_K)
+        qr = pipeline.run(desc, top_k=TECHNIQUE_RETRIEVE_K)
         pred = gen.annotate_techniques(desc, qr, candidate_k=candidate_k)  # raises on LLM failure
         g_norm = sorted(normalize_set(gold, "technique"))
         p_norm = sorted(normalize_set(pred, "technique"))

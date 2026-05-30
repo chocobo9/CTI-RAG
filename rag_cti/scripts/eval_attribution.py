@@ -42,9 +42,10 @@ from rag_cti.retrieval.bm25 import BM25SparseEncoder
 from rag_cti.store.qdrant_store import QdrantStore
 
 # Categories whose gold is a multi-label ATT&CK technique set → scored with
-# set-based P/R/F1@k (SPEC §M), NOT hit@k/MRR. relationship_* are listed but
-# their single-attack_id gold is UNCERTIFIED (Phase C technique gate failed),
-# so their set scores are directional only — see eval_capabilities.py.
+# set-based P/R/F1@k (SPEC §M), NOT hit@k/MRR. relationship_direct gold is now
+# DETERMINISTIC (ATT&CK graph traversal — see query_set_v3 gold_provenance), not
+# LLM-guessed; relationship_reverse still has single-id LLM gold (directional).
+# The Phase C technique gate PASSED (CTI-ATE Micro-F1 0.67 >= 0.65).
 _ATTACK_SET_CATEGORIES = ("precise", "semantic", "relationship_direct", "relationship_reverse")
 # Single-target categories keep hit@k/MRR (SPEC §M).
 _SINGLE_TARGET_CATEGORIES = ("otx_actor",)
@@ -371,7 +372,12 @@ def print_report(result: dict, k_values: tuple[int, ...]) -> None:
                     f"@{k}:P{v['P']:.3f}/R{v['R']:.3f}/F1{v['F1']:.3f}"
                     for k, v in sm["prf_at_k"].items()
                 )
-                note = "  [UNCERTIFIED gold: technique gate failed Phase C]" if cat.startswith("relationship") else "  [self-set LLM gold, directional]"
+                if cat == "relationship_direct":
+                    note = "  [deterministic ATT&CK-graph gold]"
+                elif cat == "relationship_reverse":
+                    note = "  [single-id LLM gold, directional]"
+                else:
+                    note = "  [self-set LLM gold, directional]"
                 print(f"  {cat:<22} (n={sm['n']}) {parts}{note}")
             else:
                 parts = " ".join(f"@{k}:R{v:.3f}" for k, v in sm["recall_at_k"].items())

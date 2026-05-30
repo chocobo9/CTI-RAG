@@ -4,6 +4,7 @@ import time
 from typing import Any
 
 from rag_cti._logging import get_logger
+from rag_cti.evaluation.set_metrics import normalize_id
 from rag_cti.evaluation.techniquerag import parse_gold_ids
 from rag_cti.generation.context_builder import build_context_messages, extract_cited_ids
 from rag_cti.generation.llm_router import LLMRouter, TaskType
@@ -23,6 +24,11 @@ _LLM_FAILURE_SENTINEL = "Unable to generate answer: LLM call failed."
 # SPEC §B.1: retrieve top_k=40 then inject top-10 — wider than TechniqueRAG's
 # k=3 because this corpus mixes OTX/PDF noise, so we keep extra margin.
 DEFAULT_CANDIDATE_K = 10
+
+# Retrieval depth for the technique-annotation path before per-technique dedup.
+# CERTIFIED baseline (Phase C): callers retrieve top-TECHNIQUE_RETRIEVE_K, then
+# annotate_techniques dedups to distinct techniques before injecting candidate_k.
+TECHNIQUE_RETRIEVE_K = 300
 
 # Cap per-candidate content so the prompt stays bounded with many candidates.
 _CANDIDATE_CONTENT_CHARS = 600
@@ -86,7 +92,7 @@ class Generator:
     ) -> list[str]:
         """Extract the ATT&CK technique-ID set the text describes (order-deduped)."""
         model = self._router.model_for(TaskType.ANALYSIS)
-        candidates = _format_candidates(query_result.results, candidate_k)
+        candidates = _format_candidates(_dedup_to_distinct_techniques(query_result.results), candidate_k)
         messages = [
             {"role": "system", "content": TECHNIQUE_ANNOTATION_SYSTEM},
             {
@@ -178,6 +184,26 @@ def parse_actor_name(output: str) -> str:
     if line.lower() in _ACTOR_NONE_TOKENS:
         return ""
     return line
+
+
+def _dedup_to_distinct_techniques(results: list[RetrievalResult]) -> list[RetrievalResult]:
+    """Collapse retrieved candidates to one chunk per ATT&CK technique (score desc).
+
+    Ported from the certified diag_retrieval_ceiling dedup logic: normalize each
+    candidate's attack_id to technique level, drop candidates with no attack_id (no
+    technique label = useless for technique annotation), keep the highest-scoring
+    chunk per distinct technique, and return them sorted by score descending. The
+    caller then injects the top candidate_k. Immutable — never mutates the inputs.
+    """
+    best: dict[str, RetrievalResult] = {}
+    for r in results:
+        tech = normalize_id(r.document.metadata.get("attack_id") or "", "technique")
+        if not tech:
+            continue
+        prev = best.get(tech)
+        if prev is None or r.score > prev.score:
+            best[tech] = r
+    return sorted(best.values(), key=lambda r: r.score, reverse=True)
 
 
 def _format_candidates(results: list[RetrievalResult], candidate_k: int) -> str:
