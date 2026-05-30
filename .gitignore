@@ -6,6 +6,7 @@
 
 # Agent orchestration runtime state + analysis scratch
 .team/
+.team_run.log
 /.analysis/
 
 # Temp / scratch outputs (logs, diagnostics, nested benchmark clones)
