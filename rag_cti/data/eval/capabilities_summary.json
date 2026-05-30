@@ -1,0 +1,173 @@
+{
+  "phase": "D — capability-split summary (four capabilities, never averaged)",
+  "generated_utc": "2026-05-30T04:05:18.539205+00:00",
+  "artifact_sources": {
+    "technique_cert": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/certification_full_deepseek_2026-05-29T23-56-30Z.json",
+    "actor_cert": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/certification_full_deepseek_2026-05-29T17-11-31Z.json",
+    "attribution": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/attribution_v3_results.json",
+    "ragas": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/ragas_v3_results.json"
+  },
+  "capabilities_NEVER_averaged": {
+    "technique_extraction": {
+      "metric": "Micro-F1(technique)",
+      "data": "CTI-ATE Enterprise n=47",
+      "score": {
+        "micro_f1": 0.6703499079189688,
+        "precision": 0.7459016393442623,
+        "recall": 0.6086956521739131
+      },
+      "external_anchor": "TechniqueRAG/CTIBench RAG-no-ft 0.65-0.79",
+      "gate": {
+        "threshold": 0.65,
+        "pass": true
+      },
+      "trust": "CERTIFIED against external human GT (Phase C). Gate PASSED.",
+      "mobile_out_of_corpus": {
+        "micro_f1": 0.011235955056179773,
+        "n": 13,
+        "note": "corpus is Enterprise ATT&CK only; not gated"
+      }
+    },
+    "actor_attribution": {
+      "metric": "correct / plausible accuracy (faithful cti-bench scorer)",
+      "data": "CTI-TAA n=50",
+      "score": {
+        "correct_acc": 0.66,
+        "plausible_acc": 0.7,
+        "C": 33,
+        "P": 2,
+        "I": 15
+      },
+      "external_anchor": "cti-bench published models (e.g. ChatGPT-3.5 ~0.44/0.62)",
+      "gate": {
+        "threshold": 0.5,
+        "pass": true
+      },
+      "trust": "CERTIFIED against external human GT. Plausible gate PASSED. Actor self-gold not generated (per user)."
+    },
+    "heterogeneous_retrieval": {
+      "metric": "set P/R/F1@k (multi-label) + pulse Recall@k + hit@k (single-target)",
+      "data": "self query-set data/eval/query_set_v3.jsonl",
+      "by_category_hit": {
+        "fuzzy": {
+          "5": 1.0,
+          "10": 1.0,
+          "20": 1.0
+        },
+        "otx_actor": {
+          "5": 0.1429,
+          "10": 0.2857,
+          "20": 0.4286
+        },
+        "otx_malware": {
+          "5": 0.8,
+          "10": 0.8,
+          "20": 0.8
+        },
+        "precise": {
+          "5": 1.0,
+          "10": 1.0,
+          "20": 1.0
+        },
+        "relationship_direct": {
+          "5": 0.8,
+          "10": 0.8,
+          "20": 0.9
+        },
+        "semantic": {
+          "5": 0.9,
+          "10": 1.0,
+          "20": 1.0
+        }
+      },
+      "set_metrics": {
+        "precise": {
+          "metric": "attack_set_prf@k(technique)",
+          "n": 5,
+          "prf_at_k": {
+            "5": {
+              "P": 0.3846,
+              "R": 0.3571,
+              "F1": 0.3704
+            },
+            "10": {
+              "P": 0.2727,
+              "R": 0.4286,
+              "F1": 0.3333
+            },
+            "20": {
+              "P": 0.2059,
+              "R": 0.5,
+              "F1": 0.2917
+            }
+          }
+        },
+        "semantic": {
+          "metric": "attack_set_prf@k(technique)",
+          "n": 10,
+          "prf_at_k": {
+            "5": {
+              "P": 0.3333,
+              "R": 0.4333,
+              "F1": 0.3768
+            },
+            "10": {
+              "P": 0.2429,
+              "R": 0.5667,
+              "F1": 0.34
+            },
+            "20": {
+              "P": 0.1789,
+              "R": 0.5667,
+              "F1": 0.272
+            }
+          }
+        },
+        "relationship_direct": {
+          "metric": "attack_set_prf@k(technique)",
+          "n": 10,
+          "prf_at_k": {
+            "5": {
+              "P": 0.4545,
+              "R": 0.1739,
+              "F1": 0.2516
+            },
+            "10": {
+              "P": 0.3556,
+              "R": 0.2783,
+              "F1": 0.3122
+            },
+            "20": {
+              "P": 0.2741,
+              "R": 0.3217,
+              "F1": 0.296
+            }
+          }
+        },
+        "otx_malware": {
+          "metric": "pulse_recall@k",
+          "n": 5,
+          "recall_at_k": {
+            "5": 0.0909,
+            "10": 0.1667,
+            "20": 0.2525
+          }
+        }
+      },
+      "external_anchor": "none",
+      "trust": "relationship_direct gold is DETERMINISTIC (ATT&CK graph traversal, see query_set_v3 gold_provenance) — not LLM-guessed. otx_actor backdoor REMOVED (pulse_id-only). pulse_id categories rest on hard identifiers. Other categories (precise/semantic/fuzzy/relationship_reverse) keep LLM self-gold — directional."
+    },
+    "generation_grounding": {
+      "metric": "RAGAS faithfulness + answer_relevancy",
+      "data": "self query-set /mnt/d/proj/CTI-RAG/rag_cti/data/eval/query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10)",
+      "score": {
+        "faithfulness": 0.9102,
+        "answer_relevancy": 0.8287,
+        "context_precision": null,
+        "context_recall": null
+      },
+      "external_anchor": "none",
+      "trust": "Real generations (deepseek-chat) judged by deepseek-chat (ragas) — no mock. context_precision/recall NOT computed: query set has no reference answers, and fabricating them is forbidden (CLAUDE.md §2.7)."
+    }
+  }
+}

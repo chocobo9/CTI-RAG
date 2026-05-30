@@ -1,0 +1,134 @@
+{
+  "timestamp": "2026-05-30T04:03:12.450589+00:00",
+  "query_set": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/query_set_v3.jsonl",
+  "collection": "cti_chunks_v2",
+  "generator_model": "deepseek-chat",
+  "generator_provider": "deepseek",
+  "judge": "deepseek-chat (ragas)",
+  "n_requested": 14,
+  "n_failed": 0,
+  "generation_failures": [],
+  "sampled_query_ids": [
+    "F001",
+    "O001",
+    "O008",
+    "P001",
+    "R001",
+    "S001",
+    "F005",
+    "O002",
+    "O009",
+    "P002",
+    "R002",
+    "S002",
+    "F007",
+    "O003"
+  ],
+  "references_available": false,
+  "config": "hybrid@k10",
+  "n": 14,
+  "faithfulness": 0.9102,
+  "answer_relevancy": 0.8287,
+  "context_precision": -1.0,
+  "context_recall": -1.0,
+  "per_query": [
+    {
+      "question": "the pass the ticket one for lateral movement?",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.6324482153379314,
+      "query_id": "F001",
+      "category": "fuzzy"
+    },
+    {
+      "question": "threat intelligence on Cobalt campaigns and TTPs",
+      "faithfulness": 0.896551724137931,
+      "answer_relevancy": 0.9200301677123657,
+      "query_id": "O001",
+      "category": "otx_actor"
+    },
+    {
+      "question": "Cobalt Strike malware indicators and attribution",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.7514201456957328,
+      "query_id": "O008",
+      "category": "otx_malware"
+    },
+    {
+      "question": "Office template macros persistence",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.7945104230741983,
+      "query_id": "P001",
+      "category": "precise"
+    },
+    {
+      "question": "What techniques does Kimsuky use to collect data?",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.9999999999999998,
+      "query_id": "R001",
+      "category": "relationship_direct"
+    },
+    {
+      "question": "How can attackers move laterally to cloud VMs using built-in cloud console features?",
+      "faithfulness": 1.0,
+      "answer_relevancy": 1.0,
+      "query_id": "S001",
+      "category": "semantic"
+    },
+    {
+      "question": "that password guessing thing with no prior knowledge",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.6272025770455719,
+      "query_id": "F005",
+      "category": "fuzzy"
+    },
+    {
+      "question": "recent Kimsuky cyber espionage operations",
+      "faithfulness": 0.9666666666666667,
+      "answer_relevancy": 0.7894015004905877,
+      "query_id": "O002",
+      "category": "otx_actor"
+    },
+    {
+      "question": "detection and analysis of Korplug payloads",
+      "faithfulness": 0.4782608695652174,
+      "answer_relevancy": 0.8916376486245997,
+      "query_id": "O009",
+      "category": "otx_malware"
+    },
+    {
+      "question": "disable hardware encryption network devices",
+      "faithfulness": 0.9090909090909091,
+      "answer_relevancy": 0.9127722669988279,
+      "query_id": "P002",
+      "category": "precise"
+    },
+    {
+      "question": "How does Turla establish command and control in targeted operations?",
+      "faithfulness": 0.8888888888888888,
+      "answer_relevancy": 0.809866453119595,
+      "query_id": "R002",
+      "category": "relationship_direct"
+    },
+    {
+      "question": "During a ransomware incident, how do attackers prevent admin lockout by tampering with account credentials?",
+      "faithfulness": 0.8888888888888888,
+      "answer_relevancy": 0.8206254324401971,
+      "query_id": "S002",
+      "category": "semantic"
+    },
+    {
+      "question": "the one where mac users got phished with fake meeting links",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.698290084271097,
+      "query_id": "F007",
+      "category": "fuzzy"
+    },
+    {
+      "question": "indicators of compromise associated with Lazarus Group",
+      "faithfulness": 0.7142857142857143,
+      "answer_relevancy": 0.9535559984494756,
+      "query_id": "O003",
+      "category": "otx_actor"
+    }
+  ]
+}

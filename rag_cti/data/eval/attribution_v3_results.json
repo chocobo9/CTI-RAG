@@ -1,0 +1,695 @@
+{
+  "timestamp": "2026-05-30T03:59:51.937318+00:00",
+  "query_set": "data/eval/query_set_v3.jsonl",
+  "collection": "cti_chunks_v2",
+  "results": [
+    {
+      "config": "hybrid",
+      "k_values": [
+        5,
+        10,
+        20
+      ],
+      "overall": {
+        "n": 42,
+        "hit_at_k": {
+          "5": 0.7619,
+          "10": 0.8095,
+          "20": 0.8571
+        },
+        "mrr": 0.6338,
+        "ndcg_at_k": {
+          "5": 1.1566,
+          "10": 1.4197,
+          "20": 1.684
+        }
+      },
+      "by_category": {
+        "fuzzy": {
+          "n": 5,
+          "hit_at_k": {
+            "5": 1.0,
+            "10": 1.0,
+            "20": 1.0
+          },
+          "mrr": 0.75,
+          "ndcg_at_k": {
+            "5": 1.2508,
+            "10": 1.3221,
+            "20": 1.4261
+          }
+        },
+        "otx_actor": {
+          "n": 7,
+          "hit_at_k": {
+            "5": 0.1429,
+            "10": 0.2857,
+            "20": 0.4286
+          },
+          "mrr": 0.0671,
+          "ndcg_at_k": {
+            "5": 0.0615,
+            "10": 0.1091,
+            "20": 0.1467
+          }
+        },
+        "otx_malware": {
+          "n": 5,
+          "hit_at_k": {
+            "5": 0.8,
+            "10": 0.8,
+            "20": 0.8
+          },
+          "mrr": 0.6,
+          "ndcg_at_k": {
+            "5": 1.5953,
+            "10": 2.4279,
+            "20": 3.5767
+          }
+        },
+        "precise": {
+          "n": 5,
+          "hit_at_k": {
+            "5": 1.0,
+            "10": 1.0,
+            "20": 1.0
+          },
+          "mrr": 1.0,
+          "ndcg_at_k": {
+            "5": 1.7706,
+            "10": 1.9085,
+            "20": 1.9565
+          }
+        },
+        "relationship_direct": {
+          "n": 10,
+          "hit_at_k": {
+            "5": 0.8,
+            "10": 0.8,
+            "20": 0.9
+          },
+          "mrr": 0.64,
+          "ndcg_at_k": {
+            "5": 1.272,
+            "10": 1.5338,
+            "20": 1.7858
+          }
+        },
+        "semantic": {
+          "n": 10,
+          "hit_at_k": {
+            "5": 0.9,
+            "10": 1.0,
+            "20": 1.0
+          },
+          "mrr": 0.8,
+          "ndcg_at_k": {
+            "5": 1.2341,
+            "10": 1.5233,
+            "20": 1.7048
+          }
+        }
+      },
+      "set_metrics": {
+        "precise": {
+          "metric": "attack_set_prf@k(technique)",
+          "n": 5,
+          "prf_at_k": {
+            "5": {
+              "P": 0.3846,
+              "R": 0.3571,
+              "F1": 0.3704
+            },
+            "10": {
+              "P": 0.2727,
+              "R": 0.4286,
+              "F1": 0.3333
+            },
+            "20": {
+              "P": 0.2059,
+              "R": 0.5,
+              "F1": 0.2917
+            }
+          }
+        },
+        "semantic": {
+          "metric": "attack_set_prf@k(technique)",
+          "n": 10,
+          "prf_at_k": {
+            "5": {
+              "P": 0.3333,
+              "R": 0.4333,
+              "F1": 0.3768
+            },
+            "10": {
+              "P": 0.2429,
+              "R": 0.5667,
+              "F1": 0.34
+            },
+            "20": {
+              "P": 0.1789,
+              "R": 0.5667,
+              "F1": 0.272
+            }
+          }
+        },
+        "relationship_direct": {
+          "metric": "attack_set_prf@k(technique)",
+          "n": 10,
+          "prf_at_k": {
+            "5": {
+              "P": 0.4545,
+              "R": 0.1739,
+              "F1": 0.2516
+            },
+            "10": {
+              "P": 0.3556,
+              "R": 0.2783,
+              "F1": 0.3122
+            },
+            "20": {
+              "P": 0.2741,
+              "R": 0.3217,
+              "F1": 0.296
+            }
+          }
+        },
+        "otx_malware": {
+          "metric": "pulse_recall@k",
+          "n": 5,
+          "recall_at_k": {
+            "5": 0.0909,
+            "10": 0.1667,
+            "20": 0.2525
+          }
+        }
+      },
+      "per_query": [
+        {
+          "query_id": "P001",
+          "query": "Office template macros persistence",
+          "category": "precise",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "P002",
+          "query": "disable hardware encryption network devices",
+          "category": "precise",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "P003",
+          "query": "HTML smuggling blob bypass",
+          "category": "precise",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "P004",
+          "query": "FailureCommand registry service escalation",
+          "category": "precise",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "P005",
+          "query": "purchasing exploits from vendors",
+          "category": "precise",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S001",
+          "query": "How can attackers move laterally to cloud VMs using built-in cloud console features?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S002",
+          "query": "During a ransomware incident, how do attackers prevent admin lockout by tampering with account credentials?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S003",
+          "query": "How can Python's startup configuration be abused to maintain access?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S004",
+          "query": "How can an attacker maintain access to a cloud environment without deploying remote access tools?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.5,
+          "target_rank": 2
+        },
+        {
+          "query_id": "S005",
+          "query": "How can IDE extensions be abused for persistent access?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S006",
+          "query": "How can junior analysts detect malicious automation scripts on endpoints?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.3333,
+          "target_rank": 3
+        },
+        {
+          "query_id": "S007",
+          "query": "How can document templates be weaponized to evade defenses?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S008",
+          "query": "When would disabling hardware encryption on a network device help an attacker's data exfiltration?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S009",
+          "query": "How can malicious code reach enterprise systems via package managers?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "S010",
+          "query": "How can attackers use shared document repositories to move laterally?",
+          "category": "semantic",
+          "hit_at_k": {
+            "5": false,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.1667,
+          "target_rank": 6
+        },
+        {
+          "query_id": "F001",
+          "query": "the pass the ticket one for lateral movement?",
+          "category": "fuzzy",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "F005",
+          "query": "that password guessing thing with no prior knowledge",
+          "category": "fuzzy",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "F007",
+          "query": "the one where mac users got phished with fake meeting links",
+          "category": "fuzzy",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "F010",
+          "query": "the MFA bypass thing, was it credential access?",
+          "category": "fuzzy",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.5,
+          "target_rank": 2
+        },
+        {
+          "query_id": "F012",
+          "query": "that thing where they hide malware in PyPi packages",
+          "category": "fuzzy",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.25,
+          "target_rank": 4
+        },
+        {
+          "query_id": "R001",
+          "query": "What techniques does Kimsuky use to collect data?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.3333,
+          "target_rank": 3
+        },
+        {
+          "query_id": "R002",
+          "query": "How does Turla establish command and control in targeted operations?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": false
+          },
+          "rr": 0.0,
+          "target_rank": null
+        },
+        {
+          "query_id": "R003",
+          "query": "What methods has APT29 employed for credential theft?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.5,
+          "target_rank": 2
+        },
+        {
+          "query_id": "R004",
+          "query": "What techniques does Lazarus use to evade defenses?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "R005",
+          "query": "How does APT1 discover systems and networks in targeted operations?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "R006",
+          "query": "What methods has OilRig employed for data exfiltration?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "R007",
+          "query": "What techniques does APT38 use to cause damage?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.5,
+          "target_rank": 2
+        },
+        {
+          "query_id": "R008",
+          "query": "How does APT29 maintain persistence in targeted operations?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "R009",
+          "query": "What methods has Turla employed for privilege escalation?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "R010",
+          "query": "What techniques does APT29 use to prepare attack infrastructure?",
+          "category": "relationship_direct",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": true
+          },
+          "rr": 0.0667,
+          "target_rank": 15
+        },
+        {
+          "query_id": "O001",
+          "query": "threat intelligence on Cobalt campaigns and TTPs",
+          "category": "otx_actor",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": false
+          },
+          "rr": 0.0,
+          "target_rank": null
+        },
+        {
+          "query_id": "O002",
+          "query": "recent Kimsuky cyber espionage operations",
+          "category": "otx_actor",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": false
+          },
+          "rr": 0.0,
+          "target_rank": null
+        },
+        {
+          "query_id": "O003",
+          "query": "indicators of compromise associated with Lazarus Group",
+          "category": "otx_actor",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": false
+          },
+          "rr": 0.0,
+          "target_rank": null
+        },
+        {
+          "query_id": "O004",
+          "query": "How has MuddyWater targeted organizations in recent campaigns?",
+          "category": "otx_actor",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": true
+          },
+          "rr": 0.0769,
+          "target_rank": 13
+        },
+        {
+          "query_id": "O005",
+          "query": "Sofacy attack infrastructure and tooling",
+          "category": "otx_actor",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": false
+          },
+          "rr": 0.0,
+          "target_rank": null
+        },
+        {
+          "query_id": "O006",
+          "query": "What sectors does FIN7 typically target?",
+          "category": "otx_actor",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.25,
+          "target_rank": 4
+        },
+        {
+          "query_id": "O007",
+          "query": "Overview of Magecart operations and attributed attacks",
+          "category": "otx_actor",
+          "hit_at_k": {
+            "5": false,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.1429,
+          "target_rank": 7
+        },
+        {
+          "query_id": "O008",
+          "query": "Cobalt Strike malware indicators and attribution",
+          "category": "otx_malware",
+          "hit_at_k": {
+            "5": false,
+            "10": false,
+            "20": false
+          },
+          "rr": 0.0,
+          "target_rank": null
+        },
+        {
+          "query_id": "O009",
+          "query": "detection and analysis of Korplug payloads",
+          "category": "otx_malware",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.5,
+          "target_rank": 2
+        },
+        {
+          "query_id": "O011",
+          "query": "indicators of compromise for PlugX - S0013 infections",
+          "category": "otx_malware",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        },
+        {
+          "query_id": "O012",
+          "query": "What campaigns have used TrojanSpy as a payload?",
+          "category": "otx_malware",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 0.5,
+          "target_rank": 2
+        },
+        {
+          "query_id": "O013",
+          "query": "Truebot technical analysis and behavioral indicators",
+          "category": "otx_malware",
+          "hit_at_k": {
+            "5": true,
+            "10": true,
+            "20": true
+          },
+          "rr": 1.0,
+          "target_rank": 1
+        }
+      ]
+    }
+  ]
+}
