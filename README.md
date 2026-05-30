@@ -181,6 +181,38 @@ rag-cti metrics data/eval/retrieval_results.json --strict
 
 Three evaluation protocols. Results should be read together: the external benchmark measures generalisation; the custom query set provides per-category diagnostics; RAGAS measures generation quality.
 
+### Capability-split certification (v3)
+
+Four capabilities reported independently (never averaged). Annotator certified against external human ground truth (CTI-ATE / CTI-TAA) with `deepseek-chat`; retrieval = hybrid + CrossEncoder rerank, HyDE off. Truth sources under `data/eval/` (`certification_full_deepseek_*.json`, `attribution_v3_results.json`, `ragas_v3_results.json`, `capabilities_summary.json`).
+
+| Capability | Metric | Data | Result | Gate |
+|---|---|---|---|---|
+| technique extraction | Micro-F1(technique) | CTI-ATE Enterprise n=47 | **0.6703** (P=0.7459 R=0.6087, TP/FP/FN 182/62/117) | ≥0.65 → PASS |
+| actor attribution | plausible / correct acc | CTI-TAA n=50 | **0.70** plausible (0.66 correct; C=33 P=2 I=15) | ≥0.50 → PASS |
+| heterogeneous retrieval | set/hit@k per category | query_set_v3 (42) | see per-category below | — |
+| generation grounding | RAGAS faithfulness / answer_relevancy | n=14 | 0.9102 / 0.8287 | — |
+
+Mobile technique subset (n=13) is out-of-corpus (Enterprise-only ATT&CK), F1=0.0112, not gated. RAGAS `context_precision`/`context_recall` not computed (query set has no reference answers).
+
+**Heterogeneous retrieval — hit@k by category**
+
+| category | n | @5 | @10 | @20 |
+|---|---|---|---|---|
+| precise | 5 | 1.00 | 1.00 | 1.00 |
+| semantic | 10 | 0.90 | 1.00 | 1.00 |
+| fuzzy | 5 | 1.00 | 1.00 | 1.00 |
+| relationship_direct | 10 | 0.80 | 0.80 | 0.90 |
+| otx_actor | 7 | 0.1429 | 0.2857 | 0.4286 |
+| otx_malware | 5 | 0.80 | 0.80 | 0.80 |
+
+**Multi-label set F1@k (technique-level, exact set)**
+
+| category | n | F1@5 | F1@10 | F1@20 |
+|---|---|---|---|---|
+| precise | 5 | 0.3704 | 0.3333 | 0.2917 |
+| semantic | 10 | 0.3768 | 0.3400 | 0.2720 |
+| relationship_direct | 10 | 0.2516 | 0.3122 | 0.2960 |
+
 > **Note on alpha bug fix (Phase 6.5):** Previous results labelled "dense" and "hybrid" were identical because `build_pipeline()` always created a `HybridRetriever` regardless of config. This has been fixed — `hybrid_alpha_override=1.0` now correctly produces pure dense retrieval.
 
 ### TechniqueRAG (external benchmark, 50 queries)

@@ -4,5 +4,12 @@
 # Development harness (RIE audit trails)
 .harness/
 
+# Agent orchestration runtime state + analysis scratch
+.team/
+/.analysis/
+
+# Temp / scratch outputs (logs, diagnostics, nested benchmark clones)
+tmp/
+
 # Qdrant snapshots
 *.snapshot
