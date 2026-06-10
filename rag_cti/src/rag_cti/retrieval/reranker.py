@@ -68,7 +68,7 @@ class CrossEncoderReranker:
         t_predict = time.perf_counter()
 
         reranked = sorted(
-            zip(results, scores),
+            zip(results, scores, strict=True),
             key=lambda x: float(x[1]),
             reverse=True,
         )

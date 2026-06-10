@@ -6,10 +6,7 @@ All fixtures use real STIX 2.1 object structure with realistic IDs.
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
-
-import pytest
 
 from rag_cti.connectors.mitre_relationship import MitreRelationshipConnector
 

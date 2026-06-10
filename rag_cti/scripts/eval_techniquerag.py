@@ -16,15 +16,11 @@ from typing import Any
 # Allow running from the rag_cti/ project root without installing the package.
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from rag_cti.bootstrap import build_eval_pipeline, build_retrieval_stack
 from rag_cti.config import get_settings
-from rag_cti.embeddings.embedder import Embedder
 from rag_cti.evaluation.retrieval_metrics import EvalResult, evaluate_retriever
 from rag_cti.evaluation.techniquerag import load_techniquerag
-from rag_cti.retrieval import build_pipeline
-from rag_cti.retrieval.bm25 import BM25SparseEncoder
-from rag_cti.store.qdrant_store import QdrantStore
 
-_VOCAB_PATH = Path(__file__).parent.parent / "data" / "sparse_vocab.json"
 _DATASET_ID = "QCRI/TechniqueRAG-Datasets"
 
 
@@ -37,21 +33,6 @@ class _PipelineRetriever:
     def search(self, text: str, top_k: int) -> list[Any]:
         result = self._pipeline.run(text, top_k=top_k)
         return result.results
-
-
-def _build_store_and_embedder(settings: Any) -> tuple[QdrantStore, Embedder, BM25SparseEncoder]:
-    store = QdrantStore(
-        url=settings.qdrant_url,
-        collection=settings.qdrant_collection,
-        api_key=settings.qdrant_api_key.get_secret_value(),
-    )
-    embedder = Embedder(model_name=settings.embedding_model)
-    encoder = (
-        BM25SparseEncoder.load(_VOCAB_PATH)
-        if _VOCAB_PATH.exists()
-        else BM25SparseEncoder()
-    )
-    return store, embedder, encoder
 
 
 def _build_groq_client(settings: Any) -> Any | None:
@@ -114,26 +95,15 @@ def main() -> None:
     print(f"  {len(dataset)} records loaded.")
 
     settings = get_settings()
-    store, embedder, encoder = _build_store_and_embedder(settings)
+    stack = build_retrieval_stack(settings)
     groq_client = _build_groq_client(settings)
 
     results: list[EvalResult] = []
 
-    ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
-
     for config in configs_to_run:
         print(f"\nRunning config: {config}")
-        use_hyde = config == "hybrid+hyde"
-        alpha = ALPHA_MAP.get(config, 0.5)
-
-        pipeline = build_pipeline(
-            settings=settings,
-            store=store,
-            embedder=embedder,
-            encoder=encoder,
-            llm_client=groq_client if use_hyde else None,
-            llm_provider="groq" if use_hyde and groq_client else "anthropic",
-            hybrid_alpha_override=alpha,
+        pipeline = build_eval_pipeline(
+            stack, settings, config, llm_client=groq_client, llm_provider="groq"
         )
 
         retriever = _PipelineRetriever(pipeline)

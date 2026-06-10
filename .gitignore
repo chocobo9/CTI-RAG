@@ -14,3 +14,9 @@ tmp/
 
 # Qdrant snapshots
 *.snapshot
+
+# Local evaluation notes / specs
+/CLAUDE.md
+/PROJECT_SPEC.md
+/MEASUREMENT_SOURCES_BRIEF.md
+/MEASUREMENT_SOURCES_BRIEF_EN.md

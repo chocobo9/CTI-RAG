@@ -41,18 +41,20 @@ class QdrantStore:
         collection: str,
         api_key: str = "",
         upsert_batch_size: int = _DEFAULT_UPSERT_BATCH,
+        max_content_len: int = _MAX_CONTENT_LEN,
     ) -> None:
         from qdrant_client import QdrantClient  # type: ignore[import]
 
         self.collection = collection
         self.upsert_batch_size = upsert_batch_size
+        self.max_content_len = max_content_len
         self._client = QdrantClient(url=url, api_key=api_key or None)
 
     def ensure_collection(self, vector_size: int) -> None:
         """Create the collection if it does not exist. No-op if already present.
 
         Creates a hybrid schema: named 'dense' (cosine) + named 'sparse' (BM25).
-        Schema matches migrate_to_hybrid.py so ingest.py is the sole lifecycle owner.
+        ingest.py is the sole collection lifecycle owner.
         """
         from qdrant_client.http import models as qm  # type: ignore[import]
         from qdrant_client.models import (  # type: ignore[import]
@@ -167,7 +169,7 @@ class QdrantStore:
 
         return [
             RetrievalResult(
-                document=_payload_to_chunk(hit.payload or {}),
+                document=_payload_to_chunk(hit.payload or {}, self.max_content_len),
                 score=float(hit.score),
                 rank=rank,
                 retriever_source=_RETRIEVER_NAME,
@@ -206,7 +208,7 @@ class QdrantStore:
 
         return [
             RetrievalResult(
-                document=_payload_to_chunk(hit.payload or {}),
+                document=_payload_to_chunk(hit.payload or {}, self.max_content_len),
                 score=float(hit.score),
                 rank=rank,
                 retriever_source=_SPARSE_RETRIEVER_NAME,
@@ -246,12 +248,12 @@ def _chunk_to_payload(chunk: Chunk) -> dict[str, Any]:
     }
 
 
-def _payload_to_chunk(payload: dict[str, Any]) -> Chunk:
+def _payload_to_chunk(payload: dict[str, Any], max_content_len: int = _MAX_CONTENT_LEN) -> Chunk:
     return Chunk(
         id=str(payload.get("id", "")),
         parent_doc_id=str(payload.get("parent_doc_id", "")),
         source=str(payload.get("source", "")),
-        content=str(payload.get("content", ""))[:_MAX_CONTENT_LEN],
+        content=str(payload.get("content", ""))[:max_content_len],
         chunk_index=int(payload.get("chunk_index", 0)),
         metadata=dict(payload.get("metadata") or {}),
         retrieved_at=_parse_ts(payload.get("retrieved_at")),

@@ -1,4 +1,4 @@
-"""Fetch OTX pulse descriptions by pulse_id from a CSV file.
+﻿"""Fetch OTX pulse descriptions by pulse_id from a CSV file.
 
 Usage:
     python scripts/fetch_otx_by_pulse_id.py --csv /path/to/otx_domain_pulse_iocs.csv
@@ -9,6 +9,7 @@ Supports checkpoint-based resume on failure.
 """
 from __future__ import annotations
 
+# ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
 import argparse
 import csv
 import json

@@ -1,4 +1,4 @@
-"""Download recent public CTI PDF reports to data/raw/pdfs/.
+﻿"""Download recent public CTI PDF reports to data/raw/pdfs/.
 
 Fetches from three sources in order:
   1. Curated  — FBI IC3 annual internet crime reports (5 direct URLs)
@@ -18,6 +18,7 @@ Requirements (all already project deps or transitive):
 """
 from __future__ import annotations
 
+# ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
 import argparse
 import re
 import sys

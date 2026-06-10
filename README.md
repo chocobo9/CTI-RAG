@@ -57,14 +57,14 @@ flowchart TD
 | Sparse encoder | Custom BM25 sparse vectors (IOC-preserving tokenizer); optional `rank-bm25` ships with `[eval]` |
 | LLM (default) | Groq — `llama-3.3-70b-versatile` (analysis), `llama-3.1-8b-instant` (HyDE) |
 | LLM (alt) | Ollama (local), Anthropic Claude |
-| CTI sources | MITRE ATT&CK STIX, OTX, WHOIS, pDNS, PDF reports |
+| CTI sources | MITRE ATT&CK STIX, OTX, PDF reports, WHOIS (Whoxy); pDNS / VirusTotal connectors are experimental (no ingestion path yet) |
 | Reranker | `BAAI/bge-reranker-v2-m3` CrossEncoder (CUDA, batch_size=8) |
 | Evaluation | Custom `Hit@k`, `MRR`, `nDCG@k`; TechniqueRAG benchmark; RAGAS (faithfulness, answer_relevancy) |
 | Tracing | LangSmith (`@traced` + `add_trace_metadata`) |
 | CLI | Typer + Rich |
 | Config | Pydantic Settings + `.env` |
-| Testing | pytest — 486 tests, 94% coverage |
-| Linting | ruff, mypy (strict), bandit |
+| Testing | pytest — 580+ tests, ~91% measured coverage (CI gate: 80%) |
+| Linting | ruff (CI-gated); mypy strict is report-only while pre-existing errors are burned down |
 
 ---
 
@@ -133,12 +133,21 @@ EMBEDDING_MODEL=BAAI/bge-m3
 Requires at least the core install; PDF ingestion needs `[pdf]`:
 
 ```bash
-python scripts/seed_mitre.py    # MITRE ATT&CK techniques (core)
-python scripts/fetch_otx.py     # OTX threat reports (core)
-python scripts/seed_pdfs.py     # internal PDF reports — pip install -e ".[pdf]"
+python scripts/seed_mitre.py                  # MITRE ATT&CK techniques (core)
+python scripts/seed_mitre_relationships.py    # MITRE actor→technique edges (core)
+python scripts/fetch_otx.py                   # OTX threat reports (core)
+python scripts/seed_pdfs.py                   # internal PDF reports — pip install -e ".[pdf]"
+python scripts/fetch_whois.py --domains domains.txt   # WHOIS via Whoxy — needs WHOXY_API_KEY
+python scripts/ingest.py --sources mitre mitre_relationships otx pdfs   # embed + upsert into Qdrant
 ```
 
-> WHOIS and pDNS connectors exist in `src/rag_cti/connectors/` (`whois_connector.py`, `passive_dns.py`) but no standalone ingestion script is included in this release. Use `[connectors]` when working with STIX-heavy connector code paths.
+`make ingest-all` runs the full chain. Connector status: **WHOIS** is fully wired
+(Whoxy API → `fetch_whois.py` → `WHOISConnector` → ingest). **pDNS** and
+**VirusTotal** connectors exist (`passive_dns.py`, `virustotal.py`) with tests but
+have **no data source / ingestion script yet** — the live collection contains no
+pdns points. To activate pDNS, add a fetcher against a passive-DNS provider
+(SecurityTrails, Farsight, or VirusTotal resolutions) that emits the record dicts
+`PassiveDNSConnector` already consumes.
 
 ### 4. Query
 
@@ -165,15 +174,23 @@ Install `[eval]` and `[cli]` (or `[all]`). External benchmark needs HuggingFace 
 # External benchmark (requires HuggingFace access)
 rag-cti eval techniquerag --config all --max-records 200
 
-# Custom query set
-rag-cti eval retrieval --query-set data/eval/query_set.jsonl --config all
+# Current query set (v3, identifier-gold schema) — heterogeneous retrieval
+python scripts/eval_attribution.py --query-set data/eval/query_set_v3.jsonl \
+    --output data/eval/attribution_v3_results.json
 
-# RAGAS generation quality (requires DEEPSEEK_API_KEY)
-rag-cti eval ragas --config hybrid -n 10 -o data/eval/ragas_results.json
+# Capability-split summary (+ optional RAGAS grounding; requires DEEPSEEK_API_KEY)
+python scripts/eval_capabilities.py --ragas
+
+# Annotator certification against CTI-ATE / CTI-TAA human ground truth
+python scripts/certify_annotator.py --provider deepseek
 
 # Display saved metrics
 rag-cti metrics data/eval/retrieval_results.json --strict
 ```
+
+> `rag-cti eval retrieval` / `rag-cti eval ragas` consume the archived v1-schema
+> query set (`expected_chunk_ids`); the current v2/v3 sets use identifier gold and
+> go through `scripts/eval_attribution.py` instead (see `data/eval/archive_pre-v2.md`).
 
 ---
 
@@ -183,27 +200,26 @@ Three evaluation protocols. Results should be read together: the external benchm
 
 ### Capability-split certification (v3)
 
-Four capabilities reported independently (never averaged). Annotator certified against external human ground truth (CTI-ATE / CTI-TAA) with `deepseek-chat`; retrieval = hybrid + CrossEncoder rerank, HyDE off. Truth sources under `data/eval/` (`certification_full_deepseek_*.json`, `attribution_v3_results.json`, `ragas_v3_results.json`, `capabilities_summary.json`).
+Four capabilities reported independently (never averaged). Annotator certified against external human ground truth (CTI-ATE / CTI-TAA) with `deepseek-chat`; retrieval = hybrid + CrossEncoder rerank, HyDE off. Truth sources under `data/eval/` (`certification_full_deepseek_*.json`, `attribution_v3_results.json`, `ragas_v3_results.json`, `capabilities_summary.json`). Tables below are generated from those artifacts by `scripts/render_results.py --write` (query set: query_set_v3, 42 queries).
 
+<!-- CAPABILITY-RESULTS:BEGIN (generated by scripts/render_results.py) -->
 | Capability | Metric | Data | Result | Gate |
 |---|---|---|---|---|
-| technique extraction | Micro-F1(technique) | CTI-ATE Enterprise n=47 | **0.6703** (P=0.7459 R=0.6087, TP/FP/FN 182/62/117) | ≥0.65 → PASS |
-| actor attribution | plausible / correct acc | CTI-TAA n=50 | **0.70** plausible (0.66 correct; C=33 P=2 I=15) | ≥0.50 → PASS |
-| heterogeneous retrieval | set/hit@k per category | query_set_v3 (42) | see per-category below | — |
-| generation grounding | RAGAS faithfulness / answer_relevancy | n=14 | 0.9102 / 0.8287 | — |
-
-Mobile technique subset (n=13) is out-of-corpus (Enterprise-only ATT&CK), F1=0.0112, not gated. RAGAS `context_precision`/`context_recall` not computed (query set has no reference answers).
+| technique extraction | Micro-F1(technique) | CTI-ATE Enterprise n=47 | **0.6703** (P=0.7459 R=0.6087) | >=0.65 -> PASS |
+| actor attribution | plausible / correct acc | CTI-TAA n=50 | **0.70** plausible (0.66 correct; C=33 P=2 I=15) | >=0.5 -> PASS |
+| heterogeneous retrieval | set/hit@k per category | self query-set data/eval/query_set_v3.jsonl | see per-category below | — |
+| generation grounding | RAGAS faithfulness / answer_relevancy | self query-set query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10) | 0.9102 / 0.8287 | — |
 
 **Heterogeneous retrieval — hit@k by category**
 
 | category | n | @5 | @10 | @20 |
 |---|---|---|---|---|
-| precise | 5 | 1.00 | 1.00 | 1.00 |
-| semantic | 10 | 0.90 | 1.00 | 1.00 |
-| fuzzy | 5 | 1.00 | 1.00 | 1.00 |
-| relationship_direct | 10 | 0.80 | 0.80 | 0.90 |
+| fuzzy | 5 | 1.0000 | 1.0000 | 1.0000 |
 | otx_actor | 7 | 0.1429 | 0.2857 | 0.4286 |
-| otx_malware | 5 | 0.80 | 0.80 | 0.80 |
+| otx_malware | 5 | 0.8000 | 0.8000 | 0.8000 |
+| precise | 5 | 1.0000 | 1.0000 | 1.0000 |
+| relationship_direct | 10 | 0.8000 | 0.8000 | 0.9000 |
+| semantic | 10 | 0.9000 | 1.0000 | 1.0000 |
 
 **Multi-label set F1@k (technique-level, exact set)**
 
@@ -212,8 +228,11 @@ Mobile technique subset (n=13) is out-of-corpus (Enterprise-only ATT&CK), F1=0.0
 | precise | 5 | 0.3704 | 0.3333 | 0.2917 |
 | semantic | 10 | 0.3768 | 0.3400 | 0.2720 |
 | relationship_direct | 10 | 0.2516 | 0.3122 | 0.2960 |
+<!-- CAPABILITY-RESULTS:END -->
 
-> **Note on alpha bug fix (Phase 6.5):** Previous results labelled "dense" and "hybrid" were identical because `build_pipeline()` always created a `HybridRetriever` regardless of config. This has been fixed — `hybrid_alpha_override=1.0` now correctly produces pure dense retrieval.
+Technique micro-F1 above is the single 23:56Z certification run; the 4-run mean is 0.662 (min 0.653, max 0.670) — both clear the 0.65 gate. Mobile technique subset (n=13) is out-of-corpus (Enterprise-only ATT&CK), F1=0.0112, not gated. RAGAS `context_precision`/`context_recall` not computed (query set has no reference answers).
+
+> **Note on `hybrid_alpha`:** an earlier release had two related defects: (1) `build_pipeline()` always created a `HybridRetriever` regardless of config, so "dense" and "hybrid" results were identical; (2) after that was fixed, `hybrid_alpha` values in (0, 1) still had no effect because the RRF fusion was unweighted. Both are fixed: fusion is now weighted RRF (`alpha·dense + (1−alpha)·sparse`), `alpha=0.5` reproduces the symmetric fusion all published results used, and `alpha≥1.0` skips the sparse retriever entirely.
 
 ### TechniqueRAG (external benchmark, 50 queries)
 
@@ -226,9 +245,9 @@ Independent evaluation on [QCRI/TechniqueRAG-Datasets](https://huggingface.co/da
 | dense + reranker | 0.340 | 0.660 | 0.720 | 0.472 |
 | **hybrid + reranker** | **0.360** | **0.640** | **0.700** | **0.471** |
 
-### Custom Query Set (49 queries, 3 categories)
+### Custom Query Set (49 queries, 3 categories — archived v1 set)
 
-LLM-generated queries from the ingested corpus (17 precise, 20 semantic, 12 fuzzy). All `expected_chunk_ids` verified present in the target collection. Treat as diagnostic, not absolute.
+Historical results on the archived v1 query set (see `data/eval/archive_pre-v2.md`); superseded by the capability-split v3 evaluation above but kept for the dense-vs-hybrid-vs-reranker comparison. LLM-generated queries from the ingested corpus (17 precise, 20 semantic, 12 fuzzy). All `expected_chunk_ids` verified present in the target collection. Treat as diagnostic, not absolute.
 
 **Overall**
 
@@ -290,21 +309,23 @@ Streaming connectors for live OTX feeds and VirusTotal webhooks.
 
 ```
 src/rag_cti/
-├── connectors/        # OTX, VirusTotal data fetchers
+├── connectors/        # MITRE, OTX, PDF, WHOIS/Whoxy (+ experimental pDNS, VT)
 ├── embeddings/        # BGE-M3 embedder wrapper
-├── evaluation/        # retrieval_metrics, query_set, techniquerag, ragas_eval
+├── evaluation/        # retrieval_metrics, set/taa_metrics, techniquerag, ragas_eval
 ├── generation/        # Generator, LLMRouter, context_builder, client
 ├── observability/     # LangSmith tracing seam
-├── preprocess/        # chunking, normalizers, pdf_parser
-├── retrieval/         # pipeline, hyde, bm25, reranker (CrossEncoder)
+├── preprocess/        # chunking, normalizers, pdf_parser, seeding (shared JSONL pipeline)
+├── retrieval/         # pipeline, hyde, bm25, weighted-RRF fusion, reranker
 ├── store/             # QdrantStore (dense + sparse upsert/search)
+├── bootstrap.py       # Shared eval/CLI stack construction (paths, ALPHA_MAP, builders)
 ├── cli.py             # Typer CLI (query, eval, metrics)
 ├── cli_metrics.py     # Pure metrics loading/rendering
 ├── config.py          # Pydantic Settings
 └── types.py           # Shared types + Protocol interfaces
 
-scripts/               # One-shot ingestion scripts
-tests/unit/            # 486 tests, 94% coverage
+scripts/               # Ingestion (seed_*, fetch_*), eval (eval_*, certify_annotator),
+                       # diagnostics (diag_*, measure_*), render_results
+tests/                 # 580+ tests, ~91% coverage (CI gate 80%)
 data/eval/             # Query set JSONL, evaluation results
 docs/                  # Architecture and decision records
 ```

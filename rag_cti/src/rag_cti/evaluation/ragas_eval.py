@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from rag_cti._logging import get_logger
 from rag_cti.types import GeneratedAnswer
@@ -73,11 +73,12 @@ def _build_judge_llm(settings: object) -> object:
     return LangchainLLMWrapper(chat)
 
 
-def _build_embeddings() -> object:
+def _build_embeddings(settings: object) -> object:
     from langchain_community.embeddings import HuggingFaceEmbeddings
     from ragas.embeddings import LangchainEmbeddingsWrapper
 
-    hf = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+    model_name = getattr(settings, "embedding_model", "BAAI/bge-m3")
+    hf = HuggingFaceEmbeddings(model_name=model_name)
     return LangchainEmbeddingsWrapper(hf)
 
 
@@ -104,14 +105,14 @@ def run_ragas_eval(
             faithfulness=0.0,
             answer_relevancy=0.0,
             config=config,
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
     from ragas import EvaluationDataset, SingleTurnSample, evaluate
     from ragas.metrics import AnswerRelevancy, Faithfulness
 
     llm = _build_judge_llm(settings)
-    embeddings = _build_embeddings()
+    embeddings = _build_embeddings(settings)
 
     use_context = references is not None and any(r for r in references)
 
@@ -164,5 +165,5 @@ def run_ragas_eval(
         context_recall=_avg("context_recall") if use_context else -1.0,
         per_query=per_query,
         config=config,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
     )

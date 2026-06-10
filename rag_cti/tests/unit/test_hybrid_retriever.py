@@ -202,3 +202,40 @@ def test_candidate_multiplier_missing_from_settings_defaults_to_1() -> None:
     retriever.search("query", top_k=5)
     assert dense.last_top_k == 5
     assert sparse.last_top_k == 5
+
+
+# ---------------------------------------------------------------------------
+# Tests — hybrid_alpha weighting
+# ---------------------------------------------------------------------------
+
+def test_alpha_biases_fusion_toward_dense() -> None:
+    """alpha near 1 must rank the dense top hit above the sparse top hit."""
+    dense = _FakeRetriever([_make_result("d_top", 0.9, 0)])
+    sparse = _FakeRetriever([_make_result("s_top", 0.8, 0, "sparse")])
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=_FakeSettings(), alpha=0.9)
+    results = retriever.search("query")
+    assert results[0].document.id == "d_top"
+
+
+def test_alpha_biases_fusion_toward_sparse() -> None:
+    """alpha near 0 must rank the sparse top hit above the dense top hit."""
+    dense = _FakeRetriever([_make_result("d_top", 0.9, 0)])
+    sparse = _FakeRetriever([_make_result("s_top", 0.8, 0, "sparse")])
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=_FakeSettings(), alpha=0.1)
+    results = retriever.search("query")
+    assert results[0].document.id == "s_top"
+
+
+def test_alpha_falls_back_to_settings_hybrid_alpha() -> None:
+    """alpha=None reads settings.hybrid_alpha (here 0 → sparse-only weight)."""
+
+    class _AlphaSettings(_FakeSettings):
+        def __init__(self) -> None:
+            super().__init__()
+            self.hybrid_alpha = 0.0
+
+    dense = _FakeRetriever([_make_result("d_top", 0.9, 0)])
+    sparse = _FakeRetriever([_make_result("s_top", 0.8, 0, "sparse")])
+    retriever = HybridRetriever(dense=dense, sparse=sparse, settings=_AlphaSettings())
+    results = retriever.search("query")
+    assert [r.document.id for r in results] == ["s_top"]

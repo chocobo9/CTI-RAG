@@ -11,12 +11,19 @@ logger = get_logger(__name__)
 
 
 class HybridRetriever:
-    """Runs dense and sparse retrieval in parallel and fuses results with RRF."""
+    """Runs dense and sparse retrieval in parallel and fuses results with weighted RRF.
 
-    def __init__(self, dense: object, sparse: object, settings: object) -> None:
+    ``alpha`` is the dense weight in the fusion (sparse gets ``1 - alpha``).
+    ``None`` falls back to ``settings.hybrid_alpha``.
+    """
+
+    def __init__(
+        self, dense: object, sparse: object, settings: object, alpha: float | None = None
+    ) -> None:
         self._dense = dense
         self._sparse = sparse
         self._settings = settings
+        self._alpha = alpha if alpha is not None else getattr(settings, "hybrid_alpha", 0.5)
 
     def search(
         self,
@@ -40,7 +47,10 @@ class HybridRetriever:
             dense_results = f_dense.result()
             sparse_results = f_sparse.result()
 
-        fused = reciprocal_rank_fusion([dense_results, sparse_results])
+        fused = reciprocal_rank_fusion(
+            [dense_results, sparse_results],
+            weights=[self._alpha, 1.0 - self._alpha],
+        )
         results = fused[:top_k]
 
         elapsed_ms = (time.perf_counter() - t0) * 1000

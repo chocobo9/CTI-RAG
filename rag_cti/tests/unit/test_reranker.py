@@ -167,7 +167,7 @@ def test_noop_reranker_preserves_input_unchanged() -> None:
     reranked = reranker.rerank("lateral movement techniques", results)
 
     assert reranked is results
-    for orig, out in zip(results, reranked):
+    for orig, out in zip(results, reranked, strict=True):
         assert out.document.id == orig.document.id
         assert out.score == orig.score
         assert out.rank == orig.rank

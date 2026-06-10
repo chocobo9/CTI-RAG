@@ -34,32 +34,25 @@ import glob
 import json
 import sys
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, cast
+from typing import Any, cast
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-_EVAL_DIR = Path(__file__).parent.parent / "data" / "eval"
+from rag_cti.bootstrap import (
+    DEEPSEEK_DEFAULT_MODEL,
+    FixedRouter,
+    build_deepseek_client,
+    build_retrieval_stack,
+)
+from rag_cti.bootstrap import (
+    EVAL_DIR as _EVAL_DIR,
+)
+
 _DEFAULT_QUERY_SET = _EVAL_DIR / "query_set_v3.jsonl"
 _RAGAS_ARTIFACT = _EVAL_DIR / "ragas_v3_results.json"
-_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
-_DEEPSEEK_MODEL = "deepseek-chat"
-
-
-class _FixedRouter:
-    """Minimal LLMRouter substitute returning one model for every task.
-
-    Used when generation runs on a provider other than the settings-derived Groq
-    model (e.g. DeepSeek when Groq's daily token cap is exhausted). Generator only
-    calls .model_for(task) -> str.
-    """
-
-    def __init__(self, model: str) -> None:
-        self._model = model
-
-    def model_for(self, task: object) -> str:
-        return self._model
 
 
 def _load_json(path: Path | None) -> dict[str, Any] | None:
@@ -137,45 +130,33 @@ def run_generation_grounding(
     rather than fabricated (CLAUDE.md §2.7: no hand-written gold).
     """
     from rag_cti.config import get_settings
-    from rag_cti.embeddings.embedder import Embedder
     from rag_cti.evaluation.ragas_eval import run_ragas_eval
     from rag_cti.generation.client import build_llm_client
     from rag_cti.generation.generator import _LLM_FAILURE_SENTINEL, Generator
     from rag_cti.generation.llm_router import LLMRouter
     from rag_cti.retrieval import build_pipeline
-    from rag_cti.retrieval.bm25 import BM25SparseEncoder
-    from rag_cti.store.qdrant_store import QdrantStore
 
-    vocab = Path(__file__).parent.parent / "data" / "sparse_vocab.json"
     settings = get_settings()
-    coll = collection or settings.qdrant_collection
-
-    store = QdrantStore(
-        url=settings.qdrant_url,
-        collection=coll,
-        api_key=settings.qdrant_api_key.get_secret_value(),
-    )
-    embedder = Embedder(model_name=settings.embedding_model, device=device)
-    encoder = BM25SparseEncoder.load(vocab) if vocab.exists() else BM25SparseEncoder()
+    stack = build_retrieval_stack(settings, collection=collection, device=device)
+    coll = stack.collection
 
     # Generator provider. Production answer-synthesis uses Groq (groq_analysis_model).
     # When Groq's daily token cap is exhausted, --gen-provider deepseek routes generation
     # to DeepSeek (the RAGAS judge already uses DeepSeek). The actual generator model is
     # recorded in the artifact so the grounding measurement is never mislabeled.
     if gen_provider == "deepseek":
-        from openai import OpenAI
-        key = settings.deepseek_api_key.get_secret_value()
-        if not key:
-            raise RuntimeError("DEEPSEEK_API_KEY not set — cannot run generation on DeepSeek")
-        client = OpenAI(base_url=_DEEPSEEK_BASE_URL, api_key=key, max_retries=5, timeout=120)
-        gen_model = _DEEPSEEK_MODEL
-        router: Any = _FixedRouter(gen_model)
+        client = build_deepseek_client(settings)
+        gen_model = DEEPSEEK_DEFAULT_MODEL
+        router: Any = FixedRouter(gen_model)
     else:
         _provider, client = build_llm_client(settings)
         gen_model = settings.groq_analysis_model
         router = LLMRouter(settings)
     # Production hybrid + reranker, HyDE OFF (same as certify/eval).
-    pipeline = build_pipeline(settings=settings, store=store, embedder=embedder, encoder=encoder, llm_client=None)
+    pipeline = build_pipeline(
+        settings=settings, store=stack.store, embedder=stack.embedder,
+        encoder=stack.encoder, llm_client=None,
+    )
     generator = Generator(client=client, router=router, settings=settings)
 
     rows = [json.loads(line) for line in query_set.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -231,7 +212,7 @@ def run_generation_grounding(
     result = run_ragas_eval(answers, config=f"hybrid@k{top_k}", settings=settings, references=None)
 
     # attach query_id/category onto per_query for traceability (aligned to used_rows)
-    for pq, r in zip(result.per_query, used_rows):
+    for pq, r in zip(result.per_query, used_rows, strict=True):
         pq["query_id"] = r.get("query_id")
         pq["category"] = r.get("category")
 

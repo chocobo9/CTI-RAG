@@ -96,7 +96,6 @@ def main() -> int:
     # --- embed ---
     if args._dry_embedder:
         import numpy as np
-        rng = np.random.default_rng(0)
         def embed(texts):
             # deterministic per-text pseudo-vector keyed on length+hash, just to exercise logic
             vs = []

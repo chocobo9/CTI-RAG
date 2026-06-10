@@ -114,15 +114,16 @@ addopts = [
     "--cov-config=pyproject.toml",
 ]
 
+# Omissions limited to modules with no meaningful unit-test surface:
+# __init__ (public API wiring), cli (Typer commands, help-text tested only),
+# config (pydantic Settings), techniquerag (needs HuggingFace network access).
+# otx/virustotal/pdf_parser ARE tested and therefore measured.
 [tool.coverage.run]
 omit = [
     "*/rag_cti/__init__.py",
     "*/rag_cti/cli.py",
     "*/rag_cti/config.py",
-    "*/rag_cti/connectors/otx.py",
-    "*/rag_cti/connectors/virustotal.py",
     "*/rag_cti/evaluation/techniquerag.py",
-    "*/rag_cti/preprocess/pdf_parser.py",
 ]
 
 [tool.ruff]

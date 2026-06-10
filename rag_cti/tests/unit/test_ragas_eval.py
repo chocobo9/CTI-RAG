@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from unittest.mock import MagicMock, patch
 
 import pytest
 
 from rag_cti.evaluation.ragas_eval import (
     RagasEvalResult,
     answers_to_ragas_dataset,
-    run_ragas_eval,
 )
 from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
 

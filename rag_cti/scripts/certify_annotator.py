@@ -46,8 +46,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from rag_cti._logging import configure_logging, get_logger
+from rag_cti.bootstrap import (
+    EVAL_DIR,
+    FixedRouter,
+    build_deepseek_client,
+    build_retrieval_stack,
+)
 from rag_cti.config import get_settings
-from rag_cti.embeddings.embedder import Embedder
 from rag_cti.evaluation.set_metrics import SetPRF, micro_f1, normalize_set
 from rag_cti.evaluation.taa_metrics import (
     TAAResult,
@@ -60,35 +65,19 @@ from rag_cti.generation.client import build_llm_client
 from rag_cti.generation.generator import DEFAULT_CANDIDATE_K, TECHNIQUE_RETRIEVE_K, Generator
 from rag_cti.generation.llm_router import LLMRouter
 from rag_cti.retrieval import build_pipeline
-from rag_cti.retrieval.bm25 import BM25SparseEncoder
-from rag_cti.store.qdrant_store import QdrantStore
 
 logger = get_logger(__name__)
 
-_CTIBENCH = Path(__file__).parent.parent / "data" / "eval" / "ctibench"
-_VOCAB_PATH = Path(__file__).parent.parent / "data" / "sparse_vocab.json"
-_OUT_DIR = Path(__file__).parent.parent / "data" / "eval"
+_CTIBENCH = EVAL_DIR / "ctibench"
+_OUT_DIR = EVAL_DIR
 
 DEFAULT_TECH_THRESHOLD = 0.65
 DEFAULT_ACTOR_THRESHOLD = 0.50  # plausible accuracy
-RETRIEVE_K = 40  # retrieve top-40, then annotate_techniques injects top-10 (SPEC §B.1)
+# Actor-attribution retrieval depth (SPEC §B.1). The technique path uses
+# generator.TECHNIQUE_RETRIEVE_K (=300) instead — the saved record reports both.
+ACTOR_RETRIEVE_K = 40
 
-_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 _DEEPSEEK_DEFAULT_MODEL = "deepseek-chat"
-
-
-class _FixedRouter:
-    """Minimal LLMRouter substitute: returns one model for every task.
-
-    Used when the annotator runs on a provider/model other than the settings-derived
-    Groq model (e.g. DeepSeek). Generator only calls .model_for(task) -> str.
-    """
-
-    def __init__(self, model: str) -> None:
-        self._model = model
-
-    def model_for(self, task: object) -> str:
-        return self._model
 
 
 # ---------------------------------------------------------------------------
@@ -162,7 +151,7 @@ def certify_actors(
     pairs: list[tuple[str, str]] = []
     details: list[dict[str, Any]] = []
     for i, (text, gt) in enumerate(rows, start=1):
-        qr = pipeline.run(text, top_k=RETRIEVE_K)
+        qr = pipeline.run(text, top_k=ACTOR_RETRIEVE_K)
         pred = gen.attribute_actor(text, qr, candidate_k=candidate_k)  # raises on LLM failure
         pairs.append((gt, pred))
         cls = threat_actor_connection(gt, pred, alias, related) if pred else "I"
@@ -178,12 +167,7 @@ def certify_actors(
 def build_client(settings: Any, provider: str, model_override: str | None) -> tuple[Any, str]:
     """Return (llm_client, model) for the annotator. REAL provider — no mock."""
     if provider == "deepseek":
-        from openai import OpenAI
-
-        key = settings.deepseek_api_key.get_secret_value()
-        if not key:
-            raise RuntimeError("DEEPSEEK_API_KEY not set — cannot certify on DeepSeek")
-        client = OpenAI(base_url=_DEEPSEEK_BASE_URL, api_key=key, max_retries=5, timeout=120)
+        client = build_deepseek_client(settings)
         return client, (model_override or _DEEPSEEK_DEFAULT_MODEL)
     if provider == "groq":
         prov, client = build_llm_client(settings)
@@ -196,20 +180,17 @@ def build_client(settings: Any, provider: str, model_override: str | None) -> tu
 def build(
     settings: Any, collection: str, device: str | None, provider: str, model_override: str | None
 ) -> tuple[Generator, Any, str]:
-    store = QdrantStore(
-        url=settings.qdrant_url,
-        collection=collection,
-        api_key=settings.qdrant_api_key.get_secret_value(),
-    )
-    embedder = Embedder(model_name=settings.embedding_model, device=device)
-    encoder = BM25SparseEncoder.load(_VOCAB_PATH) if _VOCAB_PATH.exists() else BM25SparseEncoder()
+    stack = build_retrieval_stack(settings, collection=collection, device=device)
 
     client, model = build_client(settings, provider, model_override)
 
     # llm_client=None => HyDE OFF (inputs are full passages, not short queries);
     # production hybrid + CrossEncoder reranker stay ON.
-    pipeline = build_pipeline(settings=settings, store=store, embedder=embedder, encoder=encoder, llm_client=None)
-    router = LLMRouter(settings) if provider == "groq" and not model_override else _FixedRouter(model)
+    pipeline = build_pipeline(
+        settings=settings, store=stack.store, embedder=stack.embedder,
+        encoder=stack.encoder, llm_client=None,
+    )
+    router = LLMRouter(settings) if provider == "groq" and not model_override else FixedRouter(model)
     gen = Generator(client=client, router=router, settings=settings)
     return gen, pipeline, model
 
@@ -334,7 +315,9 @@ def _save(
         "annotator_model": model,
         "provider": args.provider,
         "candidate_k": args.candidate_k,
-        "retrieve_k": RETRIEVE_K,
+        # Per-path retrieval depths. Earlier records wrote a single scalar
+        # "retrieve_k": 40, which was wrong for the technique path (it uses 300).
+        "retrieve_k": {"technique": TECHNIQUE_RETRIEVE_K, "actor": ACTOR_RETRIEVE_K},
         "thresholds": {"tech_micro_f1": args.tech_threshold, "actor_plausible": args.actor_threshold},
         "technique": {
             "gated_on": "enterprise",

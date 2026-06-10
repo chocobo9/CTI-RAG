@@ -5,8 +5,8 @@ Includes relationship breakdown by (source_type, relationship_type, target_type)
 
 import json
 from collections import Counter
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
 
 RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw" / "mitre"
 BUNDLE_PATH = RAW_DIR / "enterprise-attack.json"
@@ -14,7 +14,7 @@ STATS_PATH = RAW_DIR / "bundle_stats.md"
 
 
 def main():
-    with open(BUNDLE_PATH, "r", encoding="utf-8") as f:
+    with open(BUNDLE_PATH, encoding="utf-8") as f:
         bundle = json.load(f)
 
     objects = bundle.get("objects", [])
@@ -33,30 +33,30 @@ def main():
     sorted_types = type_counter.most_common()
 
     lines = []
-    lines.append(f"# MITRE ATT&CK Bundle Statistics")
-    lines.append(f"")
-    lines.append(f"Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    lines.append("# MITRE ATT&CK Bundle Statistics")
+    lines.append("")
+    lines.append(f"Generated: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}")
     lines.append(f"Source: `{BUNDLE_PATH.name}`")
     lines.append(f"Bundle ID: `{bundle.get('id', 'N/A')}`")
-    lines.append(f"")
-    lines.append(f"## Summary")
-    lines.append(f"")
+    lines.append("")
+    lines.append("## Summary")
+    lines.append("")
     lines.append(f"- **Total objects**: {total}")
     lines.append(f"- **Distinct types**: {len(type_counter)}")
     lines.append(f"- **Total deprecated**: {sum(deprecated_by_type.values())}")
     lines.append(f"- **Total revoked**: {sum(revoked_by_type.values())}")
-    lines.append(f"")
-    lines.append(f"## Object Counts by Type")
-    lines.append(f"")
-    lines.append(f"| Type | Count | Deprecated | Revoked | Active |")
-    lines.append(f"|------|------:|-----------:|--------:|-------:|")
+    lines.append("")
+    lines.append("## Object Counts by Type")
+    lines.append("")
+    lines.append("| Type | Count | Deprecated | Revoked | Active |")
+    lines.append("|------|------:|-----------:|--------:|-------:|")
     for obj_type, count in sorted_types:
         dep = deprecated_by_type.get(obj_type, 0)
         rev = revoked_by_type.get(obj_type, 0)
         active = count - dep - rev
         lines.append(f"| `{obj_type}` | {count} | {dep} | {rev} | {active} |")
     lines.append(f"| **Total** | **{total}** | **{sum(deprecated_by_type.values())}** | **{sum(revoked_by_type.values())}** | **{total - sum(deprecated_by_type.values()) - sum(revoked_by_type.values())}** |")
-    lines.append(f"")
+    lines.append("")
 
     # --- Relationship breakdown ---
     def ref_type(ref: str) -> str:
@@ -112,8 +112,8 @@ def main():
     lines.append(f"| **CTI-relevant %** | **{cti_total / max(sum(rel_type_counter.values()), 1) * 100:.1f}%** |")
     lines.append("")
 
-    lines.append(f"## Type Descriptions")
-    lines.append(f"")
+    lines.append("## Type Descriptions")
+    lines.append("")
     type_desc = {
         "attack-pattern": "ATT&CK Techniques and Sub-techniques",
         "campaign": "Named threat campaigns",

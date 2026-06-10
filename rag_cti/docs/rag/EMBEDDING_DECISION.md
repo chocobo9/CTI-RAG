@@ -1,6 +1,10 @@
 # Embedding Model Decision
 
-**Status:** PENDING — populate the Results and Decision sections after running `scripts/embedding_bakeoff.py`.
+**Status:** DECIDED — `BAAI/bge-m3` is the production model. Note: the formal
+bakeoff table (§4) was never filled in; the decision was made on qualitative
+grounds and validated downstream by the retrieval evaluations (TechniqueRAG,
+custom query sets, capability-split v3 — see README). Re-running
+`scripts/embedding_bakeoff.py` to backfill §4 remains open but is not blocking.
 
 ---
 
@@ -8,13 +12,18 @@
 
 | Field | Value |
 |---|---|
-| **Chosen model** | *(fill in after bakeoff)* |
-| **HuggingFace ID** | *(fill in)* |
-| **Vector dimension** | *(fill in)* |
-| **Recall@5 on CTI corpus** | *(fill in)* |
-| **MRR on CTI corpus** | *(fill in)* |
-| **Seconds per query** | *(fill in)* |
-| **Decision date** | *(fill in)* |
+| **Chosen model** | BGE-M3 |
+| **HuggingFace ID** | `BAAI/bge-m3` |
+| **Vector dimension** | 1024 |
+| **Recall@5 on CTI corpus** | not recorded via bakeoff — see downstream evals in README |
+| **MRR on CTI corpus** | not recorded via bakeoff — dense-only MRR 0.909 on the v1 custom set (README) |
+| **Seconds per query** | not recorded |
+| **Decision date** | 2026-05 (locked in production config + live collection) |
+
+**Rationale:** single checkpoint supporting dense + sparse retrieval, strong MTEB
+multilingual/domain scores, and the best qualitative fit for a corpus mixing
+ATT&CK prose, OTX JSON, and PDF reports. Downstream: pure dense BGE-M3 reaches
+Hit@1 0.878 on the v1 custom query set without reranking.
 
 Set the chosen model in `.env`:
 

@@ -35,6 +35,9 @@ class _FakeSettings:
         self.ollama_base_url = base_url
         self.ollama_model = "qwen2.5"
         self.groq_api_key = _FakeSecret(groq)
+        self.groq_query_model = "llama-3.1-8b-instant"
+        self.groq_analysis_model = "llama-3.3-70b-versatile"
+        self.groq_report_model = "llama-3.3-70b-versatile"
         self.anthropic_api_key = _FakeSecret(anthropic)
 
 

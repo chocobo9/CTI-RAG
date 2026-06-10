@@ -21,6 +21,7 @@ import os
 import sys
 from pathlib import Path
 
+import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -102,11 +103,10 @@ def append_checkpoint(record: dict) -> None:
 
 
 async def fetch_one(
-    client: "httpx.AsyncClient",
+    client: httpx.AsyncClient,
     pulse_id: str,
     semaphore: asyncio.Semaphore,
 ) -> dict:
-    import httpx
 
     async with semaphore:
         url = f"{BASE_URL}/{pulse_id}"

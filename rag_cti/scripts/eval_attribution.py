@@ -1,4 +1,4 @@
-"""Evaluate retrieval on query_set_v2.jsonl with stable-identifier matching.
+﻿"""Evaluate retrieval on query_set_v2.jsonl with stable-identifier matching.
 
 Usage:
     python scripts/eval_attribution.py
@@ -17,13 +17,14 @@ Reports Hit@k, MRR, nDCG@k grouped by category.
 """
 from __future__ import annotations
 
+# ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
 import argparse
 import json
 import math
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -33,13 +34,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from rag_cti._logging import configure_logging, get_logger
+from rag_cti.bootstrap import build_eval_pipeline, build_retrieval_stack
 from rag_cti.config import get_settings
-from rag_cti.embeddings.embedder import Embedder
 from rag_cti.evaluation.set_metrics import SetPRF, micro_prf_at_k
 from rag_cti.generation.client import build_llm_client
-from rag_cti.retrieval import build_pipeline
-from rag_cti.retrieval.bm25 import BM25SparseEncoder
-from rag_cti.store.qdrant_store import QdrantStore
 
 # Categories whose gold is a multi-label ATT&CK technique set → scored with
 # set-based P/R/F1@k (SPEC §M), NOT hit@k/MRR. relationship_direct gold is now
@@ -53,8 +51,6 @@ _SINGLE_TARGET_CATEGORIES = ("otx_actor",)
 _PULSE_SET_CATEGORIES = ("otx_malware",)
 
 logger = get_logger(__name__)
-
-_VOCAB_PATH = Path(__file__).parent.parent / "data" / "sparse_vocab.json"
 
 
 @dataclass(frozen=True)
@@ -406,33 +402,16 @@ def main() -> None:
     print(f"Loaded {len(records)} queries: " + ", ".join(f"{c}={n}" for c, n in sorted(cat_counts.items())))
 
     settings = get_settings()
-    coll = args.collection or settings.qdrant_collection
-    store = QdrantStore(
-        url=settings.qdrant_url,
-        collection=coll,
-        api_key=settings.qdrant_api_key.get_secret_value(),
-    )
-    embedder = Embedder(model_name=settings.embedding_model, device=args.device)
-    encoder = (
-        BM25SparseEncoder.load(_VOCAB_PATH)
-        if _VOCAB_PATH.exists()
-        else BM25SparseEncoder()
-    )
+    stack = build_retrieval_stack(settings, collection=args.collection, device=args.device)
+    coll = stack.collection
     llm_provider, llm_client = build_llm_client(settings)
 
-    ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
     all_results: list[dict] = []
 
     for cfg in configs:
         print(f"\nRunning config: {cfg} ...")
-        pipeline = build_pipeline(
-            settings=settings,
-            store=store,
-            embedder=embedder,
-            encoder=encoder,
-            llm_client=llm_client if cfg == "hybrid+hyde" else None,
-            llm_provider=llm_provider if cfg == "hybrid+hyde" else "anthropic",
-            hybrid_alpha_override=ALPHA_MAP.get(cfg, 0.5),
+        pipeline = build_eval_pipeline(
+            stack, settings, cfg, llm_client=llm_client, llm_provider=llm_provider
         )
         result = run_eval(records, pipeline, k_values, cfg)
         all_results.append(result)
@@ -441,7 +420,7 @@ def main() -> None:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "query_set": args.query_set,
         "collection": coll,
         "results": all_results,

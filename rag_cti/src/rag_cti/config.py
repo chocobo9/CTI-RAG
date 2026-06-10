@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     # Data source API keys
     otx_api_key: SecretStr = SecretStr("")
     vt_api_key: SecretStr = SecretStr("")
+    whoxy_api_key: SecretStr = SecretStr("")
 
     # LangSmith
     langsmith_api_key: SecretStr = SecretStr("")
@@ -50,14 +51,13 @@ class Settings(BaseSettings):
 
     # Retrieval
     retrieval_top_k: int = 10
-    hybrid_alpha: float = 0.5  # weight for dense vs sparse (1.0 = pure dense)
+    # Dense weight in the weighted-RRF fusion (sparse gets 1 - alpha).
+    # 0.5 = symmetric fusion; >= 1.0 skips the sparse retriever (pure dense).
+    hybrid_alpha: float = 0.5
     rrf_candidate_multiplier: int = 3
 
     # Generation
     generation_max_tokens: int = 1024
-
-    # LLM tiers (Anthropic — used by HyDE when ANTHROPIC_API_KEY is set)
-    llm_routing_model: str = "claude-haiku-4-5-20251001"
 
     # Reranker (hybrid+reranker is the recommended config — see README eval results)
     reranker_enabled: bool = True

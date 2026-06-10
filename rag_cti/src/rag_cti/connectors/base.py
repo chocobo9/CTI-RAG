@@ -23,6 +23,7 @@ class BaseConnector(ABC):
     """Protocol for all CTI data source connectors."""
 
     source_name: str
+    skipped_records: int = 0
 
     @abstractmethod
     def fetch(self, **params: Any) -> Iterator[dict[str, Any]]:
@@ -33,16 +34,28 @@ class BaseConnector(ABC):
         """Convert a raw record to a canonical Document."""
 
     def fetch_documents(self, **params: Any) -> Iterator[Document]:
-        """Fetch and convert all records, skipping malformed ones."""
+        """Fetch and convert all records, skipping malformed ones.
+
+        Skipped records are counted in ``self.skipped_records`` (reset on each
+        call) and a summary is logged, so silent data loss is visible to callers.
+        """
+        self.skipped_records = 0
         for raw in self.fetch(**params):
             try:
                 yield self.to_document(raw)
             except Exception as exc:
+                self.skipped_records += 1
                 logger.warning(
                     "skipping malformed record",
                     source=self.source_name,
                     error=str(exc),
                 )
+        if self.skipped_records:
+            logger.warning(
+                "malformed records skipped",
+                source=self.source_name,
+                skipped=self.skipped_records,
+            )
 
 
 class HttpConnector(BaseConnector):

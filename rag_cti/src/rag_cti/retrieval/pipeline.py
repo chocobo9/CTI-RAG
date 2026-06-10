@@ -83,7 +83,12 @@ def build_pipeline(
     llm_provider: str = "anthropic",
     hybrid_alpha_override: float | None = None,
 ) -> Pipeline:
-    """Wire the full retrieval stack from components."""
+    """Wire the full retrieval stack from components.
+
+    ``hybrid_alpha_override`` (or ``settings.hybrid_alpha``) is the dense weight
+    in the weighted-RRF fusion; ``>= 1.0`` skips the sparse retriever entirely
+    (pure dense).
+    """
     dense = DenseRetriever(store=store, embedder=embedder)
 
     effective_alpha = hybrid_alpha_override if hybrid_alpha_override is not None else getattr(settings, "hybrid_alpha", 0.5)
@@ -92,7 +97,9 @@ def build_pipeline(
         base_retriever: object = dense
     else:
         sparse = SparseRetriever(store=store, encoder=encoder)
-        base_retriever = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+        base_retriever = HybridRetriever(
+            dense=dense, sparse=sparse, settings=settings, alpha=effective_alpha
+        )
 
     if settings.hyde_enabled and llm_client is not None:
         retriever: object = HyDERetriever(

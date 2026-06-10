@@ -1,8 +1,11 @@
-"""Embed processed JSONL chunks and upsert them into Qdrant.
+﻿"""Embed processed JSONL chunks and upsert them into Qdrant.
 
 Usage:
     python scripts/ingest.py [--sources mitre otx pdfs] [--collection NAME]
                              [--batch-size 64] [--processed-dir PATH]
+
+Any processed JSONL under data/processed/ works as a source name, e.g.
+``--sources mitre mitre_relationships otx pdfs whois``.
 
 Reads chunks from data/processed/<source>.jsonl, computes embeddings with
 the configured sentence-transformers model, and upserts them into one
@@ -10,6 +13,7 @@ unified Qdrant collection. Idempotent: re-running overwrites by point ID.
 """
 from __future__ import annotations
 
+# ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
 import argparse
 import json
 import sys

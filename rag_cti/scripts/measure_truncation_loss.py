@@ -147,7 +147,7 @@ def main() -> int:
             print(f"  median lost as % of chunk    : "
                   f"{100*statistics.median(over_lost)/pct(token_lens,90):.0f}% (rough)")
         if source == "otx" and otx_over:
-            print(f"  OTX truncation verdict:")
+            print("  OTX truncation verdict:")
             print(f"    SAFE  (only IOCs/non-attribution lost) : {otx_safe}/{otx_over}")
             print(f"    COSTLY (attribution prose lost)        : {otx_costly}/{otx_over}")
             overall_safe += otx_safe

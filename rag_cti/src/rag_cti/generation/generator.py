@@ -48,12 +48,22 @@ class Generator:
         self._settings = settings
 
     @traced("generation", run_type="llm")
-    def generate(self, query: str, query_result: QueryResult) -> GeneratedAnswer:
+    def generate(
+        self, query: str, query_result: QueryResult, raise_on_failure: bool = False
+    ) -> GeneratedAnswer:
+        """Generate a grounded answer.
+
+        By default an LLM provider failure yields the sentinel answer text
+        (legacy product behaviour). ``raise_on_failure=True`` raises RuntimeError
+        instead, for callers that must not treat a failure as an answer.
+        """
         model = self._router.model_for(TaskType.ANALYSIS)
         messages = build_context_messages(query, query_result.results)
 
         t0 = time.perf_counter()
         answer_text = self._call_llm(model, messages)
+        if raise_on_failure and answer_text == _LLM_FAILURE_SENTINEL:
+            raise RuntimeError("generate: LLM call failed")
         elapsed_ms = round((time.perf_counter() - t0) * 1000, 1)
 
         cited = extract_cited_ids(answer_text)

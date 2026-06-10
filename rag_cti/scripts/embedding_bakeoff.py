@@ -1,4 +1,4 @@
-"""Evaluate candidate embedding models on the local CTI corpus.
+﻿"""Evaluate candidate embedding models on the local CTI corpus.
 
 Usage:
     python scripts/embedding_bakeoff.py [--sample-size 200] [--n-queries 20]
@@ -48,6 +48,7 @@ scripts/ingest.py to build the production index.
 """
 from __future__ import annotations
 
+# ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
 import argparse
 import json
 import random

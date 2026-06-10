@@ -63,15 +63,14 @@ load_dotenv()
 
 import certify_annotator as ca  # noqa: E402  (load_ate — exact same row loader as cert)
 
+from rag_cti.bootstrap import EVAL_DIR as _EVAL_DIR
+from rag_cti.bootstrap import build_retrieval_stack
 from rag_cti.config import get_settings
-from rag_cti.embeddings.embedder import Embedder
 from rag_cti.evaluation.set_metrics import normalize_id, normalize_set
 from rag_cti.retrieval import build_pipeline
-from rag_cti.retrieval.bm25 import BM25SparseEncoder
 from rag_cti.retrieval.pipeline import Pipeline
 from rag_cti.retrieval.reranker import CrossEncoderReranker
 from rag_cti.retrieval.sparse_retriever import SparseRetriever
-from rag_cti.store.qdrant_store import QdrantStore
 
 RETRIEVE_K = 40
 K_VALUES = (10, 40)
@@ -82,9 +81,6 @@ TOL = 0.01
 # _dedup variants: fetch deep, then collapse to one chunk per technique.
 DEEP_K = 300            # retrieval depth before per-technique dedup
 DISTINCT_K = RETRIEVE_K  # distinct techniques kept after dedup (ceiling width = top-40)
-
-_EVAL_DIR = Path(__file__).parent.parent / "data" / "eval"
-_VOCAB_PATH = Path(__file__).parent.parent / "data" / "sparse_vocab.json"
 
 
 def _git_rev() -> str:
@@ -108,14 +104,8 @@ def _free() -> None:
 
 def build_components(settings: Any, device: str | None) -> tuple[Any, Any, Any]:
     """store / embedder / encoder — same construction as certify_annotator.build()."""
-    store = QdrantStore(
-        url=settings.qdrant_url,
-        collection=settings.qdrant_collection,
-        api_key=settings.qdrant_api_key.get_secret_value(),
-    )
-    embedder = Embedder(model_name=settings.embedding_model, device=device)
-    encoder = BM25SparseEncoder.load(_VOCAB_PATH) if _VOCAB_PATH.exists() else BM25SparseEncoder()
-    return store, embedder, encoder
+    stack = build_retrieval_stack(settings, device=device)
+    return stack.store, stack.embedder, stack.encoder
 
 
 def _candidate_records(qr: Any) -> list[dict[str, Any]]:

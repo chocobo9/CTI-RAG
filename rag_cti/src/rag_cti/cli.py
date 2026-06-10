@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC
 from pathlib import Path
+from typing import Any
 
 import typer
 from rich.console import Console
@@ -11,6 +12,11 @@ from rag_cti._logging import configure_logging
 
 app = typer.Typer(name="rag-cti", help="RAG-powered Cyber Threat Intelligence CLI")
 console = Console()
+
+# The v1-schema query set this CLI's retrieval/ragas suites consume
+# (precise/semantic/fuzzy + expected_chunk_ids). v2/v3 sets use the
+# identifier-gold schema consumed by scripts/eval_attribution.py instead.
+_DEFAULT_QUERY_SET = Path("data/eval/query_set.jsonl")
 
 
 @app.callback()
@@ -92,6 +98,32 @@ def metrics(
         raise typer.Exit(code=1)
 
 
+class _PipelineRetriever:
+    """Thin adapter: wraps Pipeline so evaluate_* helpers can call .search()."""
+
+    def __init__(self, pipeline: Any) -> None:
+        self._pipeline = pipeline
+
+    def search(self, text: str, top_k: int) -> list[Any]:
+        return self._pipeline.run(text, top_k=top_k).results
+
+
+def _load_v1_query_set_or_exit(query_set: Path) -> list[Any]:
+    """Load the v1-schema query set, exiting with guidance when it is absent."""
+    from rag_cti.evaluation.query_set import load_query_set
+
+    if not query_set.exists():
+        console.print(
+            f"[red]Query set not found: {query_set}[/red]\n"
+            "The v1-schema query set was archived (see data/eval/archive_pre-v2.md). "
+            "Current sets (data/eval/query_set_v2.jsonl / query_set_v3.jsonl) use the "
+            "identifier-gold schema — evaluate them with scripts/eval_attribution.py "
+            "or scripts/eval_capabilities.py instead."
+        )
+        raise typer.Exit(code=1)
+    return load_query_set(query_set)
+
+
 @app.command()
 def eval(
     suite: str = typer.Argument(
@@ -118,9 +150,9 @@ def eval(
         help="HuggingFace dataset ID (techniquerag only)",
     ),
     query_set: Path = typer.Option(
-        Path("data/eval/query_set.jsonl"),
+        _DEFAULT_QUERY_SET,
         "--query-set",
-        help="Query set JSONL path (retrieval only)",
+        help="v1-schema query set JSONL path (retrieval/ragas only)",
     ),
     output: Path = typer.Option(
         Path("data/eval/retrieval_results.json"),
@@ -134,6 +166,12 @@ def eval(
         console.print(f"[red]Unknown suite: {suite!r}. Choose 'techniquerag', 'retrieval', or 'ragas'.[/red]")
         raise typer.Exit(code=1)
 
+    from rag_cti.bootstrap import build_eval_pipeline, build_retrieval_stack
+    from rag_cti.config import get_settings
+
+    settings = get_settings()
+    stack = build_retrieval_stack(settings)
+
     # -------------------------------------------------------------------------
     # ragas suite — generation quality via faithfulness + answer_relevancy
     # -------------------------------------------------------------------------
@@ -141,70 +179,35 @@ def eval(
         import json
         from dataclasses import asdict
 
-        from rag_cti.config import get_settings
-        from rag_cti.embeddings.embedder import Embedder
-        from rag_cti.evaluation.query_set import load_query_set
+        from rag_cti.bootstrap import DEEPSEEK_DEFAULT_MODEL, FixedRouter, build_deepseek_client
         from rag_cti.evaluation.ragas_eval import run_ragas_eval
         from rag_cti.generation.client import build_llm_client
         from rag_cti.generation.generator import Generator
         from rag_cti.generation.llm_router import LLMRouter
-        from rag_cti.retrieval import build_pipeline
-        from rag_cti.retrieval.bm25 import BM25SparseEncoder
-        from rag_cti.store.qdrant_store import QdrantStore
         from rag_cti.types import GeneratedAnswer
 
         n_queries = max_records or 10
         configs_to_run = ["hybrid"] if config == "all" else [config]
-        vocab_path = Path(__file__).parent.parent.parent / "data" / "sparse_vocab.json"
-        ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
 
         console.print(f"Loading query set from [bold]{query_set}[/bold] ...")
-        records = load_query_set(query_set)
+        records = _load_v1_query_set_or_exit(query_set)
         records = records[:n_queries]
         console.print(f"  [green]{len(records)} records selected[/green]")
 
-        settings = get_settings()
-        store = QdrantStore(
-            url=settings.qdrant_url,
-            collection=settings.qdrant_collection,
-            api_key=settings.qdrant_api_key.get_secret_value(),
-        )
-        embedder = Embedder(model_name=settings.embedding_model)
-        encoder = BM25SparseEncoder.load(vocab_path) if vocab_path.exists() else BM25SparseEncoder()
-
-        deepseek_key = settings.deepseek_api_key.get_secret_value()
-        if deepseek_key:
-            from openai import OpenAI as _OpenAI
-
-            llm_client = _OpenAI(
-                api_key=deepseek_key,
-                base_url="https://api.deepseek.com/v1",
-            )
+        if settings.deepseek_api_key.get_secret_value():
+            llm_client = build_deepseek_client(settings)
             llm_provider = "deepseek"
-            console.print("LLM provider: [bold]deepseek[/bold]")
+            router: Any = FixedRouter(DEEPSEEK_DEFAULT_MODEL)
         else:
             llm_provider, llm_client = build_llm_client(settings)
-            console.print(f"LLM provider: [bold]{llm_provider}[/bold]")
-
-        class _DeepSeekRouter:
-            def model_for(self, task: object) -> str:
-                return "deepseek-chat"
-
-        router = _DeepSeekRouter() if llm_provider == "deepseek" else LLMRouter(settings)
+            router = LLMRouter(settings)
+        console.print(f"LLM provider: [bold]{llm_provider}[/bold]")
         generator = Generator(client=llm_client, router=router, settings=settings)
 
         for cfg in configs_to_run:
             console.print(f"\nRunning RAGAS eval config: [bold]{cfg}[/bold] ...")
-            alpha = ALPHA_MAP.get(cfg, 0.5)
-            use_hyde = cfg == "hybrid+hyde"
-            pipeline = build_pipeline(
-                settings=settings,
-                store=store,
-                embedder=embedder,
-                encoder=encoder,
-                llm_client=llm_client if use_hyde else None,
-                llm_provider=llm_provider if use_hyde else "anthropic",
-                hybrid_alpha_override=alpha,
+            pipeline = build_eval_pipeline(
+                stack, settings, cfg, llm_client=llm_client, llm_provider=llm_provider
             )
 
             answers: list[GeneratedAnswer] = []
@@ -235,70 +238,37 @@ def eval(
         return
 
     # -------------------------------------------------------------------------
-    # retrieval suite — evaluates against data/eval/query_set.jsonl
+    # retrieval suite — evaluates against the v1-schema query set
     # -------------------------------------------------------------------------
     if suite == "retrieval":
         import json
         from dataclasses import asdict
         from datetime import datetime
 
-        from rag_cti.config import get_settings
-        from rag_cti.embeddings.embedder import Embedder
-        from rag_cti.evaluation.query_set import load_query_set
         from rag_cti.evaluation.retrieval_metrics import QuerySetEvalResult, evaluate_on_query_set
         from rag_cti.generation.client import build_llm_client
-        from rag_cti.retrieval import build_pipeline
-        from rag_cti.retrieval.bm25 import BM25SparseEncoder
-        from rag_cti.store.qdrant_store import QdrantStore
 
         k_values = tuple(sorted(set(k)))
         configs_to_run = ["dense", "hybrid", "hybrid+hyde"] if config == "all" else [config]
-        vocab_path = Path(__file__).parent.parent.parent / "data" / "sparse_vocab.json"
 
         console.print(f"Loading query set from [bold]{query_set}[/bold] ...")
-        records = load_query_set(query_set)
+        records = _load_v1_query_set_or_exit(query_set)
         cats = ("precise", "semantic", "fuzzy")
         cat_counts = {c: sum(1 for r in records if r.category.value == c) for c in cats}
         console.print(f"  [green]{len(records)} records[/green]  " + "  ".join(f"{c}={cat_counts[c]}" for c in cats))
 
-        settings = get_settings()
-        store = QdrantStore(
-            url=settings.qdrant_url,
-            collection=settings.qdrant_collection,
-            api_key=settings.qdrant_api_key.get_secret_value(),
-        )
-        embedder = Embedder(model_name=settings.embedding_model)
-        encoder = BM25SparseEncoder.load(vocab_path) if vocab_path.exists() else BM25SparseEncoder()
-
         llm_provider, llm_client = build_llm_client(settings)
         console.print(f"LLM provider: [bold]{llm_provider}[/bold]")
-
-        ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
 
         eval_results: list[QuerySetEvalResult] = []
         for cfg in configs_to_run:
             console.print(f"\nRunning config: [bold]{cfg}[/bold] ...")
-            use_hyde = cfg == "hybrid+hyde"
-            alpha = ALPHA_MAP.get(cfg, 0.5)
-            pipeline = build_pipeline(
-                settings=settings,
-                store=store,
-                embedder=embedder,
-                encoder=encoder,
-                llm_client=llm_client if use_hyde else None,
-                llm_provider=llm_provider if use_hyde else "anthropic",
-                hybrid_alpha_override=alpha,
+            pipeline = build_eval_pipeline(
+                stack, settings, cfg, llm_client=llm_client, llm_provider=llm_provider
             )
 
-            class _Retriever:
-                def __init__(self, p: object) -> None:
-                    self._p = p
-
-                def search(self, text: str, top_k: int) -> list:  # type: ignore[type-arg]
-                    return self._p.run(text, top_k=top_k).results  # type: ignore[union-attr]
-
             result = evaluate_on_query_set(
-                retriever=_Retriever(pipeline),
+                retriever=_PipelineRetriever(pipeline),
                 records=records,
                 config=cfg,
                 k_values=k_values,
@@ -340,22 +310,18 @@ def eval(
         console.print(f"\n[green]Saved → {output}[/green]")
         return
 
+    # -------------------------------------------------------------------------
+    # techniquerag suite — external HuggingFace benchmark
+    # -------------------------------------------------------------------------
     if max_records is not None and max_records <= 0:
         console.print("[red]--max-records must be a positive integer.[/red]")
         raise typer.Exit(code=1)
 
-    from rag_cti.config import get_settings
-    from rag_cti.embeddings.embedder import Embedder
     from rag_cti.evaluation.retrieval_metrics import EvalResult, evaluate_retriever
     from rag_cti.evaluation.techniquerag import load_techniquerag
-    from rag_cti.retrieval import build_pipeline
-    from rag_cti.retrieval.bm25 import BM25SparseEncoder
-    from rag_cti.store.qdrant_store import QdrantStore
 
     k_values = tuple(sorted(set(k)))
-    configs_to_run: list[str] = (
-        ["dense", "hybrid", "hybrid+hyde"] if config == "all" else [config]
-    )
+    configs_to_run = ["dense", "hybrid", "hybrid+hyde"] if config == "all" else [config]
 
     console.print(f"Loading TechniqueRAG (split={split}, max={max_records or 'all'})...")
     dataset = load_techniquerag(
@@ -366,21 +332,6 @@ def eval(
     )
     console.print(f"  [green]{len(dataset)} records loaded.[/green]")
 
-    settings = get_settings()
-    vocab_path = Path(__file__).parent.parent.parent / "data" / "sparse_vocab.json"
-
-    store = QdrantStore(
-        url=settings.qdrant_url,
-        collection=settings.qdrant_collection,
-        api_key=settings.qdrant_api_key.get_secret_value(),
-    )
-    embedder = Embedder(model_name=settings.embedding_model)
-    encoder = (
-        BM25SparseEncoder.load(vocab_path)
-        if vocab_path.exists()
-        else BM25SparseEncoder()
-    )
-
     groq_client = None
     try:
         from groq import Groq  # type: ignore[import]
@@ -388,34 +339,20 @@ def eval(
         if api_key:
             groq_client = Groq(api_key=api_key)
     except ImportError:
-        pass
-
-    ALPHA_MAP = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+        console.print(
+            "[yellow]groq package not installed — hybrid+hyde will run without HyDE "
+            "(pip install -e '.[generation]' to enable).[/yellow]"
+        )
 
     results: list[EvalResult] = []
     for cfg in configs_to_run:
         console.print(f"\nRunning config: [bold]{cfg}[/bold]")
-        use_hyde = cfg == "hybrid+hyde"
-        alpha = ALPHA_MAP.get(cfg, 0.5)
-        pipeline = build_pipeline(
-            settings=settings,
-            store=store,
-            embedder=embedder,
-            encoder=encoder,
-            llm_client=groq_client if use_hyde else None,
-            llm_provider="groq" if use_hyde and groq_client else "anthropic",
-            hybrid_alpha_override=alpha,
+        pipeline = build_eval_pipeline(
+            stack, settings, cfg, llm_client=groq_client, llm_provider="groq"
         )
 
-        class _Retriever:
-            def __init__(self, p: object) -> None:
-                self._p = p
-
-            def search(self, text: str, top_k: int) -> list:  # type: ignore[type-arg]
-                return self._p.run(text, top_k=top_k).results  # type: ignore[union-attr]
-
         result = evaluate_retriever(
-            retriever=_Retriever(pipeline),
+            retriever=_PipelineRetriever(pipeline),
             dataset=dataset,
             config=cfg,
             k_values=k_values,

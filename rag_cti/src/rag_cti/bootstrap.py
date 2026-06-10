@@ -1,0 +1,118 @@
+"""Shared construction helpers for eval scripts and the CLI.
+
+Every eval entrypoint needs the same stack: settings -> QdrantStore -> Embedder
+-> BM25 sparse encoder -> build_pipeline, plus the config-name -> alpha mapping
+and (sometimes) a DeepSeek client with a fixed-model router. This module is the
+single home for those pieces so scripts stop copy-pasting them.
+
+Path constants assume the repo layout (``src/rag_cti/bootstrap.py`` under the
+``rag_cti/`` project root) — the same assumption every script already made.
+Heavy dependencies (qdrant-client, sentence-transformers, openai) are imported
+lazily inside the builders so importing this module stays cheap.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data"
+EVAL_DIR = DATA_DIR / "eval"
+VOCAB_PATH = DATA_DIR / "sparse_vocab.json"
+
+# Retriever config name -> dense weight in the weighted-RRF fusion.
+# 1.0 = pure dense (sparse retriever skipped); 0.5 = symmetric hybrid.
+ALPHA_MAP: dict[str, float] = {"dense": 1.0, "hybrid": 0.5, "hybrid+hyde": 0.5}
+
+DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+DEEPSEEK_DEFAULT_MODEL = "deepseek-chat"
+
+
+class FixedRouter:
+    """Minimal LLMRouter substitute: returns one model for every task.
+
+    Used when generation runs on a provider/model other than the
+    settings-derived Groq tiers (e.g. DeepSeek). Generator only calls
+    ``.model_for(task) -> str``.
+    """
+
+    def __init__(self, model: str) -> None:
+        self._model = model
+
+    def model_for(self, task: object) -> str:
+        return self._model
+
+
+@dataclass(frozen=True)
+class RetrievalStack:
+    """The shared retrieval components every eval/CLI entrypoint builds."""
+
+    store: Any
+    embedder: Any
+    encoder: Any
+    collection: str
+
+
+def load_sparse_encoder(vocab_path: Path = VOCAB_PATH) -> Any:
+    """Load the persisted BM25 vocabulary, or a fresh encoder when absent."""
+    from rag_cti.retrieval.bm25 import BM25SparseEncoder
+
+    return BM25SparseEncoder.load(vocab_path) if vocab_path.exists() else BM25SparseEncoder()
+
+
+def build_retrieval_stack(
+    settings: Any,
+    collection: str | None = None,
+    device: str | None = None,
+    vocab_path: Path = VOCAB_PATH,
+) -> RetrievalStack:
+    """Build store + embedder + sparse encoder from settings."""
+    from rag_cti.embeddings.embedder import Embedder
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    coll = collection or settings.qdrant_collection
+    store = QdrantStore(
+        url=settings.qdrant_url,
+        collection=coll,
+        api_key=settings.qdrant_api_key.get_secret_value(),
+    )
+    embedder = Embedder(model_name=settings.embedding_model, device=device)
+    encoder = load_sparse_encoder(vocab_path)
+    return RetrievalStack(store=store, embedder=embedder, encoder=encoder, collection=coll)
+
+
+def build_eval_pipeline(
+    stack: RetrievalStack,
+    settings: Any,
+    config_name: str,
+    llm_client: Any | None = None,
+    llm_provider: str = "anthropic",
+) -> Any:
+    """build_pipeline wired for a named eval config (dense / hybrid / hybrid+hyde).
+
+    HyDE only engages for ``hybrid+hyde`` AND when ``llm_client`` is provided —
+    the same convention every eval script used.
+    """
+    from rag_cti.retrieval import build_pipeline
+
+    use_hyde = config_name == "hybrid+hyde"
+    return build_pipeline(
+        settings=settings,
+        store=stack.store,
+        embedder=stack.embedder,
+        encoder=stack.encoder,
+        llm_client=llm_client if use_hyde else None,
+        llm_provider=llm_provider if use_hyde else "anthropic",
+        hybrid_alpha_override=ALPHA_MAP.get(config_name, 0.5),
+    )
+
+
+def build_deepseek_client(settings: Any, max_retries: int = 5, timeout: float = 120) -> Any:
+    """OpenAI-compatible DeepSeek client. Raises when DEEPSEEK_API_KEY is unset."""
+    from openai import OpenAI
+
+    key = settings.deepseek_api_key.get_secret_value()
+    if not key:
+        raise RuntimeError("DEEPSEEK_API_KEY not set — cannot build a DeepSeek client")
+    return OpenAI(base_url=DEEPSEEK_BASE_URL, api_key=key, max_retries=max_retries, timeout=timeout)

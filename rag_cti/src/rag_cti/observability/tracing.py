@@ -124,8 +124,9 @@ def add_trace_metadata(**kwargs: Any) -> None:
         run = get_current_run_tree()
         if run is not None:
             run.add_metadata(kwargs)
-    except Exception:
-        pass
+    except Exception as exc:
+        # Never raise from observability, but never swallow invisibly either.
+        logger.debug("add_trace_metadata failed", error=str(exc))
 
 
 _SECRET_PATTERN = re.compile(
