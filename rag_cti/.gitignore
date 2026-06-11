@@ -34,9 +34,19 @@ help/*
 # Data (raw feeds and processed outputs — never commit)
 data/raw/
 data/processed/
-data/eval/
 data/migrate_dump.jsonl
 data/sparse_vocab.json
+
+# Eval data: ignored by default, but published artifacts (query sets,
+# capability summary, attribution/RAGAS results, certification evidence the
+# summary references) are whitelisted — Phase C/D results must be traceable.
+# ctibench/ stays untracked: CC BY-NC-SA anchor data, copy locally.
+data/eval/*
+!data/eval/query_set_v*.jsonl
+!data/eval/capabilities_summary.json
+!data/eval/attribution_v3_results.json
+!data/eval/ragas_v3_results.json
+!data/eval/certification_*.json
 
 # Notebooks — commit source; ignore kernel checkpoints only
 notebooks/.ipynb_checkpoints/

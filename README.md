@@ -63,8 +63,8 @@ flowchart TD
 | Tracing | LangSmith (`@traced` + `add_trace_metadata`) |
 | CLI | Typer + Rich |
 | Config | Pydantic Settings + `.env` |
-| Testing | pytest — 580+ tests, ~91% measured coverage (CI gate: 80%) |
-| Linting | ruff (CI-gated); mypy strict is report-only while pre-existing errors are burned down |
+| Testing | pytest — 600+ tests, ~92% measured coverage (CI gate: 80%) |
+| Linting | ruff check + format (CI-gated); mypy strict at zero errors (CI-gated) |
 
 ---
 
