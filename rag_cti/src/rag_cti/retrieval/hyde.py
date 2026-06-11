@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import time
+from typing import Any
 
 from rag_cti._logging import get_logger
 from rag_cti.observability.tracing import traced
-from rag_cti.types import RetrievalResult
+from rag_cti.types import RetrievalResult, SettingsProto, SparseCapableRetrieverProto
 
 logger = get_logger(__name__)
 
@@ -26,16 +27,19 @@ class HyDERetriever:
 
     def __init__(
         self,
-        base_retriever: object,
+        base_retriever: SparseCapableRetrieverProto,
         llm_client: object,
-        settings: object,
+        settings: SettingsProto,
         llm_provider: str = "",
     ) -> None:
         self._base = base_retriever
         self._settings = settings
+        # Provider-specific client (Groq/Ollama chat.completions vs Anthropic
+        # messages) — structurally too divergent for one protocol, so Any.
+        self._llm: Any
         # Accept (provider, client) tuple from build_llm_client, or a bare client.
         if isinstance(llm_client, tuple) and len(llm_client) == 2:
-            detected_provider, bare_client = llm_client  # type: ignore[misc]
+            detected_provider, bare_client = llm_client
             self._llm = bare_client
             self._llm_provider = llm_provider or str(detected_provider)
         else:
@@ -44,7 +48,9 @@ class HyDERetriever:
                 self._llm_provider = llm_provider
             elif hasattr(llm_client, "chat"):
                 # OpenAI-compatible interface (RetryingGroqClient or RetryingOllamaClient)
-                self._llm_provider = "ollama" if getattr(settings, "ollama_enabled", False) else "groq"
+                self._llm_provider = (
+                    "ollama" if getattr(settings, "ollama_enabled", False) else "groq"
+                )
             else:
                 self._llm_provider = "anthropic"
 
@@ -68,8 +74,13 @@ class HyDERetriever:
         t0 = time.perf_counter()
         hypothetical_doc = self._generate_hypothetical_doc(query)
         search_query = hypothetical_doc if hypothetical_doc is not None else query
+        # sparse_query: BM25 always sees the ORIGINAL query — exact IOC/hash
+        # tokens must not be replaced by the hypothetical document, which only
+        # benefits the dense path.
         results: list[RetrievalResult] = self._base.search(
-            search_query, top_k=top_k, source_filter=source_filter,
+            search_query,
+            top_k=top_k,
+            source_filter=source_filter,
             sparse_query=query,
         )
         elapsed_ms = (time.perf_counter() - t0) * 1000
@@ -83,6 +94,8 @@ class HyDERetriever:
 
     @traced("retrieval.hyde.generate_doc", run_type="llm")
     def _generate_hypothetical_doc(self, query: str) -> str | None:
+        max_tokens = getattr(self._settings, "hyde_max_tokens", 300)
+        max_chars = getattr(self._settings, "hyde_output_max_chars", 2000)
         try:
             if self._llm_provider in ("groq", "ollama"):
                 model = (
@@ -92,22 +105,23 @@ class HyDERetriever:
                 )
                 resp = self._llm.chat.completions.create(
                     model=model,
-                    max_tokens=300,
+                    max_tokens=max_tokens,
                     messages=[
                         {"role": "system", "content": _HYDE_SYSTEM_PROMPT},
                         {"role": "user", "content": query},
                     ],
                 )
-                text = (resp.choices[0].message.content or "").strip()[:2000]
+                text: str = (resp.choices[0].message.content or "").strip()[:max_chars]
                 return text if text else None
             else:
                 response = self._llm.messages.create(
                     model=self._settings.llm_routing_model,
-                    max_tokens=300,
+                    max_tokens=max_tokens,
                     system=_HYDE_SYSTEM_PROMPT,
                     messages=[{"role": "user", "content": query}],
                 )
-                return response.content[0].text.strip()[:2000]
+                doc: str = response.content[0].text.strip()[:max_chars]
+                return doc
         except Exception as exc:
             logger.warning("hyde llm call failed, falling back to direct query", error=str(exc))
             return None

@@ -11,6 +11,7 @@ from rag_cti.types import Chunk, RetrievalResult
 # Stubs
 # ---------------------------------------------------------------------------
 
+
 def _make_result(score: float, rank: int) -> RetrievalResult:
     chunk = Chunk(
         id="abc123",
@@ -52,10 +53,29 @@ class _FakeStore:
 # Tests
 # ---------------------------------------------------------------------------
 
+
 def test_search_returns_store_results() -> None:
     expected = [_make_result(0.9, 0), _make_result(0.7, 1)]
     retriever = DenseRetriever(store=_FakeStore(expected), embedder=_FakeEmbedder())
     assert retriever.search("lateral movement") == expected
+
+
+def test_search_accepts_and_ignores_sparse_query() -> None:
+    # HyDE always passes sparse_query= to its base retriever; with a pure-dense
+    # base (hybrid_alpha >= 1.0) this used to TypeError. The hypothetical doc
+    # stays the embedded query; the sparse_query must simply be ignored.
+    expected = [_make_result(0.9, 0)]
+    store = _FakeStore(expected)
+    retriever = DenseRetriever(store=store, embedder=_FakeEmbedder())
+
+    results = retriever.search(
+        "APT29 spearphishing infrastructure overlap",
+        top_k=5,
+        sparse_query="evil.com 1.2.3.4 CVE-2021-44228",
+    )
+
+    assert results == expected
+    assert store.last_call["top_k"] == 5
 
 
 def test_search_passes_top_k_to_store() -> None:
@@ -78,7 +98,9 @@ def test_search_passes_source_filter_string() -> None:
 
 def test_search_passes_source_filter_list() -> None:
     store = _FakeStore()
-    DenseRetriever(store=store, embedder=_FakeEmbedder()).search("ransomware", source_filter=["mitre", "otx"])
+    DenseRetriever(store=store, embedder=_FakeEmbedder()).search(
+        "ransomware", source_filter=["mitre", "otx"]
+    )
     assert store.last_call["source_filter"] == ["mitre", "otx"]
 
 

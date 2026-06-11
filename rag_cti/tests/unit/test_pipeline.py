@@ -10,6 +10,7 @@ from rag_cti.types import Chunk, QueryResult, RetrievalResult
 # Stubs
 # ---------------------------------------------------------------------------
 
+
 def _make_result(chunk_id: str, score: float = 0.9) -> RetrievalResult:
     chunk = Chunk(
         id=chunk_id,
@@ -55,6 +56,7 @@ class _FakeSettings:
 # ---------------------------------------------------------------------------
 # Tests — Pipeline.run
 # ---------------------------------------------------------------------------
+
 
 def test_run_returns_query_result() -> None:
     pipeline = Pipeline(
@@ -169,6 +171,7 @@ def test_run_empty_results_returns_empty_query_result() -> None:
 # Tests — build_pipeline
 # ---------------------------------------------------------------------------
 
+
 class _FakeStore:
     pass
 
@@ -223,6 +226,7 @@ def test_build_pipeline_with_llm_client_when_hyde_disabled() -> None:
 # Tests — tracing integration
 # ---------------------------------------------------------------------------
 
+
 def test_run_calls_add_trace_metadata_with_chunk_ids_and_scores() -> None:
     results = [_make_result("chunk-a", 0.9), _make_result("chunk-b", 0.7)]
     pipeline = Pipeline(
@@ -258,6 +262,7 @@ def test_run_result_unchanged_when_tracing_metadata_added() -> None:
 # Tests — reranker integration (Step 4, tests 7-9)
 # ---------------------------------------------------------------------------
 
+
 class _FakeSettingsWithReranker:
     def __init__(
         self,
@@ -283,7 +288,7 @@ def test_build_pipeline_reranker_enabled_uses_cross_encoder() -> None:
             embedder=_FakeEmbedder(),
             encoder=_FakeEncoder(),
         )
-    mock_cls.assert_called_once_with(model_name="BAAI/bge-reranker-v2-m3")
+    mock_cls.assert_called_once_with(model_name="BAAI/bge-reranker-v2-m3", max_length=640)
     assert isinstance(pipeline, Pipeline)
 
 
@@ -347,6 +352,7 @@ def test_no_over_fetch_when_reranker_disabled() -> None:
 # ---------------------------------------------------------------------------
 # Tests — hybrid_alpha_override (OVERNIGHT_TASK bugfix)
 # ---------------------------------------------------------------------------
+
 
 def test_build_pipeline_alpha_1_uses_dense_retriever() -> None:
     from rag_cti.retrieval.dense_retriever import DenseRetriever

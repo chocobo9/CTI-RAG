@@ -31,6 +31,8 @@ DEFAULT_CANDIDATE_K = 10
 TECHNIQUE_RETRIEVE_K = 300
 
 # Cap per-candidate content so the prompt stays bounded with many candidates.
+# Unit is CHARACTERS — unrelated to the chunker's 600-TOKEN target despite the
+# matching number.
 _CANDIDATE_CONTENT_CHARS = 600
 
 # Model outputs that mean "no actor" — normalized to "" so they score as Incorrect.
@@ -102,7 +104,9 @@ class Generator:
     ) -> list[str]:
         """Extract the ATT&CK technique-ID set the text describes (order-deduped)."""
         model = self._router.model_for(TaskType.ANALYSIS)
-        candidates = _format_candidates(_dedup_to_distinct_techniques(query_result.results), candidate_k)
+        candidates = _format_candidates(
+            _dedup_to_distinct_techniques(query_result.results), candidate_k
+        )
         messages = [
             {"role": "system", "content": TECHNIQUE_ANNOTATION_SYSTEM},
             {
@@ -165,6 +169,7 @@ def _extract_text(response: Any) -> str:
 # Eval-only parsers + candidate formatting (module-level, pure, unit-testable)
 # ---------------------------------------------------------------------------
 
+
 def parse_technique_ids(output: str) -> list[str]:
     """Extract ATT&CK technique IDs from raw LLM output, order-preserving deduped.
 
@@ -199,11 +204,12 @@ def parse_actor_name(output: str) -> str:
 def _dedup_to_distinct_techniques(results: list[RetrievalResult]) -> list[RetrievalResult]:
     """Collapse retrieved candidates to one chunk per ATT&CK technique (score desc).
 
-    Ported from the certified diag_retrieval_ceiling dedup logic: normalize each
-    candidate's attack_id to technique level, drop candidates with no attack_id (no
-    technique label = useless for technique annotation), keep the highest-scoring
-    chunk per distinct technique, and return them sorted by score descending. The
-    caller then injects the top candidate_k. Immutable — never mutates the inputs.
+    Normalizes each candidate's attack_id to technique level, drops candidates
+    with no attack_id (no technique label = useless for technique annotation),
+    keeps the highest-scoring chunk per distinct technique, and returns them
+    sorted by score descending. The caller then injects the top candidate_k.
+    Immutable — never mutates the inputs. This dedup is part of the CERTIFIED
+    Phase C annotator path; changing it invalidates the certification.
     """
     best: dict[str, RetrievalResult] = {}
     for r in results:

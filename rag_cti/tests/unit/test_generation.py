@@ -28,6 +28,7 @@ from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_chunk(chunk_id: str = "abc12345", source: str = "mitre") -> Chunk:
     return Chunk(
         id=chunk_id,
@@ -65,6 +66,7 @@ class _FakeSettings:
     groq_query_model: str = "llama-3.1-8b-instant"
     groq_analysis_model: str = "llama-3.3-70b-versatile"
     groq_report_model: str = "llama-3.3-70b-versatile"
+    llm_routing_model: str = "claude-haiku-4-5-20251001"
     generation_max_tokens: int = 512
 
 
@@ -84,7 +86,9 @@ class _FakeResponse:
 
 
 class _FakeCompletions:
-    def __init__(self, response_content: str | None = "Answer citing [abc12345] for detail.") -> None:
+    def __init__(
+        self, response_content: str | None = "Answer citing [abc12345] for detail."
+    ) -> None:
         self.last_kwargs: dict[str, Any] = {}
         self._response_content = response_content
 
@@ -101,7 +105,9 @@ class _FakeChat:
 
 
 class _FakeClient:
-    def __init__(self, response_content: str | None = "Answer citing [abc12345] for detail.") -> None:
+    def __init__(
+        self, response_content: str | None = "Answer citing [abc12345] for detail."
+    ) -> None:
         self._completions = _FakeCompletions(response_content)
         self.chat = _FakeChat(self._completions)
 
@@ -109,6 +115,7 @@ class _FakeClient:
 # ---------------------------------------------------------------------------
 # LLMRouter
 # ---------------------------------------------------------------------------
+
 
 def test_router_hyde_returns_groq_query_model() -> None:
     router = LLMRouter(_FakeSettings())
@@ -133,9 +140,18 @@ def test_router_all_task_types_return_non_empty_string() -> None:
         assert len(model) > 0
 
 
+def test_router_anthropic_provider_never_returns_groq_models() -> None:
+    # An Anthropic client cannot use Groq model names — every task must route
+    # to llm_routing_model when the provider is anthropic.
+    router = LLMRouter(_FakeSettings(), provider="anthropic")
+    for task in TaskType:
+        assert router.model_for(task) == "claude-haiku-4-5-20251001"
+
+
 # ---------------------------------------------------------------------------
 # build_context_messages
 # ---------------------------------------------------------------------------
+
 
 def test_build_context_messages_returns_two_messages() -> None:
     msgs = build_context_messages("test query", [_make_result()])
@@ -205,6 +221,7 @@ def test_build_context_messages_custom_system_prompt() -> None:
 # extract_cited_ids
 # ---------------------------------------------------------------------------
 
+
 def test_extract_cited_ids_single() -> None:
     assert extract_cited_ids("See [abc123] for details.") == ["abc123"]
 
@@ -233,14 +250,19 @@ def test_extract_cited_ids_handles_hyphens_and_underscores() -> None:
 # Generator
 # ---------------------------------------------------------------------------
 
+
 def test_generator_returns_generated_answer() -> None:
-    gen = Generator(client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    gen = Generator(
+        client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings()
+    )
     result = gen.generate("APT29 spearphishing", _make_query_result())
     assert isinstance(result, GeneratedAnswer)
 
 
 def test_generator_query_preserved() -> None:
-    gen = Generator(client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    gen = Generator(
+        client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings()
+    )
     result = gen.generate("APT29 spearphishing", _make_query_result())
     assert result.query == "APT29 spearphishing"
 
@@ -274,26 +296,36 @@ def test_generator_cited_ids_extracted() -> None:
 
 
 def test_generator_generation_ms_non_negative() -> None:
-    gen = Generator(client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    gen = Generator(
+        client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings()
+    )
     result = gen.generate("query", _make_query_result())
     assert result.generation_ms >= 0.0
 
 
 def test_generator_model_in_result() -> None:
-    gen = Generator(client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    gen = Generator(
+        client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings()
+    )
     result = gen.generate("query", _make_query_result())
     assert result.model == "llama-3.3-70b-versatile"
 
 
 def test_generator_query_result_preserved() -> None:
     qr = _make_query_result()
-    gen = Generator(client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    gen = Generator(
+        client=_FakeClient(), router=LLMRouter(_FakeSettings()), settings=_FakeSettings()
+    )
     result = gen.generate("query", qr)
     assert result.query_result is qr
 
 
 def test_generator_llm_failure_returns_error_message() -> None:
-    gen = Generator(client=_FakeClient(response_content=None), router=LLMRouter(_FakeSettings()), settings=_FakeSettings())
+    gen = Generator(
+        client=_FakeClient(response_content=None),
+        router=LLMRouter(_FakeSettings()),
+        settings=_FakeSettings(),
+    )
     result = gen.generate("query", _make_query_result())
     assert "Unable to generate answer" in result.answer
     assert result.cited_chunk_ids == []
@@ -336,6 +368,7 @@ def test_generator_second_message_is_user_with_query() -> None:
 # _extract_text
 # ---------------------------------------------------------------------------
 
+
 def test_extract_text_returns_content() -> None:
     response = _FakeResponse("hello world")
     assert _extract_text(response) == "hello world"
@@ -349,6 +382,7 @@ def test_extract_text_returns_empty_string_when_content_is_none() -> None:
 # ---------------------------------------------------------------------------
 # GeneratedAnswer type
 # ---------------------------------------------------------------------------
+
 
 def test_generated_answer_is_frozen() -> None:
     qr = _make_query_result()
@@ -367,6 +401,7 @@ def test_generated_answer_is_frozen() -> None:
 # ---------------------------------------------------------------------------
 # Tests — tracing integration
 # ---------------------------------------------------------------------------
+
 
 def test_generate_calls_add_trace_metadata_with_expected_keys() -> None:
     client = _FakeClient("Answer citing [abc12345].")
@@ -394,6 +429,7 @@ def test_generate_result_unchanged_when_tracing_active() -> None:
 # ---------------------------------------------------------------------------
 # Phase B — parse_technique_ids (real LLM output styles)
 # ---------------------------------------------------------------------------
+
 
 def test_parse_technique_ids_clean_comma_list() -> None:
     assert parse_technique_ids("T1059.001,T1027") == ["T1059.001", "T1027"]
@@ -430,12 +466,13 @@ def test_parse_technique_ids_ignores_failure_sentinel_text() -> None:
 # Phase B — parse_actor_name (real LLM output styles)
 # ---------------------------------------------------------------------------
 
+
 def test_parse_actor_name_with_spaces_preserved() -> None:
     assert parse_actor_name("Cozy Bear") == "Cozy Bear"
 
 
 def test_parse_actor_name_strips_quotes_and_markdown() -> None:
-    assert parse_actor_name('**Lazarus Group**') == "Lazarus Group"
+    assert parse_actor_name("**Lazarus Group**") == "Lazarus Group"
     assert parse_actor_name('"APT29"') == "APT29"
 
 
@@ -460,7 +497,10 @@ def test_parse_actor_name_empty_output_is_empty() -> None:
 # Phase B — _format_candidates
 # ---------------------------------------------------------------------------
 
-def _make_result_with(content: str, attack_id: str | None, source: str, rank: int) -> RetrievalResult:
+
+def _make_result_with(
+    content: str, attack_id: str | None, source: str, rank: int
+) -> RetrievalResult:
     metadata = {"attack_id": attack_id} if attack_id else {}
     chunk = Chunk(
         id=f"c{rank}",
@@ -472,11 +512,15 @@ def _make_result_with(content: str, attack_id: str | None, source: str, rank: in
         retrieved_at=datetime(2024, 1, 1),
         embedding_model="bge-m3",
     )
-    return RetrievalResult(document=chunk, score=0.9 - rank * 0.1, rank=rank, retriever_source="rrf")
+    return RetrievalResult(
+        document=chunk, score=0.9 - rank * 0.1, rank=rank, retriever_source="rrf"
+    )
 
 
 def test_format_candidates_includes_attack_id_and_content() -> None:
-    results = [_make_result_with("Aquatic Panda uses PowerShell (T1059.001)", "T1059.001", "mitre", 0)]
+    results = [
+        _make_result_with("Aquatic Panda uses PowerShell (T1059.001)", "T1059.001", "mitre", 0)
+    ]
     out = _format_candidates(results, candidate_k=10)
     assert "attack_id=T1059.001" in out
     assert "source=mitre" in out
@@ -506,13 +550,16 @@ def test_format_candidates_empty_results() -> None:
 # Phase B — annotate_techniques / attribute_actor methods (mocked client)
 # ---------------------------------------------------------------------------
 
+
 def test_annotate_techniques_returns_parsed_ids() -> None:
     gen = Generator(
         client=_FakeClient("T1059.001, T1027"),
         router=LLMRouter(_FakeSettings()),
         settings=_FakeSettings(),
     )
-    ids = gen.annotate_techniques("GLASSTOKEN web shell executes encoded PowerShell", _make_query_result())
+    ids = gen.annotate_techniques(
+        "GLASSTOKEN web shell executes encoded PowerShell", _make_query_result()
+    )
     assert ids == ["T1059.001", "T1027"]
 
 
@@ -541,7 +588,9 @@ def test_attribute_actor_returns_parsed_name() -> None:
         router=LLMRouter(_FakeSettings()),
         settings=_FakeSettings(),
     )
-    actor = gen.attribute_actor("Cozy Bear spearphishing of government entities", _make_query_result())
+    actor = gen.attribute_actor(
+        "Cozy Bear spearphishing of government entities", _make_query_result()
+    )
     assert actor == "APT29"
 
 

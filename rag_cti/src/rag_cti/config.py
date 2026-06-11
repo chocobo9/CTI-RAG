@@ -33,6 +33,8 @@ class Settings(BaseSettings):
 
     # Data source API keys
     otx_api_key: SecretStr = SecretStr("")
+    # Reserved for the experimental VirusTotal connector — no fetch script
+    # consumes it yet (connectors/virustotal.py takes the key directly).
     vt_api_key: SecretStr = SecretStr("")
     whoxy_api_key: SecretStr = SecretStr("")
 
@@ -59,18 +61,24 @@ class Settings(BaseSettings):
     # Generation
     generation_max_tokens: int = 1024
 
-    # Model for HyDE's Anthropic branch (hyde.py uses it when the LLM client
-    # is Anthropic; Groq/Ollama branches use their own model fields above).
+    # Model for the Anthropic provider: HyDE's Anthropic branch (hyde.py) and
+    # LLMRouter when provider == "anthropic". Groq/Ollama use their own fields.
     llm_routing_model: str = "claude-haiku-4-5-20251001"
 
     # Reranker (hybrid+reranker is the recommended config — see README eval results)
     reranker_enabled: bool = True
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
     reranker_candidates_k: int = 50
+    # Must cover the chunker's 600-token target (chunking._DEFAULT_TARGET_TOKENS)
+    # plus the query — at 512 the cross-encoder silently truncated 11.4% of
+    # chunks (42% of OTX). See docs/eval/chunk_truncation_audit.md.
+    reranker_max_length: int = 640
 
     # Feature flags
     hyde_enabled: bool = True
     hyde_min_query_tokens: int = 5
+    hyde_max_tokens: int = 300
+    hyde_output_max_chars: int = 2000
 
     @field_validator("hybrid_alpha")
     @classmethod

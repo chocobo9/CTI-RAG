@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import threading
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, cast, runtime_checkable
 
 from rag_cti._logging import get_logger
 from rag_cti.types import RetrievalResult
+
+if TYPE_CHECKING:
+    from sentence_transformers import CrossEncoder
+    from sentence_transformers.base.modality_types import PairInput
 
 logger = get_logger(__name__)
 
@@ -24,32 +28,39 @@ class NoOpReranker:
 class CrossEncoderReranker:
     """Cross-encoder reranker using sentence-transformers CrossEncoder."""
 
-    def __init__(self, model_name: str, device: str | None = None) -> None:
+    def __init__(self, model_name: str, device: str | None = None, max_length: int = 640) -> None:
         self._model_name = model_name
         self._device = device or self._detect_device()
-        self._model = None
+        self._max_length = max_length
+        self._model: CrossEncoder | None = None
         self._lock = threading.Lock()
 
     @staticmethod
     def _detect_device() -> str:
         try:
             import torch
+
             return "cuda" if torch.cuda.is_available() else "cpu"
         except ImportError:
             return "cpu"
 
-    def _load(self):
+    def _load(self) -> CrossEncoder:
         if self._model is None:
             with self._lock:
                 if self._model is None:
                     import torch
                     from sentence_transformers import CrossEncoder
 
-                    logger.info("loading cross-encoder model", model=self._model_name, device=self._device)
+                    logger.info(
+                        "loading cross-encoder model",
+                        model=self._model_name,
+                        device=self._device,
+                        max_length=self._max_length,
+                    )
                     self._model = CrossEncoder(
                         self._model_name,
                         device=self._device,
-                        max_length=512,
+                        max_length=self._max_length,
                         model_kwargs={"torch_dtype": torch.float16},
                     )
         return self._model
@@ -63,7 +74,9 @@ class CrossEncoderReranker:
         t0 = time.perf_counter()
         model = self._load()
         t_load = time.perf_counter()
-        pairs = [[query, r.document.content] for r in results]
+        # Each [query, content] list is a valid PairInput at runtime; only list
+        # invariance keeps mypy from accepting list[list[str]] directly.
+        pairs = cast("list[PairInput]", [[query, r.document.content] for r in results])
         scores = model.predict(pairs, show_progress_bar=False, batch_size=8)
         t_predict = time.perf_counter()
 
