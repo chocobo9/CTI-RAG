@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     # Generation
     generation_max_tokens: int = 1024
 
+    # Model for HyDE's Anthropic branch (hyde.py uses it when the LLM client
+    # is Anthropic; Groq/Ollama branches use their own model fields above).
+    llm_routing_model: str = "claude-haiku-4-5-20251001"
+
     # Reranker (hybrid+reranker is the recommended config — see README eval results)
     reranker_enabled: bool = True
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
