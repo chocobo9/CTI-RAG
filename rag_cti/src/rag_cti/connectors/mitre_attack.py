@@ -4,7 +4,7 @@ import hashlib
 import json
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from rag_cti._logging import get_logger
 from rag_cti.connectors.base import BaseConnector
@@ -65,7 +65,7 @@ class MitreAttackConnector(BaseConnector):
         for ref in raw.get("external_references", []):
             if ref.get("source_name") == "mitre-attack":
                 return str(ref.get("external_id", ""))
-        return raw.get("id", "unknown")
+        return cast(str, raw.get("id", "unknown"))
 
     @staticmethod
     def _build_content(raw: dict[str, Any], attack_id: str) -> str:

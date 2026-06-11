@@ -38,6 +38,7 @@ def actor_dicts() -> tuple[dict, dict]:
 # load_actor_dicts
 # ---------------------------------------------------------------------------
 
+
 def test_load_actor_dicts_shape(actor_dicts: tuple[dict, dict]) -> None:
     alias, related = actor_dicts
     assert len(alias) == 37
@@ -49,6 +50,7 @@ def test_load_actor_dicts_shape(actor_dicts: tuple[dict, dict]) -> None:
 # ---------------------------------------------------------------------------
 # threat_actor_connection — hand-reasoned cases
 # ---------------------------------------------------------------------------
+
 
 def test_alias_direct_is_correct(actor_dicts: tuple[dict, dict]) -> None:
     alias, related = actor_dicts
@@ -96,12 +98,13 @@ def test_case_and_whitespace_insensitive(actor_dicts: tuple[dict, dict]) -> None
 # score_taa — aggregation (fractions per SPEC §M)
 # ---------------------------------------------------------------------------
 
+
 def test_score_taa_counts_and_fractions(actor_dicts: tuple[dict, dict]) -> None:
     alias, related = actor_dicts
     pairs = [
         ("bahamut", "dropping elephant"),  # C
-        ("confucius", "patchwork"),        # P
-        ("turla", "fin7"),                 # I
+        ("confucius", "patchwork"),  # P
+        ("turla", "fin7"),  # I
     ]
     r = score_taa(pairs, alias, related)
     assert isinstance(r, TAAResult)
@@ -114,24 +117,26 @@ def test_score_taa_counts_and_fractions(actor_dicts: tuple[dict, dict]) -> None:
 # compute_taa_accuracy — faithful TSV port (PERCENTAGES)
 # ---------------------------------------------------------------------------
 
+
 def test_compute_taa_accuracy_from_tsv(actor_dicts: tuple[dict, dict], tmp_path: Path) -> None:
     alias, related = actor_dicts
     tsv = tmp_path / "resp.tsv"
     tsv.write_text(
         "GT\tpred\n"
-        "bahamut\tdropping elephant\n"   # C
-        "confucius\tpatchwork\n"         # P
-        "turla\tfin7\n",                 # I
+        "bahamut\tdropping elephant\n"  # C
+        "confucius\tpatchwork\n"  # P
+        "turla\tfin7\n",  # I
         encoding="utf-8",
     )
     correct_pct, plausible_pct = compute_taa_accuracy(tsv, "pred", alias, related)
-    assert correct_pct == pytest.approx(100 / 3, abs=1e-3)        # 1/3
-    assert plausible_pct == pytest.approx(200 / 3, abs=1e-3)      # 2/3
+    assert correct_pct == pytest.approx(100 / 3, abs=1e-3)  # 1/3
+    assert plausible_pct == pytest.approx(200 / 3, abs=1e-3)  # 2/3
 
 
 # ---------------------------------------------------------------------------
 # Restricted unpickler — security
 # ---------------------------------------------------------------------------
+
 
 def test_safe_unpickle_loads_data_only_pickle(tmp_path: Path) -> None:
     p = tmp_path / "ok.pickle"

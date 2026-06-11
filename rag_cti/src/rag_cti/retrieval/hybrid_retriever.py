@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from rag_cti._logging import get_logger
 from rag_cti.retrieval.fusion import reciprocal_rank_fusion
-from rag_cti.types import RetrievalResult
+from rag_cti.types import RetrievalResult, RetrieverProto
 
 logger = get_logger(__name__)
 
@@ -18,7 +18,11 @@ class HybridRetriever:
     """
 
     def __init__(
-        self, dense: object, sparse: object, settings: object, alpha: float | None = None
+        self,
+        dense: RetrieverProto,
+        sparse: RetrieverProto,
+        settings: object,
+        alpha: float | None = None,
     ) -> None:
         self._dense = dense
         self._sparse = sparse

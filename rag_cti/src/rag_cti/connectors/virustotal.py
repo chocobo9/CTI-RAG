@@ -46,9 +46,7 @@ class VirusTotalConnector(HttpConnector):
 
         last_mod_ts: int | None = attrs.get("last_modification_date")
         last_modified = (
-            datetime.fromtimestamp(last_mod_ts, tz=UTC).isoformat()
-            if last_mod_ts
-            else ""
+            datetime.fromtimestamp(last_mod_ts, tz=UTC).isoformat() if last_mod_ts else ""
         )
 
         return Document(

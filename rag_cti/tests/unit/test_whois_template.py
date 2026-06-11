@@ -44,10 +44,14 @@ def test_registrar_without_iana_id_has_no_parenthetical() -> None:
 
 
 def test_scalar_name_servers_and_status_are_tolerated() -> None:
-    text = render_whois({
-        "domain": "d", "registrar": "R",
-        "name_servers": "ns1.d", "status": "ok",
-    })
+    text = render_whois(
+        {
+            "domain": "d",
+            "registrar": "R",
+            "name_servers": "ns1.d",
+            "status": "ok",
+        }
+    )
     assert "Name servers: ns1.d." in text
     assert "Registration status: ok." in text
 

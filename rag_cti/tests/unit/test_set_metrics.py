@@ -23,6 +23,7 @@ from rag_cti.evaluation.set_metrics import (
 # normalize_id
 # ---------------------------------------------------------------------------
 
+
 def test_normalize_id_technique_strips_subtechnique() -> None:
     assert normalize_id("T1059.001", "technique") == "T1059"
 
@@ -58,6 +59,7 @@ def test_normalize_set_dedupes_after_normalization_and_drops_blanks() -> None:
 # Micro-F1 — single-record cases (SPEC §A.2 step 3)
 # ---------------------------------------------------------------------------
 
+
 def test_micro_f1_single_record_parent_collapse() -> None:
     # G=["T1059.001"], pred=["T1059.001","T1003","T1059.002"]
     # tech level: G={T1059}, P={T1059,T1003} -> TP=1 FP=1 FN=0
@@ -80,15 +82,16 @@ def test_micro_f1_single_record_multilabel_partial() -> None:
 # Micro-F1 — aggregation across the two records above (SPEC §A.2 step 3)
 # ---------------------------------------------------------------------------
 
+
 def test_micro_f1_aggregates_two_records() -> None:
     gold = [["T1059.001"], ["T1566.001", "T1204.002"]]
     pred = [["T1059.001", "T1003", "T1059.002"], ["T1566.001", "T1059"]]
     r = micro_f1(gold, pred, "technique")
     # ΣTP=2 ΣFP=2 ΣFN=1
     assert (r.tp, r.fp, r.fn, r.n) == (2, 2, 1, 2)
-    assert r.precision == pytest.approx(0.5)          # 2/4
-    assert r.recall == pytest.approx(2 / 3)           # 2/3
-    assert r.f1 == pytest.approx(0.5714, abs=1e-4)    # 2*0.5*0.6667/(1.1667)
+    assert r.precision == pytest.approx(0.5)  # 2/4
+    assert r.recall == pytest.approx(2 / 3)  # 2/3
+    assert r.f1 == pytest.approx(0.5714, abs=1e-4)  # 2*0.5*0.6667/(1.1667)
 
 
 def test_micro_f1_subtechnique_level_does_not_collapse() -> None:
@@ -114,8 +117,9 @@ def test_micro_f1_length_mismatch_raises() -> None:
 # P/R/F1@k — single record, hand-computed
 # ---------------------------------------------------------------------------
 
+
 def test_prf_at_k_hand_computed() -> None:
-    gold = ["T1059.001", "T1003"]                       # tech: {T1059, T1003}
+    gold = ["T1059.001", "T1003"]  # tech: {T1059, T1003}
     ranked = ["T1566", "T1059.002", "T1003.001", "T1071", "T1059"]
     out = prf_at_k(ranked, gold, k_values=(1, 3, 5), level="technique")
 

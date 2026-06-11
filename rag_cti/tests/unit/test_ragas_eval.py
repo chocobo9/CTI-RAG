@@ -74,6 +74,7 @@ CTI_CHUNKS = [
 # Test 1 (happy path): conversion format correct
 # ---------------------------------------------------------------------------
 
+
 def test_answers_to_ragas_dataset_format() -> None:
     answers = [
         _make_answer(
@@ -107,6 +108,7 @@ def test_answers_to_ragas_dataset_format() -> None:
 # Test 2 (happy path): contexts content complete
 # ---------------------------------------------------------------------------
 
+
 def test_answers_to_ragas_dataset_contexts_content() -> None:
     answer = _make_answer(
         "What are APT29 techniques?",
@@ -126,6 +128,7 @@ def test_answers_to_ragas_dataset_contexts_content() -> None:
 # Test 3 (edge): empty answers list
 # ---------------------------------------------------------------------------
 
+
 def test_answers_to_ragas_dataset_empty() -> None:
     result = answers_to_ragas_dataset([])
     assert result == []
@@ -134,6 +137,7 @@ def test_answers_to_ragas_dataset_empty() -> None:
 # ---------------------------------------------------------------------------
 # Test 4 (edge): answer with no retrieval results
 # ---------------------------------------------------------------------------
+
 
 def test_answers_to_ragas_dataset_no_results() -> None:
     answer = _make_answer(
@@ -149,6 +153,7 @@ def test_answers_to_ragas_dataset_no_results() -> None:
 # ---------------------------------------------------------------------------
 # Test 5 (boundary): RagasEvalResult fields
 # ---------------------------------------------------------------------------
+
 
 def test_ragas_eval_result_fields() -> None:
     result = RagasEvalResult(
@@ -177,6 +182,7 @@ def test_ragas_eval_result_fields() -> None:
 # ---------------------------------------------------------------------------
 # Test 6 (error path): judge LLM missing raises ValueError
 # ---------------------------------------------------------------------------
+
 
 def test_build_judge_llm_missing_key_raises() -> None:
     from pydantic import SecretStr

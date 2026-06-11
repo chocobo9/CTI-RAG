@@ -49,11 +49,14 @@ def _otx_actor_record():
 # Backdoor removal (the core §D.2-step-2 requirement)
 # ---------------------------------------------------------------------------
 
+
 def test_otx_actor_does_not_hit_on_actor_name_in_content() -> None:
     rec = _otx_actor_record()
     # Chunk mentions the actor name but has the WRONG pulse_id.
     # Pre-fix this returned True (actor_in_content backdoor); post-fix it must be False.
-    bait = _result(content="Cobalt Group deployed Cobalt Strike beacons.", pulse_id="WRONG_PULSE_ID")
+    bait = _result(
+        content="Cobalt Group deployed Cobalt Strike beacons.", pulse_id="WRONG_PULSE_ID"
+    )
     assert ea.is_hit(bait, rec) is False
 
 
@@ -72,6 +75,7 @@ def test_otx_actor_no_pulse_no_name_is_miss() -> None:
 # ---------------------------------------------------------------------------
 # Set / pulse metric helpers
 # ---------------------------------------------------------------------------
+
 
 def test_ranked_attack_ids_preserves_order_and_drops_blanks() -> None:
     results = [

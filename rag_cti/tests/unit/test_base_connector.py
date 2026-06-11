@@ -23,9 +23,14 @@ class _MixedConnector(BaseConnector):
 
 
 def test_fetch_documents_counts_skipped_records() -> None:
-    connector = _MixedConnector([
-        {"id": "a"}, {"bad": True}, {"id": "b"}, {"bad": True},
-    ])
+    connector = _MixedConnector(
+        [
+            {"id": "a"},
+            {"bad": True},
+            {"id": "b"},
+            {"bad": True},
+        ]
+    )
     docs = list(connector.fetch_documents())
     assert [d.id for d in docs] == ["a", "b"]
     assert connector.skipped_records == 2

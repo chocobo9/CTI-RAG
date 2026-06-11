@@ -9,6 +9,7 @@ from rag_cti.types import Chunk, RetrievalResult
 # Stubs
 # ---------------------------------------------------------------------------
 
+
 def _make_result(chunk_id: str, score: float, rank: int, source: str = "dense") -> RetrievalResult:
     chunk = Chunk(
         id=chunk_id,
@@ -45,6 +46,7 @@ class _FakeSettings:
 # Tests — forwarding
 # ---------------------------------------------------------------------------
 
+
 def test_passes_query_to_both_retrievers() -> None:
     dense = _FakeRetriever()
     sparse = _FakeRetriever()
@@ -75,6 +77,7 @@ def test_passes_source_filter_to_both_retrievers() -> None:
 # ---------------------------------------------------------------------------
 # Tests — fusion and truncation
 # ---------------------------------------------------------------------------
+
 
 def test_results_truncated_to_top_k() -> None:
     dense_results = [_make_result(f"d{i}", 1.0 - i * 0.1, i) for i in range(8)]
@@ -124,7 +127,9 @@ def test_empty_dense_returns_sparse_only() -> None:
 
 
 def test_both_empty_returns_empty() -> None:
-    retriever = HybridRetriever(dense=_FakeRetriever(), sparse=_FakeRetriever(), settings=_FakeSettings())
+    retriever = HybridRetriever(
+        dense=_FakeRetriever(), sparse=_FakeRetriever(), settings=_FakeSettings()
+    )
     assert retriever.search("query") == []
 
 
@@ -132,12 +137,15 @@ def test_both_empty_returns_empty() -> None:
 # Tests — sparse_query routing
 # ---------------------------------------------------------------------------
 
+
 def test_sparse_query_routes_different_strings_to_retrievers() -> None:
     """When sparse_query is provided, dense gets `query` and sparse gets `sparse_query`."""
     dense = _FakeRetriever()
     sparse = _FakeRetriever()
     retriever = HybridRetriever(dense=dense, sparse=sparse, settings=_FakeSettings())
-    retriever.search("hypothetical document about APT28", sparse_query="CVE-2023-34362 exploitation")
+    retriever.search(
+        "hypothetical document about APT28", sparse_query="CVE-2023-34362 exploitation"
+    )
     assert dense.last_query == "hypothetical document about APT28"
     assert sparse.last_query == "CVE-2023-34362 exploitation"
 
@@ -155,6 +163,7 @@ def test_sparse_query_none_falls_back_to_main_query() -> None:
 # ---------------------------------------------------------------------------
 # Tests — RRF candidate multiplier
 # ---------------------------------------------------------------------------
+
 
 def test_candidate_multiplier_expands_internal_fetch_k() -> None:
     """With top_k=5 and multiplier=3, each retriever should be asked for 15."""
@@ -207,6 +216,7 @@ def test_candidate_multiplier_missing_from_settings_defaults_to_1() -> None:
 # ---------------------------------------------------------------------------
 # Tests — hybrid_alpha weighting
 # ---------------------------------------------------------------------------
+
 
 def test_alpha_biases_fusion_toward_dense() -> None:
     """alpha near 1 must rank the dense top hit above the sparse top hit."""

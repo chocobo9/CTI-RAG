@@ -69,6 +69,7 @@ class GeneratedAnswer(BaseModel, frozen=True):
 # Structural protocols — use for type-hinting boundaries, not isinstance checks
 # ---------------------------------------------------------------------------
 
+
 @runtime_checkable
 class RetrieverProto(Protocol):
     def search(
@@ -77,6 +78,37 @@ class RetrieverProto(Protocol):
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
     ) -> list[RetrievalResult]: ...
+
+
+class SparseCapableRetrieverProto(Protocol):
+    """Retriever whose search accepts a separate BM25 ``sparse_query`` (HybridRetriever)."""
+
+    def search(
+        self,
+        query: str,
+        top_k: int = 10,
+        source_filter: str | list[str] | None = None,
+        sparse_query: str | None = None,
+    ) -> list[RetrievalResult]: ...
+
+
+class SettingsProto(Protocol):
+    """Structural view of config.Settings used by the retrieval/generation layers.
+
+    Test fakes only need the fields the module under test touches at runtime;
+    this protocol is a typing aid, never an isinstance check.
+    """
+
+    retrieval_top_k: int
+    hyde_enabled: bool
+    hyde_min_query_tokens: int
+    ollama_enabled: bool
+    ollama_model: str
+    groq_query_model: str
+    groq_analysis_model: str
+    groq_report_model: str
+    llm_routing_model: str
+    reranker_model: str
 
 
 class LLMClientProto(Protocol):

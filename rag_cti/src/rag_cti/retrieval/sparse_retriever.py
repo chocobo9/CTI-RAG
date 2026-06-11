@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from typing import Protocol
 
 from rag_cti._logging import get_logger
 from rag_cti.types import RetrievalResult
@@ -8,10 +9,28 @@ from rag_cti.types import RetrievalResult
 logger = get_logger(__name__)
 
 
+class SparseSearchStore(Protocol):
+    """Vector store surface SparseRetriever needs (QdrantStore.sparse_search)."""
+
+    def sparse_search(
+        self,
+        query_indices: list[int],
+        query_values: list[float],
+        top_k: int = 10,
+        source_filter: str | list[str] | None = None,
+    ) -> list[RetrievalResult]: ...
+
+
+class SparseQueryEncoder(Protocol):
+    """Encoder surface SparseRetriever needs (BM25SparseEncoder.encode_query)."""
+
+    def encode_query(self, text: str) -> tuple[list[int], list[float]]: ...
+
+
 class SparseRetriever:
     """BM25 sparse retriever backed by Qdrant sparse vector index."""
 
-    def __init__(self, store: object, encoder: object) -> None:
+    def __init__(self, store: SparseSearchStore, encoder: SparseQueryEncoder) -> None:
         self._store = store
         self._encoder = encoder
 

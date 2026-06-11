@@ -55,7 +55,9 @@ def ingest(
     source: str = typer.Argument(..., help="Source name: mitre | otx | vt | whois | pdns | pdf"),
 ) -> None:
     """Ingest a data source into the vector store."""
-    console.print("[yellow]'ingest' is not available in this release — use the scripts/ connectors directly.[/yellow]")
+    console.print(
+        "[yellow]'ingest' is not available in this release — use the scripts/ connectors directly.[/yellow]"
+    )
     raise typer.Exit(code=1)
 
 
@@ -64,7 +66,9 @@ def refresh(
     since: str = typer.Option("24h", "--since", help="Refresh window, e.g. 24h or 7d"),
 ) -> None:
     """Refresh time-windowed data sources."""
-    console.print("[yellow]'refresh' is not available in this release — use the scripts/ connectors directly.[/yellow]")
+    console.print(
+        "[yellow]'refresh' is not available in this release — use the scripts/ connectors directly.[/yellow]"
+    )
     raise typer.Exit(code=1)
 
 
@@ -105,7 +109,8 @@ class _PipelineRetriever:
         self._pipeline = pipeline
 
     def search(self, text: str, top_k: int) -> list[Any]:
-        return self._pipeline.run(text, top_k=top_k).results
+        results: list[Any] = self._pipeline.run(text, top_k=top_k).results
+        return results
 
 
 def _load_v1_query_set_or_exit(query_set: Path) -> list[Any]:
@@ -130,7 +135,9 @@ def eval(
         "techniquerag",
         help="Eval suite: techniquerag | retrieval | ragas",
     ),
-    max_records: int = typer.Option(None, "--max-records", "-n", help="Limit dataset records for quick runs"),
+    max_records: int = typer.Option(
+        None, "--max-records", "-n", help="Limit dataset records for quick runs"
+    ),
     k: list[int] = typer.Option([1, 5, 10], "--k", help="Hit@k cutoffs (repeatable)"),
     config: str = typer.Option(
         "all",
@@ -163,7 +170,9 @@ def eval(
 ) -> None:
     """Run an evaluation suite against the retrieval pipeline."""
     if suite not in ("techniquerag", "retrieval", "ragas"):
-        console.print(f"[red]Unknown suite: {suite!r}. Choose 'techniquerag', 'retrieval', or 'ragas'.[/red]")
+        console.print(
+            f"[red]Unknown suite: {suite!r}. Choose 'techniquerag', 'retrieval', or 'ragas'.[/red]"
+        )
         raise typer.Exit(code=1)
 
     from rag_cti.bootstrap import build_eval_pipeline, build_retrieval_stack
@@ -200,7 +209,7 @@ def eval(
             router: Any = FixedRouter(DEEPSEEK_DEFAULT_MODEL)
         else:
             llm_provider, llm_client = build_llm_client(settings)
-            router = LLMRouter(settings)
+            router = LLMRouter(settings, provider=llm_provider)
         console.print(f"LLM provider: [bold]{llm_provider}[/bold]")
         generator = Generator(client=llm_client, router=router, settings=settings)
 
@@ -212,7 +221,7 @@ def eval(
 
             answers: list[GeneratedAnswer] = []
             for i, rec in enumerate(records):
-                console.print(f"  [{i+1}/{len(records)}] {rec.query[:60]}...")
+                console.print(f"  [{i + 1}/{len(records)}] {rec.query[:60]}...")
                 qr = pipeline.run(rec.query)
                 ans = generator.generate(rec.query, qr)
                 answers.append(ans)
@@ -255,7 +264,10 @@ def eval(
         records = _load_v1_query_set_or_exit(query_set)
         cats = ("precise", "semantic", "fuzzy")
         cat_counts = {c: sum(1 for r in records if r.category.value == c) for c in cats}
-        console.print(f"  [green]{len(records)} records[/green]  " + "  ".join(f"{c}={cat_counts[c]}" for c in cats))
+        console.print(
+            f"  [green]{len(records)} records[/green]  "
+            + "  ".join(f"{c}={cat_counts[c]}" for c in cats)
+        )
 
         llm_provider, llm_client = build_llm_client(settings)
         console.print(f"LLM provider: [bold]{llm_provider}[/bold]")
@@ -274,7 +286,9 @@ def eval(
                 k_values=k_values,
             )
             eval_results.append(result)
-            console.print(f"  MRR=[green]{result.overall.mrr:.4f}[/green]  Hit@10=[green]{result.overall.top_k.get(10, 0.0):.4f}[/green]")
+            console.print(
+                f"  MRR=[green]{result.overall.mrr:.4f}[/green]  Hit@10=[green]{result.overall.top_k.get(10, 0.0):.4f}[/green]"
+            )
 
         for cat in ("overall", *cats):
             tbl = Table(title=f"Retrieval Results — {cat.upper()}", show_lines=True)
@@ -334,7 +348,8 @@ def eval(
 
     groq_client = None
     try:
-        from groq import Groq  # type: ignore[import]
+        from groq import Groq
+
         api_key = settings.groq_api_key.get_secret_value()
         if api_key:
             groq_client = Groq(api_key=api_key)
@@ -351,13 +366,13 @@ def eval(
             stack, settings, cfg, llm_client=groq_client, llm_provider="groq"
         )
 
-        result = evaluate_retriever(
+        tr_result = evaluate_retriever(
             retriever=_PipelineRetriever(pipeline),
             dataset=dataset,
             config=cfg,
             k_values=k_values,
         )
-        results.append(result)
+        results.append(tr_result)
 
     table = Table(title="TechniqueRAG Evaluation Results")
     table.add_column("Config", style="cyan")
@@ -366,12 +381,12 @@ def eval(
     table.add_column("MRR", justify="right")
     table.add_column("N", justify="right")
 
-    for r in results:
-        row = [r.config]
+    for tr in results:
+        row = [tr.config]
         for kv in k_values:
-            row.append(f"{r.top_k.get(kv, 0.0):.4f}")
-        row.append(f"{r.mrr:.4f}")
-        row.append(str(r.n_queries))
+            row.append(f"{tr.top_k.get(kv, 0.0):.4f}")
+        row.append(f"{tr.mrr:.4f}")
+        row.append(str(tr.n_queries))
         table.add_row(*row)
 
     console.print(table)

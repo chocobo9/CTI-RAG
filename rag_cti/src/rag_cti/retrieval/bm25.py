@@ -3,6 +3,7 @@
 Vocabulary and IDF weights are persisted to data/sparse_vocab.json after
 fitting; load at query time via BM25SparseEncoder.load(path).
 """
+
 from __future__ import annotations
 
 import json
@@ -135,9 +136,7 @@ class BM25SparseEncoder:
 
         for term, freq in df.items():
             idx = self._term_id(term)
-            self.idf[idx] = math.log(
-                (self.num_docs - freq + 0.5) / (freq + 0.5) + 1
-            )
+            self.idf[idx] = math.log((self.num_docs - freq + 0.5) / (freq + 0.5) + 1)
 
         logger.info(
             "BM25 encoder fitted",

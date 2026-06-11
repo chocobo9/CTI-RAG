@@ -10,6 +10,7 @@ from rag_cti.types import Chunk, RetrievalResult
 # Stubs
 # ---------------------------------------------------------------------------
 
+
 def _make_result(score: float = 0.9) -> RetrievalResult:
     chunk = Chunk(
         id="abc123",
@@ -48,13 +49,22 @@ class _FakeMessagesResponse:
 
 
 class _FakeLLMClient:
-    def __init__(self, response_text: str | None = "Hypothetical CTI passage about the query.") -> None:
+    def __init__(
+        self, response_text: str | None = "Hypothetical CTI passage about the query."
+    ) -> None:
         self.last_call: dict = {}
         self._response_text = response_text
         self.messages = self
 
-    def create(self, model: str, max_tokens: int, messages: list, system: str = "") -> _FakeMessagesResponse:
-        self.last_call = {"model": model, "max_tokens": max_tokens, "messages": messages, "system": system}
+    def create(
+        self, model: str, max_tokens: int, messages: list, system: str = ""
+    ) -> _FakeMessagesResponse:
+        self.last_call = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "messages": messages,
+            "system": system,
+        }
         if self._response_text is None:
             raise RuntimeError("simulated LLM failure")
         return _FakeMessagesResponse(self._response_text)
@@ -68,7 +78,9 @@ class _FakeBaseRetriever:
         self.last_sparse_query: str | None = None
         self._results = results or []
 
-    def search(self, query: str, top_k: int = 10, source_filter=None, sparse_query: str | None = None) -> list[RetrievalResult]:
+    def search(
+        self, query: str, top_k: int = 10, source_filter=None, sparse_query: str | None = None
+    ) -> list[RetrievalResult]:
         self.last_query = query
         self.last_top_k = top_k
         self.last_source_filter = source_filter
@@ -79,6 +91,7 @@ class _FakeBaseRetriever:
 # ---------------------------------------------------------------------------
 # Tests — bypass conditions
 # ---------------------------------------------------------------------------
+
 
 def test_bypasses_when_hyde_disabled() -> None:
     base = _FakeBaseRetriever()
@@ -119,10 +132,13 @@ def test_uses_hyde_when_query_meets_min_tokens() -> None:
 # Tests — LLM call correctness
 # ---------------------------------------------------------------------------
 
+
 def test_llm_called_with_correct_model() -> None:
     base = _FakeBaseRetriever()
     llm = _FakeLLMClient()
-    retriever = HyDERetriever(base, llm, _FakeSettings(llm_routing_model="claude-haiku-4-5-20251001"))
+    retriever = HyDERetriever(
+        base, llm, _FakeSettings(llm_routing_model="claude-haiku-4-5-20251001")
+    )
     retriever.search("how does APT group use spearphishing for initial access")
     assert llm.last_call["model"] == "claude-haiku-4-5-20251001"
 
@@ -165,6 +181,7 @@ def test_llm_failure_falls_back_to_direct_query() -> None:
 # Tests — result passthrough
 # ---------------------------------------------------------------------------
 
+
 def test_returns_base_retriever_results() -> None:
     expected = [_make_result(0.9), _make_result(0.7)]
     base = _FakeBaseRetriever(expected)
@@ -197,6 +214,7 @@ def test_bypass_passes_top_k_and_filter() -> None:
 # ---------------------------------------------------------------------------
 # Groq provider stubs
 # ---------------------------------------------------------------------------
+
 
 class _FakeGroqMessage:
     def __init__(self, text: str) -> None:
@@ -237,6 +255,7 @@ class _FakeGroqClient:
 # ---------------------------------------------------------------------------
 # Tests — Groq provider
 # ---------------------------------------------------------------------------
+
 
 def test_groq_provider_calls_chat_completions() -> None:
     base = _FakeBaseRetriever()
@@ -280,12 +299,13 @@ def test_groq_provider_failure_falls_back_to_direct_query() -> None:
 # Tests — tracing integration
 # ---------------------------------------------------------------------------
 
+
 def test_search_result_unchanged_when_traced_decorator_active() -> None:
     expected = [_make_result(0.9), _make_result(0.7)]
     base = _FakeBaseRetriever(expected)
     groq = _FakeGroqClient("Hypothetical CTI passage about spearphishing.")
     retriever = HyDERetriever(base, groq, _FakeSettings(), llm_provider="groq")
-    with patch("rag_cti.retrieval.hyde.traced", side_effect=lambda *a, **kw: (lambda f: f)):
+    with patch("rag_cti.retrieval.hyde.traced", side_effect=lambda *a, **kw: lambda f: f):
         results = retriever.search("how does APT group use spearphishing for initial access")
     assert results == expected
 
@@ -301,6 +321,7 @@ def test_generate_hypothetical_doc_called_through_tracing_noop() -> None:
 # ---------------------------------------------------------------------------
 # Tests — HyDE query routing (sparse gets original query)
 # ---------------------------------------------------------------------------
+
 
 def test_hyde_passes_original_query_as_sparse_query() -> None:
     """BM25 must receive the original query, not the hypothetical document."""

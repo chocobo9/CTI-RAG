@@ -33,7 +33,11 @@ class _ListConnector(BaseConnector):
 
 def _records(n: int) -> list[dict[str, Any]]:
     return [
-        {"id": f"r{i}", "content": f"Domain d{i}.example is registered with R.", "domain": f"d{i}.example"}
+        {
+            "id": f"r{i}",
+            "content": f"Domain d{i}.example is registered with R.",
+            "domain": f"d{i}.example",
+        }
         for i in range(n)
     ]
 
@@ -52,8 +56,13 @@ def test_jsonl_record_has_canonical_keys(tmp_path: Path) -> None:
     seed_connector_to_jsonl(_ListConnector(_records(1)), out, ChunkStrategy.STRUCTURED)
     record = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
     assert set(record) == {
-        "id", "parent_doc_id", "source", "content",
-        "chunk_index", "metadata", "retrieved_at",
+        "id",
+        "parent_doc_id",
+        "source",
+        "content",
+        "chunk_index",
+        "metadata",
+        "retrieved_at",
     }
 
 
@@ -67,7 +76,9 @@ def test_empty_content_documents_are_counted_as_skipped(tmp_path: Path) -> None:
 
 def test_limit_caps_documents(tmp_path: Path) -> None:
     out = tmp_path / "out.jsonl"
-    stats = seed_connector_to_jsonl(_ListConnector(_records(5)), out, ChunkStrategy.STRUCTURED, limit=2)
+    stats = seed_connector_to_jsonl(
+        _ListConnector(_records(5)), out, ChunkStrategy.STRUCTURED, limit=2
+    )
     assert stats.documents == 2
 
 

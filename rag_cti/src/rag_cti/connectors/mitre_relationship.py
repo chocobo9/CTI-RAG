@@ -4,7 +4,7 @@ import hashlib
 import json
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from rag_cti._logging import get_logger
 from rag_cti.connectors.base import BaseConnector
@@ -46,7 +46,7 @@ class MitreRelationshipConnector(BaseConnector):
         obj = self._index.get(stix_id)
         if obj is None:
             return None
-        return obj.get("name", "")
+        return cast(str, obj.get("name", ""))
 
     @staticmethod
     def _attack_id_of(obj: dict[str, Any]) -> str:

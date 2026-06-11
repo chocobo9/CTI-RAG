@@ -10,6 +10,7 @@ Path constants assume the repo layout (``src/rag_cti/bootstrap.py`` under the
 Heavy dependencies (qdrant-client, sentence-transformers, openai) are imported
 lazily inside the builders so importing this module stays cheap.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

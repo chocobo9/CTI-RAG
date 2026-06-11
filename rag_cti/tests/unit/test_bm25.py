@@ -11,6 +11,7 @@ from rag_cti.retrieval.bm25 import BM25SparseEncoder, tokenize
 # tokenize
 # ---------------------------------------------------------------------------
 
+
 def test_tokenize_preserves_ipv4() -> None:
     tokens = tokenize("Traffic from 192.168.1.1 detected")
     assert "192.168.1.1" in tokens
@@ -103,7 +104,7 @@ def test_tokenize_ipv4_invalid_mask_splits_remainder() -> None:
 
 
 def test_tokenize_ligature_confi_maps_to_ascii_word() -> None:
-    tokens = tokenize("remain con\uFB01dent under pressure")
+    tokens = tokenize("remain con\ufb01dent under pressure")
     assert "confident" in tokens
 
 
@@ -123,6 +124,7 @@ def test_tokenize_prose_drops_overlong_token_keeps_sha256() -> None:
 # ---------------------------------------------------------------------------
 # BM25SparseEncoder.fit
 # ---------------------------------------------------------------------------
+
 
 def test_fit_sets_num_docs() -> None:
     enc = BM25SparseEncoder()
@@ -155,6 +157,7 @@ def test_fit_empty_corpus() -> None:
 # ---------------------------------------------------------------------------
 # BM25SparseEncoder.encode_document
 # ---------------------------------------------------------------------------
+
 
 def _fitted_encoder(corpus: list[str] | None = None) -> BM25SparseEncoder:
     enc = BM25SparseEncoder()
@@ -193,6 +196,7 @@ def test_encode_document_empty_string() -> None:
 # BM25SparseEncoder.encode_query
 # ---------------------------------------------------------------------------
 
+
 def test_encode_query_returns_idf_weights() -> None:
     enc = _fitted_encoder()
     indices, values = enc.encode_query("malware")
@@ -216,6 +220,7 @@ def test_encode_query_oov_returns_empty() -> None:
 # ---------------------------------------------------------------------------
 # BM25SparseEncoder.save / load roundtrip
 # ---------------------------------------------------------------------------
+
 
 def test_save_load_roundtrip(tmp_path: Path) -> None:
     vocab_path = tmp_path / "sparse_vocab.json"

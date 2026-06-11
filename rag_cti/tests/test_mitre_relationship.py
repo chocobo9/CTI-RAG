@@ -3,6 +3,7 @@
 Distribution: happy 2 / edge 3 / adversarial 2
 All fixtures use real STIX 2.1 object structure with realistic IDs.
 """
+
 from __future__ import annotations
 
 import json
@@ -36,9 +37,7 @@ _ATTACK_PATTERN_T1059 = {
     "name": "Command and Scripting Interpreter",
     "created": "2017-05-31T21:30:41.022Z",
     "modified": "2024-10-14T22:11:30.271Z",
-    "external_references": [
-        {"source_name": "mitre-attack", "external_id": "T1059"}
-    ],
+    "external_references": [{"source_name": "mitre-attack", "external_id": "T1059"}],
 }
 
 _MALWARE_COBALTSTRIKE = {

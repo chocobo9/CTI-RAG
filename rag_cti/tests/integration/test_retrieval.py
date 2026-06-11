@@ -6,6 +6,7 @@ All tests are skipped automatically when Qdrant is unreachable.
 Run:
     pytest tests/integration/test_retrieval.py -v
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -74,6 +75,7 @@ _CORPUS_TEXTS = [c["content"] for c in _CORPUS]
 # Fake embedder — deterministic, no sentence-transformers load
 # ---------------------------------------------------------------------------
 
+
 class _FakeEmbedder:
     """Returns the predefined 4-dim vector for corpus chunks; keyword-based for queries."""
 
@@ -96,11 +98,13 @@ class _FakeEmbedder:
 # Module-scoped fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def qdrant_store() -> QdrantStore:
     """Create an isolated test collection; populate it; delete it after all tests."""
     try:
         from qdrant_client import QdrantClient  # type: ignore[import]
+
         client = QdrantClient(url=_QDRANT_URL, timeout=3)
         client.get_collections()
     except Exception:
@@ -131,6 +135,7 @@ def qdrant_store() -> QdrantStore:
 
     try:
         from qdrant_client import QdrantClient  # type: ignore[import]
+
         QdrantClient(url=_QDRANT_URL).delete_collection(_TEST_COLLECTION)
     except Exception:
         pass
@@ -151,6 +156,7 @@ def embedder() -> _FakeEmbedder:
 # ---------------------------------------------------------------------------
 # Tests — DenseRetriever
 # ---------------------------------------------------------------------------
+
 
 def test_dense_retriever_returns_retrieval_results(
     qdrant_store: QdrantStore, embedder: _FakeEmbedder
@@ -199,6 +205,7 @@ def test_dense_retriever_spearphishing_query_returns_c1_first(
 # Tests — SparseRetriever
 # ---------------------------------------------------------------------------
 
+
 def test_sparse_retriever_returns_retrieval_results(
     qdrant_store: QdrantStore, bm25_encoder: BM25SparseEncoder
 ) -> None:
@@ -236,6 +243,7 @@ def test_sparse_retriever_source_filter_restricts_source(
 # ---------------------------------------------------------------------------
 # Tests — HybridRetriever
 # ---------------------------------------------------------------------------
+
 
 def test_hybrid_retriever_returns_retrieval_results(
     qdrant_store: QdrantStore, embedder: _FakeEmbedder, bm25_encoder: BM25SparseEncoder
@@ -282,6 +290,7 @@ def test_hybrid_retriever_top_k_respected(
 # ---------------------------------------------------------------------------
 # Tests — Pipeline (end-to-end)
 # ---------------------------------------------------------------------------
+
 
 class _PipelineSettings:
     retrieval_top_k = 5

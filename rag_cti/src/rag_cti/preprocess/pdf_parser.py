@@ -3,6 +3,7 @@
 Returns a list of section dicts so section titles propagate into chunk metadata.
 Post-processing filters TOC, boilerplate, footers and merges short sections.
 """
+
 from __future__ import annotations
 
 import re
@@ -13,13 +14,13 @@ from rag_cti._logging import get_logger
 
 logger = get_logger(__name__)
 
-_MIN_SECTION_CHARS = 50      # early filter inside parsers
-_MIN_CHUNK_CHARS = 100       # rule 5: discard artifacts below this threshold
-_SHORT_SECTION_CHARS = 200   # rule 4: merge sections shorter than this with next
+_MIN_SECTION_CHARS = 50  # early filter inside parsers
+_MIN_CHUNK_CHARS = 100  # rule 5: discard artifacts below this threshold
+_SHORT_SECTION_CHARS = 200  # rule 4: merge sections shorter than this with next
 
-_BOILERPLATE_TITLES: frozenset[str] = frozenset({
-    "Notes", "References", "Acknowledgements", "Disclaimer", "Reporting"
-})
+_BOILERPLATE_TITLES: frozenset[str] = frozenset(
+    {"Notes", "References", "Acknowledgements", "Disclaimer", "Reporting"}
+)
 
 _TOC_DOT_RE = re.compile(r"\.{5,}")
 _FOOTER_RE = re.compile(r"Page \d+ of \d+", re.IGNORECASE)
@@ -51,6 +52,7 @@ def parse_pdf(path: Path) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 # Post-processing helpers
 # ---------------------------------------------------------------------------
+
 
 def _is_toc(text: str) -> bool:
     """Rule 1: 4+ dot-leader sequences indicate a table-of-contents chunk."""
@@ -129,8 +131,9 @@ def _postprocess_sections(sections: list[dict[str, Any]]) -> list[dict[str, Any]
 # Parser backends
 # ---------------------------------------------------------------------------
 
+
 def _parse_with_unstructured(path: Path) -> list[dict[str, Any]]:
-    from unstructured.partition.pdf import partition_pdf  # type: ignore[import]
+    from unstructured.partition.pdf import partition_pdf
 
     elements = partition_pdf(filename=str(path), strategy="fast")
 
@@ -151,11 +154,13 @@ def _parse_with_unstructured(path: Path) -> list[dict[str, Any]]:
             if current_parts:
                 body = _clean(" ".join(current_parts))
                 if len(body) >= _MIN_SECTION_CHARS:
-                    sections.append({
-                        "text": body,
-                        "section_title": current_title,
-                        "page": current_page,
-                    })
+                    sections.append(
+                        {
+                            "text": body,
+                            "section_title": current_title,
+                            "page": current_page,
+                        }
+                    )
             current_title = text
             current_parts = []
             current_page = page
@@ -166,20 +171,23 @@ def _parse_with_unstructured(path: Path) -> list[dict[str, Any]]:
     if current_parts:
         body = _clean(" ".join(current_parts))
         if len(body) >= _MIN_SECTION_CHARS:
-            sections.append({
-                "text": body,
-                "section_title": current_title,
-                "page": current_page,
-            })
+            sections.append(
+                {
+                    "text": body,
+                    "section_title": current_title,
+                    "page": current_page,
+                }
+            )
 
     return _postprocess_sections(sections)
 
 
 def _parse_with_pymupdf(path: Path) -> list[dict[str, Any]]:
-    import pymupdf  # type: ignore[import]
+    import pymupdf
 
     sections: list[dict[str, Any]] = []
-    with pymupdf.open(str(path)) as doc:
+    # pymupdf.open is an alias for Document, whose __init__ is untyped.
+    with pymupdf.open(str(path)) as doc:  # type: ignore[no-untyped-call]
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text("text")
             if not text or not text.strip():
@@ -193,7 +201,7 @@ def _parse_with_pymupdf(path: Path) -> list[dict[str, Any]]:
 
 def _clean(text: str) -> str:
     """Normalize whitespace, strip artifacts, and replace known bad codepoints."""
-    text = text.replace("", "-")        # Wingdings bullet (U+F0A7) → ASCII hyphen
+    text = text.replace("", "-")  # Wingdings bullet (U+F0A7) → ASCII hyphen
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     lines = [ln for ln in text.splitlines() if not re.fullmatch(r"\s*\d{1,4}\s*", ln)]

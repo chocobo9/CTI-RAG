@@ -39,6 +39,7 @@ def short_doc() -> Document:
 
 # --- Structured ---
 
+
 def test_structured_produces_single_chunk(short_doc: Document) -> None:
     chunks = chunk_document(short_doc, strategy=ChunkStrategy.STRUCTURED)
     assert len(chunks) == 1
@@ -53,6 +54,7 @@ def test_structured_chunk_has_correct_parent_and_index(short_doc: Document) -> N
 
 
 # --- Semantic ---
+
 
 def test_semantic_splits_long_doc(long_doc: Document) -> None:
     chunks = chunk_document(long_doc, strategy=ChunkStrategy.SEMANTIC, target_tokens=100)
@@ -81,6 +83,7 @@ def test_semantic_short_doc_returns_at_least_one_chunk(short_doc: Document) -> N
 
 # --- Fixed ---
 
+
 def test_fixed_produces_multiple_chunks(long_doc: Document) -> None:
     chunks = chunk_document(
         long_doc, strategy=ChunkStrategy.FIXED, target_tokens=200, overlap_tokens=40
@@ -97,12 +100,11 @@ def test_fixed_chunk_ids_are_unique(long_doc: Document) -> None:
 
 def test_fixed_raises_when_overlap_gte_target(long_doc: Document) -> None:
     with pytest.raises(ValueError, match="overlap_tokens"):
-        chunk_document(
-            long_doc, strategy=ChunkStrategy.FIXED, target_tokens=80, overlap_tokens=80
-        )
+        chunk_document(long_doc, strategy=ChunkStrategy.FIXED, target_tokens=80, overlap_tokens=80)
 
 
 # --- ID stability ---
+
 
 def test_chunk_id_is_deterministic(short_doc: Document) -> None:
     id1 = chunk_document(short_doc, strategy=ChunkStrategy.STRUCTURED)[0].id

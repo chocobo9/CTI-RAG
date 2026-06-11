@@ -18,9 +18,7 @@ MITRE_STUB = {
             "id": "attack-pattern--abc123",
             "name": "Spearphishing Attachment",
             "description": "Adversaries send malicious attachments via email.",
-            "external_references": [
-                {"source_name": "mitre-attack", "external_id": "T1566.001"}
-            ],
+            "external_references": [{"source_name": "mitre-attack", "external_id": "T1566.001"}],
             "kill_chain_phases": [
                 {"kill_chain_name": "mitre-attack", "phase_name": "initial-access"}
             ],
@@ -80,6 +78,7 @@ def mitre_bundle_file(tmp_path: Path) -> Path:
 
 # --- MITRE ---
 
+
 def test_mitre_yields_only_non_revoked_attack_patterns(mitre_bundle_file: Path) -> None:
     docs = list(MitreAttackConnector(bundle_path=mitre_bundle_file).fetch_documents())
     assert len(docs) == 1
@@ -107,6 +106,7 @@ def test_mitre_raises_on_missing_bundle(tmp_path: Path) -> None:
 
 # --- WHOIS ---
 
+
 def test_whois_produces_document() -> None:
     docs = list(WHOISConnector(records=[WHOIS_RECORD]).fetch_documents())
     assert len(docs) == 1
@@ -127,6 +127,7 @@ def test_whois_skips_record_missing_domain() -> None:
 
 
 # --- Passive DNS ---
+
 
 def test_pdns_produces_document() -> None:
     docs = list(PassiveDNSConnector(records=[PDNS_RECORD]).fetch_documents())

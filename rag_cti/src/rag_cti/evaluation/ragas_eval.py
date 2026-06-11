@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any, cast
 
 from rag_cti._logging import get_logger
 from rag_cti.types import GeneratedAnswer
@@ -17,7 +18,7 @@ class RagasEvalResult:
     # context_precision/recall require a reference answer; default -1.0 = "not computed".
     context_precision: float = -1.0
     context_recall: float = -1.0
-    per_query: list[dict] = field(default_factory=list)
+    per_query: list[dict[str, Any]] = field(default_factory=list)
     config: str = ""
     timestamp: str = ""
 
@@ -25,7 +26,7 @@ class RagasEvalResult:
 def answers_to_ragas_dataset(
     answers: list[GeneratedAnswer],
     references: list[str] | None = None,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Convert GeneratedAnswer list to RAGAS SingleTurnSample-compatible dicts.
 
     Returns dicts with keys: user_input, retrieved_contexts, response, and
@@ -33,13 +34,11 @@ def answers_to_ragas_dataset(
     context_precision / context_recall.
     """
     if references is not None and len(references) != len(answers):
-        raise ValueError(
-            f"references ({len(references)}) must align with answers ({len(answers)})"
-        )
-    samples = []
+        raise ValueError(f"references ({len(references)}) must align with answers ({len(answers)})")
+    samples: list[dict[str, Any]] = []
     for i, a in enumerate(answers):
         contexts = [r.document.content for r in a.query_result.results]
-        sample = {
+        sample: dict[str, Any] = {
             "user_input": a.query,
             "retrieved_contexts": contexts,
             "response": a.answer,
@@ -53,19 +52,23 @@ def answers_to_ragas_dataset(
 def _build_judge_llm(settings: object) -> object:
     deepseek_key = getattr(settings, "deepseek_api_key", None)
     if deepseek_key is not None:
-        key_value = deepseek_key.get_secret_value() if hasattr(deepseek_key, "get_secret_value") else str(deepseek_key)
+        key_value = (
+            deepseek_key.get_secret_value()
+            if hasattr(deepseek_key, "get_secret_value")
+            else str(deepseek_key)
+        )
     else:
         key_value = ""
 
     if not key_value:
-        raise ValueError(
-            "RAGAS evaluation requires DEEPSEEK_API_KEY to be set in .env"
-        )
+        raise ValueError("RAGAS evaluation requires DEEPSEEK_API_KEY to be set in .env")
 
     from langchain_openai import ChatOpenAI
     from ragas.llms import LangchainLLMWrapper
 
-    chat = ChatOpenAI(
+    # openai_api_key / openai_api_base are pydantic alias kwargs that ChatOpenAI
+    # accepts at runtime but does not expose in its typed __init__ signature.
+    chat = ChatOpenAI(  # type: ignore[call-arg]
         model="deepseek-chat",
         openai_api_key=key_value,
         openai_api_base="https://api.deepseek.com/v1",
@@ -96,6 +99,7 @@ def run_ragas_eval(
     """
     if settings is None:
         from rag_cti.config import get_settings
+
         settings = get_settings()
 
     sample_dicts = answers_to_ragas_dataset(answers, references=references)
@@ -108,7 +112,8 @@ def run_ragas_eval(
             timestamp=datetime.now(UTC).isoformat(),
         )
 
-    from ragas import EvaluationDataset, SingleTurnSample, evaluate
+    from ragas import EvaluationDataset, MultiTurnSample, SingleTurnSample, evaluate
+    from ragas.dataset_schema import EvaluationResult
     from ragas.metrics import AnswerRelevancy, Faithfulness
 
     llm = _build_judge_llm(settings)
@@ -116,7 +121,7 @@ def run_ragas_eval(
 
     use_context = references is not None and any(r for r in references)
 
-    samples = [
+    samples: list[SingleTurnSample | MultiTurnSample] = [
         SingleTurnSample(
             user_input=s["user_input"],
             retrieved_contexts=s["retrieved_contexts"],
@@ -130,11 +135,14 @@ def run_ragas_eval(
     metrics = [Faithfulness(llm=llm), AnswerRelevancy(llm=llm, embeddings=embeddings, strictness=1)]
     if use_context:
         from ragas.metrics import LLMContextPrecisionWithReference, LLMContextRecall
+
         metrics += [LLMContextPrecisionWithReference(llm=llm), LLMContextRecall(llm=llm)]
 
     logger.info("running ragas eval", n_queries=len(samples), config=config, context=use_context)
 
-    result = evaluate(dataset=dataset, metrics=metrics, show_progress=True)
+    # evaluate() is annotated EvaluationResult | Executor; with run_config left
+    # at its default it always returns an EvaluationResult.
+    result = cast(EvaluationResult, evaluate(dataset=dataset, metrics=metrics, show_progress=True))
     df = result.to_pandas()
     # df column for each metric is the metric's .name attribute.
     col = {type(m).__name__: m.name for m in metrics}

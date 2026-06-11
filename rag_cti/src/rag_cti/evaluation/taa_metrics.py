@@ -34,6 +34,7 @@ ActorDict = dict[str, list[str]]
 # Safe loading of the actor dictionaries
 # ---------------------------------------------------------------------------
 
+
 class _RestrictedUnpickler(pickle.Unpickler):
     """Unpickler that refuses ALL global lookups.
 
@@ -71,14 +72,13 @@ def _load_one(ctibench_dir: Path, stem: str) -> ActorDict:
     pickle_path = ctibench_dir / f"{stem}.pickle"
     if pickle_path.exists():
         return safe_unpickle(pickle_path)
-    raise FileNotFoundError(
-        f"actor dict not found: {json_path} or {pickle_path}"
-    )
+    raise FileNotFoundError(f"actor dict not found: {json_path} or {pickle_path}")
 
 
 # ---------------------------------------------------------------------------
 # Scorer (verbatim logic from cti-bench)
 # ---------------------------------------------------------------------------
+
 
 def is_alias_connected(actor1: str, actor2: str, alias_dict: ActorDict) -> bool:
     """BFS over the alias graph only. Verbatim from cti-bench."""
@@ -129,14 +129,18 @@ def threat_actor_connection(
     actor2 = actor2.strip().lower()
 
     # Normalize dictionaries and ensure bidirectional alias relationships.
-    alias_dict = {k.strip().lower(): [v.strip().lower() for v in val] for k, val in alias_dict.items()}
+    alias_dict = {
+        k.strip().lower(): [v.strip().lower() for v in val] for k, val in alias_dict.items()
+    }
     for actor in list(alias_dict):
         aliases = alias_dict[actor]
         for alias in aliases:
             if actor not in alias_dict.setdefault(alias, []):
                 alias_dict[alias].append(actor)
 
-    related_dict = {k.strip().lower(): [v.strip().lower() for v in val] for k, val in related_dict.items()}
+    related_dict = {
+        k.strip().lower(): [v.strip().lower() for v in val] for k, val in related_dict.items()
+    }
     for actor in list(related_dict):
         related_groups = related_dict[actor]
         for related_actor in related_groups:
@@ -153,6 +157,7 @@ def threat_actor_connection(
 # ---------------------------------------------------------------------------
 # Accuracy aggregation
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class TAAResult:

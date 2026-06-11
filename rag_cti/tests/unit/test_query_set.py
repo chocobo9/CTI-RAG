@@ -1,4 +1,5 @@
 """Unit tests for evaluation/query_set.py."""
+
 from __future__ import annotations
 
 import json
@@ -43,21 +44,24 @@ def _jsonl_line(
     reference_answer: str | None = "Spearphishing is used for initial access.",
     notes: str = "",
 ) -> str:
-    return json.dumps({
-        "query_id": query_id,
-        "query": query,
-        "category": category,
-        "expected_chunk_ids": expected_chunk_ids or ["chunk-abc"],
-        "gold_attack_ids": gold_attack_ids or ["T1566"],
-        "gold_sources": gold_sources or ["mitre"],
-        "reference_answer": reference_answer,
-        "notes": notes,
-    })
+    return json.dumps(
+        {
+            "query_id": query_id,
+            "query": query,
+            "category": category,
+            "expected_chunk_ids": expected_chunk_ids or ["chunk-abc"],
+            "gold_attack_ids": gold_attack_ids or ["T1566"],
+            "gold_sources": gold_sources or ["mitre"],
+            "reference_answer": reference_answer,
+            "notes": notes,
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # load_query_set
 # ---------------------------------------------------------------------------
+
 
 def test_load_query_set_returns_list_of_records(tmp_path) -> None:
     f = tmp_path / "qs.jsonl"
@@ -138,6 +142,7 @@ def test_load_query_set_missing_optional_fields_default_empty(tmp_path) -> None:
 # ---------------------------------------------------------------------------
 # save_query_set
 # ---------------------------------------------------------------------------
+
 
 def test_save_query_set_creates_file(tmp_path) -> None:
     out = tmp_path / "out.jsonl"

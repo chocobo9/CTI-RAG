@@ -15,7 +15,7 @@ _DEFAULT_CACHE = Path("data/eval/techniquerag_cache.jsonl")
 
 @dataclass(frozen=True)
 class TechniqueRAGRecord:
-    text: str            # "input" column — the CTI passage used as the query
+    text: str  # "input" column — the CTI passage used as the query
     gold_ids: list[str]  # technique IDs parsed from "output" column
 
 
@@ -68,7 +68,7 @@ def load_techniquerag(
 
 def _load_from_hub(dataset_id: str, split: str) -> list[TechniqueRAGRecord]:
     try:
-        from datasets import load_dataset  # type: ignore[import]
+        from datasets import load_dataset
     except ImportError as exc:
         raise RuntimeError(
             "The 'datasets' package is required. Install it with: pip install datasets"
@@ -93,9 +93,7 @@ def _load_from_hub(dataset_id: str, split: str) -> list[TechniqueRAGRecord]:
         records.append(TechniqueRAGRecord(text=text, gold_ids=gold_ids))
 
     if skipped:
-        logger.warning(
-            "skipped records with no parseable technique IDs", count=skipped
-        )
+        logger.warning("skipped records with no parseable technique IDs", count=skipped)
 
     return records
 
@@ -118,7 +116,5 @@ def _load_cache(path: Path, max_records: int | None = None) -> list[TechniqueRAG
             if not line:
                 continue
             obj = json.loads(line)
-            records.append(
-                TechniqueRAGRecord(text=obj["text"], gold_ids=obj["gold_ids"])
-            )
+            records.append(TechniqueRAGRecord(text=obj["text"], gold_ids=obj["gold_ids"]))
     return records

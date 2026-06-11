@@ -2,17 +2,28 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-from typing import Any
+from typing import Any, TypedDict
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity.stop import stop_base
+from tenacity.wait import wait_base
 
 from rag_cti._logging import get_logger
 from rag_cti.types import Document
 
 logger = get_logger(__name__)
 
-_RETRY_KWARGS: dict[str, Any] = {
+
+class RetryKwargs(TypedDict):
+    """Typed kwargs for tenacity.retry so the decorator stays typed under mypy."""
+
+    stop: stop_base
+    wait: wait_base
+    reraise: bool
+
+
+_RETRY_KWARGS: RetryKwargs = {
     "stop": stop_after_attempt(3),
     "wait": wait_exponential(multiplier=1, min=2, max=30),
     "reraise": True,

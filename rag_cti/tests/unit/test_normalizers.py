@@ -6,15 +6,18 @@ from rag_cti.preprocess.chunking import ChunkStrategy
 from rag_cti.preprocess.normalizers import source_to_strategy, validate_content
 
 
-@pytest.mark.parametrize(("source", "expected"), [
-    ("whois", ChunkStrategy.STRUCTURED),
-    ("pdns", ChunkStrategy.STRUCTURED),
-    ("virustotal", ChunkStrategy.STRUCTURED),
-    ("mitre", ChunkStrategy.SEMANTIC),
-    ("otx", ChunkStrategy.SEMANTIC),
-    ("pdf", ChunkStrategy.SEMANTIC),
-    ("unknown_source", ChunkStrategy.SEMANTIC),
-])
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        ("whois", ChunkStrategy.STRUCTURED),
+        ("pdns", ChunkStrategy.STRUCTURED),
+        ("virustotal", ChunkStrategy.STRUCTURED),
+        ("mitre", ChunkStrategy.SEMANTIC),
+        ("otx", ChunkStrategy.SEMANTIC),
+        ("pdf", ChunkStrategy.SEMANTIC),
+        ("unknown_source", ChunkStrategy.SEMANTIC),
+    ],
+)
 def test_source_to_strategy(source: str, expected: ChunkStrategy) -> None:
     assert source_to_strategy(source) == expected
 

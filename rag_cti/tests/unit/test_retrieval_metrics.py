@@ -27,6 +27,7 @@ from rag_cti.evaluation.techniquerag import TechniqueRAGRecord
 # Stubs
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class _FakeChunk:
     metadata: dict[str, Any]
@@ -53,6 +54,7 @@ class _FakeRetriever:
 # ---------------------------------------------------------------------------
 # _is_match
 # ---------------------------------------------------------------------------
+
 
 def test_is_match_exact() -> None:
     assert _is_match("T1012", "T1012")
@@ -86,6 +88,7 @@ def test_is_match_prefix_not_dot_separated() -> None:
 # ---------------------------------------------------------------------------
 # hit_at_k
 # ---------------------------------------------------------------------------
+
 
 def test_hit_at_k_exact_match_in_top1() -> None:
     results = [_result("T1012")]
@@ -125,6 +128,7 @@ def test_hit_at_k_empty_results() -> None:
 # reciprocal_rank
 # ---------------------------------------------------------------------------
 
+
 def test_reciprocal_rank_first_result_match() -> None:
     results = [_result("T1012")]
     assert reciprocal_rank(results, ["T1012"]) == pytest.approx(1.0)
@@ -152,6 +156,7 @@ def test_reciprocal_rank_empty_results() -> None:
 # ---------------------------------------------------------------------------
 # evaluate_retriever
 # ---------------------------------------------------------------------------
+
 
 def test_evaluate_retriever_all_hits() -> None:
     dataset = [
@@ -218,6 +223,7 @@ def test_evaluate_retriever_logs_progress_at_50_records() -> None:
 # ndcg_at_k
 # ---------------------------------------------------------------------------
 
+
 def _always_rel(r: object) -> bool:
     return True
 
@@ -255,6 +261,7 @@ def test_ndcg_at_k_truncates_to_k() -> None:
 # ---------------------------------------------------------------------------
 # Query-set stubs
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class _FakeQSDoc:
@@ -299,6 +306,7 @@ def _qs_record(
 # _is_query_set_match
 # ---------------------------------------------------------------------------
 
+
 def test_is_qs_match_precise_chunk_id_hit() -> None:
     assert _is_query_set_match(_qs_result("chunk1"), _qs_record(expected_ids=["chunk1"]))
 
@@ -331,6 +339,7 @@ def test_is_qs_match_fuzzy_wrong_source_wrong_attack_miss() -> None:
 # _hit_at_k_qs / _reciprocal_rank_qs
 # ---------------------------------------------------------------------------
 
+
 def test_hit_at_k_qs_hit_in_top1() -> None:
     record = _qs_record(expected_ids=["chunk1"])
     assert _hit_at_k_qs([_qs_result("chunk1")], record, k=1)
@@ -360,6 +369,7 @@ def test_reciprocal_rank_qs_no_match_is_zero() -> None:
 # ---------------------------------------------------------------------------
 # evaluate_on_query_set
 # ---------------------------------------------------------------------------
+
 
 class _FakeQSRetriever:
     def __init__(self, results: list[_FakeQSResult] | None = None) -> None:
@@ -427,6 +437,7 @@ def test_evaluate_on_query_set_overall_n_queries_correct() -> None:
 # ---------------------------------------------------------------------------
 # Per-query results
 # ---------------------------------------------------------------------------
+
 
 def test_per_query_results_populated() -> None:
     records = [_qs_record(expected_ids=["chunk1"])]

@@ -5,6 +5,7 @@ loop: ``connector.fetch_documents()`` -> ``validate_content`` -> ``chunk_documen
 -> one JSON line per chunk. This module is the single implementation; scripts
 only pick the connector, the output path, and the chunk strategy.
 """
+
 from __future__ import annotations
 
 import json

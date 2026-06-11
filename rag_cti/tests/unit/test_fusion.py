@@ -11,6 +11,7 @@ from rag_cti.types import Chunk, RetrievalResult
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _chunk(chunk_id: str, source: str = "mitre") -> Chunk:
     return Chunk(
         id=chunk_id,
@@ -36,6 +37,7 @@ def _result(chunk_id: str, score: float, rank: int, retriever: str = "dense") ->
 # Tests — empty / trivial inputs
 # ---------------------------------------------------------------------------
 
+
 def test_empty_input_returns_empty() -> None:
     assert reciprocal_rank_fusion([]) == []
 
@@ -53,6 +55,7 @@ def test_single_list_returns_same_order() -> None:
 # ---------------------------------------------------------------------------
 # Tests — score correctness
 # ---------------------------------------------------------------------------
+
 
 def test_rrf_score_formula_single_list() -> None:
     results = [_result("a", 1.0, 0)]
@@ -79,6 +82,7 @@ def test_rrf_score_different_ranks() -> None:
 # Tests — deduplication
 # ---------------------------------------------------------------------------
 
+
 def test_deduplication_same_id_appears_once() -> None:
     list1 = [_result("a", 0.9, 0), _result("b", 0.7, 1)]
     list2 = [_result("a", 0.6, 0), _result("c", 0.5, 1)]
@@ -97,6 +101,7 @@ def test_best_score_document_kept_for_duplicate() -> None:
 # ---------------------------------------------------------------------------
 # Tests — ordering
 # ---------------------------------------------------------------------------
+
 
 def test_results_sorted_descending_by_fused_score() -> None:
     list1 = [_result("a", 0.9, 0), _result("b", 0.5, 1)]
@@ -121,6 +126,7 @@ def test_retriever_source_is_rrf() -> None:
 # Tests — k parameter
 # ---------------------------------------------------------------------------
 
+
 def test_custom_k_affects_score() -> None:
     results = [_result("a", 1.0, 0)]
     fused_k10 = reciprocal_rank_fusion([results], k=10)
@@ -137,6 +143,7 @@ def test_multiple_empty_lists_returns_empty() -> None:
 # ---------------------------------------------------------------------------
 # Tests — weighted RRF
 # ---------------------------------------------------------------------------
+
 
 def test_weighted_scores_scale_by_weight() -> None:
     list1 = [_result("a", 0.9, 0)]
