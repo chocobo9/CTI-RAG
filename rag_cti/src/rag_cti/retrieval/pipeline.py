@@ -135,7 +135,7 @@ def build_pipeline(
 
         reranker: Reranker = CrossEncoderReranker(
             model_name=settings.reranker_model,
-            max_length=getattr(settings, "reranker_max_length", 640),
+            max_length=getattr(settings, "reranker_max_length", 512),
         )
     else:
         reranker = NoOpReranker()

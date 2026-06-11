@@ -69,10 +69,13 @@ class Settings(BaseSettings):
     reranker_enabled: bool = True
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
     reranker_candidates_k: int = 50
-    # Must cover the chunker's 600-token target (chunking._DEFAULT_TARGET_TOKENS)
-    # plus the query — at 512 the cross-encoder silently truncated 11.4% of
-    # chunks (42% of OTX). See docs/eval/chunk_truncation_audit.md.
-    reranker_max_length: int = 640
+    # 512 truncates 11.4% of chunks (42% of OTX) against the chunker's
+    # 600-token target, BUT it is the CERTIFIED value: the 2026-06-11 A/B
+    # measured 640 as retrieval-neutral (hit@k unchanged on query_set_v3)
+    # while dropping the technique annotator's CTI-ATE Micro-F1 from the
+    # 0.653-0.670 band to 0.564 — the truncated tails hurt CrossEncoder
+    # ranking more than they help. Keep 512 unless re-certifying.
+    reranker_max_length: int = 512
 
     # Feature flags
     hyde_enabled: bool = True

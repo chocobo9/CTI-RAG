@@ -28,7 +28,7 @@ class NoOpReranker:
 class CrossEncoderReranker:
     """Cross-encoder reranker using sentence-transformers CrossEncoder."""
 
-    def __init__(self, model_name: str, device: str | None = None, max_length: int = 640) -> None:
+    def __init__(self, model_name: str, device: str | None = None, max_length: int = 512) -> None:
         self._model_name = model_name
         self._device = device or self._detect_device()
         self._max_length = max_length
