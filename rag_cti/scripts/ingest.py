@@ -1,4 +1,4 @@
-﻿"""Embed processed JSONL chunks and upsert them into Qdrant.
+"""Embed processed JSONL chunks and upsert them into Qdrant.
 
 Usage:
     python scripts/ingest.py [--sources mitre otx pdfs] [--collection NAME]
@@ -11,6 +11,7 @@ Reads chunks from data/processed/<source>.jsonl, computes embeddings with
 the configured sentence-transformers model, and upserts them into one
 unified Qdrant collection. Idempotent: re-running overwrites by point ID.
 """
+
 from __future__ import annotations
 
 # ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
@@ -90,7 +91,9 @@ def _ingest_source(
     if not chunks:
         return 0, 0
 
-    logger.info("embedding chunks", source=source, count=len(chunks), hybrid=sparse_encoder is not None)
+    logger.info(
+        "embedding chunks", source=source, count=len(chunks), hybrid=sparse_encoder is not None
+    )
     written = 0
     for start in range(0, len(chunks), embed_batch):
         batch = chunks[start : start + embed_batch]
@@ -100,9 +103,7 @@ def _ingest_source(
         else:
             written += store.upsert(batch, vectors)
         if (start // embed_batch) % 5 == 0:
-            logger.info(
-                "progress", source=source, embedded=start + len(batch), total=len(chunks)
-            )
+            logger.info("progress", source=source, embedded=start + len(batch), total=len(chunks))
 
     logger.info("source ingested", source=source, chunks=len(chunks), written=written)
     return len(chunks), written
@@ -130,7 +131,9 @@ def run(
 
     if _SPARSE_VOCAB_PATH.exists():
         encoder = BM25SparseEncoder.load(_SPARSE_VOCAB_PATH)
-        logger.info("BM25 encoder loaded", vocab_size=len(encoder.vocab), path=str(_SPARSE_VOCAB_PATH))
+        logger.info(
+            "BM25 encoder loaded", vocab_size=len(encoder.vocab), path=str(_SPARSE_VOCAB_PATH)
+        )
     else:
         logger.info(
             "sparse_vocab.json not found — fitting BM25 on ingestion corpus",
@@ -148,7 +151,9 @@ def run(
     total_chunks = 0
     total_written = 0
     for source in sources:
-        c, w = _ingest_source(source, processed_dir, embedder, store, embed_batch, sparse_encoder=encoder)
+        c, w = _ingest_source(
+            source, processed_dir, embedder, store, embed_batch, sparse_encoder=encoder
+        )
         total_chunks += c
         total_written += w
 
@@ -193,7 +198,7 @@ def main() -> None:
         "--device",
         default=None,
         help="Device for sentence-transformers inference, e.g. 'cpu', 'cuda', 'mps'. "
-             "Defaults to auto-detect.",
+        "Defaults to auto-detect.",
     )
     args = parser.parse_args()
 

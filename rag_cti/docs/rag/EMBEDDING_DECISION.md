@@ -1,10 +1,13 @@
 # Embedding Model Decision
 
-**Status:** DECIDED — `BAAI/bge-m3` is the production model. Note: the formal
+**Status:** DECIDED (closed) — `BAAI/bge-m3` is the production model. The formal
 bakeoff table (§4) was never filled in; the decision was made on qualitative
 grounds and validated downstream by the retrieval evaluations (TechniqueRAG,
-custom query sets, capability-split v3 — see README). Re-running
-`scripts/embedding_bakeoff.py` to backfill §4 remains open but is not blocking.
+custom query sets, capability-split v3 — see README). The bakeoff script
+(`scripts/embedding_bakeoff.py`) was removed in the 2026-06 dead-code cleanup;
+the backfill option is closed and the downstream evals stand as the evidence.
+Sections 4-6 below are retained as a historical record of the intended
+protocol.
 
 ---
 

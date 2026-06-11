@@ -38,6 +38,7 @@ class _PipelineRetriever:
 def _build_groq_client(settings: Any) -> Any | None:
     try:
         from groq import Groq  # type: ignore[import]
+
         api_key = settings.groq_api_key.get_secret_value()
         return Groq(api_key=api_key) if api_key else None
     except ImportError:
@@ -46,7 +47,11 @@ def _build_groq_client(settings: Any) -> Any | None:
 
 def _print_results(results: list[EvalResult]) -> None:
     k_values = results[0].k_values if results else []
-    header_parts = ["Config".ljust(20)] + [f"Hit@{k}".rjust(8) for k in k_values] + ["MRR".rjust(8), "N".rjust(6)]
+    header_parts = (
+        ["Config".ljust(20)]
+        + [f"Hit@{k}".rjust(8) for k in k_values]
+        + ["MRR".rjust(8), "N".rjust(6)]
+    )
     sep = "-" * (20 + 8 * len(k_values) + 8 + 6 + 2 * (len(k_values) + 2))
     print()
     print("  ".join(header_parts))
@@ -63,7 +68,9 @@ def _print_results(results: list[EvalResult]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate ATT&CK retrieval on TechniqueRAG")
-    parser.add_argument("--max-records", type=int, default=None, help="Limit dataset size for quick runs")
+    parser.add_argument(
+        "--max-records", type=int, default=None, help="Limit dataset size for quick runs"
+    )
     parser.add_argument("--k", type=int, nargs="+", default=[1, 5, 10], help="k cutoffs for hit@k")
     parser.add_argument(
         "--config",

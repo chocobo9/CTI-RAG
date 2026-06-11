@@ -5,6 +5,7 @@ Usage:
     python scripts/seed_mitre_relationships.py --limit 50
     python scripts/seed_mitre_relationships.py --bundle PATH --out PATH
 """
+
 from __future__ import annotations
 
 import argparse

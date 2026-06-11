@@ -7,6 +7,7 @@ Prerequisites:
     Place PDF reports under data/raw/pdfs/ (sub-directories are scanned recursively).
     Install optional PDF deps: pip install "unstructured[pdf]" pymupdf
 """
+
 from __future__ import annotations
 
 import argparse

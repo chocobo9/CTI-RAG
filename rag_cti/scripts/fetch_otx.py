@@ -6,6 +6,7 @@ Usage:
 Requires:
     OTX_API_KEY in .env or environment
 """
+
 from __future__ import annotations
 
 # ruff: noqa: E402  (sys.path bootstrap before imports — run-without-install pattern)

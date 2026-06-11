@@ -8,6 +8,7 @@ Prerequisites:
     https://github.com/mitre-attack/attack-stix-data/tree/master/enterprise-attack
     Place at data/raw/mitre/enterprise-attack.json
 """
+
 from __future__ import annotations
 
 import argparse

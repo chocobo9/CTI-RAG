@@ -84,6 +84,7 @@ _DEEPSEEK_DEFAULT_MODEL = "deepseek-chat"
 # Data loading
 # ---------------------------------------------------------------------------
 
+
 def load_ate(max_records: int | None) -> list[tuple[str, list[str], str]]:
     """Return [(description, gold_technique_ids, platform)] from CTI-ATE."""
     rows: list[tuple[str, list[str], str]] = []
@@ -113,6 +114,7 @@ def load_taa(max_records: int | None) -> list[tuple[str, str]]:
 # Certification passes (REAL LLM)
 # ---------------------------------------------------------------------------
 
+
 def certify_techniques(
     gen: Generator, pipeline: Any, rows: list[tuple[str, list[str], str]], candidate_k: int
 ) -> list[dict[str, Any]]:
@@ -123,12 +125,20 @@ def certify_techniques(
         pred = gen.annotate_techniques(desc, qr, candidate_k=candidate_k)  # raises on LLM failure
         g_norm = sorted(normalize_set(gold, "technique"))
         p_norm = sorted(normalize_set(pred, "technique"))
-        details.append({
-            "i": i, "platform": platform, "gold": gold, "pred": pred,
-            "gold_tech": g_norm, "pred_tech": p_norm,
-            "tp": len(set(g_norm) & set(p_norm)),
-        })
-        print(f"  [ATE {i}/{len(rows)}] platform={platform} gold={g_norm} pred={p_norm}", flush=True)
+        details.append(
+            {
+                "i": i,
+                "platform": platform,
+                "gold": gold,
+                "pred": pred,
+                "gold_tech": g_norm,
+                "pred_tech": p_norm,
+                "tp": len(set(g_norm) & set(p_norm)),
+            }
+        )
+        print(
+            f"  [ATE {i}/{len(rows)}] platform={platform} gold={g_norm} pred={p_norm}", flush=True
+        )
     return details
 
 
@@ -164,6 +174,7 @@ def certify_actors(
 # Build + run
 # ---------------------------------------------------------------------------
 
+
 def build_client(settings: Any, provider: str, model_override: str | None) -> tuple[Any, str]:
     """Return (llm_client, model) for the annotator. REAL provider — no mock."""
     if provider == "deepseek":
@@ -187,10 +198,15 @@ def build(
     # llm_client=None => HyDE OFF (inputs are full passages, not short queries);
     # production hybrid + CrossEncoder reranker stay ON.
     pipeline = build_pipeline(
-        settings=settings, store=stack.store, embedder=stack.embedder,
-        encoder=stack.encoder, llm_client=None,
+        settings=settings,
+        store=stack.store,
+        embedder=stack.embedder,
+        encoder=stack.encoder,
+        llm_client=None,
     )
-    router = LLMRouter(settings) if provider == "groq" and not model_override else FixedRouter(model)
+    router = (
+        LLMRouter(settings) if provider == "groq" and not model_override else FixedRouter(model)
+    )
     gen = Generator(client=client, router=router, settings=settings)
     return gen, pipeline, model
 
@@ -254,36 +270,52 @@ def _report(
     print("PHASE C — ANNOTATOR CERTIFICATION RESULT")
     print("=" * 72)
     print(f"环境: collection={collection}, generator={model} (provider={args.provider})")
-    print(f"retrieval: hybrid(alpha={settings.hybrid_alpha})+reranker, HyDE=off, candidate_k={args.candidate_k}\n")
+    print(
+        f"retrieval: hybrid(alpha={settings.hybrid_alpha})+reranker, HyDE=off, candidate_k={args.candidate_k}\n"
+    )
 
     print("能力分项表(外部锚,独立报,绝不平均):")
-    print(f"  technique 抽取 (Enterprise) | Micro-F1(tech) | CTI-ATE-ent n={ent.n} | "
-          f"F1={ent.f1:.4f} P={ent.precision:.4f} R={ent.recall:.4f} "
-          f"(TP={ent.tp} FP={ent.fp} FN={ent.fn}) | 论文 RAG-no-ft 0.65-0.79")
-    print(f"  technique 抽取 (Mobile,out-of-corpus,NOT gated) | CTI-ATE-mob n={mob.n} | "
-          f"F1={mob.f1:.4f} P={mob.precision:.4f} R={mob.recall:.4f} (TP={mob.tp} FP={mob.fp} FN={mob.fn})")
+    print(
+        f"  technique 抽取 (Enterprise) | Micro-F1(tech) | CTI-ATE-ent n={ent.n} | "
+        f"F1={ent.f1:.4f} P={ent.precision:.4f} R={ent.recall:.4f} "
+        f"(TP={ent.tp} FP={ent.fp} FN={ent.fn}) | 论文 RAG-no-ft 0.65-0.79"
+    )
+    print(
+        f"  technique 抽取 (Mobile,out-of-corpus,NOT gated) | CTI-ATE-mob n={mob.n} | "
+        f"F1={mob.f1:.4f} P={mob.precision:.4f} R={mob.recall:.4f} (TP={mob.tp} FP={mob.fp} FN={mob.fn})"
+    )
     if actor is not None:
-        print(f"  actor 归因                 | correct/plaus  | CTI-TAA n={actor.n} | "
-              f"correct={actor.correct_acc:.4f} plausible={actor.plausible_acc:.4f} "
-              f"(C={actor.correct} P={actor.plausible} I={actor.incorrect})")
+        print(
+            f"  actor 归因                 | correct/plaus  | CTI-TAA n={actor.n} | "
+            f"correct={actor.correct_acc:.4f} plausible={actor.plausible_acc:.4f} "
+            f"(C={actor.correct} P={actor.plausible} I={actor.incorrect})"
+        )
 
     print("\n认证结论:")
-    print(f"  标注器 CTI-ATE(Enterprise) Micro-F1(tech) = {ent.f1:.4f}  "
-          f"(阈值 >= {args.tech_threshold}) -> {tech_v}")
+    print(
+        f"  标注器 CTI-ATE(Enterprise) Micro-F1(tech) = {ent.f1:.4f}  "
+        f"(阈值 >= {args.tech_threshold}) -> {tech_v}"
+    )
     print(f"    [Mobile out-of-corpus: F1={mob.f1:.4f} — 语料缺 Mobile 技术,仅记录不 gate]")
     if actor is not None:
         actor_v = _verdict(actor.plausible_acc, args.actor_threshold)
-        print(f"  attributor CTI-TAA Plausible              = {actor.plausible_acc:.4f}  "
-              f"(阈值 >= {args.actor_threshold}) -> {actor_v}  [Correct={actor.correct_acc:.4f} 供参考]")
+        print(
+            f"  attributor CTI-TAA Plausible              = {actor.plausible_acc:.4f}  "
+            f"(阈值 >= {args.actor_threshold}) -> {actor_v}  [Correct={actor.correct_acc:.4f} 供参考]"
+        )
         print(f"  -> 准许 technique 标注器生成自建 gold: {'是' if tech_v == 'PASS' else '否'}")
         print(f"  -> 准许 actor attributor 生成自建 gold: {'是' if actor_v == 'PASS' else '否'}")
     else:
         print(f"  -> 准许 technique 标注器生成自建 gold: {'是' if tech_v == 'PASS' else '否'}")
 
-    print("\n小样本警示: CTI-ATE Enterprise n=47 / CTI-TAA n=50,置信区间宽,仅作校准锚,不支撑强声明。")
+    print(
+        "\n小样本警示: CTI-ATE Enterprise n=47 / CTI-TAA n=50,置信区间宽,仅作校准锚,不支撑强声明。"
+    )
     if args.provider != "groq":
-        print(f"⚠️  认证对象 = {model} (provider={args.provider}),非产品默认 Groq 模型;"
-              f"若通过,Phase D 自建 gold MUST 用同一标注器。")
+        print(
+            f"⚠️  认证对象 = {model} (provider={args.provider}),非产品默认 Groq 模型;"
+            f"若通过,Phase D 自建 gold MUST 用同一标注器。"
+        )
     if args.max_records:
         print(f"⚠️  SMOKE RUN: --max-records {args.max_records} (NOT a full certification).")
     print("=" * 72 + "\n")
@@ -303,8 +335,15 @@ def _save(
     tag = "smoke" if args.max_records else "full"
 
     def prf_dict(p: SetPRF) -> dict[str, Any]:
-        return {"n": p.n, "micro_f1": p.f1, "precision": p.precision, "recall": p.recall,
-                "tp": p.tp, "fp": p.fp, "fn": p.fn}
+        return {
+            "n": p.n,
+            "micro_f1": p.f1,
+            "precision": p.precision,
+            "recall": p.recall,
+            "tp": p.tp,
+            "fp": p.fp,
+            "fn": p.fn,
+        }
 
     record: dict[str, Any] = {
         "phase": "C",
@@ -318,7 +357,10 @@ def _save(
         # Per-path retrieval depths. Earlier records wrote a single scalar
         # "retrieve_k": 40, which was wrong for the technique path (it uses 300).
         "retrieve_k": {"technique": TECHNIQUE_RETRIEVE_K, "actor": ACTOR_RETRIEVE_K},
-        "thresholds": {"tech_micro_f1": args.tech_threshold, "actor_plausible": args.actor_threshold},
+        "thresholds": {
+            "tech_micro_f1": args.tech_threshold,
+            "actor_plausible": args.actor_threshold,
+        },
         "technique": {
             "gated_on": "enterprise",
             "enterprise": {**prf_dict(ent), "pass": ent.f1 >= args.tech_threshold},
@@ -328,8 +370,12 @@ def _save(
     }
     if actor is not None:
         record["actor"] = {
-            "n": actor.n, "correct_acc": actor.correct_acc, "plausible_acc": actor.plausible_acc,
-            "correct": actor.correct, "plausible": actor.plausible, "incorrect": actor.incorrect,
+            "n": actor.n,
+            "correct_acc": actor.correct_acc,
+            "plausible_acc": actor.plausible_acc,
+            "correct": actor.correct,
+            "plausible": actor.plausible,
+            "incorrect": actor.incorrect,
             "pass": actor.plausible_acc >= args.actor_threshold,
             "details": actor_details,
         }

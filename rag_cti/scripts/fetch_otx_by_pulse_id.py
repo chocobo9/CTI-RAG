@@ -1,12 +1,14 @@
-﻿"""Fetch OTX pulse descriptions by pulse_id from a CSV file.
+"""Fetch OTX pulse descriptions by pulse_id from a CSV file.
 
 Usage:
     python scripts/fetch_otx_by_pulse_id.py --csv /path/to/otx_domain_pulse_iocs.csv
 
 Reads unique pulse_ids from CSV, fetches each pulse's full details via OTX API,
 chunks the description text, and writes to data/processed/otx.jsonl.
-Supports checkpoint-based resume on failure.
+Supports checkpoint-based resume on failure. Run scripts/ingest.py (or
+``make ingest``) afterwards to upsert into Qdrant.
 """
+
 from __future__ import annotations
 
 # ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
@@ -14,7 +16,6 @@ import argparse
 import csv
 import json
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -26,9 +27,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from rag_cti._logging import configure_logging, get_logger
+from rag_cti.checkpoint import append_checkpoint, load_checkpoint
 from rag_cti.connectors.otx import OTXConnector
 from rag_cti.preprocess.chunking import ChunkStrategy, chunk_document
 from rag_cti.preprocess.normalizers import validate_content
+from rag_cti.preprocess.seeding import chunk_to_jsonl_dict
 from rag_cti.types import Chunk
 
 logger = get_logger(__name__)
@@ -48,35 +51,12 @@ def read_pulse_ids(csv_path: Path) -> list[str]:
     return sorted(pulse_ids)
 
 
-def load_checkpoint(checkpoint_path: Path) -> dict[str, dict]:
-    records: dict[str, dict] = {}
-    if not checkpoint_path.exists():
-        return records
-    with checkpoint_path.open(encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-                records[rec["pulse_id"]] = rec
-            except (json.JSONDecodeError, KeyError):
-                continue
-    return records
-
-
-def append_checkpoint(checkpoint_path: Path, record: dict) -> None:
-    with checkpoint_path.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(record) + "\n")
-
-
 def run(
     csv_path: Path,
     api_key: str,
     out_path: Path,
     checkpoint_path: Path,
     rate_limit: float,
-    skip_ingest: bool,
 ) -> None:
     configure_logging("INFO")
 
@@ -97,21 +77,8 @@ def run(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Collect all chunks to write at the end (overwrite mode, matching fetch_otx.py)
-    # But also include chunks from already-checkpointed OK pulses that we skip
-    # We need to re-fetch for those... Actually no. We write as we go and collect.
-    # Strategy: write output file fresh. For already-done pulses, we skip API calls
-    # but we don't have their chunks cached. So we write output only for new fetches,
-    # then prepend nothing. Actually fetch_otx.py opens with "w" mode (overwrite).
-    #
-    # Better approach: open in "w" mode, re-fetch done pulses from checkpoint?
-    # No - that loses the point of checkpoint.
-    #
-    # Correct approach: open in "a" mode if checkpoint exists (resume), "w" if fresh start.
-    # But the spec says "覆盖写入（和 fetch_otx.py 行为一致）".
-    #
-    # Resolution: if there's an existing checkpoint, we're resuming — append to output.
-    # If no checkpoint, start fresh — overwrite output.
+    # Resume (checkpoint present) appends to the output; a fresh start
+    # overwrites it, matching fetch_otx.py.
     is_resume = len(done) > 0
     file_mode = "a" if is_resume else "w"
 
@@ -138,12 +105,15 @@ def run(
                 except Exception as exc:
                     logger.warning("fetch failed", pulse_id=pulse_id, error=str(exc))
                     failed += 1
-                    append_checkpoint(checkpoint_path, {
-                        "pulse_id": pulse_id,
-                        "status": "error",
-                        "error": str(exc),
-                        "chunks": 0,
-                    })
+                    append_checkpoint(
+                        checkpoint_path,
+                        {
+                            "pulse_id": pulse_id,
+                            "status": "error",
+                            "error": str(exc),
+                            "chunks": 0,
+                        },
+                    )
                     processed += 1
                     if i < len(pending_ids) - 1:
                         time.sleep(1.0 / rate_limit)
@@ -156,40 +126,34 @@ def run(
                     clean_doc = doc.model_copy(update={"content": validated})
                 except ValueError:
                     skipped_empty += 1
-                    append_checkpoint(checkpoint_path, {
-                        "pulse_id": pulse_id,
-                        "status": "empty",
-                        "chunks": 0,
-                    })
+                    append_checkpoint(
+                        checkpoint_path,
+                        {
+                            "pulse_id": pulse_id,
+                            "status": "empty",
+                            "chunks": 0,
+                        },
+                    )
                     processed += 1
                     if i < len(pending_ids) - 1:
                         time.sleep(1.0 / rate_limit)
                     continue
 
-                chunks: list[Chunk] = chunk_document(
-                    clean_doc, strategy=ChunkStrategy.SEMANTIC
-                )
+                chunks: list[Chunk] = chunk_document(clean_doc, strategy=ChunkStrategy.SEMANTIC)
                 for chunk in chunks:
-                    fh.write(
-                        json.dumps({
-                            "id": chunk.id,
-                            "parent_doc_id": chunk.parent_doc_id,
-                            "source": chunk.source,
-                            "content": chunk.content,
-                            "chunk_index": chunk.chunk_index,
-                            "metadata": chunk.metadata,
-                            "retrieved_at": chunk.retrieved_at.isoformat(),
-                        }) + "\n"
-                    )
+                    fh.write(json.dumps(chunk_to_jsonl_dict(chunk)) + "\n")
                     chunk_count += 1
                 fh.flush()
 
                 fetched += 1
-                append_checkpoint(checkpoint_path, {
-                    "pulse_id": pulse_id,
-                    "status": "ok",
-                    "chunks": len(chunks),
-                })
+                append_checkpoint(
+                    checkpoint_path,
+                    {
+                        "pulse_id": pulse_id,
+                        "status": "ok",
+                        "chunks": len(chunks),
+                    },
+                )
                 processed += 1
 
                 if processed % 50 == 0:
@@ -224,13 +188,7 @@ def run(
     print(f"Failed:              {total_failed}")
     print(f"Chunks written:      {total_chunks}")
     print(f"{'=' * 60}")
-
-    if not skip_ingest:
-        print("\nRunning ingest.py --sources otx ...")
-        subprocess.run(
-            [sys.executable, "scripts/ingest.py", "--sources", "otx"],
-            check=True,
-        )
+    print("\nNext: python scripts/ingest.py --sources otx  (or `make ingest`)")
 
 
 def main() -> None:
@@ -256,12 +214,6 @@ def main() -> None:
         default=1.0,
         help="Requests per second (default: 1.0)",
     )
-    parser.add_argument(
-        "--skip-ingest",
-        action="store_true",
-        default=False,
-        help="Skip running ingest.py after fetching",
-    )
     args = parser.parse_args()
 
     api_key = os.environ.get("OTX_API_KEY", "")
@@ -279,7 +231,6 @@ def main() -> None:
         out_path=args.out,
         checkpoint_path=args.checkpoint,
         rate_limit=args.rate_limit,
-        skip_ingest=args.skip_ingest,
     )
 
 

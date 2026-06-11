@@ -11,8 +11,10 @@ saves the complete JSON to data/raw/otx/{pulse_id}.json.
 
 Supports checkpoint-based resume: kill and re-run safely.
 """
+
 from __future__ import annotations
 
+# ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
 import argparse
 import asyncio
 import csv
@@ -25,6 +27,10 @@ import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+from rag_cti.checkpoint import append_checkpoint, load_checkpoint
 
 RAW_DIR = Path("data/raw/otx")
 CHECKPOINT = Path("data/raw/otx/.checkpoint.jsonl")
@@ -79,27 +85,9 @@ def read_pulse_ids_from_csv(path: Path) -> list[str]:
     return sorted(ids)
 
 
-def load_checkpoint() -> set[str]:
-    done: set[str] = set()
-    if not CHECKPOINT.exists():
-        return done
-    with CHECKPOINT.open(encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-                if rec.get("status") == "ok":
-                    done.add(rec["pulse_id"])
-            except (json.JSONDecodeError, KeyError):
-                continue
-    return done
-
-
-def append_checkpoint(record: dict) -> None:
-    with CHECKPOINT.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(record) + "\n")
+def load_done_pulse_ids() -> set[str]:
+    """Pulse ids already fetched successfully, per the checkpoint log."""
+    return {pid for pid, rec in load_checkpoint(CHECKPOINT).items() if rec.get("status") == "ok"}
 
 
 async def fetch_one(
@@ -130,11 +118,9 @@ async def fetch_one(
 
 
 async def main(pulse_ids: list[str], api_key: str) -> None:
-    import httpx
-
     RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-    done = load_checkpoint()
+    done = load_done_pulse_ids()
     pending = [pid for pid in pulse_ids if pid not in done]
 
     print(f"Total pulse_ids: {len(pulse_ids)}")
@@ -162,25 +148,20 @@ async def main(pulse_ids: list[str], api_key: str) -> None:
 
             for result in results:
                 # raw written to disk first, then checkpoint (crash-safe order)
-                append_checkpoint(result)
+                append_checkpoint(CHECKPOINT, result)
                 if result["status"] == "ok":
                     ok_count += 1
                 else:
                     err_count += 1
 
             total_done = len(done) + ok_count + err_count
-            print(
-                f"  Progress: {total_done}/{len(pulse_ids)} "
-                f"(ok={ok_count}, err={err_count})"
-            )
+            print(f"  Progress: {total_done}/{len(pulse_ids)} (ok={ok_count}, err={err_count})")
 
     print(f"\nDone. ok={ok_count}  errors={err_count}")
 
 
 def cli() -> None:
-    parser = argparse.ArgumentParser(
-        description="Re-fetch OTX pulses as raw JSON"
-    )
+    parser = argparse.ArgumentParser(description="Re-fetch OTX pulses as raw JSON")
     parser.add_argument(
         "--source",
         choices=["jsonl", "checkpoint", "csv"],

@@ -55,7 +55,9 @@ def main():
         rev = revoked_by_type.get(obj_type, 0)
         active = count - dep - rev
         lines.append(f"| `{obj_type}` | {count} | {dep} | {rev} | {active} |")
-    lines.append(f"| **Total** | **{total}** | **{sum(deprecated_by_type.values())}** | **{sum(revoked_by_type.values())}** | **{total - sum(deprecated_by_type.values()) - sum(revoked_by_type.values())}** |")
+    lines.append(
+        f"| **Total** | **{total}** | **{sum(deprecated_by_type.values())}** | **{sum(revoked_by_type.values())}** | **{total - sum(deprecated_by_type.values()) - sum(revoked_by_type.values())}** |"
+    )
     lines.append("")
 
     # --- Relationship breakdown ---
@@ -109,7 +111,9 @@ def main():
         lines.append(f"| `{src}` → `{rtype}` → `{tgt}` | {cnt} |")
     lines.append(f"| **CTI-relevant total** | **{cti_total}** |")
     lines.append(f"| *All relationships* | *{sum(rel_type_counter.values())}* |")
-    lines.append(f"| **CTI-relevant %** | **{cti_total / max(sum(rel_type_counter.values()), 1) * 100:.1f}%** |")
+    lines.append(
+        f"| **CTI-relevant %** | **{cti_total / max(sum(rel_type_counter.values()), 1) * 100:.1f}%** |"
+    )
     lines.append("")
 
     lines.append("## Type Descriptions")

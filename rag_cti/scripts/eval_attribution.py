@@ -1,4 +1,4 @@
-﻿"""Evaluate retrieval on query_set_v2.jsonl with stable-identifier matching.
+"""Evaluate retrieval on query_set_v2.jsonl with stable-identifier matching.
 
 Usage:
     python scripts/eval_attribution.py
@@ -8,13 +8,16 @@ Usage:
 
 Matching logic (no chunk_id dependency):
   - gold_attack_ids: chunk metadata.attack_id matches any gold ID
-  - gold_pulse_id:   chunk metadata.pulse_id matches
-  - gold_actor:      actor name appears in chunk content
+  - gold_pulse_id:   chunk metadata.pulse_id matches (sole criterion for
+                     otx_actor — the old actor_in_content backdoor was removed:
+                     any chunk merely mentioning the actor counted as a hit)
   - gold_malware:    malware name appears in chunk content
   - gold_sources:    chunk source tag matches
 
-Reports Hit@k, MRR, nDCG@k grouped by category.
+Reports hit@k/MRR for single-target categories and set-based P/R/F1@k /
+Recall@k for multi-label categories, grouped by category.
 """
+
 from __future__ import annotations
 
 # ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
@@ -82,17 +85,19 @@ def load_query_set(path: Path) -> list[QueryRecord]:
             if not line:
                 continue
             obj = json.loads(line)
-            records.append(QueryRecord(
-                query_id=obj["query_id"],
-                query=obj["query"],
-                category=obj["category"],
-                gold_attack_ids=obj.get("gold_attack_ids") or [],
-                gold_sources=obj.get("gold_sources") or [],
-                gold_actor=obj.get("gold_actor"),
-                gold_pulse_ids=_normalize_pulse_ids(obj.get("gold_pulse_id")),
-                gold_malware=obj.get("gold_malware"),
-                notes=obj.get("notes", ""),
-            ))
+            records.append(
+                QueryRecord(
+                    query_id=obj["query_id"],
+                    query=obj["query"],
+                    category=obj["category"],
+                    gold_attack_ids=obj.get("gold_attack_ids") or [],
+                    gold_sources=obj.get("gold_sources") or [],
+                    gold_actor=obj.get("gold_actor"),
+                    gold_pulse_ids=_normalize_pulse_ids(obj.get("gold_pulse_id")),
+                    gold_malware=obj.get("gold_malware"),
+                    notes=obj.get("notes", ""),
+                )
+            )
     return records
 
 
@@ -115,14 +120,8 @@ def is_hit(result: object, record: QueryRecord) -> bool:
         chunk_attack = doc.metadata.get("attack_id", "")
         if not chunk_attack:
             return False
-        attack_ok = any(
-            _attack_id_match(str(chunk_attack), gid)
-            for gid in record.gold_attack_ids
-        )
-        actor_ok = (
-            record.gold_actor
-            and record.gold_actor.lower() in doc.content.lower()
-        )
+        attack_ok = any(_attack_id_match(str(chunk_attack), gid) for gid in record.gold_attack_ids)
+        actor_ok = record.gold_actor and record.gold_actor.lower() in doc.content.lower()
         return attack_ok and actor_ok
 
     if record.gold_attack_ids:
@@ -166,9 +165,7 @@ def reciprocal_rank(results: list, record: QueryRecord) -> float:
 
 def ndcg_at_k(results: list, record: QueryRecord, k: int) -> float:
     dcg = sum(
-        1.0 / math.log2(i + 1)
-        for i, r in enumerate(results[:k], start=1)
-        if is_hit(r, record)
+        1.0 / math.log2(i + 1) for i, r in enumerate(results[:k], start=1) if is_hit(r, record)
     )
     idcg = 1.0 / math.log2(2)
     return round(dcg / idcg, 4) if idcg > 0 else 0.0
@@ -180,6 +177,7 @@ def ndcg_at_k(results: list, record: QueryRecord, k: int) -> float:
 # NOT the parent/child wildcard _attack_id_match used by hit@k. They replace the
 # metric-mismatch (hit@k masquerading for multi-label) flagged in the eval audit.
 # ---------------------------------------------------------------------------
+
 
 def _ranked_attack_ids(results: list, k: int) -> list[str]:
     """attack_ids of the top-k results in rank order (blanks dropped)."""
@@ -286,14 +284,16 @@ def run_eval(
             cm.ndcg_sum[k] += nd
             overall.ndcg_sum[k] += nd
 
-        per_query.append({
-            "query_id": rec.query_id,
-            "query": rec.query,
-            "category": cat,
-            "hit_at_k": {str(k): v for k, v in q_hits.items()},
-            "rr": round(rr, 4),
-            "target_rank": round(1.0 / rr) if rr > 0 else None,
-        })
+        per_query.append(
+            {
+                "query_id": rec.query_id,
+                "query": rec.query,
+                "category": cat,
+                "hit_at_k": {str(k): v for k, v in q_hits.items()},
+                "rr": round(rr, 4),
+                "target_rank": round(1.0 / rr) if rr > 0 else None,
+            }
+        )
 
         if (i + 1) % 10 == 0:
             logger.info("eval progress", done=i + 1, total=len(records))
@@ -307,8 +307,14 @@ def run_eval(
         set_metrics[cat] = {
             "metric": "attack_set_prf@k(technique)",
             "n": len(attack_ranked[cat]),
-            "prf_at_k": {k: {"P": round(prf[k].precision, 4), "R": round(prf[k].recall, 4),
-                             "F1": round(prf[k].f1, 4)} for k in k_values},
+            "prf_at_k": {
+                k: {
+                    "P": round(prf[k].precision, 4),
+                    "R": round(prf[k].recall, 4),
+                    "F1": round(prf[k].f1, 4),
+                }
+                for k in k_values
+            },
         }
     for cat in pulse_ranked:
         rec_at_k = _pulse_recall_at_k(pulse_ranked[cat], pulse_gold[cat], k_values)
@@ -360,7 +366,9 @@ def print_report(result: dict, k_values: tuple[int, ...]) -> None:
 
     set_metrics = result.get("set_metrics") or {}
     if set_metrics:
-        print("\nSet-based metrics (multi-label categories — SPEC §M; normalize+exact, NOT wildcard):")
+        print(
+            "\nSet-based metrics (multi-label categories — SPEC §M; normalize+exact, NOT wildcard):"
+        )
         for cat in sorted(set_metrics):
             sm = set_metrics[cat]
             if sm["metric"].startswith("attack_set_prf"):
@@ -382,7 +390,9 @@ def print_report(result: dict, k_values: tuple[int, ...]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate retrieval with stable-identifier matching")
+    parser = argparse.ArgumentParser(
+        description="Evaluate retrieval with stable-identifier matching"
+    )
     parser.add_argument("--query-set", default="data/eval/query_set_v2.jsonl")
     parser.add_argument("--output", default="data/eval/attribution_results.json")
     parser.add_argument("--collection", default=None)
@@ -399,7 +409,10 @@ def main() -> None:
     cat_counts = defaultdict(int)
     for r in records:
         cat_counts[r.category] += 1
-    print(f"Loaded {len(records)} queries: " + ", ".join(f"{c}={n}" for c, n in sorted(cat_counts.items())))
+    print(
+        f"Loaded {len(records)} queries: "
+        + ", ".join(f"{c}={n}" for c, n in sorted(cat_counts.items()))
+    )
 
     settings = get_settings()
     stack = build_retrieval_stack(settings, collection=args.collection, device=args.device)

@@ -28,6 +28,7 @@ human audit) and is never merged into gold:
 
 Run:  python3 scripts/rebuild_relationship_gold.py
 """
+
 from __future__ import annotations
 
 import json
@@ -102,16 +103,11 @@ class AttackGraph:
         self.attack_version = coll.get("x_mitre_version")
         self.attack_spec = coll.get("x_mitre_attack_spec_version")
         self.spec_label = (
-            f"ATT&CK Enterprise v{self.attack_version} "
-            f"(attack-spec {self.attack_spec}, STIX 2.1)"
+            f"ATT&CK Enterprise v{self.attack_version} (attack-spec {self.attack_spec}, STIX 2.1)"
         )
 
         self.tactics = sorted(
-            {
-                o.get("x_mitre_shortname")
-                for o in self.objects
-                if o.get("type") == "x-mitre-tactic"
-            }
+            {o.get("x_mitre_shortname") for o in self.objects if o.get("type") == "x-mitre-tactic"}
         )
 
         # uses: source_ref -> [target_ref, ...]
@@ -129,8 +125,10 @@ class AttackGraph:
                 self.uses.setdefault(src, []).append(tgt)
             elif rtype == "attributed-to":
                 # source = campaign, target = intrusion-set
-                if (self.by_id.get(src, {}).get("type") == "campaign"
-                        and self.by_id.get(tgt, {}).get("type") == "intrusion-set"):
+                if (
+                    self.by_id.get(src, {}).get("type") == "campaign"
+                    and self.by_id.get(tgt, {}).get("type") == "intrusion-set"
+                ):
                     self.attributed_campaigns.setdefault(tgt, []).append(src)
 
         self.intrusion_sets = [o for o in self.objects if o.get("type") == "intrusion-set"]
@@ -142,15 +140,11 @@ class AttackGraph:
         exact = [o for o in active if _norm(o.get("name")) == q]
         if exact:
             return exact[0], "exact_name"
-        alias_exact = [
-            o for o in active if any(q == _norm(a) for a in o.get("aliases", []))
-        ]
+        alias_exact = [o for o in active if any(q == _norm(a) for a in o.get("aliases", []))]
         if alias_exact:
             return alias_exact[0], "exact_alias"
         # alias contains the actor string; require a UNIQUE intrusion-set to stay deterministic.
-        contains = [
-            o for o in active if any(q in _norm(a) for a in o.get("aliases", []))
-        ]
+        contains = [o for o in active if any(q in _norm(a) for a in o.get("aliases", []))]
         uniq = {o["id"]: o for o in contains}
         if len(uniq) == 1:
             return next(iter(uniq.values())), "alias_contains"
@@ -367,7 +361,7 @@ def main() -> int:
             f"{('OK' if t['seed_ok'] else 'MISS'):>4} | {removed_str}"
         )
     print("-" * 110)
-    print(f"  (old# source per row: {', '.join(t['qid']+'='+t['old_src'] for t in table)})")
+    print(f"  (old# source per row: {', '.join(t['qid'] + '=' + t['old_src'] for t in table)})")
 
     print()
     if skipped:
