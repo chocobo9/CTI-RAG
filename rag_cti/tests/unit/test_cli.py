@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
@@ -9,6 +10,14 @@ from typer.testing import CliRunner
 from rag_cti.cli import app
 
 runner = CliRunner()
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(output: str) -> str:
+    """Strip ANSI escape codes — newer typer/rich render help with style codes
+    that split option names (e.g. ``--top-k``) mid-token in captured output."""
+    return _ANSI_RE.sub("", output)
 
 
 def _fake_query_result() -> MagicMock:
@@ -37,7 +46,7 @@ def test_all_commands_listed_in_help() -> None:
 def test_query_help_shows_top_k_option() -> None:
     result = runner.invoke(app, ["query", "--help"])
     assert result.exit_code == 0
-    assert "--top-k" in result.output
+    assert "--top-k" in _plain(result.output)
 
 
 def test_ingest_help_shows_source_argument() -> None:
@@ -49,7 +58,7 @@ def test_ingest_help_shows_source_argument() -> None:
 def test_refresh_help_shows_since_option() -> None:
     result = runner.invoke(app, ["refresh", "--help"])
     assert result.exit_code == 0
-    assert "--since" in result.output
+    assert "--since" in _plain(result.output)
 
 
 def test_eval_help_shows_suite_argument() -> None:
@@ -61,7 +70,7 @@ def test_eval_help_shows_suite_argument() -> None:
 def test_metrics_help_shows_strict_option() -> None:
     result = runner.invoke(app, ["metrics", "--help"])
     assert result.exit_code == 0
-    assert "--strict" in result.output
+    assert "--strict" in _plain(result.output)
 
 
 # ---------------------------------------------------------------------------

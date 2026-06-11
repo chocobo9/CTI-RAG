@@ -31,7 +31,12 @@ _CTIBENCH_DIR = Path(__file__).resolve().parents[2] / "data" / "eval" / "ctibenc
 
 @pytest.fixture(scope="module")
 def actor_dicts() -> tuple[dict, dict]:
-    return load_actor_dicts(_CTIBENCH_DIR)
+    # ctibench actor dicts are CC BY-NC-SA and deliberately untracked
+    # (.gitignore: "copy locally") — absent in CI checkouts, so skip there.
+    try:
+        return load_actor_dicts(_CTIBENCH_DIR)
+    except FileNotFoundError:
+        pytest.skip(f"ctibench actor dicts not available under {_CTIBENCH_DIR}")
 
 
 # ---------------------------------------------------------------------------
