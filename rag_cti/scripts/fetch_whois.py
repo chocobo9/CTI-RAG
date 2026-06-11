@@ -11,6 +11,7 @@ Usage:
 Requires WHOXY_API_KEY in .env (not needed with --records).
 The output JSONL feeds scripts/ingest.py like every other processed source.
 """
+
 from __future__ import annotations
 
 # ruff: noqa: E402  (sys.path bootstrap before imports — run-without-install pattern)
@@ -54,13 +55,16 @@ def _load_domains(domains_file: Path | None, domains: list[str]) -> list[str]:
     return unique
 
 
-def fetch_records(domains: list[str], api_key: str, delay_s: float) -> list[dict]:
+def fetch_records(
+    domains: list[str], api_key: str, delay_s: float, endpoint: str = "live"
+) -> list[dict]:
     records: list[dict] = []
     failed: list[str] = []
     with WhoxyClient(api_key=api_key) as client:
+        lookup = client.history if endpoint == "history" else client.whois
         for i, domain in enumerate(domains, start=1):
             try:
-                records.append(client.whois(domain))
+                records.append(lookup(domain))
             except Exception as exc:
                 logger.warning("whois lookup failed", domain=domain, error=str(exc))
                 failed.append(domain)
@@ -77,13 +81,26 @@ def main() -> None:
     configure_logging("INFO")
     parser = argparse.ArgumentParser(description="Fetch WHOIS records (Whoxy) into processed JSONL")
     parser.add_argument("--domains", type=Path, default=None, help="File with one domain per line")
-    parser.add_argument("--domain", action="append", default=[], help="Domain to look up (repeatable)")
     parser.add_argument(
-        "--records", type=Path, default=None,
+        "--domain", action="append", default=[], help="Domain to look up (repeatable)"
+    )
+    parser.add_argument(
+        "--records",
+        type=Path,
+        default=None,
         help="Pre-fetched JSON list of WHOIS record dicts (skips the Whoxy API)",
     )
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
-    parser.add_argument("--delay", type=float, default=DEFAULT_DELAY_S, help="Seconds between lookups")
+    parser.add_argument(
+        "--delay", type=float, default=DEFAULT_DELAY_S, help="Seconds between lookups"
+    )
+    parser.add_argument(
+        "--endpoint",
+        choices=["live", "history"],
+        default="live",
+        help="Whoxy API endpoint: live WHOIS (?whois=) or WHOIS history (?history=, "
+        "latest snapshot; billed against history credits)",
+    )
     args = parser.parse_args()
 
     if args.records:
@@ -94,15 +111,17 @@ def main() -> None:
     else:
         domains = _load_domains(args.domains, args.domain)
         if not domains:
-            print("ERROR: no domains given — use --domains FILE, --domain D, or --records JSON.",
-                  file=sys.stderr)
+            print(
+                "ERROR: no domains given — use --domains FILE, --domain D, or --records JSON.",
+                file=sys.stderr,
+            )
             sys.exit(1)
         api_key = get_settings().whoxy_api_key.get_secret_value()
         if not api_key:
             print("ERROR: WHOXY_API_KEY not set. Add it to .env.", file=sys.stderr)
             sys.exit(1)
-        logger.info("fetching WHOIS via Whoxy", domains=len(domains))
-        records = fetch_records(domains, api_key, args.delay)
+        logger.info("fetching WHOIS via Whoxy", domains=len(domains), endpoint=args.endpoint)
+        records = fetch_records(domains, api_key, args.delay, endpoint=args.endpoint)
 
     connector = WHOISConnector(records=records)
     stats = seed_connector_to_jsonl(connector, args.out, ChunkStrategy.STRUCTURED)
