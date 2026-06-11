@@ -11,6 +11,7 @@ from rag_cti.observability.tracing import add_trace_metadata, is_tracing_enabled
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _reset_cache() -> None:
     """Reset module-level cache so each test starts clean."""
     tracing_mod._TRACING_ENABLED = None
@@ -20,6 +21,7 @@ def _reset_cache() -> None:
 # ---------------------------------------------------------------------------
 # is_tracing_enabled
 # ---------------------------------------------------------------------------
+
 
 def test_tracing_disabled_when_api_key_empty() -> None:
     _reset_cache()
@@ -65,6 +67,7 @@ def test_tracing_result_is_cached() -> None:
 # traced decorator — disabled path
 # ---------------------------------------------------------------------------
 
+
 def test_traced_returns_original_function_when_disabled() -> None:
     _reset_cache()
     tracing_mod._TRACING_ENABLED = False
@@ -106,15 +109,17 @@ def test_traced_propagates_exceptions_when_disabled() -> None:
 # traced decorator — enabled path
 # ---------------------------------------------------------------------------
 
+
 def test_traced_calls_traceable_when_enabled() -> None:
     _reset_cache()
     tracing_mod._TRACING_ENABLED = True
 
-    mock_traceable = MagicMock(side_effect=lambda *a, **kw: (lambda f: f))
+    mock_traceable = MagicMock(side_effect=lambda *a, **kw: lambda f: f)
     fake_langsmith = MagicMock()
     fake_langsmith.traceable = mock_traceable
 
     with patch.dict("sys.modules", {"langsmith": fake_langsmith}):
+
         @traced("my.span", run_type="llm")
         def fn() -> int:
             return 1
@@ -142,9 +147,10 @@ def test_traced_wrapped_function_preserves_return_value() -> None:
     tracing_mod._TRACING_ENABLED = True
 
     fake_langsmith = MagicMock()
-    fake_langsmith.traceable = MagicMock(side_effect=lambda *a, **kw: (lambda f: f))
+    fake_langsmith.traceable = MagicMock(side_effect=lambda *a, **kw: lambda f: f)
 
     with patch.dict("sys.modules", {"langsmith": fake_langsmith}):
+
         @traced("span")
         def multiply(x: int, y: int) -> int:
             return x * y
@@ -156,6 +162,7 @@ def test_traced_wrapped_function_preserves_return_value() -> None:
 # ---------------------------------------------------------------------------
 # add_trace_metadata
 # ---------------------------------------------------------------------------
+
 
 def test_add_trace_metadata_noop_when_disabled() -> None:
     _reset_cache()
@@ -172,7 +179,9 @@ def test_add_trace_metadata_noop_when_no_run_tree() -> None:
     fake_run_helpers.get_current_run_tree.return_value = None
     fake_langsmith = MagicMock()
 
-    with patch.dict("sys.modules", {"langsmith": fake_langsmith, "langsmith.run_helpers": fake_run_helpers}):
+    with patch.dict(
+        "sys.modules", {"langsmith": fake_langsmith, "langsmith.run_helpers": fake_run_helpers}
+    ):
         add_trace_metadata(key="value")  # must not raise
 
     _reset_cache()
@@ -187,7 +196,9 @@ def test_add_trace_metadata_calls_add_metadata_on_run() -> None:
     fake_run_helpers.get_current_run_tree.return_value = mock_run
     fake_langsmith = MagicMock()
 
-    with patch.dict("sys.modules", {"langsmith": fake_langsmith, "langsmith.run_helpers": fake_run_helpers}):
+    with patch.dict(
+        "sys.modules", {"langsmith": fake_langsmith, "langsmith.run_helpers": fake_run_helpers}
+    ):
         add_trace_metadata(score=0.9, model="qwen2.5")
 
     mock_run.add_metadata.assert_called_once_with({"score": 0.9, "model": "qwen2.5"})
@@ -197,6 +208,7 @@ def test_add_trace_metadata_calls_add_metadata_on_run() -> None:
 # ---------------------------------------------------------------------------
 # redact
 # ---------------------------------------------------------------------------
+
 
 def test_redact_removes_api_key_value() -> None:
     s = "request failed: api_key=sk-secret123 not valid"

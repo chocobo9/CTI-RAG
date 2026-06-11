@@ -4,6 +4,7 @@ Stateless wrapper around sentence-transformers. One instance per process —
 the underlying model is expensive to load but thread-safe for read-only
 inference once loaded.
 """
+
 from __future__ import annotations
 
 import threading
@@ -54,9 +55,11 @@ class Embedder:
         if self._model is None:
             with self._lock:
                 if self._model is None:
-                    from sentence_transformers import SentenceTransformer  # type: ignore[import]
+                    from sentence_transformers import SentenceTransformer
 
-                    logger.info("loading embedding model", model=self.model_name, device=self._device)
+                    logger.info(
+                        "loading embedding model", model=self.model_name, device=self._device
+                    )
                     self._model = SentenceTransformer(self.model_name, device=self._device)
         return self._model
 
@@ -90,4 +93,5 @@ class Embedder:
 
     def encode_one(self, text: str) -> np.ndarray:
         """Encode a single string, returning a (dim,) vector."""
-        return self.encode([text])[0]
+        vector: np.ndarray = self.encode([text])[0]
+        return vector

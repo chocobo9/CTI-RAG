@@ -16,6 +16,7 @@ from rag_cti.types import Chunk
 # Fake qdrant_client stand-ins — installed into sys.modules before import
 # ---------------------------------------------------------------------------
 
+
 class _FakeVectorParams:
     def __init__(self, size: int, distance: Any) -> None:
         self.size = size
@@ -56,9 +57,7 @@ class _FakeFieldCondition:
 
 
 class _FakeFilter:
-    def __init__(
-        self, must: list[Any] | None = None, should: list[Any] | None = None
-    ) -> None:
+    def __init__(self, must: list[Any] | None = None, should: list[Any] | None = None) -> None:
         self.must = must or []
         self.should = should or []
 
@@ -146,6 +145,7 @@ def _make_hit(chunk: Chunk, score: float) -> MagicMock:
 # chunk_to_point_id
 # ---------------------------------------------------------------------------
 
+
 def test_chunk_to_point_id_is_deterministic(fake_qdrant: dict[str, MagicMock]) -> None:
     from rag_cti.store.qdrant_store import chunk_to_point_id
 
@@ -168,6 +168,7 @@ def test_chunk_to_point_id_differs_per_chunk(fake_qdrant: dict[str, MagicMock]) 
 # ---------------------------------------------------------------------------
 # ensure_collection
 # ---------------------------------------------------------------------------
+
 
 def test_ensure_collection_creates_when_absent(fake_qdrant: dict[str, MagicMock]) -> None:
     from rag_cti.store.qdrant_store import QdrantStore
@@ -192,9 +193,7 @@ def test_ensure_collection_noop_when_present(fake_qdrant: dict[str, MagicMock]) 
     from rag_cti.store.qdrant_store import QdrantStore
 
     client = MagicMock()
-    client.get_collections.return_value = MagicMock(
-        collections=[_FakeCollectionInfo("rag-cti")]
-    )
+    client.get_collections.return_value = MagicMock(collections=[_FakeCollectionInfo("rag-cti")])
     fake_qdrant["client_cls"].return_value = client
 
     store = QdrantStore(url="http://x", collection="rag-cti")
@@ -206,6 +205,7 @@ def test_ensure_collection_noop_when_present(fake_qdrant: dict[str, MagicMock]) 
 # ---------------------------------------------------------------------------
 # upsert
 # ---------------------------------------------------------------------------
+
 
 def test_upsert_builds_points_with_expected_payload(fake_qdrant: dict[str, MagicMock]) -> None:
     from rag_cti.store.qdrant_store import QdrantStore, chunk_to_point_id
@@ -270,6 +270,7 @@ def test_upsert_batches_at_configured_size(fake_qdrant: dict[str, MagicMock]) ->
 # ---------------------------------------------------------------------------
 # search
 # ---------------------------------------------------------------------------
+
 
 def test_search_returns_retrieval_results_with_ranks(
     fake_qdrant: dict[str, MagicMock],
@@ -348,6 +349,7 @@ def test_search_with_multi_source_filter_passes_list(
 # count
 # ---------------------------------------------------------------------------
 
+
 def test_count_without_filter(fake_qdrant: dict[str, MagicMock]) -> None:
     from rag_cti.store.qdrant_store import QdrantStore
 
@@ -379,8 +381,10 @@ def test_count_with_source_filter(fake_qdrant: dict[str, MagicMock]) -> None:
 # upsert_hybrid
 # ---------------------------------------------------------------------------
 
+
 class _FakeEncoder:
     """Minimal sparse encoder stub: returns fixed indices/values."""
+
     def encode_document(self, text: str) -> tuple[list[int], list[float]]:
         return [0, 1], [1.5, 0.8]
 

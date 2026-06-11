@@ -21,10 +21,10 @@ class QuerySetRecord:
     query_id: str
     query: str
     category: QueryCategory
-    expected_chunk_ids: list[str]   # seeded chunk IDs for precise/semantic; empty for fuzzy
-    gold_attack_ids: list[str]      # ATT&CK technique IDs extracted from seed chunks
-    gold_sources: list[str]         # acceptable source tags (for fuzzy hit evaluation)
-    reference_answer: str | None    # human-readable GT for RAGAS context_recall; None for fuzzy
+    expected_chunk_ids: list[str]  # seeded chunk IDs for precise/semantic; empty for fuzzy
+    gold_attack_ids: list[str]  # ATT&CK technique IDs extracted from seed chunks
+    gold_sources: list[str]  # acceptable source tags (for fuzzy hit evaluation)
+    reference_answer: str | None  # human-readable GT for RAGAS context_recall; None for fuzzy
     notes: str
 
 

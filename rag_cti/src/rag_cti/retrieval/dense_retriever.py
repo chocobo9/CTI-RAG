@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from typing import Protocol
 
 import numpy as np
 
@@ -10,10 +11,27 @@ from rag_cti.types import RetrievalResult
 logger = get_logger(__name__)
 
 
+class DenseSearchStore(Protocol):
+    """Vector store surface DenseRetriever needs (QdrantStore.search)."""
+
+    def search(
+        self,
+        query_vector: np.ndarray,
+        top_k: int = 10,
+        source_filter: str | list[str] | None = None,
+    ) -> list[RetrievalResult]: ...
+
+
+class QueryEmbedder(Protocol):
+    """Embedder surface DenseRetriever needs (Embedder.encode_one)."""
+
+    def encode_one(self, text: str) -> np.ndarray: ...
+
+
 class DenseRetriever:
     """Dense cosine-similarity retriever backed by Qdrant."""
 
-    def __init__(self, store: object, embedder: object) -> None:
+    def __init__(self, store: DenseSearchStore, embedder: QueryEmbedder) -> None:
         self._store = store
         self._embedder = embedder
 
@@ -22,8 +40,15 @@ class DenseRetriever:
         query: str,
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        sparse_query: str | None = None,
     ) -> list[RetrievalResult]:
-        """Embed *query* and return top-k dense results from Qdrant."""
+        """Embed *query* and return top-k dense results from Qdrant.
+
+        ``sparse_query`` is accepted and ignored — there is no BM25 path here.
+        HyDE always passes it (the hypothetical document must not replace the
+        original query on the sparse side), so pure-dense configs
+        (hybrid_alpha >= 1.0) with HyDE enabled would otherwise TypeError.
+        """
         t0 = time.perf_counter()
         query_vector: np.ndarray = self._embedder.encode_one(query)
         results: list[RetrievalResult] = self._store.search(

@@ -33,7 +33,10 @@ class Settings(BaseSettings):
 
     # Data source API keys
     otx_api_key: SecretStr = SecretStr("")
+    # Reserved for the experimental VirusTotal connector — no fetch script
+    # consumes it yet (connectors/virustotal.py takes the key directly).
     vt_api_key: SecretStr = SecretStr("")
+    whoxy_api_key: SecretStr = SecretStr("")
 
     # LangSmith
     langsmith_api_key: SecretStr = SecretStr("")
@@ -50,23 +53,35 @@ class Settings(BaseSettings):
 
     # Retrieval
     retrieval_top_k: int = 10
-    hybrid_alpha: float = 0.5  # weight for dense vs sparse (1.0 = pure dense)
+    # Dense weight in the weighted-RRF fusion (sparse gets 1 - alpha).
+    # 0.5 = symmetric fusion; >= 1.0 skips the sparse retriever (pure dense).
+    hybrid_alpha: float = 0.5
     rrf_candidate_multiplier: int = 3
 
     # Generation
     generation_max_tokens: int = 1024
 
-    # LLM tiers (Anthropic — used by HyDE when ANTHROPIC_API_KEY is set)
+    # Model for the Anthropic provider: HyDE's Anthropic branch (hyde.py) and
+    # LLMRouter when provider == "anthropic". Groq/Ollama use their own fields.
     llm_routing_model: str = "claude-haiku-4-5-20251001"
 
     # Reranker (hybrid+reranker is the recommended config — see README eval results)
     reranker_enabled: bool = True
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
     reranker_candidates_k: int = 50
+    # 512 truncates 11.4% of chunks (42% of OTX) against the chunker's
+    # 600-token target, BUT it is the CERTIFIED value: the 2026-06-11 A/B
+    # measured 640 as retrieval-neutral (hit@k unchanged on query_set_v3)
+    # while dropping the technique annotator's CTI-ATE Micro-F1 from the
+    # 0.653-0.670 band to 0.564 — the truncated tails hurt CrossEncoder
+    # ranking more than they help. Keep 512 unless re-certifying.
+    reranker_max_length: int = 512
 
     # Feature flags
     hyde_enabled: bool = True
     hyde_min_query_tokens: int = 5
+    hyde_max_tokens: int = 300
+    hyde_output_max_chars: int = 2000
 
     @field_validator("hybrid_alpha")
     @classmethod

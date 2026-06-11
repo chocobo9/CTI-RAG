@@ -15,6 +15,7 @@ from rag_cti.generation.client import (
 # Settings stub for build_llm_client
 # ---------------------------------------------------------------------------
 
+
 class _FakeSecret:
     def __init__(self, value: str) -> None:
         self._value = value
@@ -35,12 +36,16 @@ class _FakeSettings:
         self.ollama_base_url = base_url
         self.ollama_model = "qwen2.5"
         self.groq_api_key = _FakeSecret(groq)
+        self.groq_query_model = "llama-3.1-8b-instant"
+        self.groq_analysis_model = "llama-3.3-70b-versatile"
+        self.groq_report_model = "llama-3.3-70b-versatile"
         self.anthropic_api_key = _FakeSecret(anthropic)
 
 
 # ---------------------------------------------------------------------------
 # Stub — lightweight exception with status_code, no Groq SDK dependency
 # ---------------------------------------------------------------------------
+
 
 class _StatusError(Exception):
     def __init__(self, status_code: int) -> None:
@@ -50,6 +55,7 @@ class _StatusError(Exception):
 # ---------------------------------------------------------------------------
 # Retryable statuses
 # ---------------------------------------------------------------------------
+
 
 def test_429_rate_limit_is_retryable() -> None:
     assert _is_retryable(_StatusError(429))
@@ -71,6 +77,7 @@ def test_529_overloaded_is_retryable() -> None:
 # Non-retryable statuses
 # ---------------------------------------------------------------------------
 
+
 def test_400_bad_request_not_retryable() -> None:
     assert not _is_retryable(_StatusError(400))
 
@@ -91,6 +98,7 @@ def test_422_unprocessable_not_retryable() -> None:
 # Exceptions without status_code
 # ---------------------------------------------------------------------------
 
+
 def test_value_error_not_retryable() -> None:
     assert not _is_retryable(ValueError("bad input"))
 
@@ -106,6 +114,7 @@ def test_base_exception_not_retryable() -> None:
 # ---------------------------------------------------------------------------
 # RetryingGroqClient — structure and .create() passthrough
 # ---------------------------------------------------------------------------
+
 
 def test_retrying_groq_client_has_chat_completions() -> None:
     with patch("groq.Groq", return_value=MagicMock()):
@@ -127,6 +136,7 @@ def test_retrying_groq_completions_create_calls_underlying() -> None:
 # RetryingOllamaClient — structure and .create() passthrough
 # ---------------------------------------------------------------------------
 
+
 def test_retrying_ollama_client_has_chat_completions() -> None:
     with patch("openai.OpenAI", return_value=MagicMock()):
         client = RetryingOllamaClient(base_url="http://localhost:11434/v1")
@@ -146,6 +156,7 @@ def test_retrying_ollama_completions_create_calls_underlying() -> None:
 # ---------------------------------------------------------------------------
 # build_llm_client factory — provider selection
 # ---------------------------------------------------------------------------
+
 
 def test_build_llm_client_ollama_provider_when_ollama_enabled() -> None:
     with patch("openai.OpenAI", return_value=MagicMock()):

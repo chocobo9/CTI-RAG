@@ -125,6 +125,7 @@ def evaluate_retriever(
 # Query-set evaluation (chunk-ID + source/ATT&CK matching)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class CategoryMetrics:
     n_queries: int
@@ -161,11 +162,7 @@ def ndcg_at_k(
     n_relevant: int = 1,
 ) -> float:
     """nDCG@k with binary relevance. n_relevant is the total number of relevant docs."""
-    dcg = sum(
-        1.0 / math.log2(i + 1)
-        for i, r in enumerate(results[:k], start=1)
-        if is_relevant(r)
-    )
+    dcg = sum(1.0 / math.log2(i + 1) for i, r in enumerate(results[:k], start=1) if is_relevant(r))
     n_ideal = min(n_relevant, k)
     idcg = sum(1.0 / math.log2(i + 1) for i in range(1, n_ideal + 1))
     return round(dcg / idcg, 4) if idcg > 0 else 0.0
@@ -244,19 +241,23 @@ def evaluate_on_query_set(
         if rr > 0.0:
             target_rank = round(1.0 / rr)
 
-        per_query_results.append(PerQueryResult(
-            query_id=record.query_id,
-            query_text=record.query,
-            category=cat,
-            expected_doc_ids=record.expected_chunk_ids,
-            retrieved_doc_ids=[r.document.id for r in results],
-            hit_at_k=query_hits,
-            reciprocal_rank=rr,
-            target_rank=target_rank,
-        ))
+        per_query_results.append(
+            PerQueryResult(
+                query_id=record.query_id,
+                query_text=record.query,
+                category=cat,
+                expected_doc_ids=record.expected_chunk_ids,
+                retrieved_doc_ids=[r.document.id for r in results],
+                hit_at_k=query_hits,
+                reciprocal_rank=rr,
+                target_rank=target_rank,
+            )
+        )
 
         if (i + 1) % 10 == 0:
-            logger.info("query set eval progress", completed=i + 1, total=len(records), config=config)
+            logger.info(
+                "query set eval progress", completed=i + 1, total=len(records), config=config
+            )
 
     by_category: dict[str, CategoryMetrics] = {}
     overall_hits: dict[int, int] = dict.fromkeys(k_values, 0)
@@ -275,12 +276,20 @@ def evaluate_on_query_set(
         overall_rr += cat_rr[cat]
         overall_n += n
 
-    overall_top_k = {k: round(overall_hits[k] / overall_n, 4) if overall_n > 0 else 0.0 for k in k_values}
+    overall_top_k = {
+        k: round(overall_hits[k] / overall_n, 4) if overall_n > 0 else 0.0 for k in k_values
+    }
     overall_mrr = round(overall_rr / overall_n, 4) if overall_n > 0 else 0.0
-    overall_ndcg_out = {k: round(overall_ndcg[k] / overall_n, 4) if overall_n > 0 else 0.0 for k in k_values}
-    overall = CategoryMetrics(n_queries=overall_n, top_k=overall_top_k, mrr=overall_mrr, ndcg=overall_ndcg_out)
+    overall_ndcg_out = {
+        k: round(overall_ndcg[k] / overall_n, 4) if overall_n > 0 else 0.0 for k in k_values
+    }
+    overall = CategoryMetrics(
+        n_queries=overall_n, top_k=overall_top_k, mrr=overall_mrr, ndcg=overall_ndcg_out
+    )
 
-    logger.info("query set eval complete", config=config, n_queries=overall_n, overall_mrr=overall_mrr)
+    logger.info(
+        "query set eval complete", config=config, n_queries=overall_n, overall_mrr=overall_mrr
+    )
     return QuerySetEvalResult(
         config=config,
         k_values=list(k_values),

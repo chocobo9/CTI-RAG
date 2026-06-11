@@ -1,8 +1,8 @@
 """RAG-powered Cyber Threat Intelligence retrieval system.
 
 Public interface:
-    query(text, k)  -> QueryResult      retrieve relevant CTI chunks with scores and metadata
-    answer(text, k) -> GeneratedAnswer  retrieve + generate a grounded answer with cited IDs
+    query(text, top_k) -> QueryResult      retrieve relevant CTI chunks with scores and metadata
+    answer(text, k)    -> GeneratedAnswer  retrieve + generate a grounded answer with cited IDs
 """
 
 from __future__ import annotations
@@ -35,11 +35,7 @@ def _default_pipeline() -> Pipeline:
     )
     embedder = Embedder(model_name=settings.embedding_model)
     embedder._load()  # eager load: avoid first-query penalty
-    encoder = (
-        BM25SparseEncoder.load(_VOCAB_PATH)
-        if _VOCAB_PATH.exists()
-        else BM25SparseEncoder()
-    )
+    encoder = BM25SparseEncoder.load(_VOCAB_PATH) if _VOCAB_PATH.exists() else BM25SparseEncoder()
 
     llm_client = None
     llm_provider = "anthropic"
@@ -58,23 +54,23 @@ def _default_pipeline() -> Pipeline:
     )
 
     # eager load reranker model if enabled
-    if settings.reranker_enabled and hasattr(pipeline._reranker, '_load'):
+    if settings.reranker_enabled and hasattr(pipeline._reranker, "_load"):
         pipeline._reranker._load()
 
     return pipeline
 
 
-def query(text: str, k: int = 10) -> QueryResult:
+def query(text: str, top_k: int = 10) -> QueryResult:
     """Retrieve the top-k most relevant CTI chunks for the given query text.
 
     Args:
         text: Natural language query or IOC string.
-        k: Number of results to return.
+        top_k: Number of results to return.
 
     Returns:
         QueryResult with ranked chunks, scores, ranks, and timing metadata.
     """
-    return _default_pipeline().run(text, top_k=k)
+    return _default_pipeline().run(text, top_k=top_k)
 
 
 @lru_cache(maxsize=1)
@@ -84,8 +80,8 @@ def _default_generator() -> object:
     from rag_cti.generation.llm_router import LLMRouter
 
     settings = get_settings()
-    _provider, client = build_llm_client(settings)
-    router = LLMRouter(settings=settings)
+    provider, client = build_llm_client(settings)
+    router = LLMRouter(settings=settings, provider=provider)
     return Generator(client=client, router=router, settings=settings)
 
 
@@ -101,6 +97,6 @@ def answer(text: str, k: int = 10) -> GeneratedAnswer:
     """
     from rag_cti.generation.generator import Generator
 
-    query_result = query(text, k=k)
+    query_result = query(text, top_k=k)
     gen: Generator = _default_generator()  # type: ignore[assignment]
     return gen.generate(text, query_result)

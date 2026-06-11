@@ -16,8 +16,10 @@ Usage:
 Requirements (all already project deps or transitive):
     httpx, tenacity, beautifulsoup4 (via unstructured[pdf])
 """
+
 from __future__ import annotations
 
+# ruff: noqa: E402  (sys.path bootstrap before imports - run-without-install pattern)
 import argparse
 import re
 import sys
@@ -40,8 +42,7 @@ try:
     from bs4 import BeautifulSoup
 except ImportError:
     print(
-        "ERROR: beautifulsoup4 not installed.\n"
-        "Run: pip install beautifulsoup4",
+        "ERROR: beautifulsoup4 not installed.\nRun: pip install beautifulsoup4",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -58,9 +59,7 @@ _DEFAULT_TIMEOUT = 30.0
 _MAX_FILE_BYTES = 50 * 1024 * 1024  # 50 MB hard cap per file
 
 _HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (compatible; CTI-RAG-fetcher/1.0; research use)"
-    ),
+    "User-Agent": ("Mozilla/5.0 (compatible; CTI-RAG-fetcher/1.0; research use)"),
     "Accept": "text/html,application/pdf,*/*",
 }
 

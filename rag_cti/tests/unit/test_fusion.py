@@ -11,6 +11,7 @@ from rag_cti.types import Chunk, RetrievalResult
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _chunk(chunk_id: str, source: str = "mitre") -> Chunk:
     return Chunk(
         id=chunk_id,
@@ -36,6 +37,7 @@ def _result(chunk_id: str, score: float, rank: int, retriever: str = "dense") ->
 # Tests — empty / trivial inputs
 # ---------------------------------------------------------------------------
 
+
 def test_empty_input_returns_empty() -> None:
     assert reciprocal_rank_fusion([]) == []
 
@@ -53,6 +55,7 @@ def test_single_list_returns_same_order() -> None:
 # ---------------------------------------------------------------------------
 # Tests — score correctness
 # ---------------------------------------------------------------------------
+
 
 def test_rrf_score_formula_single_list() -> None:
     results = [_result("a", 1.0, 0)]
@@ -79,6 +82,7 @@ def test_rrf_score_different_ranks() -> None:
 # Tests — deduplication
 # ---------------------------------------------------------------------------
 
+
 def test_deduplication_same_id_appears_once() -> None:
     list1 = [_result("a", 0.9, 0), _result("b", 0.7, 1)]
     list2 = [_result("a", 0.6, 0), _result("c", 0.5, 1)]
@@ -97,6 +101,7 @@ def test_best_score_document_kept_for_duplicate() -> None:
 # ---------------------------------------------------------------------------
 # Tests — ordering
 # ---------------------------------------------------------------------------
+
 
 def test_results_sorted_descending_by_fused_score() -> None:
     list1 = [_result("a", 0.9, 0), _result("b", 0.5, 1)]
@@ -121,6 +126,7 @@ def test_retriever_source_is_rrf() -> None:
 # Tests — k parameter
 # ---------------------------------------------------------------------------
 
+
 def test_custom_k_affects_score() -> None:
     results = [_result("a", 1.0, 0)]
     fused_k10 = reciprocal_rank_fusion([results], k=10)
@@ -132,3 +138,58 @@ def test_custom_k_affects_score() -> None:
 
 def test_multiple_empty_lists_returns_empty() -> None:
     assert reciprocal_rank_fusion([[], [], []]) == []
+
+
+# ---------------------------------------------------------------------------
+# Tests — weighted RRF
+# ---------------------------------------------------------------------------
+
+
+def test_weighted_scores_scale_by_weight() -> None:
+    list1 = [_result("a", 0.9, 0)]
+    list2 = [_result("b", 0.8, 0)]
+    fused = reciprocal_rank_fusion([list1, list2], k=60, weights=[0.7, 0.3])
+    a_score = next(r.score for r in fused if r.document.id == "a")
+    b_score = next(r.score for r in fused if r.document.id == "b")
+    assert a_score == pytest.approx(0.7 / 61)
+    assert b_score == pytest.approx(0.3 / 61)
+
+
+def test_weight_changes_ranking() -> None:
+    # Disjoint lists: the dominant weight decides which list's hits rank first.
+    dense = [_result("d0", 0.9, 0), _result("d1", 0.5, 1)]
+    sparse = [_result("s0", 0.8, 0), _result("s1", 0.4, 1)]
+    dense_heavy = reciprocal_rank_fusion([dense, sparse], weights=[0.9, 0.1])
+    sparse_heavy = reciprocal_rank_fusion([dense, sparse], weights=[0.1, 0.9])
+    assert [r.document.id for r in dense_heavy] == ["d0", "d1", "s0", "s1"]
+    assert [r.document.id for r in sparse_heavy] == ["s0", "s1", "d0", "d1"]
+
+
+def test_symmetric_weights_match_unweighted_ranking() -> None:
+    list1 = [_result("a", 0.9, 0), _result("b", 0.5, 1)]
+    list2 = [_result("b", 0.8, 0), _result("c", 0.3, 1)]
+    unweighted = reciprocal_rank_fusion([list1, list2])
+    symmetric = reciprocal_rank_fusion([list1, list2], weights=[0.5, 0.5])
+    assert [r.document.id for r in unweighted] == [r.document.id for r in symmetric]
+
+
+def test_zero_weight_excludes_list() -> None:
+    list1 = [_result("a", 0.9, 0)]
+    list2 = [_result("b", 0.8, 0)]
+    fused = reciprocal_rank_fusion([list1, list2], weights=[1.0, 0.0])
+    assert [r.document.id for r in fused] == ["a"]
+
+
+def test_weights_length_mismatch_raises() -> None:
+    with pytest.raises(ValueError, match="align"):
+        reciprocal_rank_fusion([[_result("a", 0.9, 0)]], weights=[0.5, 0.5])
+
+
+def test_negative_weight_raises() -> None:
+    with pytest.raises(ValueError, match="non-negative"):
+        reciprocal_rank_fusion([[_result("a", 0.9, 0)]], weights=[-0.1])
+
+
+def test_all_zero_weights_raise() -> None:
+    with pytest.raises(ValueError, match="positive"):
+        reciprocal_rank_fusion([[_result("a", 0.9, 0)], []], weights=[0.0, 0.0])

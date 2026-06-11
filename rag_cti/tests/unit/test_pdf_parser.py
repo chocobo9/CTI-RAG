@@ -18,6 +18,7 @@ from rag_cti.types import Document
 # _clean helper
 # ---------------------------------------------------------------------------
 
+
 def test_clean_collapses_extra_blank_lines() -> None:
     raw = "line one\n\n\n\nline two"
     assert _clean(raw) == "line one\n\nline two"
@@ -44,6 +45,7 @@ def test_clean_preserves_meaningful_numbers_in_text() -> None:
 # ---------------------------------------------------------------------------
 # parse_pdf — via mocked parsers
 # ---------------------------------------------------------------------------
+
 
 def test_parse_pdf_returns_sections_from_unstructured(tmp_path: Path) -> None:
     pdf = tmp_path / "report.pdf"
@@ -105,6 +107,7 @@ def test_parse_pdf_returns_empty_list_when_both_parsers_fail(tmp_path: Path) -> 
 # Rule 1: TOC filtering
 # ---------------------------------------------------------------------------
 
+
 def test_is_toc_true_when_four_or_more_dot_leaders() -> None:
     text = (
         "Introduction..........1\n"
@@ -142,6 +145,7 @@ def test_postprocess_drops_toc_section() -> None:
 # Rule 2: Boilerplate title filtering
 # ---------------------------------------------------------------------------
 
+
 def test_is_boilerplate_title_matches_all_five_names() -> None:
     for title in ("Notes", "References", "Acknowledgements", "Disclaimer", "Reporting"):
         assert _is_boilerplate_title(title) is True
@@ -175,6 +179,7 @@ def test_postprocess_drops_boilerplate_titled_sections() -> None:
 # Rule 3: Footer filtering
 # ---------------------------------------------------------------------------
 
+
 def test_is_footer_true_for_short_page_marker() -> None:
     assert _is_footer("Page 3 of 12") is True
     assert _is_footer("page 1 of 5 — Confidential") is True
@@ -202,6 +207,7 @@ def test_postprocess_drops_footer_chunks() -> None:
 # ---------------------------------------------------------------------------
 # Rule 4: Merge short sections with next
 # ---------------------------------------------------------------------------
+
 
 def test_postprocess_merges_short_section_into_next() -> None:
     short_text = "A" * 150
@@ -256,6 +262,7 @@ def test_postprocess_does_not_merge_section_at_200_chars() -> None:
 # Rule 5: Discard very short chunks (< 100 chars)
 # ---------------------------------------------------------------------------
 
+
 def test_postprocess_discards_chunks_under_100_chars() -> None:
     sections = [
         {"text": "A" * 99, "section_title": "Artifact", "page": 1},
@@ -279,6 +286,7 @@ def test_postprocess_empty_input_returns_empty() -> None:
 # ---------------------------------------------------------------------------
 # Regression: issue 1 — Wingdings bullet U+F0A7 replaced in _clean
 # ---------------------------------------------------------------------------
+
 
 def test_clean_replaces_wingdings_bullet_with_hyphen() -> None:
     assert _clean(" Lateral movement via SMB") == "- Lateral movement via SMB"
@@ -316,6 +324,7 @@ def test_clean_does_not_strip_footer_pattern_mid_text() -> None:
 # Regression: issue 2 — _is_footer must not drop real CTI content
 # ---------------------------------------------------------------------------
 
+
 def test_is_footer_false_when_page_pattern_embedded_in_cti_prose() -> None:
     text = (
         "See Page 3 of 8 for a detailed breakdown of APT29 lateral movement "
@@ -326,9 +335,10 @@ def test_is_footer_false_when_page_pattern_embedded_in_cti_prose() -> None:
 
 def test_is_footer_false_when_substantial_text_precedes_page_marker() -> None:
     # Non-page portion is well over 50 chars — must not be classified as a footer
-    assert _is_footer(
-        "Executive Summary: threat landscape overview and key findings. Page 1 of 12."
-    ) is False
+    assert (
+        _is_footer("Executive Summary: threat landscape overview and key findings. Page 1 of 12.")
+        is False
+    )
 
 
 def test_is_footer_still_true_for_standalone_page_marker() -> None:
@@ -343,6 +353,7 @@ def test_is_footer_still_true_with_short_label_alongside_marker() -> None:
 # ---------------------------------------------------------------------------
 # PDFReportsConnector
 # ---------------------------------------------------------------------------
+
 
 def test_connector_yields_nothing_for_missing_directory(tmp_path: Path) -> None:
     connector = PDFReportsConnector(pdf_dir=tmp_path / "nonexistent")

@@ -1,4 +1,5 @@
 """Unit tests for cli_metrics pure functions."""
+
 from __future__ import annotations
 
 import json
@@ -18,17 +19,33 @@ from rag_cti.cli_metrics import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_data(overall_hit10: float, fuzzy_hit10: float) -> dict:  # type: ignore[type-arg]
     return {
         "k_values": [1, 5, 10],
         "results": [
             {
                 "config": "dense",
-                "overall": {"top_k": {10: overall_hit10}, "mrr": 0.5, "ndcg": {10: 0.5}, "n_queries": 20},
+                "overall": {
+                    "top_k": {10: overall_hit10},
+                    "mrr": 0.5,
+                    "ndcg": {10: 0.5},
+                    "n_queries": 20,
+                },
                 "by_category": {
-                    "fuzzy": {"top_k": {10: fuzzy_hit10}, "mrr": 0.4, "ndcg": {10: 0.4}, "n_queries": 5},
+                    "fuzzy": {
+                        "top_k": {10: fuzzy_hit10},
+                        "mrr": 0.4,
+                        "ndcg": {10: 0.4},
+                        "n_queries": 5,
+                    },
                     "precise": {"top_k": {10: 0.9}, "mrr": 0.8, "ndcg": {10: 0.8}, "n_queries": 10},
-                    "semantic": {"top_k": {10: 0.85}, "mrr": 0.75, "ndcg": {10: 0.78}, "n_queries": 5},
+                    "semantic": {
+                        "top_k": {10: 0.85},
+                        "mrr": 0.75,
+                        "ndcg": {10: 0.78},
+                        "n_queries": 5,
+                    },
                 },
             }
         ],
@@ -46,6 +63,7 @@ class _FakeConsole:
 # ---------------------------------------------------------------------------
 # load_results
 # ---------------------------------------------------------------------------
+
 
 def test_load_results_raises_file_not_found(tmp_path) -> None:
     with pytest.raises(FileNotFoundError):
@@ -84,6 +102,7 @@ def test_load_results_preserves_k_values(tmp_path) -> None:
 # ---------------------------------------------------------------------------
 # check_thresholds
 # ---------------------------------------------------------------------------
+
 
 def test_check_thresholds_no_warnings_when_all_met() -> None:
     assert check_thresholds(_make_data(0.80, 0.65)) == []
@@ -146,6 +165,7 @@ def test_check_thresholds_at_exact_threshold_no_warning() -> None:
 # ---------------------------------------------------------------------------
 # render_summary_table
 # ---------------------------------------------------------------------------
+
 
 def test_render_summary_table_calls_console_print() -> None:
     c = _FakeConsole()

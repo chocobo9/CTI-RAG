@@ -18,13 +18,17 @@ import functools
 import os
 import re
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar, cast
 
 from rag_cti._logging import get_logger
 
 logger = get_logger(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
+
+# Mirrors langsmith.client.RUN_TYPE_T so callers stay typo-safe without
+# importing langsmith eagerly.
+RunType = Literal["tool", "chain", "llm", "retriever", "embedding", "prompt", "parser"]
 
 _TRACING_ENABLED: bool | None = None  # cached after first call
 _ENV_SETUP_DONE: bool = False
@@ -38,11 +42,13 @@ def is_tracing_enabled() -> bool:
 
     try:
         from rag_cti.config import get_settings
+
         key = get_settings().langsmith_api_key.get_secret_value()
         if not key:
             _TRACING_ENABLED = False
             return False
         import langsmith  # noqa: F401
+
         _TRACING_ENABLED = True
     except Exception:
         _TRACING_ENABLED = False
@@ -58,11 +64,12 @@ def _setup_env_once() -> None:
     _ENV_SETUP_DONE = True
     try:
         from rag_cti.config import get_settings
+
         s = get_settings()
         key = s.langsmith_api_key.get_secret_value()
         if key and not os.environ.get("LANGCHAIN_API_KEY"):
             os.environ["LANGCHAIN_API_KEY"] = key
-        os.environ.setdefault("LANGCHAIN_TRACING_V2", "true")
+        os.environ.setdefault("LANGCHAIN_TRACING_V2", "true" if s.langchain_tracing_v2 else "false")
         os.environ.setdefault("LANGCHAIN_PROJECT", s.langsmith_project)
     except Exception as exc:
         logger.warning("langsmith env setup failed", error=str(exc))
@@ -70,7 +77,7 @@ def _setup_env_once() -> None:
 
 def traced(
     name: str,
-    run_type: str = "chain",
+    run_type: RunType = "chain",
 ) -> Callable[[F], F]:
     """Decorator that wraps a function with a LangSmith trace span.
 
@@ -85,6 +92,7 @@ def traced(
         Decorator that wraps the target function, or the identity when tracing
         is disabled.
     """
+
     def decorator(fn: F) -> F:
         if not is_tracing_enabled():
             return fn
@@ -99,7 +107,7 @@ def traced(
             def wrapper(*args: Any, **kwargs: Any) -> Any:
                 return fn(*args, **kwargs)
 
-            return wrapper  # type: ignore[return-value]
+            return cast(F, wrapper)
         except Exception as exc:
             logger.warning(
                 "langsmith traceable setup failed — tracing disabled for this function",
@@ -121,11 +129,13 @@ def add_trace_metadata(**kwargs: Any) -> None:
         return
     try:
         from langsmith.run_helpers import get_current_run_tree
+
         run = get_current_run_tree()
         if run is not None:
             run.add_metadata(kwargs)
-    except Exception:
-        pass
+    except Exception as exc:
+        # Never raise from observability, but never swallow invisibly either.
+        logger.debug("add_trace_metadata failed", error=str(exc))
 
 
 _SECRET_PATTERN = re.compile(

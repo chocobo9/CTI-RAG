@@ -20,6 +20,7 @@ def _is_retryable(exc: BaseException) -> bool:
 # Groq client (unchanged)
 # ---------------------------------------------------------------------------
 
+
 class RetryingGroqClient:
     """Thin wrapper around groq.Groq with exponential backoff on 429 and 5xx."""
 
@@ -43,14 +44,16 @@ class _RetryingCompletions:
         stop=stop_after_attempt(5),
         reraise=True,
     )
-    def create(self, **kwargs: object) -> groq.types.chat.ChatCompletion:
+    def create(self, **kwargs: Any) -> groq.types.chat.ChatCompletion:
         logger.debug("groq chat.completions.create", model=kwargs.get("model"))
-        return self._client.chat.completions.create(**kwargs)  # type: ignore[arg-type]
+        response: groq.types.chat.ChatCompletion = self._client.chat.completions.create(**kwargs)
+        return response
 
 
 # ---------------------------------------------------------------------------
 # Ollama client (OpenAI-compatible, drop-in for RetryingGroqClient)
 # ---------------------------------------------------------------------------
+
 
 class RetryingOllamaClient:
     """OpenAI-compatible client for Ollama with retry on transient errors.
@@ -59,7 +62,7 @@ class RetryingOllamaClient:
     """
 
     def __init__(self, base_url: str) -> None:
-        from openai import OpenAI  # type: ignore[import]
+        from openai import OpenAI
 
         self._raw = OpenAI(base_url=base_url, api_key="ollama")
         self.chat = _RetryingOllamaChat(self._raw)
@@ -89,6 +92,7 @@ class _RetryingOllamaCompletions:
 # Provider factory — when OLLAMA_ENABLED: Ollama; else Groq if key; else Anthropic
 # ---------------------------------------------------------------------------
 
+
 def build_llm_client(settings: Any) -> tuple[str, Any]:
     """Select LLM client: local Ollama if enabled, else Groq (API), else Anthropic.
 
@@ -96,7 +100,9 @@ def build_llm_client(settings: Any) -> tuple[str, Any]:
     "ollama", "groq", or "anthropic".
     """
     if settings.ollama_enabled:
-        logger.info("llm provider: ollama", base_url=settings.ollama_base_url, model=settings.ollama_model)
+        logger.info(
+            "llm provider: ollama", base_url=settings.ollama_base_url, model=settings.ollama_model
+        )
         return "ollama", RetryingOllamaClient(base_url=settings.ollama_base_url)
 
     groq_key = settings.groq_api_key.get_secret_value()
@@ -110,7 +116,8 @@ def build_llm_client(settings: Any) -> tuple[str, Any]:
 
     anthropic_key = settings.anthropic_api_key.get_secret_value()
     if anthropic_key:
-        import anthropic  # type: ignore[import]
+        import anthropic
+
         logger.info("llm provider: anthropic")
         return "anthropic", anthropic.Anthropic(api_key=anthropic_key)
 

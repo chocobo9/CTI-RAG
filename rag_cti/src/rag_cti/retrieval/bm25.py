@@ -3,6 +3,7 @@
 Vocabulary and IDF weights are persisted to data/sparse_vocab.json after
 fitting; load at query time via BM25SparseEncoder.load(path).
 """
+
 from __future__ import annotations
 
 import json
@@ -24,7 +25,7 @@ _MAX_TOKEN_LEN: int = 64
 # Strict IPv4 octets (reject e.g. 1.866.320.478); mask /0–/32 only.
 _IPV4_OCTET = r"(?:25[0-5]|2[0-4]\d|[01]?\d\d?)"
 _IPV4_ADDR = rf"{_IPV4_OCTET}\.{_IPV4_OCTET}\.{_IPV4_OCTET}\.{_IPV4_OCTET}"
-_IPV4_CIDR_MASK = rf"(?:/(?:3[0-2]|[12]\d|[0-9])(?!\d))?"
+_IPV4_CIDR_MASK = r"(?:/(?:3[0-2]|[12]\d|[0-9])(?!\d))?"
 
 # NFKC collapses many compatibility ligatures; explicit map catches leftovers.
 _LIGATURE_TRANSLATIONS = str.maketrans(
@@ -135,9 +136,7 @@ class BM25SparseEncoder:
 
         for term, freq in df.items():
             idx = self._term_id(term)
-            self.idf[idx] = math.log(
-                (self.num_docs - freq + 0.5) / (freq + 0.5) + 1
-            )
+            self.idf[idx] = math.log((self.num_docs - freq + 0.5) / (freq + 0.5) + 1)
 
         logger.info(
             "BM25 encoder fitted",

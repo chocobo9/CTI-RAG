@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any, cast
 
 from rag_cti._logging import get_logger
 from rag_cti.types import GeneratedAnswer
@@ -14,47 +15,60 @@ class RagasEvalResult:
     n_queries: int
     faithfulness: float
     answer_relevancy: float
-    per_query: list[dict] = field(default_factory=list)
+    # context_precision/recall require a reference answer; default -1.0 = "not computed".
+    context_precision: float = -1.0
+    context_recall: float = -1.0
+    per_query: list[dict[str, Any]] = field(default_factory=list)
     config: str = ""
     timestamp: str = ""
 
 
 def answers_to_ragas_dataset(
     answers: list[GeneratedAnswer],
-) -> list[dict]:
+    references: list[str] | None = None,
+) -> list[dict[str, Any]]:
     """Convert GeneratedAnswer list to RAGAS SingleTurnSample-compatible dicts.
 
-    Returns a list of dicts with keys: user_input, retrieved_contexts, response.
+    Returns dicts with keys: user_input, retrieved_contexts, response, and
+    (when `references` is given) reference — the ground-truth answer needed by
+    context_precision / context_recall.
     """
-    samples = []
-    for a in answers:
+    if references is not None and len(references) != len(answers):
+        raise ValueError(f"references ({len(references)}) must align with answers ({len(answers)})")
+    samples: list[dict[str, Any]] = []
+    for i, a in enumerate(answers):
         contexts = [r.document.content for r in a.query_result.results]
-        samples.append(
-            {
-                "user_input": a.query,
-                "retrieved_contexts": contexts,
-                "response": a.answer,
-            }
-        )
+        sample: dict[str, Any] = {
+            "user_input": a.query,
+            "retrieved_contexts": contexts,
+            "response": a.answer,
+        }
+        if references is not None:
+            sample["reference"] = references[i]
+        samples.append(sample)
     return samples
 
 
 def _build_judge_llm(settings: object) -> object:
     deepseek_key = getattr(settings, "deepseek_api_key", None)
     if deepseek_key is not None:
-        key_value = deepseek_key.get_secret_value() if hasattr(deepseek_key, "get_secret_value") else str(deepseek_key)
+        key_value = (
+            deepseek_key.get_secret_value()
+            if hasattr(deepseek_key, "get_secret_value")
+            else str(deepseek_key)
+        )
     else:
         key_value = ""
 
     if not key_value:
-        raise ValueError(
-            "RAGAS evaluation requires DEEPSEEK_API_KEY to be set in .env"
-        )
+        raise ValueError("RAGAS evaluation requires DEEPSEEK_API_KEY to be set in .env")
 
     from langchain_openai import ChatOpenAI
     from ragas.llms import LangchainLLMWrapper
 
-    chat = ChatOpenAI(
+    # openai_api_key / openai_api_base are pydantic alias kwargs that ChatOpenAI
+    # accepts at runtime but does not expose in its typed __init__ signature.
+    chat = ChatOpenAI(  # type: ignore[call-arg]
         model="deepseek-chat",
         openai_api_key=key_value,
         openai_api_base="https://api.deepseek.com/v1",
@@ -62,11 +76,12 @@ def _build_judge_llm(settings: object) -> object:
     return LangchainLLMWrapper(chat)
 
 
-def _build_embeddings() -> object:
+def _build_embeddings(settings: object) -> object:
     from langchain_community.embeddings import HuggingFaceEmbeddings
     from ragas.embeddings import LangchainEmbeddingsWrapper
 
-    hf = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+    model_name = getattr(settings, "embedding_model", "BAAI/bge-m3")
+    hf = HuggingFaceEmbeddings(model_name=model_name)
     return LangchainEmbeddingsWrapper(hf)
 
 
@@ -74,68 +89,89 @@ def run_ragas_eval(
     answers: list[GeneratedAnswer],
     config: str = "",
     settings: object | None = None,
+    references: list[str] | None = None,
 ) -> RagasEvalResult:
-    """Run RAGAS faithfulness + answer_relevancy on a list of GeneratedAnswers."""
+    """Run RAGAS metrics on GeneratedAnswers.
+
+    Always computes faithfulness + answer_relevancy. When `references` (the
+    ground-truth reference answers) are provided, ALSO computes context_precision
+    and context_recall (SPEC §D.1). Without references those stay at -1.0.
+    """
     if settings is None:
         from rag_cti.config import get_settings
+
         settings = get_settings()
 
-    sample_dicts = answers_to_ragas_dataset(answers)
+    sample_dicts = answers_to_ragas_dataset(answers, references=references)
     if not sample_dicts:
         return RagasEvalResult(
             n_queries=0,
             faithfulness=0.0,
             answer_relevancy=0.0,
             config=config,
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
-    from ragas import SingleTurnSample, EvaluationDataset, evaluate
-    from ragas.metrics import Faithfulness, AnswerRelevancy
+    from ragas import EvaluationDataset, MultiTurnSample, SingleTurnSample, evaluate
+    from ragas.dataset_schema import EvaluationResult
+    from ragas.metrics import AnswerRelevancy, Faithfulness
 
     llm = _build_judge_llm(settings)
-    embeddings = _build_embeddings()
+    embeddings = _build_embeddings(settings)
 
-    samples = [
+    use_context = references is not None and any(r for r in references)
+
+    samples: list[SingleTurnSample | MultiTurnSample] = [
         SingleTurnSample(
             user_input=s["user_input"],
             retrieved_contexts=s["retrieved_contexts"],
             response=s["response"],
+            reference=s.get("reference"),
         )
         for s in sample_dicts
     ]
     dataset = EvaluationDataset(samples=samples)
 
-    logger.info("running ragas eval", n_queries=len(samples), config=config)
+    metrics = [Faithfulness(llm=llm), AnswerRelevancy(llm=llm, embeddings=embeddings, strictness=1)]
+    if use_context:
+        from ragas.metrics import LLMContextPrecisionWithReference, LLMContextRecall
 
-    result = evaluate(
-        dataset=dataset,
-        metrics=[Faithfulness(llm=llm), AnswerRelevancy(llm=llm, embeddings=embeddings, strictness=1)],
-        show_progress=True,
-    )
+        metrics += [LLMContextPrecisionWithReference(llm=llm), LLMContextRecall(llm=llm)]
 
+    logger.info("running ragas eval", n_queries=len(samples), config=config, context=use_context)
+
+    # evaluate() is annotated EvaluationResult | Executor; with run_config left
+    # at its default it always returns an EvaluationResult.
+    result = cast(EvaluationResult, evaluate(dataset=dataset, metrics=metrics, show_progress=True))
     df = result.to_pandas()
+    # df column for each metric is the metric's .name attribute.
+    col = {type(m).__name__: m.name for m in metrics}
+    cp_col = col.get("LLMContextPrecisionWithReference")
+    cr_col = col.get("LLMContextRecall")
 
     per_query = []
     for i, row in df.iterrows():
-        per_query.append(
-            {
-                "question": sample_dicts[i]["user_input"],
-                "faithfulness": float(row.get("faithfulness", 0.0)),
-                "answer_relevancy": float(row.get("answer_relevancy", 0.0)),
-            }
-        )
+        pq = {
+            "question": sample_dicts[i]["user_input"],
+            "faithfulness": float(row.get("faithfulness", 0.0)),
+            "answer_relevancy": float(row.get("answer_relevancy", 0.0)),
+        }
+        if use_context:
+            pq["context_precision"] = float(row.get(cp_col, 0.0))
+            pq["context_recall"] = float(row.get(cr_col, 0.0))
+        per_query.append(pq)
 
-    faith_scores = [pq["faithfulness"] for pq in per_query]
-    relevancy_scores = [pq["answer_relevancy"] for pq in per_query]
-    avg_faith = sum(faith_scores) / len(faith_scores) if faith_scores else 0.0
-    avg_relevancy = sum(relevancy_scores) / len(relevancy_scores) if relevancy_scores else 0.0
+    def _avg(key: str) -> float:
+        vals = [pq[key] for pq in per_query if key in pq]
+        return round(sum(vals) / len(vals), 4) if vals else 0.0
 
     return RagasEvalResult(
         n_queries=len(samples),
-        faithfulness=round(avg_faith, 4),
-        answer_relevancy=round(avg_relevancy, 4),
+        faithfulness=_avg("faithfulness"),
+        answer_relevancy=_avg("answer_relevancy"),
+        context_precision=_avg("context_precision") if use_context else -1.0,
+        context_recall=_avg("context_recall") if use_context else -1.0,
         per_query=per_query,
         config=config,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
     )

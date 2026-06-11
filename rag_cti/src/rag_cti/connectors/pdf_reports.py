@@ -1,4 +1,5 @@
 """PDF CTI report connector — scans a directory and yields Document per section."""
+
 from __future__ import annotations
 
 import hashlib
@@ -54,9 +55,7 @@ class PDFReportsConnector(BaseConnector):
         section_index = raw["section_index"]
 
         file_id = hashlib.sha256(f"pdf:{filename}".encode()).hexdigest()[:16]
-        section_id = hashlib.sha256(
-            f"pdf:{pdf_path}:{section_index}".encode()
-        ).hexdigest()[:16]
+        section_id = hashlib.sha256(f"pdf:{pdf_path}:{section_index}".encode()).hexdigest()[:16]
 
         return Document(
             id=section_id,

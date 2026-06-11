@@ -8,6 +8,14 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Protocol
+
+
+class SupportsPrint(Protocol):
+    """Console surface needed by render_summary_table (rich.Console.print)."""
+
+    def print(self, *objects: Any) -> None: ...
+
 
 FUZZY_HIT10_THRESHOLD = 0.60
 OVERALL_HIT10_THRESHOLD = 0.70
@@ -24,7 +32,7 @@ class Thresholds:
 _DEFAULT_THRESHOLDS = Thresholds()
 
 
-def load_results(path: Path) -> dict:  # type: ignore[type-arg]
+def load_results(path: Path) -> dict[str, Any]:
     """Load retrieval_results.json produced by `rag-cti eval retrieval`.
 
     Raises:
@@ -34,16 +42,16 @@ def load_results(path: Path) -> dict:  # type: ignore[type-arg]
     if not path.exists():
         raise FileNotFoundError(f"Results file not found: {path}")
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise ValueError(f"Invalid JSON in {path}: {exc}") from exc
     if "results" not in data:
         raise ValueError(f"Missing 'results' key in {path}")
-    return data  # type: ignore[return-value]
+    return data
 
 
 def check_thresholds(
-    data: dict,  # type: ignore[type-arg]
+    data: dict[str, Any],
     thresholds: Thresholds = _DEFAULT_THRESHOLDS,
 ) -> list[str]:
     """Return warning strings for any threshold violations across all configs.
@@ -71,7 +79,7 @@ def check_thresholds(
     return warnings
 
 
-def render_summary_table(data: dict, console: object) -> None:  # type: ignore[type-arg]
+def render_summary_table(data: dict[str, Any], console: SupportsPrint) -> None:
     """Render per-category Rich tables to console.
 
     Prints four tables: overall, precise, semantic, fuzzy.
@@ -94,7 +102,11 @@ def render_summary_table(data: dict, console: object) -> None:  # type: ignore[t
 
             for result in data.get("results", []):
                 cfg = result.get("config", "?")
-                metrics = result.get("overall", {}) if cat == "overall" else result.get("by_category", {}).get(cat)
+                metrics = (
+                    result.get("overall", {})
+                    if cat == "overall"
+                    else result.get("by_category", {}).get(cat)
+                )
                 if not metrics:
                     continue
                 top_k = metrics.get("top_k", {})
@@ -108,7 +120,7 @@ def render_summary_table(data: dict, console: object) -> None:  # type: ignore[t
                 row.append(str(metrics.get("n_queries", 0)))
                 t.add_row(*row)
 
-            console.print(t)  # type: ignore[union-attr]
+            console.print(t)
 
     except ImportError:
         for result in data.get("results", []):

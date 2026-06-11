@@ -9,6 +9,7 @@ from rag_cti.types import Chunk, RetrievalResult
 # Stubs
 # ---------------------------------------------------------------------------
 
+
 def _make_result(score: float, rank: int) -> RetrievalResult:
     chunk = Chunk(
         id="xyz789",
@@ -55,6 +56,7 @@ class _FakeStore:
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_search_returns_store_results() -> None:
     expected = [_make_result(1.5, 0), _make_result(0.8, 1)]

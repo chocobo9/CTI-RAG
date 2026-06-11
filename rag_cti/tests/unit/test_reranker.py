@@ -48,6 +48,7 @@ CTI_CONTENT_T1078 = (
 # Test 3 (happy path): rerank changes order
 # ---------------------------------------------------------------------------
 
+
 def test_rerank_changes_order_based_on_scores() -> None:
     reranker = CrossEncoderReranker(model_name="test-model")
     results = [
@@ -79,6 +80,7 @@ def test_rerank_changes_order_based_on_scores() -> None:
 # Test 1 (edge): empty results
 # ---------------------------------------------------------------------------
 
+
 def test_rerank_empty_results_returns_empty() -> None:
     reranker = CrossEncoderReranker(model_name="test-model")
     result = reranker.rerank("credential harvesting techniques", [])
@@ -88,6 +90,7 @@ def test_rerank_empty_results_returns_empty() -> None:
 # ---------------------------------------------------------------------------
 # Test 2 (boundary): single result
 # ---------------------------------------------------------------------------
+
 
 def test_rerank_single_result_updates_score_and_rank() -> None:
     reranker = CrossEncoderReranker(model_name="test-model")
@@ -109,6 +112,7 @@ def test_rerank_single_result_updates_score_and_rank() -> None:
 # ---------------------------------------------------------------------------
 # Test 4 (adversarial): CTI special characters
 # ---------------------------------------------------------------------------
+
 
 def test_rerank_cti_special_characters_no_crash() -> None:
     reranker = CrossEncoderReranker(model_name="test-model")
@@ -149,6 +153,7 @@ def test_rerank_cti_special_characters_no_crash() -> None:
 # Test 5 (boundary): Protocol satisfaction
 # ---------------------------------------------------------------------------
 
+
 def test_cross_encoder_reranker_satisfies_protocol() -> None:
     assert isinstance(CrossEncoderReranker(model_name="test"), Reranker)
 
@@ -156,6 +161,7 @@ def test_cross_encoder_reranker_satisfies_protocol() -> None:
 # ---------------------------------------------------------------------------
 # Test 6 (regression): NoOpReranker preserves everything
 # ---------------------------------------------------------------------------
+
 
 def test_noop_reranker_preserves_input_unchanged() -> None:
     results = [
@@ -167,7 +173,7 @@ def test_noop_reranker_preserves_input_unchanged() -> None:
     reranked = reranker.rerank("lateral movement techniques", results)
 
     assert reranked is results
-    for orig, out in zip(results, reranked):
+    for orig, out in zip(results, reranked, strict=True):
         assert out.document.id == orig.document.id
         assert out.score == orig.score
         assert out.rank == orig.rank

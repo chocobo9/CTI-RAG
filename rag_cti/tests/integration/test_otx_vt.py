@@ -3,6 +3,7 @@
 All HTTP calls are mocked — exercises the full
 fetch() -> to_document() -> fetch_documents() pipeline without network access.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -43,6 +44,27 @@ _PULSE_B: dict[str, Any] = {
     "pulse_source": "research",
 }
 
+# Attribution-rich pulse: exercises the adversary / malware_families /
+# targeted_countries / references rendering added to fix name-only chunks.
+_PULSE_C: dict[str, Any] = {
+    "id": "fff666aaa777bbb8",
+    "name": "SolarWinds Supply Chain Compromise",
+    "description": "Trojanized Orion updates delivered the SUNBURST backdoor.",
+    "tags": ["apt29", "supply-chain"],
+    "attack_ids": [{"id": "T1195.002", "name": "Compromise Software Supply Chain"}],
+    "adversary": "APT29",
+    "malware_families": [
+        {"display_name": "SUNBURST", "id": "sunburst"},
+        "TEARDROP",
+        {"display_name": "", "id": "empty-name"},
+    ],
+    "targeted_countries": ["United States", "United Kingdom"],
+    "references": ["https://www.mandiant.com/resources/blog/sunburst-backdoor"],
+    "indicators": [{"indicator": "avsvmcloud.com", "type": "domain"}],
+    "modified": "2024-08-01T00:00:00.000Z",
+    "pulse_source": "research",
+}
+
 _VT_DOMAIN_RESPONSE: dict[str, Any] = {
     "data": {
         "id": "malicious.example",
@@ -67,6 +89,7 @@ _VT_DOMAIN_RESPONSE: dict[str, Any] = {
 # ---------------------------------------------------------------------------
 # OTX: fetch()
 # ---------------------------------------------------------------------------
+
 
 def test_otx_fetch_yields_pulses_from_single_page() -> None:
     connector = OTXConnector(api_key="test-key")
@@ -114,6 +137,7 @@ def test_otx_fetch_empty_results_yields_nothing() -> None:
 # ---------------------------------------------------------------------------
 # OTX: to_document()
 # ---------------------------------------------------------------------------
+
 
 def test_otx_to_document_content_includes_name_and_description() -> None:
     connector = OTXConnector(api_key="test-key")
@@ -180,9 +204,40 @@ def test_otx_to_document_skips_indicators_without_indicator_key() -> None:
     assert doc.metadata["indicators"] == ["1.1.1.1"]
 
 
+def test_otx_to_document_content_includes_adversary_and_families() -> None:
+    connector = OTXConnector(api_key="test-key")
+    content = connector.to_document(_PULSE_C).content
+
+    assert "Attributed to APT29." in content
+    # dict entries use display_name, bare strings pass through, empties dropped
+    assert "Associated malware: SUNBURST, TEARDROP." in content
+    assert "Targeted countries: United States, United Kingdom." in content
+    assert "Key indicators: avsvmcloud.com." in content
+
+
+def test_otx_to_document_content_omits_empty_attribution_sections() -> None:
+    connector = OTXConnector(api_key="test-key")
+    content = connector.to_document(_PULSE_A).content
+
+    assert "Attributed to" not in content
+    assert "Associated malware" not in content
+    assert "Targeted countries" not in content
+
+
+def test_otx_to_document_metadata_carries_attribution_fields() -> None:
+    connector = OTXConnector(api_key="test-key")
+    meta = connector.to_document(_PULSE_C).metadata
+
+    assert meta["adversary"] == "APT29"
+    assert meta["targeted_countries"] == ["United States", "United Kingdom"]
+    assert meta["references"] == ["https://www.mandiant.com/resources/blog/sunburst-backdoor"]
+    assert {"display_name": "SUNBURST", "id": "sunburst"} in meta["malware_families"]
+
+
 # ---------------------------------------------------------------------------
 # OTX: fetch_documents() pipeline
 # ---------------------------------------------------------------------------
+
 
 def test_otx_fetch_documents_returns_document_objects() -> None:
     connector = OTXConnector(api_key="test-key")
@@ -198,6 +253,7 @@ def test_otx_fetch_documents_returns_document_objects() -> None:
 # ---------------------------------------------------------------------------
 # VT: fetch()
 # ---------------------------------------------------------------------------
+
 
 def test_vt_fetch_yields_one_result_per_domain() -> None:
     connector = VirusTotalConnector(api_key="test-key")
@@ -234,9 +290,13 @@ def test_vt_fetch_no_domains_arg_yields_nothing() -> None:
 # VT: to_document()
 # ---------------------------------------------------------------------------
 
+
 def test_vt_to_document_id_is_deterministic() -> None:
     connector = VirusTotalConnector(api_key="test-key")
-    assert connector.to_document(_VT_DOMAIN_RESPONSE).id == connector.to_document(_VT_DOMAIN_RESPONSE).id
+    assert (
+        connector.to_document(_VT_DOMAIN_RESPONSE).id
+        == connector.to_document(_VT_DOMAIN_RESPONSE).id
+    )
 
 
 def test_vt_to_document_raises_when_domain_missing() -> None:
@@ -319,6 +379,7 @@ def test_vt_to_document_missing_last_modification_date_gives_empty_string() -> N
 # ---------------------------------------------------------------------------
 # VT: fetch_documents() pipeline
 # ---------------------------------------------------------------------------
+
 
 def test_vt_fetch_documents_returns_document_objects() -> None:
     connector = VirusTotalConnector(api_key="test-key")

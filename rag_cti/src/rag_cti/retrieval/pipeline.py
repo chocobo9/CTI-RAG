@@ -1,23 +1,39 @@
 from __future__ import annotations
 
 import time
+from typing import Protocol
 
 from rag_cti._logging import get_logger
 from rag_cti.observability.tracing import add_trace_metadata, traced
-from rag_cti.retrieval.dense_retriever import DenseRetriever
+from rag_cti.retrieval.dense_retriever import DenseRetriever, DenseSearchStore, QueryEmbedder
 from rag_cti.retrieval.hybrid_retriever import HybridRetriever
 from rag_cti.retrieval.hyde import HyDERetriever
-from rag_cti.retrieval.reranker import NoOpReranker
-from rag_cti.retrieval.sparse_retriever import SparseRetriever
-from rag_cti.types import QueryResult, RetrievalResult
+from rag_cti.retrieval.reranker import NoOpReranker, Reranker
+from rag_cti.retrieval.sparse_retriever import (
+    SparseQueryEncoder,
+    SparseRetriever,
+    SparseSearchStore,
+)
+from rag_cti.types import (
+    QueryResult,
+    RetrievalResult,
+    RetrieverProto,
+    SettingsProto,
+)
 
 logger = get_logger(__name__)
+
+
+class RetrievalStore(DenseSearchStore, SparseSearchStore, Protocol):
+    """Store offering both dense search and BM25 sparse search (QdrantStore)."""
 
 
 class Pipeline:
     """End-to-end retrieval pipeline: retrieve → rerank → truncate."""
 
-    def __init__(self, retriever: object, reranker: object, settings: object) -> None:
+    def __init__(
+        self, retriever: RetrieverProto, reranker: Reranker, settings: SettingsProto
+    ) -> None:
         self._retriever = retriever
         self._reranker = reranker
         self._settings = settings
@@ -75,27 +91,38 @@ class Pipeline:
 
 
 def build_pipeline(
-    settings: object,
-    store: object,
-    embedder: object,
-    encoder: object,
+    settings: SettingsProto,
+    store: RetrievalStore,
+    embedder: QueryEmbedder,
+    encoder: SparseQueryEncoder,
     llm_client: object | None = None,
     llm_provider: str = "anthropic",
     hybrid_alpha_override: float | None = None,
 ) -> Pipeline:
-    """Wire the full retrieval stack from components."""
+    """Wire the full retrieval stack from components.
+
+    ``hybrid_alpha_override`` (or ``settings.hybrid_alpha``) is the dense weight
+    in the weighted-RRF fusion; ``>= 1.0`` skips the sparse retriever entirely
+    (pure dense).
+    """
     dense = DenseRetriever(store=store, embedder=embedder)
 
-    effective_alpha = hybrid_alpha_override if hybrid_alpha_override is not None else getattr(settings, "hybrid_alpha", 0.5)
+    effective_alpha = (
+        hybrid_alpha_override
+        if hybrid_alpha_override is not None
+        else getattr(settings, "hybrid_alpha", 0.5)
+    )
 
     if effective_alpha >= 1.0:
-        base_retriever: object = dense
+        base_retriever: DenseRetriever | HybridRetriever = dense
     else:
         sparse = SparseRetriever(store=store, encoder=encoder)
-        base_retriever = HybridRetriever(dense=dense, sparse=sparse, settings=settings)
+        base_retriever = HybridRetriever(
+            dense=dense, sparse=sparse, settings=settings, alpha=effective_alpha
+        )
 
     if settings.hyde_enabled and llm_client is not None:
-        retriever: object = HyDERetriever(
+        retriever: RetrieverProto = HyDERetriever(
             base_retriever=base_retriever,
             llm_client=llm_client,
             settings=settings,
@@ -106,7 +133,10 @@ def build_pipeline(
     if getattr(settings, "reranker_enabled", False):
         from rag_cti.retrieval.reranker import CrossEncoderReranker
 
-        reranker = CrossEncoderReranker(model_name=settings.reranker_model)
+        reranker: Reranker = CrossEncoderReranker(
+            model_name=settings.reranker_model,
+            max_length=getattr(settings, "reranker_max_length", 512),
+        )
     else:
         reranker = NoOpReranker()
 

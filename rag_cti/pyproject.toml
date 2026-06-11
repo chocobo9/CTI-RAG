@@ -30,7 +30,6 @@ generation = [
     "anthropic>=0.40.0",
     "groq>=0.9.0",
     "openai>=1.0.0",                      # Ollama via OpenAI-compat
-    "instructor>=1.0.0",
 ]
 
 # ── PDF: unstructured + pymupdf for CTI report ingestion ───────────
@@ -51,7 +50,6 @@ connectors = [
 eval = [
     "ragas>=0.1.0",
     "datasets>=2.0.0",
-    "rank-bm25>=0.2.2",
 ]
 
 # ── CLI: Typer + Rich terminal UI ─────────────────────────────────
@@ -114,15 +112,16 @@ addopts = [
     "--cov-config=pyproject.toml",
 ]
 
+# Omissions limited to modules with no meaningful unit-test surface:
+# __init__ (public API wiring), cli (Typer commands, help-text tested only),
+# config (pydantic Settings), techniquerag (needs HuggingFace network access).
+# otx/virustotal/pdf_parser ARE tested and therefore measured.
 [tool.coverage.run]
 omit = [
     "*/rag_cti/__init__.py",
     "*/rag_cti/cli.py",
     "*/rag_cti/config.py",
-    "*/rag_cti/connectors/otx.py",
-    "*/rag_cti/connectors/virustotal.py",
     "*/rag_cti/evaluation/techniquerag.py",
-    "*/rag_cti/preprocess/pdf_parser.py",
 ]
 
 [tool.ruff]

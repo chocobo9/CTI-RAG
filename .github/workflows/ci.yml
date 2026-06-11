@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+defaults:
+  run:
+    working-directory: rag_cti
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check src/ tests/ scripts/
+      - run: ruff format --check src/ tests/ scripts/
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: rag_cti/pyproject.toml
+      - run: pip install -e ".[dev]"
+      # Integration tests auto-skip when Qdrant is unreachable; unit tests
+      # carry the coverage gate (fail-under=80, see pyproject.toml).
+      - run: pytest tests/ -q
+
+  # mypy --strict reached zero errors (2026-06) — blocking from here on.
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: rag_cti/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - run: mypy src/
