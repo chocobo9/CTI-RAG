@@ -1,11 +1,11 @@
 {
   "phase": "D — capability-split summary (four capabilities, never averaged)",
-  "generated_utc": "2026-05-30T04:05:18.539205+00:00",
+  "generated_utc": "2026-06-11T04:17:22.528663+00:00",
   "artifact_sources": {
-    "technique_cert": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/certification_full_deepseek_2026-05-29T23-56-30Z.json",
-    "actor_cert": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/certification_full_deepseek_2026-05-29T17-11-31Z.json",
-    "attribution": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/attribution_v3_results.json",
-    "ragas": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/ragas_v3_results.json"
+    "technique_cert": "data/eval/certification_full_deepseek_2026-05-29T23-56-30Z.json",
+    "actor_cert": "data/eval/certification_full_deepseek_2026-06-11T04-06-37Z.json",
+    "attribution": "data/eval/attribution_v3_results.json",
+    "ragas": "data/eval/ragas_v3_results.json"
   },
   "capabilities_NEVER_averaged": {
     "technique_extraction": {
@@ -33,10 +33,10 @@
       "data": "CTI-TAA n=50",
       "score": {
         "correct_acc": 0.66,
-        "plausible_acc": 0.7,
+        "plausible_acc": 0.68,
         "C": 33,
-        "P": 2,
-        "I": 15
+        "P": 1,
+        "I": 16
       },
       "external_anchor": "cti-bench published models (e.g. ChatGPT-3.5 ~0.44/0.62)",
       "gate": {
@@ -50,34 +50,34 @@
       "data": "self query-set data/eval/query_set_v3.jsonl",
       "by_category_hit": {
         "fuzzy": {
+          "1": 0.6,
           "5": 1.0,
-          "10": 1.0,
-          "20": 1.0
+          "10": 1.0
         },
         "otx_actor": {
+          "1": 0.0,
           "5": 0.1429,
-          "10": 0.2857,
-          "20": 0.4286
+          "10": 0.2857
         },
         "otx_malware": {
+          "1": 0.4,
           "5": 0.8,
-          "10": 0.8,
-          "20": 0.8
+          "10": 0.8
         },
         "precise": {
+          "1": 1.0,
           "5": 1.0,
-          "10": 1.0,
-          "20": 1.0
+          "10": 1.0
         },
         "relationship_direct": {
+          "1": 0.5,
           "5": 0.8,
-          "10": 0.8,
-          "20": 0.9
+          "10": 0.8
         },
         "semantic": {
+          "1": 0.7,
           "5": 0.9,
-          "10": 1.0,
-          "20": 1.0
+          "10": 1.0
         }
       },
       "set_metrics": {
@@ -85,20 +85,20 @@
           "metric": "attack_set_prf@k(technique)",
           "n": 5,
           "prf_at_k": {
-            "5": {
-              "P": 0.3846,
+            "1": {
+              "P": 1.0,
               "R": 0.3571,
-              "F1": 0.3704
+              "F1": 0.5263
+            },
+            "5": {
+              "P": 0.4167,
+              "R": 0.3571,
+              "F1": 0.3846
             },
             "10": {
-              "P": 0.2727,
+              "P": 0.3333,
               "R": 0.4286,
-              "F1": 0.3333
-            },
-            "20": {
-              "P": 0.2059,
-              "R": 0.5,
-              "F1": 0.2917
+              "F1": 0.375
             }
           }
         },
@@ -106,20 +106,20 @@
           "metric": "attack_set_prf@k(technique)",
           "n": 10,
           "prf_at_k": {
+            "1": {
+              "P": 0.8,
+              "R": 0.2667,
+              "F1": 0.4
+            },
             "5": {
-              "P": 0.3333,
+              "P": 0.3514,
               "R": 0.4333,
-              "F1": 0.3768
+              "F1": 0.3881
             },
             "10": {
-              "P": 0.2429,
+              "P": 0.3208,
               "R": 0.5667,
-              "F1": 0.34
-            },
-            "20": {
-              "P": 0.1789,
-              "R": 0.5667,
-              "F1": 0.272
+              "F1": 0.4096
             }
           }
         },
@@ -127,20 +127,20 @@
           "metric": "attack_set_prf@k(technique)",
           "n": 10,
           "prf_at_k": {
+            "1": {
+              "P": 0.5,
+              "R": 0.0435,
+              "F1": 0.08
+            },
             "5": {
-              "P": 0.4545,
+              "P": 0.4878,
               "R": 0.1739,
-              "F1": 0.2516
+              "F1": 0.2564
             },
             "10": {
-              "P": 0.3556,
-              "R": 0.2783,
-              "F1": 0.3122
-            },
-            "20": {
-              "P": 0.2741,
-              "R": 0.3217,
-              "F1": 0.296
+              "P": 0.4444,
+              "R": 0.2435,
+              "F1": 0.3146
             }
           }
         },
@@ -148,9 +148,9 @@
           "metric": "pulse_recall@k",
           "n": 5,
           "recall_at_k": {
+            "1": 0.0152,
             "5": 0.0909,
-            "10": 0.1667,
-            "20": 0.2525
+            "10": 0.1364
           }
         }
       },
@@ -159,15 +159,15 @@
     },
     "generation_grounding": {
       "metric": "RAGAS faithfulness + answer_relevancy",
-      "data": "self query-set /mnt/d/proj/CTI-RAG/rag_cti/data/eval/query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10)",
+      "data": "self query-set /mnt/d/proj/CTI-RAG/.claude/worktrees/health-fix/rag_cti/data/eval/query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10)",
       "score": {
-        "faithfulness": 0.9102,
-        "answer_relevancy": 0.8287,
+        "faithfulness": 0.9113,
+        "answer_relevancy": 0.82,
         "context_precision": null,
         "context_recall": null
       },
       "external_anchor": "none",
-      "trust": "Real generations (deepseek-chat) judged by deepseek-chat (ragas) — no mock. context_precision/recall NOT computed: query set has no reference answers, and fabricating them is forbidden (CLAUDE.md §2.7)."
+      "trust": "Real generations (llama-3.3-70b-versatile) judged by deepseek-chat (ragas) — no mock. context_precision/recall NOT computed: query set has no reference answers, and fabricating them is forbidden (CLAUDE.md §2.7)."
     }
   }
 }

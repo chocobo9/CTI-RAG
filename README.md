@@ -206,31 +206,41 @@ Four capabilities reported independently (never averaged). Annotator certified a
 | Capability | Metric | Data | Result | Gate |
 |---|---|---|---|---|
 | technique extraction | Micro-F1(technique) | CTI-ATE Enterprise n=47 | **0.6703** (P=0.7459 R=0.6087) | >=0.65 -> PASS |
-| actor attribution | plausible / correct acc | CTI-TAA n=50 | **0.70** plausible (0.66 correct; C=33 P=2 I=15) | >=0.5 -> PASS |
+| actor attribution | plausible / correct acc | CTI-TAA n=50 | **0.68** plausible (0.66 correct; C=33 P=1 I=16) | >=0.5 -> PASS |
 | heterogeneous retrieval | set/hit@k per category | self query-set data/eval/query_set_v3.jsonl | see per-category below | — |
-| generation grounding | RAGAS faithfulness / answer_relevancy | self query-set query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10) | 0.9102 / 0.8287 | — |
+| generation grounding | RAGAS faithfulness / answer_relevancy | self query-set /mnt/d/proj/CTI-RAG/.claude/worktrees/health-fix/rag_cti/data/eval/query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10) | 0.9113 / 0.8200 | — |
 
 **Heterogeneous retrieval — hit@k by category**
 
-| category | n | @5 | @10 | @20 |
+| category | n | @1 | @5 | @10 |
 |---|---|---|---|---|
-| fuzzy | 5 | 1.0000 | 1.0000 | 1.0000 |
-| otx_actor | 7 | 0.1429 | 0.2857 | 0.4286 |
-| otx_malware | 5 | 0.8000 | 0.8000 | 0.8000 |
+| fuzzy | 5 | 0.6000 | 1.0000 | 1.0000 |
+| otx_actor | 7 | 0.0000 | 0.1429 | 0.2857 |
+| otx_malware | 5 | 0.4000 | 0.8000 | 0.8000 |
 | precise | 5 | 1.0000 | 1.0000 | 1.0000 |
-| relationship_direct | 10 | 0.8000 | 0.8000 | 0.9000 |
-| semantic | 10 | 0.9000 | 1.0000 | 1.0000 |
+| relationship_direct | 10 | 0.5000 | 0.8000 | 0.8000 |
+| semantic | 10 | 0.7000 | 0.9000 | 1.0000 |
 
 **Multi-label set F1@k (technique-level, exact set)**
 
-| category | n | F1@5 | F1@10 | F1@20 |
+| category | n | F1@1 | F1@5 | F1@10 |
 |---|---|---|---|---|
-| precise | 5 | 0.3704 | 0.3333 | 0.2917 |
-| semantic | 10 | 0.3768 | 0.3400 | 0.2720 |
-| relationship_direct | 10 | 0.2516 | 0.3122 | 0.2960 |
+| precise | 5 | 0.5263 | 0.3846 | 0.3750 |
+| semantic | 10 | 0.4000 | 0.3881 | 0.4096 |
+| relationship_direct | 10 | 0.0800 | 0.2564 | 0.3146 |
 <!-- CAPABILITY-RESULTS:END -->
 
 Technique micro-F1 above is the single 23:56Z certification run; the 4-run mean is 0.662 (min 0.653, max 0.670) — both clear the 0.65 gate. Mobile technique subset (n=13) is out-of-corpus (Enterprise-only ATT&CK), F1=0.0112, not gated. RAGAS `context_precision`/`context_recall` not computed (query set has no reference answers).
+
+> **Certification drift (2026-06-11):** re-running the same certification (same corpus,
+> same prompts, retrieval verified bit-identical per-query against the May baseline)
+> scored Micro-F1 **0.5943** — below the 0.65 gate. `deepseek-chat` is a floating alias
+> and the judge/annotator model appears to have drifted since 2026-05-29; actor
+> attribution moved within noise (0.70 → 0.68 plausible). The May PASS record still
+> backs the existing `query_set_v3` gold (provenance unchanged), but **no new
+> technique self-gold may be generated until the annotator re-clears the gate**
+> (options: pin a model version, or re-certify on another provider). Full records:
+> `data/eval/certification_full_deepseek_2026-06-11T*.json`.
 
 > **Note on `hybrid_alpha`:** an earlier release had two related defects: (1) `build_pipeline()` always created a `HybridRetriever` regardless of config, so "dense" and "hybrid" results were identical; (2) after that was fixed, `hybrid_alpha` values in (0, 1) still had no effect because the RRF fusion was unweighted. Both are fixed: fusion is now weighted RRF (`alpha·dense + (1−alpha)·sparse`), `alpha=0.5` reproduces the symmetric fusion all published results used, and `alpha≥1.0` skips the sparse retriever entirely.
 

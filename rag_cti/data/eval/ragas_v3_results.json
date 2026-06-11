@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-05-30T04:03:12.450589+00:00",
-  "query_set": "/mnt/d/proj/CTI-RAG/rag_cti/data/eval/query_set_v3.jsonl",
+  "timestamp": "2026-06-11T04:15:14.936798+00:00",
+  "query_set": "/mnt/d/proj/CTI-RAG/.claude/worktrees/health-fix/rag_cti/data/eval/query_set_v3.jsonl",
   "collection": "cti_chunks_v2",
-  "generator_model": "deepseek-chat",
-  "generator_provider": "deepseek",
+  "generator_model": "llama-3.3-70b-versatile",
+  "generator_provider": "groq",
   "judge": "deepseek-chat (ragas)",
   "n_requested": 14,
   "n_failed": 0,
@@ -27,36 +27,36 @@
   "references_available": false,
   "config": "hybrid@k10",
   "n": 14,
-  "faithfulness": 0.9102,
-  "answer_relevancy": 0.8287,
+  "faithfulness": 0.9113,
+  "answer_relevancy": 0.82,
   "context_precision": -1.0,
   "context_recall": -1.0,
   "per_query": [
     {
       "question": "the pass the ticket one for lateral movement?",
-      "faithfulness": 1.0,
-      "answer_relevancy": 0.6324482153379314,
+      "faithfulness": 0.75,
+      "answer_relevancy": 0.6743745506907441,
       "query_id": "F001",
       "category": "fuzzy"
     },
     {
       "question": "threat intelligence on Cobalt campaigns and TTPs",
-      "faithfulness": 0.896551724137931,
-      "answer_relevancy": 0.9200301677123657,
+      "faithfulness": 0.9473684210526315,
+      "answer_relevancy": 0.9377239862196737,
       "query_id": "O001",
       "category": "otx_actor"
     },
     {
       "question": "Cobalt Strike malware indicators and attribution",
       "faithfulness": 1.0,
-      "answer_relevancy": 0.7514201456957328,
+      "answer_relevancy": 0.8726180000275714,
       "query_id": "O008",
       "category": "otx_malware"
     },
     {
       "question": "Office template macros persistence",
-      "faithfulness": 1.0,
-      "answer_relevancy": 0.7945104230741983,
+      "faithfulness": 0.9285714285714286,
+      "answer_relevancy": 0.925177965260368,
       "query_id": "P001",
       "category": "precise"
     },
@@ -70,63 +70,63 @@
     {
       "question": "How can attackers move laterally to cloud VMs using built-in cloud console features?",
       "faithfulness": 1.0,
-      "answer_relevancy": 1.0,
+      "answer_relevancy": 0.9312502444988551,
       "query_id": "S001",
       "category": "semantic"
     },
     {
       "question": "that password guessing thing with no prior knowledge",
-      "faithfulness": 1.0,
-      "answer_relevancy": 0.6272025770455719,
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.7150673024319494,
       "query_id": "F005",
       "category": "fuzzy"
     },
     {
       "question": "recent Kimsuky cyber espionage operations",
-      "faithfulness": 0.9666666666666667,
-      "answer_relevancy": 0.7894015004905877,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8892730787113238,
       "query_id": "O002",
       "category": "otx_actor"
     },
     {
       "question": "detection and analysis of Korplug payloads",
-      "faithfulness": 0.4782608695652174,
-      "answer_relevancy": 0.8916376486245997,
+      "faithfulness": 0.6666666666666666,
+      "answer_relevancy": 0.9203639345818837,
       "query_id": "O009",
       "category": "otx_malware"
     },
     {
       "question": "disable hardware encryption network devices",
-      "faithfulness": 0.9090909090909091,
-      "answer_relevancy": 0.9127722669988279,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8902326433397317,
       "query_id": "P002",
       "category": "precise"
     },
     {
       "question": "How does Turla establish command and control in targeted operations?",
-      "faithfulness": 0.8888888888888888,
-      "answer_relevancy": 0.809866453119595,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8798315947506019,
       "query_id": "R002",
       "category": "relationship_direct"
     },
     {
       "question": "During a ransomware incident, how do attackers prevent admin lockout by tampering with account credentials?",
-      "faithfulness": 0.8888888888888888,
-      "answer_relevancy": 0.8206254324401971,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
       "query_id": "S002",
       "category": "semantic"
     },
     {
       "question": "the one where mac users got phished with fake meeting links",
-      "faithfulness": 1.0,
-      "answer_relevancy": 0.698290084271097,
+      "faithfulness": 0.6428571428571429,
+      "answer_relevancy": 0.9537075620472348,
       "query_id": "F007",
       "category": "fuzzy"
     },
     {
       "question": "indicators of compromise associated with Lazarus Group",
-      "faithfulness": 0.7142857142857143,
-      "answer_relevancy": 0.9535559984494756,
+      "faithfulness": 0.9230769230769231,
+      "answer_relevancy": 0.8903840212635984,
       "query_id": "O003",
       "category": "otx_actor"
     }
