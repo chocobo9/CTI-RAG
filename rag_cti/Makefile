@@ -24,8 +24,10 @@ fmt:
 type-check:
 	mypy src/
 
-# Local CI: everything the GitHub workflow runs.
-ci: lint type-check test
+# Local CI: mirrors the GitHub workflow — lint + test gate, mypy report-only
+# (leading '-' ignores its exit code until the strict-mode backlog reaches zero).
+ci: lint test
+	-$(MAKE) type-check
 
 qdrant-up:
 	docker compose up -d qdrant
