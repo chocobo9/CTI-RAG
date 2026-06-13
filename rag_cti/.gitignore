@@ -33,7 +33,12 @@ help/*
 
 # Data (raw feeds and processed outputs — never commit)
 data/raw/
-data/processed/
+data/processed/*
+# Shared corpus snapshots (whitelisted for team distribution)
+!data/processed/mitre.jsonl
+!data/processed/mitre_relationships.jsonl
+!data/processed/otx.jsonl
+!data/processed/pdfs.jsonl
 data/migrate_dump.jsonl
 data/sparse_vocab.json
 
