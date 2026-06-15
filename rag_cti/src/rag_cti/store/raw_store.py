@@ -20,6 +20,8 @@ preserving lexicographic == chronological ordering of fixed-width timestamps.
 from __future__ import annotations
 
 import json
+import os
+import uuid
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -111,7 +113,16 @@ class RawStore:
             )
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(new_bytes, encoding="utf-8")
+        tmp = path.with_name(f"{path.name}.{uuid.uuid4().hex}.tmp")
+        try:
+            with open(tmp, "w", encoding="utf-8") as fh:
+                fh.write(new_bytes)
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp, path)  # atomic; same dir = same volume
+        finally:
+            if tmp.exists():
+                tmp.unlink()
         logger.info(
             "raw version written", source=source, source_id=source_id, fetched_at=fetched_at
         )

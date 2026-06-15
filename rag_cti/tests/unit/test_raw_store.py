@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import os
+from pathlib import Path
+
 import pytest
 
 from rag_cti.store.raw_store import RawStore, RawStoreConflictError
@@ -93,3 +97,67 @@ def test_missing_required_fields_raise(tmp_path):
         store.write("otx", "", {}, "2026-01-01T00:00:00Z")
     with pytest.raises(ValueError, match="required"):
         store.write("otx", "id", {}, "")
+
+
+# --- SUBTASK_0: atomic write (tmp + fsync + os.replace) ---------------------
+
+
+def test_atomic_write_bytes_identical_to_canonical_json(tmp_path):
+    # S0-1: on-disk bytes are exactly the canonical record JSON (atomic write
+    # changes HOW it is written, not WHAT).
+    store = RawStore(tmp_path)
+    path = store.write("otx", "p1", {"a": 1, "b": [2, 3]}, "2026-01-01T00:00:00Z")
+    expected = json.dumps(
+        {
+            "source": "otx",
+            "source_id": "p1",
+            "fetched_at": "2026-01-01T00:00:00Z",
+            "payload": {"a": 1, "b": [2, 3]},
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    assert path.read_text(encoding="utf-8") == expected
+
+
+def test_atomic_write_failure_leaves_no_partial_no_tmp(tmp_path, monkeypatch):
+    # S0-2: os.replace failure on a new key => target never appears, no .tmp residue.
+    def boom(src, dst):
+        raise OSError("simulated disk failure")
+
+    monkeypatch.setattr("os.replace", boom)
+    store = RawStore(tmp_path)
+    with pytest.raises(OSError, match="disk"):
+        store.write("otx", "p1", {"a": 1}, "2026-01-01T00:00:00Z")
+    assert store.latest("otx", "p1") is None  # nothing committed
+    assert list((tmp_path / "otx" / "p1").glob("*.tmp")) == []  # finally cleaned the tmp
+
+
+def test_atomic_write_recovers_after_failed_replace(tmp_path, monkeypatch):
+    # S0-3: a failed write must not poison the key — a later write succeeds and
+    # does NOT raise RawStoreConflictError (no half-file left behind).
+    def boom(src, dst):
+        raise OSError("simulated disk failure")
+
+    monkeypatch.setattr("os.replace", boom)
+    store = RawStore(tmp_path)
+    with pytest.raises(OSError, match="disk"):
+        store.write("otx", "p1", {"a": 1}, "2026-01-01T00:00:00Z")
+    monkeypatch.undo()
+    store.write("otx", "p1", {"a": 1}, "2026-01-01T00:00:00Z")  # must NOT raise conflict
+    assert store.read("otx", "p1", "2026-01-01T00:00:00Z") == {"a": 1}
+
+
+def test_atomic_write_replace_src_dst_same_dir(tmp_path, monkeypatch):
+    # S0-4: tmp (src) and final (dst) share a parent dir => same volume => atomic.
+    real_replace = os.replace
+    captured: dict[str, str] = {}
+
+    def spy(src, dst):
+        captured["src"], captured["dst"] = str(src), str(dst)
+        return real_replace(src, dst)
+
+    monkeypatch.setattr("os.replace", spy)
+    store = RawStore(tmp_path)
+    store.write("otx", "p1", {"a": 1}, "2026-01-01T00:00:00Z")
+    assert Path(captured["src"]).parent == Path(captured["dst"]).parent
