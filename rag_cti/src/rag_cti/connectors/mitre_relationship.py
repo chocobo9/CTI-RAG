@@ -101,16 +101,21 @@ class MitreRelationshipConnector(BaseConnector):
         attack_id = self._attack_id_of(tgt_obj)
 
         rel_type = raw["relationship_type"]
-        description = raw.get("description", "")
+        description = raw.get("description", "").strip()
 
-        if attack_id:
-            first_line = f"{src_name} uses {tgt_name} ({attack_id})"
+        # retrieval §5: embed the procedure *description* only. The templated first
+        # line ("X uses Y (Tnnnn)") duplicates the Fact — which now lives in the
+        # chunk's relations[] and the knowledge layer — so it is dropped. Only an
+        # edge with no description (rare) falls back to the template, because an
+        # empty chunk cannot be embedded.
+        if description:
+            content = description
+        elif attack_id:
+            content = f"{src_name} uses {tgt_name} ({attack_id})"
         elif rel_type == "attributed-to":
-            first_line = f"{src_name} attributed-to {tgt_name}"
+            content = f"{src_name} attributed-to {tgt_name}"
         else:
-            first_line = f"{src_name} uses {tgt_name}"
-
-        content = f"{first_line}\n\n{description}".strip() if description else first_line
+            content = f"{src_name} uses {tgt_name}"
 
         doc_id = hashlib.sha256(f"mitre-rel:{raw['id']}".encode()).hexdigest()[:16]
 

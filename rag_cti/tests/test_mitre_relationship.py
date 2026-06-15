@@ -300,6 +300,16 @@ class TestAdversarial:
         assert len(docs) == 0
 
 
+def test_description_only_drops_redundant_template_first_line(tmp_path: Path) -> None:
+    """retrieval §5: embed the procedure description only; the templated
+    'X uses Y (Tnnnn)' first line duplicates the Fact (now in relations[] / the
+    knowledge layer) and is dropped, leaving the genuine prose to be embedded."""
+    bundle_path = _write_bundle(tmp_path, _REL_APT29_USES_T1059)
+    doc = list(MitreRelationshipConnector(bundle_path=bundle_path).fetch_documents())[0]
+    assert doc.content == "APT29 used PowerShell for C2 communication via T1059."
+    assert "uses Command and Scripting Interpreter (T1059)" not in doc.content
+
+
 def test_retrieved_at_is_fetched_at_not_stix_modified(tmp_path: Path) -> None:
     """retrieved_at = when WE fetched (passed in), deterministic; the edge's STIX
     modified is preserved separately in metadata.last_modified (Rule 0)."""
