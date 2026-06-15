@@ -187,6 +187,24 @@ def build_entity_registry(
     }
 
 
+def resolve_entity_ids(
+    mentions: Iterable[tuple[str, str]],
+    ontology_nodes: list[dict[str, Any]],
+) -> list[str]:
+    """Resolve ``(name, entity_type)`` mentions to deduped, sorted entity_ids.
+
+    The id-only projection used to populate a chunk payload's ``entity_ids`` filter
+    keys (orphans included — every mention has a stable id). Indexes are built once.
+    """
+    name_nodes, oid_nodes = _build_indexes(ontology_nodes)
+    seen: dict[str, None] = {}
+    for name, etype in mentions:
+        if not _norm(name):
+            continue
+        seen[_resolve_one(name, etype, name_nodes, oid_nodes).entity_id] = None
+    return sorted(seen)
+
+
 def resolve_relations(
     relation_mentions: Iterable[RelationMention],
     ontology_nodes: list[dict[str, Any]],
