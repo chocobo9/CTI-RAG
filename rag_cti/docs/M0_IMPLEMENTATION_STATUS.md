@@ -123,7 +123,7 @@
 |---|---|---|
 | **eval-all 重认证 v3** | ✅ | 2026-06-15 全 DeepSeek(`--gen-provider deepseek` 绕开 Groq TPD)跑完,4 项 PASS,见 §10 |
 | **worktree/main 数据错位** | ✅ | 词表×2 + `data/eval/ctibench/` + `.env` copy 进 worktree(均 gitignored);零 LLM smoke + eval-all 实跑双验 |
-| **M2 检索层(未做)** | ❌ | 丢模板首行(retrieval §5)、payload 索引(attack_ids/entity_ids)、relations[] 存 entity_id、query 期本体展开 |
+| **M2 检索层** | ⚠️ 代码完成,未接 live | M2.1–M2.5 代码 + 测试已完成(`33b33a6`/`c991dcc`/`afa7e7a`/`2daae9e`/`7feec6b`)+ 投影正确性修复(`24a24d0`)。**但 `project_chunk` 未接进 corpus-build,`cti_chunks_v3` payload 不含这些字段**——M2 过滤/索引只在临时测试 collection 验过。接线+重灌 v4 = M2.6(未做)。截断 logging 仍未做(下行) |
 | **截断 logging(§6 Rule0)** | ❌ | reranker 512 仍静默截断,文档要求 log/flag,未做 |
 | **docs 断链修复** | ✅ | 6 个设计文档 copy 进 worktree `docs/`;`/CONTEXT.md`→`docs/CONTEXT.md`(11 处/5 文件)已修;本次 commit 一并提交 |
 | **VT/WHOIS raw 真抓** | ❌ | 脚本可跑但未发真 API(配额);pdns 无 provider 占位 |

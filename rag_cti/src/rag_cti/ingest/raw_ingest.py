@@ -2,8 +2,13 @@
 
 This is the wiring the ingestion doc calls for: every source's raw response is
 persisted (append-only, versioned) **before** any projection, and a re-fetch
-appends a new version instead of overwriting. Incremental fetch uses the store's
-high-water mark as the connector's ``modified_since``.
+appends a new version instead of overwriting.
+
+Incremental fetch is *supported but not automatic here*: a caller does it by
+passing the connector's ``modified_since`` through ``fetch_params`` (e.g. derived
+from ``RawStore.latest_fetched_at`` for that source). ``fetch_to_raw`` does NOT
+read the high-water mark or inject ``modified_since`` itself — wiring that
+generically across connectors is an open M0 item (only OTX accepts it today).
 """
 
 from __future__ import annotations
