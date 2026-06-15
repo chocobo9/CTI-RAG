@@ -20,18 +20,21 @@ from typing import Any
 
 # STIX object type -> OntologyNode type (knowledge-layer §3 enum). malware and
 # tool both mirror to "software"; the sub/parent technique split is an edge, not
-# a node type, so attack-pattern is always "technique".
+# a node type, so attack-pattern is always "technique". campaign is mirrored so a
+# campaign mention (always a relationship subject; never an object — verified over
+# the bundle) resolves to its C#### object by exact STIX-derived name, not orphan.
 _TYPE_MAP: dict[str, str] = {
     "attack-pattern": "technique",
     "x-mitre-tactic": "tactic",
     "intrusion-set": "group",
     "malware": "software",
     "tool": "software",
+    "campaign": "campaign",
 }
 
 
 def _attack_id(obj: dict[str, Any]) -> str:
-    """The ATT&CK external id (T####, TA####, S####, G####) of a STIX object, or ""."""
+    """The ATT&CK external id (T####, TA####, S####, G####, C####) of a STIX object, or ""."""
     for ref in obj.get("external_references", []):
         if ref.get("source_name") == "mitre-attack":
             return str(ref.get("external_id", ""))

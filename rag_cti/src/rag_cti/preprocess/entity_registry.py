@@ -10,10 +10,14 @@ Resolution is scoped by entity type, so a cross-type fusion (the tool *Cobalt
 Strike* vs the actor *Cobalt Group*) is structurally impossible, not merely
 guarded:
 
-- ``actor`` / ``family`` resolve by **name/alias** against group / software nodes.
+- ``actor`` / ``family`` resolve by **name/alias** against group / software nodes;
+  a ``family`` mention may also carry an embedded id (``"Mimikatz - S0002"``),
+  resolved only when a name-back check confirms the id matches the named object.
 - ``technique`` resolves by **attack id** (the mention *is* the ontology_id) —
   exact identity, ungated.
-- ``campaign`` / ``location`` have no MITRE mirror, so they are always orphans.
+- ``campaign`` resolves by **name** against its mirrored C#### object (the mention
+  name is read from that STIX object, so the match is exact). ``location`` has no
+  MITRE mirror, so it is always an orphan.
 
 Every distinct mention yields exactly one Entity (nothing dropped).
 :func:`resolve_relations` reuses the same resolver to back-fill RelationMention
@@ -30,18 +34,25 @@ from typing import Any
 
 from rag_cti.ingest.normalize import RelationMention
 
-# Entity.type -> OntologyNode.type resolved by name/alias.
-_NAME_RESOLVED: dict[str, str] = {"actor": "group", "family": "software"}
+# Entity.type -> OntologyNode.type resolved by name/alias. campaign resolves to its
+# own C#### object (mirrored in the ontology); its mention name is read from the STIX
+# object itself, so the match is exact and unambiguous — no fuzzy/normalization added.
+_NAME_RESOLVED: dict[str, str] = {"actor": "group", "family": "software", "campaign": "campaign"}
 # Entity.type -> OntologyNode.type resolved by attack id (mention == ontology_id).
 _ID_RESOLVED: dict[str, str] = {"technique": "technique"}
+# Every resolvable type, for building the ontology_id -> node lookup used by both the
+# id path (technique) and the embedded-id name-back check (software/group/campaign).
+_RESOLVED: dict[str, str] = {**_NAME_RESOLVED, **_ID_RESOLVED}
 
 _WHITESPACE = re.compile(r"\s+")
+# An author-typed name can carry the object's attack id, e.g. "Mimikatz - S0002".
+_EMBEDDED_ATTACK_ID = re.compile(r"\b([SGT]\d{4})(?:\.\d{3})?\b")
 
 
 @dataclass(frozen=True)
 class _Resolution:
     entity_id: str
-    resolution: str  # exact_name | exact_alias | exact_id | orphan
+    resolution: str  # exact_name | exact_alias | exact_id | embedded_id | orphan
     canonical_name: str
     aliases: tuple[str, ...]
     ontology_id: str | None
@@ -51,6 +62,13 @@ class _Resolution:
 def _norm(text: str) -> str:
     """Normalize for matching: lowercased, trimmed, internal whitespace collapsed."""
     return _WHITESPACE.sub(" ", text.strip().lower())
+
+
+def _loose(text: str) -> str:
+    """Lowercase, drop every non-alphanumeric char. Used ONLY for the embedded-id
+    name-back check (so 'Cobalt Strike' agrees with 'CobaltStrike'); never a
+    resolution path of its own."""
+    return re.sub(r"[^a-z0-9]", "", text.lower())
 
 
 def _orphan_entity_id(entity_type: str, name: str) -> str:
@@ -71,11 +89,14 @@ def _build_indexes(
     name_nodes: dict[str, list[dict[str, Any]]] = {}
     oid_nodes: dict[str, dict[str, dict[str, Any]]] = {}
     for node in ontology_nodes:
+        ntype = node["type"]
         for etype, otype in _NAME_RESOLVED.items():
-            if node["type"] == otype:
+            if ntype == otype:
                 name_nodes.setdefault(etype, []).append(node)
-        for etype, otype in _ID_RESOLVED.items():
-            if node["type"] == otype:
+        # oid map for every resolvable type: the technique id path AND the embedded-id
+        # name-back lookup (software/group/campaign) both read it, scoped by entity type.
+        for etype, otype in _RESOLVED.items():
+            if ntype == otype:
                 oid_nodes.setdefault(etype, {})[node["ontology_id"]] = node
     return name_nodes, oid_nodes
 
@@ -96,6 +117,30 @@ def _substring_candidates(q: str, nodes: list[dict[str, Any]]) -> list[dict[str,
         if any(q in _norm(name) for name in names):
             out.append(node)
     return out
+
+
+def _resolve_embedded_id(name: str, oid_map: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    """Resolve a mention that embeds a MITRE attack id (``"Mimikatz - S0002"``).
+
+    Gated by a mandatory name-back check: the embedded id is NEVER trusted on its own.
+    Returns the node iff (a) the id maps to a present node in *this entity type's* own
+    ontology pool (so cross-type/cross-matrix cannot leak) AND (b) the surrounding name
+    agrees with that node's name/aliases. Any mismatch -> ``None`` -> the mention
+    orphans. This is what stops the namespace-collision trap: ``"SpyNote RAT -
+    MOB-S0021"`` grabs ``S0021`` (enterprise *Derusbi*), the name disagrees, so it is
+    rejected rather than silently mis-attributed.
+    """
+    match = _EMBEDDED_ATTACK_ID.search(name)
+    if match is None:
+        return None
+    node = oid_map.get(match.group(1).upper())
+    if node is None:
+        return None
+    name_part = _loose(_EMBEDDED_ATTACK_ID.sub("", name))
+    if not name_part:
+        return None
+    surfaces = {_loose(node["name"]), *(_loose(a) for a in node.get("aliases", []))}
+    return node if name_part in surfaces else None
 
 
 def _orphan(etype: str, name: str, candidates: tuple[dict[str, Any], ...] = ()) -> _Resolution:
@@ -144,6 +189,10 @@ def _resolve_one(
             return _resolved(etype, alias_hits[0], "exact_alias")
         if len(alias_hits) > 1:
             return _orphan(etype, name, _candidate_dicts(alias_hits, "ambiguous_alias"))
+        # Embedded attack id ("Name - S####"), gated by a name-back check (see helper).
+        embedded = _resolve_embedded_id(name, oid_nodes.get(etype, {}))
+        if embedded is not None:
+            return _resolved(etype, embedded, "embedded_id")
         return _orphan(etype, name, _candidate_dicts(_substring_candidates(q, nodes), "substring"))
 
     return _orphan(etype, name)  # campaign / location / indicator: no MITRE mirror

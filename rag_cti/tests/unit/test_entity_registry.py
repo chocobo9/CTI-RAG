@@ -220,3 +220,123 @@ def test_id_resolution_is_case_insensitive():
     r = build_entity_registry([("t1003", "technique")], _NODES)
     assert r["entities"][0]["entity_id"] == "technique_T1003"
     assert r["entities"][0]["ontology_id"] == "T1003"
+
+
+# --- campaign mirror + embedded-id (M1 follow-up; nodes mirror real STIX shape, the
+# mention strings are the real raw forms seen in OTX, not idealized inputs) ---
+
+_EMB_NODES = [
+    {
+        "ontology_id": "S0002",
+        "type": "software",
+        "name": "Mimikatz",
+        "aliases": [],
+        "tactics": [],
+        "attack_version": "18.1",
+    },
+    {  # enterprise S0021 is Derusbi; "MOB-S0021" (mobile SpyNote) must NOT land here
+        "ontology_id": "S0021",
+        "type": "software",
+        "name": "Derusbi",
+        "aliases": [],
+        "tactics": [],
+        "attack_version": "18.1",
+    },
+    {  # enterprise S0005 is Windows Credential Editor; "MOB-S0005" (Pegasus) must miss
+        "ontology_id": "S0005",
+        "type": "software",
+        "name": "Windows Credential Editor",
+        "aliases": [],
+        "tactics": [],
+        "attack_version": "18.1",
+    },
+    {
+        "ontology_id": "S0141",
+        "type": "software",
+        "name": "Winnti for Windows",
+        "aliases": [],
+        "tactics": [],
+        "attack_version": "18.1",
+    },
+    {
+        "ontology_id": "C0024",
+        "type": "campaign",
+        "name": "SolarWinds Compromise",
+        "aliases": ["SolarWinds Compromise"],
+        "tactics": [],
+        "attack_version": "18.1",
+    },
+]
+
+
+def test_campaign_resolves_to_mirrored_ontology_node():
+    # campaign is now mirrored; an exact name (read from the STIX object) resolves it.
+    r = build_entity_registry([("SolarWinds Compromise", "campaign")], _EMB_NODES)
+    e = _entities(r)["campaign_C0024"]
+    assert e["ontology_id"] == "C0024"
+    assert e["type"] == "campaign"
+    assert e["resolution"] == "exact_name"
+
+
+def test_campaign_unknown_name_still_orphans_no_fuzzy_added():
+    # No loose/heuristic matching was added for campaign: a name with no exact node
+    # stays an orphan (kept, never force-matched).
+    r = build_entity_registry([("Some Unmirrored Op", "campaign")], _EMB_NODES)
+    e = r["entities"][0]
+    assert e["ontology_id"] is None
+    assert e["resolution"] == "orphan"
+    assert e["entity_id"].startswith("campaign_orphan_")
+
+
+def test_embedded_id_resolves_when_name_agrees():
+    # "Mimikatz - S0002" — id present AND name part agrees -> resolves to S0002.
+    e = _entities(build_entity_registry([("Mimikatz - S0002", "family")], _EMB_NODES))[
+        "family_S0002"
+    ]
+    assert e["ontology_id"] == "S0002"
+    assert e["resolution"] == "embedded_id"
+
+
+def test_embedded_id_spacing_tolerated_by_name_back_check():
+    # "CobaltStrike - S0002" vs object "Mimikatz" disagrees -> orphan (sanity that the
+    # check compares against the RIGHT object, not just any id presence).
+    r = build_entity_registry([("CobaltStrike - S0002", "family")], _EMB_NODES)
+    assert r["entities"][0]["resolution"] == "orphan"
+
+
+def test_embedded_id_mobile_namespace_collision_is_rejected_not_misattributed():
+    """THE core trap from the data: "SpyNote RAT - MOB-S0021" grabs enterprise S0021
+    (Derusbi). The name-back check must reject it -> orphan, never family_S0021."""
+    r = build_entity_registry([("SpyNote RAT - MOB-S0021", "family")], _EMB_NODES)
+    e = r["entities"][0]
+    assert e["ontology_id"] is None
+    assert e["resolution"] == "orphan"
+    assert e["entity_id"].startswith("family_orphan_")
+    # explicitly: it did NOT resolve to Derusbi's entity
+    assert e["entity_id"] != "family_S0021"
+
+
+def test_embedded_id_second_mobile_collision_pegasus_rejected():
+    # "Pegasus - MOB-S0005" grabs enterprise S0005 (Windows Credential Editor) -> reject
+    r = build_entity_registry([("Pegasus - MOB-S0005", "family")], _EMB_NODES)
+    assert r["entities"][0]["resolution"] == "orphan"
+    assert r["entities"][0]["entity_id"] != "family_S0005"
+
+
+def test_embedded_id_nonexistent_id_orphans():
+    # S0305 is not in the enterprise bundle -> nothing to verify against -> orphan.
+    r = build_entity_registry([("SpyNote RAT - S0305", "family")], _EMB_NODES)
+    assert r["entities"][0]["resolution"] == "orphan"
+
+
+def test_embedded_id_partial_name_disagreement_rejected():
+    # "Winnti - S0141" : object is "Winnti for Windows"; the name part "Winnti" is a
+    # substring, not an agreement -> reject (conservative), orphan.
+    r = build_entity_registry([("Winnti - S0141", "family")], _EMB_NODES)
+    assert r["entities"][0]["resolution"] == "orphan"
+
+
+def test_plain_exact_name_still_resolves_unaffected_by_embedded_id_path():
+    e = _entities(build_entity_registry([("Mimikatz", "family")], _EMB_NODES))["family_S0002"]
+    assert e["ontology_id"] == "S0002"
+    assert e["resolution"] == "exact_name"
