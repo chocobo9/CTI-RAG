@@ -44,7 +44,8 @@ data/processed/*
 !data/processed/otx.jsonl
 !data/processed/pdfs.jsonl
 data/migrate_dump.jsonl
-data/sparse_vocab.json
+# BM25 sparse vocab — base + per-collection variants (sparse_vocab_<collection>.json)
+data/sparse_vocab*.json
 
 # Eval data: ignored by default, but published artifacts (query sets,
 # capability summary, attribution/RAGAS results, certification evidence the
