@@ -28,6 +28,9 @@ _DEFAULT_UPSERT_BATCH = 128
 _RETRIEVER_NAME = "qdrant_dense"
 _SPARSE_RETRIEVER_NAME = "qdrant_sparse"
 
+# Payload fields given keyword indexes for query-time pre-filtering (retrieval §4).
+_PAYLOAD_INDEX_FIELDS = ("source_type", "attack_ids", "entity_ids")
+
 
 class ChunkIdCollisionError(RuntimeError):
     """Two distinct chunks share an id — upserting would silently overwrite one
@@ -107,6 +110,24 @@ class QdrantStore:
             },
         )
         logger.info("collection created", collection=self.collection, vector_size=vector_size)
+
+    def ensure_payload_indexes(self) -> None:
+        """Create keyword payload indexes for query-time pre-filtering (retrieval §4).
+
+        A constrained query (``attack_id = T1566 AND source_type = otx``, or an
+        entity filter) then runs as a Qdrant index lookup *before* vector scoring,
+        instead of going through the similarity channel. Idempotent — re-creating
+        an existing index is a no-op, so it is safe to call on every ingest.
+        """
+        from qdrant_client.http import models as qm
+
+        for field in _PAYLOAD_INDEX_FIELDS:
+            self._client.create_payload_index(
+                collection_name=self.collection,
+                field_name=field,
+                field_schema=qm.PayloadSchemaType.KEYWORD,
+            )
+            logger.info("payload index ensured", collection=self.collection, field=field)
 
     def upsert(self, chunks: list[Chunk], embeddings: np.ndarray) -> int:
         """Upsert chunks with dense vector only. Returns the number of points written."""

@@ -136,6 +136,7 @@ def run(
     )
 
     store.ensure_collection(vector_size=embedder.dimension)
+    store.ensure_payload_indexes()
 
     if vocab_path.exists():
         encoder = BM25SparseEncoder.load(vocab_path)

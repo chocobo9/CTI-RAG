@@ -77,6 +77,10 @@ class _FakeCollectionInfo:
         self.name = name
 
 
+class _FakePayloadSchemaType:
+    KEYWORD = "keyword"
+
+
 @pytest.fixture
 def fake_qdrant() -> dict[str, MagicMock]:
     """Install fake qdrant_client + qdrant_client.http.models in sys.modules."""
@@ -94,6 +98,7 @@ def fake_qdrant() -> dict[str, MagicMock]:
     models.MatchAny = _FakeMatchAny  # type: ignore[attr-defined]
     models.FieldCondition = _FakeFieldCondition  # type: ignore[attr-defined]
     models.Filter = _FakeFilter  # type: ignore[attr-defined]
+    models.PayloadSchemaType = _FakePayloadSchemaType  # type: ignore[attr-defined]
     http.models = models  # type: ignore[attr-defined]
 
     # qdrant_client.models is imported separately by upsert_hybrid and ensure_collection
@@ -200,6 +205,24 @@ def test_ensure_collection_noop_when_present(fake_qdrant: dict[str, MagicMock]) 
     store.ensure_collection(vector_size=384)
 
     client.create_collection.assert_not_called()
+
+
+def test_ensure_payload_indexes_creates_keyword_indexes(fake_qdrant: dict[str, MagicMock]) -> None:
+    """source_type / attack_ids / entity_ids get keyword indexes so a query can
+    pre-filter before vector scoring (retrieval §4)."""
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    client = MagicMock()
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    store.ensure_payload_indexes()
+
+    indexed = {kwargs["field_name"] for _, kwargs in client.create_payload_index.call_args_list}
+    assert indexed == {"source_type", "attack_ids", "entity_ids"}
+    for _, kwargs in client.create_payload_index.call_args_list:
+        assert kwargs["collection_name"] == "rag-cti"
+        assert kwargs["field_schema"] == "keyword"
 
 
 # ---------------------------------------------------------------------------
