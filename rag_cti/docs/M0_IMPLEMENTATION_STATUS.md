@@ -2,7 +2,7 @@
 
 > 分支 `feat/optimization`(worktree `.claude/worktrees/optimization/`,base `cd481c5` ← `feat/cti-eval-certification`)。
 > 本文记录截至 2026-06-14 的实现、验证证据、产出数据、与未完成项。**全部数字均为本轮实跑验证,非文档原值。**
-> 状态:**W0–W9 + W11(gitignore)完成且 `make ci` 全绿;W10 部分完成(v3 已建,重认证未跑);全部未 commit。**
+> 状态:**W0–W9 + W11 完成且 `make ci` 全绿;W10 部分完成(v3 已建,重认证未跑);M0 主体+原子写+PDF/BlobStore 已 3 commit(`2a8166c`/`13dae2f`/`1acb661`)未 push,docs 本次新增 commit。**
 
 ---
 
@@ -35,7 +35,7 @@
 | W8 | per-source 声明式归一(§4) | ✅ | `ingest/normalize.py`;真实 2,056 pulses / 17,295 rels 各 0 error |
 | W9 | reconcile rebuild(RawStore 确定性) | ✅ | 迁移真跑 2,056+1;rebuild **两次字节一致** |
 | W10 | 建 cti_chunks_v3 + 重认证 | ⚠️ **部分** | v3 已建(20,759 pts,GPU);**eval-all 重认证未跑** |
-| W11 | gitignore 放开 pdfs + docs 断链 + ci | ⚠️ **部分** | gitignore 已改并验证;**docs 断链未修(文档 untracked)** |
+| W11 | gitignore 放开 pdfs + docs 断链 + ci | ✅ | gitignore 已验;6 设计文档 copy 进 worktree `docs/` + `/CONTEXT.md`→`docs/CONTEXT.md`(11 处/5 文件)修复并 commit |
 
 **CI(`make ci`,worktree)**:ruff ✅ · ruff format ✅ · mypy 0(59 files)✅ · pytest **641 passed / 10 skipped / coverage 89.53%** ✅。
 
@@ -125,9 +125,9 @@
 | **worktree/main 词表路径错位** | ⚠️ 阻塞 cert | `bootstrap.DATA_DIR` 指向 worktree/data,但 v3 词表/eval 数据在 main/data。cert 前需对齐 |
 | **M2 检索层(未做)** | ❌ | 丢模板首行(retrieval §5)、payload 索引(attack_ids/entity_ids)、relations[] 存 entity_id、query 期本体展开 |
 | **截断 logging(§6 Rule0)** | ❌ | reranker 512 仍静默截断,文档要求 log/flag,未做 |
-| **docs 断链修复** | ❌ | 6 个设计文档(00_START_HERE/CONTEXT/4×_design.md)是 **untracked**,不在 git/worktree;`/CONTEXT.md`→`docs/CONTEXT.md` 未修 |
+| **docs 断链修复** | ✅ | 6 个设计文档 copy 进 worktree `docs/`;`/CONTEXT.md`→`docs/CONTEXT.md`(11 处/5 文件)已修;本次 commit 一并提交 |
 | **VT/WHOIS raw 真抓** | ❌ | 脚本可跑但未发真 API(配额);pdns 无 provider 占位 |
-| **全部未 commit** | — | W0–W11 改动均在 worktree 未提交 |
+| **3 commit 未 push** | ⚠️ | M0 主体(`2a8166c`)+原子写(`13dae2f`)+PDF/BlobStore(`1acb661`)已 commit 未 push;docs 本次新增 commit;eval-all 重认证未跑 |
 
 **重要定性**:`cti_chunks_v3` = **M0 语料灌进新 collection**,**不是完整的 M2 检索增量**。拿它认证测的是「M0 语料增益 + 旧检索机制」。
 
@@ -209,7 +209,20 @@ make eval-all COLLECTION=cti_chunks_v3
 - **用户拍板(4 条)**:① mitre `retrieved_at` 改锚 RawStore `fetched_at`(非 STIX modified);STIX modified 留 `metadata.last_modified` 别动。② pdf 纳入版本化 RawStore,`retrieved_at = 入库 fetched_at`;存量 PDF 无入库事件 → **固定 sentinel**(不用 mtime,破确定性)。③ 口径统一:所有源 `retrieved_at = RawStore fetched_at`,源内容时间归 `metadata.last_modified`。④ 不新建字段。
 - **语义定论**:`retrieved_at` = **我们何时取的**(our fetch);`metadata.last_modified` = **源何时改的**(source modified);pipeline rebuild 时间不存。
 - **落地**:`store/raw_store.py` 加 `SENTINEL_FETCHED_AT` + `parse_fetched_at`;删 `connectors/_stix.py`;mitre_attack/mitre_relationship/pdf_reports 连接器加 `fetched_at` 参数(默认 sentinel),`retrieved_at=self._fetched_at`;seed_mitre/seed_mitre_relationships 从 `RawStore.versions("mitre","enterprise-attack")` 读 fetched_at 传入;**mitre_relationship metadata 补 `last_modified`**(原本缺,否则源时间丢)。验证:mitre 技术+关系 seed 两次字节一致,`retrieved_at`=bundle fetched_at(2026-04-25)、`last_modified`=各对象 STIX modified。
-- **未尽**:pdf 只做到 `retrieved_at=sentinel`;**PDF 正式入版本化 RawStore 未做**(RawStore 存 JSON、PDF 二进制,raw 表示需另定)。
+- **未尽 → 已由本轮决策⑦解决**:pdf `retrieved_at=sentinel` 已落;**PDF 正式入版本化 RawStore 已做**(CAS BlobStore + JSON manifest,见决策⑦,commit `1acb661`)。
+
+### 本轮决策⑥——RawStore 原子写〔补记,commit `13dae2f`〕
+- **问题**:`raw_store.py` 原 `write` 直写目标文件,写到一半崩溃/断电会留半截文件 → 损坏 raw。raw 是永久证据底,损坏不可逆(Rule 0)。
+- **修法**:写同目录临时文件 → `flush` + `os.fsync`(落盘)→ `os.replace`(原子重命名替换)。崩溃后要么旧版完整、要么新版完整,绝不留半截。
+- **落地**:`store/raw_store.py`(+13 行);`tests/unit/test_raw_store.py` +68 行(S0-1..4:正常写入、覆盖前旧内容保全、tmp 不残留、中断语义)。
+- **CI**:commit 时 `make ci` 全绿。
+
+### 本轮决策⑦——PDF 正式入版本化 RawStore(CAS BlobStore)〔补记,commit `1acb661`;接决策⑤未尽〕
+- **问题(决策⑤遗留)**:RawStore 存 JSON,而 PDF 是二进制,"raw 表示"待定 → PDF 原文一直没进版本化 raw。
+- **修法**:新建内容寻址 BlobStore `store/blob_store.py`——字节按 `sha256` 寻址、immutable、原子写、**读时校验**(完整性不符抛 `BlobIntegrityError`);`ingest/ingest_pdf.py`(`ingest_pdf`/`backfill_pdfs`):**先 `blob.put` 落字节,后写 manifest** `{kind:"blob_ref", sha256, size, content_type, filename}` —— 顺序防悬空引用(C2)。
+- **落地**:`blob_store.py`(+76)、`ingest_pdf.py`(+57)、`tests/unit/test_blob_store.py`(+64)、`tests/unit/test_ingest_pdf.py`(+124)。
+- **真实数据验证**:14 份 PDF → 13 blob(2 份 Microsoft 报告字节相同,内容寻址自动去重);`retrieved_at=sentinel`(存量 PDF 无入库事件);A1–A7 verbatim 验。
+- **CI**:commit 时 `make ci` 全绿(660 passed)。
 
 ### 早期操作决策(完整性补记)
 - 新建 worktree `feat/optimization`(base `cd481c5`),主仓库不 checkout(铁律);删除根目录 4 个未跟踪残留(`certification_*`/`query_set_v3_sample` 等,smoke/aborted 实验产物,用户确认删)。
