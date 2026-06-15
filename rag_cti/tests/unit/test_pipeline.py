@@ -4,7 +4,9 @@ from datetime import datetime
 from unittest.mock import patch
 
 from rag_cti.retrieval.pipeline import Pipeline, build_pipeline
-from rag_cti.types import Chunk, QueryResult, RetrievalResult
+from rag_cti.types import Chunk, PayloadConstraint, QueryResult, RetrievalResult
+
+_SUBTECH_EDGES = [{"child": "T1003.001", "parent": "T1003", "edge": "subtechnique-of"}]
 
 # ---------------------------------------------------------------------------
 # Stubs
@@ -411,3 +413,24 @@ def test_trace_metadata_includes_reranker_and_fetch_k() -> None:
     kwargs = mock_meta.call_args.kwargs
     assert kwargs["reranker"] == "_FakeReranker"
     assert kwargs["fetch_k"] == 50
+
+
+def test_pipeline_ontology_expands_constraint_before_retrieval() -> None:
+    """With ontology_edges, a sub-technique constraint reaches the retriever widened
+    to include its parent (retrieval §6 done-when: sub-technique query hits parent)."""
+    retriever = _FakeRetriever([])
+    pipeline = Pipeline(
+        retriever=retriever,
+        reranker=_FakeReranker(),
+        settings=_FakeSettings(),
+        ontology_edges=_SUBTECH_EDGES,
+    )
+    pipeline.run("creds", constraint=PayloadConstraint(attack_ids=("T1003.001",)))
+    assert retriever.last_constraint.attack_ids == ("T1003", "T1003.001")
+
+
+def test_pipeline_without_edges_does_not_expand() -> None:
+    retriever = _FakeRetriever([])
+    pipeline = Pipeline(retriever=retriever, reranker=_FakeReranker(), settings=_FakeSettings())
+    pipeline.run("creds", constraint=PayloadConstraint(attack_ids=("T1003.001",)))
+    assert retriever.last_constraint.attack_ids == ("T1003.001",)

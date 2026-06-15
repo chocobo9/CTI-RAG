@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import time
-from typing import Protocol
+from typing import Any, Protocol
 
 from rag_cti._logging import get_logger
 from rag_cti.observability.tracing import add_trace_metadata, traced
 from rag_cti.retrieval.dense_retriever import DenseRetriever, DenseSearchStore, QueryEmbedder
 from rag_cti.retrieval.hybrid_retriever import HybridRetriever
 from rag_cti.retrieval.hyde import HyDERetriever
+from rag_cti.retrieval.ontology_expand import expand_constraint
 from rag_cti.retrieval.reranker import NoOpReranker, Reranker
 from rag_cti.retrieval.sparse_retriever import (
     SparseQueryEncoder,
@@ -33,11 +34,18 @@ class Pipeline:
     """End-to-end retrieval pipeline: retrieve → rerank → truncate."""
 
     def __init__(
-        self, retriever: RetrieverProto, reranker: Reranker, settings: SettingsProto
+        self,
+        retriever: RetrieverProto,
+        reranker: Reranker,
+        settings: SettingsProto,
+        ontology_edges: list[dict[str, Any]] | None = None,
     ) -> None:
         self._retriever = retriever
         self._reranker = reranker
         self._settings = settings
+        # subtechnique-of edges for query-time ontology expansion (retrieval §6);
+        # None disables it (a constraint then filters on the literal attack_ids).
+        self._ontology_edges = ontology_edges
 
     @traced("retrieval.pipeline", run_type="retriever")
     def run(
@@ -53,6 +61,11 @@ class Pipeline:
         fetch_k = k
         if getattr(self._settings, "reranker_enabled", False):
             fetch_k = max(k, getattr(self._settings, "reranker_candidates_k", k))
+
+        # Ontology expansion (retrieval §6): a sub-technique filter also matches its
+        # parent (and a parent its sub-techniques) before vector search.
+        if constraint is not None and self._ontology_edges:
+            constraint = expand_constraint(constraint, self._ontology_edges)
 
         results: list[RetrievalResult] = self._retriever.search(
             query, top_k=fetch_k, source_filter=source_filter, constraint=constraint
