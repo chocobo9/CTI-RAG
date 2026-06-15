@@ -2,7 +2,7 @@
 
 > 分支 `feat/optimization`(worktree `.claude/worktrees/optimization/`,base `cd481c5` ← `feat/cti-eval-certification`)。
 > 本文记录截至 2026-06-14 的实现、验证证据、产出数据、与未完成项。**全部数字均为本轮实跑验证,非文档原值。**
-> 状态:**W0–W9 + W11 完成且 `make ci` 全绿;W10 部分完成(v3 已建,重认证未跑);M0 主体+原子写+PDF/BlobStore 已 3 commit(`2a8166c`/`13dae2f`/`1acb661`)未 push,docs 本次新增 commit。**
+> 状态:**W0–W11 全部完成。W10 v3 重认证 4 项能力门控全 PASS(CTI-ATE Micro-F1 0.67→0.86,见 §10);全部改动 commit 在 `feat/optimization`,未 push。**
 
 ---
 
@@ -34,7 +34,7 @@
 | W7 | VT/WHOIS/pDNS raw fetcher | ✅ | vt/whois 可跑;pdns 占位 guard;`PDNS_API_KEY` 占位 |
 | W8 | per-source 声明式归一(§4) | ✅ | `ingest/normalize.py`;真实 2,056 pulses / 17,295 rels 各 0 error |
 | W9 | reconcile rebuild(RawStore 确定性) | ✅ | 迁移真跑 2,056+1;rebuild **两次字节一致** |
-| W10 | 建 cti_chunks_v3 + 重认证 | ⚠️ **部分** | v3 已建(20,759 pts,GPU);**eval-all 重认证未跑** |
+| W10 | 建 cti_chunks_v3 + 重认证 | ✅ | v3 建(20,759 pts)+ eval-all 全 DeepSeek 重认证,4 项门控全 PASS(见 §10) |
 | W11 | gitignore 放开 pdfs + docs 断链 + ci | ✅ | gitignore 已验;6 设计文档 copy 进 worktree `docs/` + `/CONTEXT.md`→`docs/CONTEXT.md`(11 处/5 文件)修复并 commit |
 
 **CI(`make ci`,worktree)**:ruff ✅ · ruff format ✅ · mypy 0(59 files)✅ · pytest **641 passed / 10 skipped / coverage 89.53%** ✅。
@@ -121,13 +121,13 @@
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| **eval-all 重认证 v3** | ❌ 未跑 | 烧 DeepSeek/Groq 日配额,需用户 go |
-| **worktree/main 词表路径错位** | ⚠️ 阻塞 cert | `bootstrap.DATA_DIR` 指向 worktree/data,但 v3 词表/eval 数据在 main/data。cert 前需对齐 |
+| **eval-all 重认证 v3** | ✅ | 2026-06-15 全 DeepSeek(`--gen-provider deepseek` 绕开 Groq TPD)跑完,4 项 PASS,见 §10 |
+| **worktree/main 数据错位** | ✅ | 词表×2 + `data/eval/ctibench/` + `.env` copy 进 worktree(均 gitignored);零 LLM smoke + eval-all 实跑双验 |
 | **M2 检索层(未做)** | ❌ | 丢模板首行(retrieval §5)、payload 索引(attack_ids/entity_ids)、relations[] 存 entity_id、query 期本体展开 |
 | **截断 logging(§6 Rule0)** | ❌ | reranker 512 仍静默截断,文档要求 log/flag,未做 |
 | **docs 断链修复** | ✅ | 6 个设计文档 copy 进 worktree `docs/`;`/CONTEXT.md`→`docs/CONTEXT.md`(11 处/5 文件)已修;本次 commit 一并提交 |
 | **VT/WHOIS raw 真抓** | ❌ | 脚本可跑但未发真 API(配额);pdns 无 provider 占位 |
-| **3 commit 未 push** | ⚠️ | M0 主体(`2a8166c`)+原子写(`13dae2f`)+PDF/BlobStore(`1acb661`)已 commit 未 push;docs 本次新增 commit;eval-all 重认证未跑 |
+| **未 push** | ⚠️ | M0 主体/原子写/PDF/docs/gitignore/cert 证据全 commit 在 `feat/optimization`,**未 push** |
 
 **重要定性**:`cti_chunks_v3` = **M0 语料灌进新 collection**,**不是完整的 M2 检索增量**。拿它认证测的是「M0 语料增益 + 旧检索机制」。
 
@@ -226,3 +226,20 @@ make eval-all COLLECTION=cti_chunks_v3
 
 ### 早期操作决策(完整性补记)
 - 新建 worktree `feat/optimization`(base `cd481c5`),主仓库不 checkout(铁律);删除根目录 4 个未跟踪残留(`certification_*`/`query_set_v3_sample` 等,smoke/aborted 实验产物,用户确认删)。
+
+---
+
+## 10. v3 重认证结果(2026-06-15,全 DeepSeek + GPU)
+
+**口径**:本次 `cti_chunks_v3` vs 基线 `cti_chunks_v2`(认证 `2026-06-11`,亦 DeepSeek 标注、同 n、同检索机制)——**唯一大变量 = 语料 v2→v3**。eval-all 四阶段**零 Groq**:阶段 1 `--provider deepseek`、阶段 2 默认 `hybrid`(无 LLM 调用)、阶段 3 `--gen-provider deepseek`(绕开 Groq TPD 100k)、阶段 4 render。证据:`certification_full_deepseek_2026-06-15T02-55-40Z.json` + `capabilities_summary.json` + `attribution_v3_results.json` + `ragas_v3_results.json`。
+
+| 能力 | 指标 | 基线 v2(06-11) | v3(本次) | 门控 |
+|---|---|---|---|---|
+| [1] technique extraction | CTI-ATE Micro-F1 (n=47) | 0.6703 (P .746 / R .609) | **0.8582** (P .940 / R .789) | ≥0.65 → PASS |
+| [2] actor attribution | CTI-TAA plausible (n=50) | 0.68 (correct .66) | **0.76** (correct .68) | ≥0.5 → PASS |
+| [3] heterogeneous retrieval | hit@10 各类 | precise/semantic/fuzzy=1.0; rel_direct/otx_malware=0.8; otx_actor=0.286 | **与基线持平** | (无门控) |
+| [4] generation grounding | RAGAS faithful / relevancy (n=14) | 0.9113 / 0.8200 (Groq gen) | 0.9506 / 0.8547 (**DeepSeek gen**) | (无门控) |
+
+- **[1] ATE +0.19 F1、[2] TAA plausible +0.08 = M0 v3 语料增益**(typed indicators + 10,636 条 malware/tool→technique 能力边等);P/R 同步上升,非 precision-recall 互换。
+- **[3] 检索 hit@k 与基线持平**:检索机制未改(M2 未做),这些类别要么已饱和(=1.0)、要么基于硬标识(pulse_id 口径不变),语料内容增益不移动单目标 hit@k。
+- **[4] RAGAS 不同口径,不可归因于语料**:v3 生成器=`deepseek-chat`、基线=`groq/llama-3.3-70b`,且评判亦 DeepSeek(**自评偏置**)→ 此项数字仅作 DeepSeek 路径记录,**不与 Groq 基线直接比较**。artifact 已记 `generator_provider=deepseek`。

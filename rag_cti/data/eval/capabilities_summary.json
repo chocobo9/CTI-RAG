@@ -1,9 +1,9 @@
 {
   "phase": "D — capability-split summary (four capabilities, never averaged)",
-  "generated_utc": "2026-06-11T04:17:22.528663+00:00",
+  "generated_utc": "2026-06-15T03:03:31.652717+00:00",
   "artifact_sources": {
-    "technique_cert": "data/eval/certification_full_deepseek_2026-05-29T23-56-30Z.json",
-    "actor_cert": "data/eval/certification_full_deepseek_2026-06-11T04-06-37Z.json",
+    "technique_cert": "data/eval/certification_full_deepseek_2026-06-15T02-55-40Z.json",
+    "actor_cert": "data/eval/certification_full_deepseek_2026-06-15T02-55-40Z.json",
     "attribution": "data/eval/attribution_v3_results.json",
     "ragas": "data/eval/ragas_v3_results.json"
   },
@@ -12,9 +12,9 @@
       "metric": "Micro-F1(technique)",
       "data": "CTI-ATE Enterprise n=47",
       "score": {
-        "micro_f1": 0.6703499079189688,
-        "precision": 0.7459016393442623,
-        "recall": 0.6086956521739131
+        "micro_f1": 0.8581818181818183,
+        "precision": 0.9402390438247012,
+        "recall": 0.7892976588628763
       },
       "external_anchor": "TechniqueRAG/CTIBench RAG-no-ft 0.65-0.79",
       "gate": {
@@ -23,7 +23,7 @@
       },
       "trust": "CERTIFIED against external human GT (Phase C). Gate PASSED.",
       "mobile_out_of_corpus": {
-        "micro_f1": 0.011235955056179773,
+        "micro_f1": 0.039735099337748346,
         "n": 13,
         "note": "corpus is Enterprise ATT&CK only; not gated"
       }
@@ -32,11 +32,11 @@
       "metric": "correct / plausible accuracy (faithful cti-bench scorer)",
       "data": "CTI-TAA n=50",
       "score": {
-        "correct_acc": 0.66,
-        "plausible_acc": 0.68,
-        "C": 33,
-        "P": 1,
-        "I": 16
+        "correct_acc": 0.68,
+        "plausible_acc": 0.76,
+        "C": 34,
+        "P": 4,
+        "I": 12
       },
       "external_anchor": "cti-bench published models (e.g. ChatGPT-3.5 ~0.44/0.62)",
       "gate": {
@@ -91,14 +91,14 @@
               "F1": 0.5263
             },
             "5": {
-              "P": 0.4167,
-              "R": 0.3571,
-              "F1": 0.3846
+              "P": 0.5455,
+              "R": 0.4286,
+              "F1": 0.48
             },
             "10": {
-              "P": 0.3333,
+              "P": 0.3158,
               "R": 0.4286,
-              "F1": 0.375
+              "F1": 0.3636
             }
           }
         },
@@ -112,14 +112,14 @@
               "F1": 0.4
             },
             "5": {
-              "P": 0.3514,
-              "R": 0.4333,
-              "F1": 0.3881
+              "P": 0.3784,
+              "R": 0.4667,
+              "F1": 0.4179
             },
             "10": {
-              "P": 0.3208,
+              "P": 0.3269,
               "R": 0.5667,
-              "F1": 0.4096
+              "F1": 0.4146
             }
           }
         },
@@ -133,14 +133,14 @@
               "F1": 0.08
             },
             "5": {
-              "P": 0.4878,
-              "R": 0.1739,
-              "F1": 0.2564
+              "P": 0.5,
+              "R": 0.1826,
+              "F1": 0.2675
             },
             "10": {
-              "P": 0.4444,
-              "R": 0.2435,
-              "F1": 0.3146
+              "P": 0.4677,
+              "R": 0.2522,
+              "F1": 0.3277
             }
           }
         },
@@ -149,8 +149,8 @@
           "n": 5,
           "recall_at_k": {
             "1": 0.0152,
-            "5": 0.0909,
-            "10": 0.1364
+            "5": 0.0808,
+            "10": 0.1263
           }
         }
       },
@@ -159,15 +159,15 @@
     },
     "generation_grounding": {
       "metric": "RAGAS faithfulness + answer_relevancy",
-      "data": "self query-set /mnt/d/proj/CTI-RAG/.claude/worktrees/health-fix/rag_cti/data/eval/query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10)",
+      "data": "self query-set /mnt/d/proj/CTI-RAG/.claude/worktrees/optimization/rag_cti/data/eval/query_set_v3.jsonl n=14 scored of 14 requested (hybrid@k10)",
       "score": {
-        "faithfulness": 0.9113,
-        "answer_relevancy": 0.82,
+        "faithfulness": 0.9506,
+        "answer_relevancy": 0.8547,
         "context_precision": null,
         "context_recall": null
       },
       "external_anchor": "none",
-      "trust": "Real generations (llama-3.3-70b-versatile) judged by deepseek-chat (ragas) — no mock. context_precision/recall NOT computed: query set has no reference answers, and fabricating them is forbidden (CLAUDE.md §2.7)."
+      "trust": "Real generations (deepseek-chat) judged by deepseek-chat (ragas) — no mock. context_precision/recall NOT computed: query set has no reference answers, and fabricating them is forbidden (CLAUDE.md §2.7)."
     }
   }
 }
