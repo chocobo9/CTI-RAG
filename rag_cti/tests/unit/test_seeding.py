@@ -7,7 +7,7 @@ from typing import Any
 
 from rag_cti.connectors.base import BaseConnector
 from rag_cti.preprocess.chunking import ChunkStrategy
-from rag_cti.preprocess.seeding import seed_connector_to_jsonl
+from rag_cti.preprocess.seeding import seed_connector_to_jsonl, seed_connector_with_projection
 from rag_cti.types import Document
 
 
@@ -49,6 +49,40 @@ def test_writes_one_jsonl_line_per_chunk(tmp_path: Path) -> None:
     assert stats.documents == 3
     assert stats.chunks == len(lines)
     assert all(line["source"] == "whois" for line in lines)
+
+
+def test_with_projection_merges_projection_into_chunk_metadata(tmp_path: Path) -> None:
+    """M2.6 wiring: projector(raw) output is merged into each chunk's metadata,
+    alongside the connector's own metadata."""
+    out = tmp_path / "out.jsonl"
+
+    def projector(raw: dict[str, Any]) -> dict[str, Any]:
+        return {"source_type": "whois", "attack_ids": [], "entity_ids": [f"indicator_{raw['id']}"]}
+
+    seed_connector_with_projection(
+        _ListConnector(_records(2)), projector, out, ChunkStrategy.STRUCTURED
+    )
+    lines = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+    assert lines, "expected at least one chunk"
+    md = lines[0]["metadata"]
+    assert md["source_type"] == "whois"
+    assert md["entity_ids"] == ["indicator_r0"]
+    assert md["domain"] == "d0.example"  # connector metadata preserved
+
+
+def test_with_projection_failure_falls_back_to_no_projection(tmp_path: Path) -> None:
+    out = tmp_path / "out.jsonl"
+
+    def boom(_: dict[str, Any]) -> dict[str, Any]:
+        raise RuntimeError("projector blew up")
+
+    stats = seed_connector_with_projection(
+        _ListConnector(_records(1)), boom, out, ChunkStrategy.STRUCTURED
+    )
+    lines = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+    assert lines  # chunk still written despite the projector failure
+    assert stats.chunks == len(lines)
+    assert "source_type" not in lines[0]["metadata"]  # no projection, but no crash
 
 
 def test_jsonl_record_has_canonical_keys(tmp_path: Path) -> None:

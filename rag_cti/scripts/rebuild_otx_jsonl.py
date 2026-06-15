@@ -24,20 +24,30 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from rag_cti.connectors.otx import pulse_metadata, render_pulse_content
+from rag_cti.ingest.normalize import normalize_otx_pulse
+from rag_cti.preprocess.chunk_projection import project_chunk
 from rag_cti.preprocess.chunking import ChunkStrategy, chunk_document
 from rag_cti.preprocess.normalizers import validate_content
+from rag_cti.preprocess.ontology_nodes import ontology_nodes_from_bundle
 from rag_cti.preprocess.seeding import chunk_to_jsonl_dict
 from rag_cti.store.raw_store import RawStore
 from rag_cti.types import Document
 
 DEFAULT_OUT = Path("data/processed/otx.jsonl")
+DEFAULT_BUNDLE = Path("data/raw/mitre/enterprise-attack.json")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebuild otx.jsonl from the versioned RawStore")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="Output JSONL path")
     parser.add_argument("--raw-root", type=Path, default=Path("data/raw"))
+    parser.add_argument("--bundle", type=Path, default=DEFAULT_BUNDLE)
     args = parser.parse_args()
+
+    # M2.6: ontology nodes for projecting adversary/family/technique mentions into
+    # the chunk payload (entity_ids / relations / attack_ids).
+    with args.bundle.open(encoding="utf-8") as fh:
+        nodes = ontology_nodes_from_bundle(json.load(fh))
 
     store = RawStore(args.raw_root)
     source_ids = store.source_ids("otx")
@@ -66,11 +76,12 @@ def main() -> None:
                 continue
 
             doc_id = hashlib.sha256(f"otx:{pulse_id}".encode()).hexdigest()[:16]
+            projection = project_chunk(normalize_otx_pulse(raw), nodes)
             doc = Document(
                 id=doc_id,
                 source="otx",
                 content=validated,
-                metadata=pulse_metadata(raw),
+                metadata={**pulse_metadata(raw), **projection},
                 retrieved_at=datetime.fromisoformat(fetched_at),
             )
             for chunk in chunk_document(doc, strategy=ChunkStrategy.SEMANTIC):
