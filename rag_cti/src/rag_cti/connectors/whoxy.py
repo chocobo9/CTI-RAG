@@ -112,6 +112,17 @@ class WhoxyClient:
         """
         return whoxy_history_to_whois_record(self._get(history=domain))
 
+    def whois_raw(self, domain: str) -> dict[str, Any]:
+        """Live WHOIS lookup returning the **verbatim** Whoxy payload.
+
+        Used by the raw store, which must preserve the source response intact
+        (the mapped record drops fields a future projection might need)."""
+        return self._get(whois=domain)
+
+    def history_raw(self, domain: str) -> dict[str, Any]:
+        """WHOIS-history lookup returning the **verbatim** Whoxy payload."""
+        return self._get(history=domain)
+
     def close(self) -> None:
         self._client.close()
 

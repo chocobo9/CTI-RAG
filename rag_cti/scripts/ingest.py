@@ -31,14 +31,14 @@ from rag_cti._logging import configure_logging, get_logger
 from rag_cti.config import get_settings
 from rag_cti.embeddings.embedder import Embedder
 from rag_cti.retrieval.bm25 import BM25SparseEncoder
-from rag_cti.store.qdrant_store import QdrantStore
+from rag_cti.store.qdrant_store import QdrantStore, assert_unique_chunk_ids
 from rag_cti.types import Chunk
 
 logger = get_logger(__name__)
 
 _DEFAULT_PROCESSED_DIR = Path("data/processed")
 _DEFAULT_SOURCES = ("mitre", "otx", "pdfs")
-_SPARSE_VOCAB_PATH = Path("data/sparse_vocab.json")
+_DEFAULT_SPARSE_VOCAB = Path("data/sparse_vocab.json")
 
 
 def _load_chunks(jsonl_path: Path, embedding_model: str) -> list[Chunk]:
@@ -84,12 +84,18 @@ def _ingest_source(
     store: QdrantStore,
     embed_batch: int,
     sparse_encoder: BM25SparseEncoder | None = None,
+    seen_ids: dict[str, str] | None = None,
 ) -> tuple[int, int]:
     """Ingest one source's JSONL file. Returns (chunks_read, points_written)."""
     jsonl_path = processed_dir / f"{source}.jsonl"
     chunks = _load_chunks(jsonl_path, embedder.model_name)
     if not chunks:
         return 0, 0
+
+    # Fail loud on id collisions before any upsert (Rule 0): a duplicate id with
+    # different content would silently overwrite a Qdrant point. seen_ids is
+    # shared across sources to catch cross-source collisions too.
+    assert_unique_chunk_ids(chunks, seen_ids)
 
     logger.info(
         "embedding chunks", source=source, count=len(chunks), hybrid=sparse_encoder is not None
@@ -115,10 +121,12 @@ def run(
     processed_dir: Path,
     embed_batch: int,
     device: str | None = None,
+    sparse_vocab: Path | None = None,
 ) -> None:
     configure_logging("INFO")
     settings = get_settings()
 
+    vocab_path = sparse_vocab or _DEFAULT_SPARSE_VOCAB
     coll_name = collection or settings.qdrant_collection
     embedder = Embedder(settings.embedding_model, batch_size=embed_batch, device=device)
     store = QdrantStore(
@@ -129,15 +137,13 @@ def run(
 
     store.ensure_collection(vector_size=embedder.dimension)
 
-    if _SPARSE_VOCAB_PATH.exists():
-        encoder = BM25SparseEncoder.load(_SPARSE_VOCAB_PATH)
-        logger.info(
-            "BM25 encoder loaded", vocab_size=len(encoder.vocab), path=str(_SPARSE_VOCAB_PATH)
-        )
+    if vocab_path.exists():
+        encoder = BM25SparseEncoder.load(vocab_path)
+        logger.info("BM25 encoder loaded", vocab_size=len(encoder.vocab), path=str(vocab_path))
     else:
         logger.info(
-            "sparse_vocab.json not found — fitting BM25 on ingestion corpus",
-            path=str(_SPARSE_VOCAB_PATH),
+            "sparse vocab not found — fitting BM25 on ingestion corpus",
+            path=str(vocab_path),
         )
         all_texts: list[str] = []
         for source in sources:
@@ -145,14 +151,21 @@ def run(
                 all_texts.append(chunk.content)
         encoder = BM25SparseEncoder()
         encoder.fit(all_texts)
-        encoder.save(_SPARSE_VOCAB_PATH)
+        encoder.save(vocab_path)
         logger.info("BM25 encoder fitted and saved", vocab_size=len(encoder.vocab))
 
     total_chunks = 0
     total_written = 0
+    seen_ids: dict[str, str] = {}
     for source in sources:
         c, w = _ingest_source(
-            source, processed_dir, embedder, store, embed_batch, sparse_encoder=encoder
+            source,
+            processed_dir,
+            embedder,
+            store,
+            embed_batch,
+            sparse_encoder=encoder,
+            seen_ids=seen_ids,
         )
         total_chunks += c
         total_written += w
@@ -200,6 +213,13 @@ def main() -> None:
         help="Device for sentence-transformers inference, e.g. 'cpu', 'cuda', 'mps'. "
         "Defaults to auto-detect.",
     )
+    parser.add_argument(
+        "--sparse-vocab",
+        type=Path,
+        default=None,
+        help="BM25 vocab path (loaded if it exists, else fitted+saved here). Defaults to "
+        "data/sparse_vocab.json. Pass a per-collection path when building a new collection.",
+    )
     args = parser.parse_args()
 
     run(
@@ -208,6 +228,7 @@ def main() -> None:
         processed_dir=args.processed_dir,
         embed_batch=args.batch_size,
         device=args.device,
+        sparse_vocab=args.sparse_vocab,
     )
 
 

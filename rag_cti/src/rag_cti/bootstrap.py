@@ -62,13 +62,30 @@ def load_sparse_encoder(vocab_path: Path = VOCAB_PATH) -> Any:
     return BM25SparseEncoder.load(vocab_path) if vocab_path.exists() else BM25SparseEncoder()
 
 
+def vocab_path_for(collection: str, base: Path = DATA_DIR) -> Path:
+    """The BM25 vocab paired with a collection.
+
+    Returns ``data/sparse_vocab_{collection}.json`` when present — so a
+    collection's doc and query sparse vectors share one vocab space — else the
+    shared default (``data/sparse_vocab.json``). ingest writes a per-collection
+    vocab; eval/query auto-pair on it via this function.
+    """
+    specific = base / f"sparse_vocab_{collection}.json"
+    return specific if specific.exists() else VOCAB_PATH
+
+
 def build_retrieval_stack(
     settings: Any,
     collection: str | None = None,
     device: str | None = None,
-    vocab_path: Path = VOCAB_PATH,
+    vocab_path: Path | None = None,
 ) -> RetrievalStack:
-    """Build store + embedder + sparse encoder from settings."""
+    """Build store + embedder + sparse encoder from settings.
+
+    When ``vocab_path`` is None the BM25 vocab is auto-paired to the collection
+    (:func:`vocab_path_for`), keeping query sparse vectors in the same space as
+    the collection's doc sparse vectors.
+    """
     from rag_cti.embeddings.embedder import Embedder
     from rag_cti.store.qdrant_store import QdrantStore
 
@@ -79,7 +96,8 @@ def build_retrieval_stack(
         api_key=settings.qdrant_api_key.get_secret_value(),
     )
     embedder = Embedder(model_name=settings.embedding_model, device=device)
-    encoder = load_sparse_encoder(vocab_path)
+    resolved_vocab = vocab_path if vocab_path is not None else vocab_path_for(coll)
+    encoder = load_sparse_encoder(resolved_vocab)
     return RetrievalStack(store=store, embedder=embedder, encoder=encoder, collection=coll)
 
 

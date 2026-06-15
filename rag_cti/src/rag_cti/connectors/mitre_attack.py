@@ -3,11 +3,13 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterator
+from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
 
 from rag_cti._logging import get_logger
 from rag_cti.connectors.base import BaseConnector
+from rag_cti.store.raw_store import SENTINEL_FETCHED_AT
 from rag_cti.types import Document
 
 logger = get_logger(__name__)
@@ -20,8 +22,13 @@ class MitreAttackConnector(BaseConnector):
 
     source_name = "mitre"
 
-    def __init__(self, bundle_path: Path = _BUNDLE_PATH) -> None:
+    def __init__(
+        self, bundle_path: Path = _BUNDLE_PATH, fetched_at: datetime | None = None
+    ) -> None:
         self._bundle_path = bundle_path
+        # retrieved_at = when WE fetched the bundle (RawStore fetched_at); the
+        # technique's STIX modified stays in metadata.last_modified.
+        self._fetched_at = fetched_at or SENTINEL_FETCHED_AT
 
     def fetch(self, **_: Any) -> Iterator[dict[str, Any]]:
         if not self._bundle_path.exists():
@@ -45,6 +52,7 @@ class MitreAttackConnector(BaseConnector):
             id=doc_id,
             source=self.source_name,
             content=content,
+            retrieved_at=self._fetched_at,
             metadata={
                 "attack_id": attack_id,
                 "name": raw.get("name", ""),

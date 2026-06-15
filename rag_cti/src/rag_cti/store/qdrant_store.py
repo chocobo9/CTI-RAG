@@ -6,6 +6,7 @@ in each point's payload is used for per-source filtering at query time.
 
 from __future__ import annotations
 
+import hashlib
 import uuid
 from collections.abc import Iterable
 from datetime import datetime
@@ -26,6 +27,32 @@ _QDRANT_ID_NAMESPACE = uuid.UUID("d7b3a5a6-4f72-4e86-9b88-2e5f5d8a1c3e")
 _DEFAULT_UPSERT_BATCH = 128
 _RETRIEVER_NAME = "qdrant_dense"
 _SPARSE_RETRIEVER_NAME = "qdrant_sparse"
+
+
+class ChunkIdCollisionError(RuntimeError):
+    """Two distinct chunks share an id — upserting would silently overwrite one
+    (ingestion §6/§7, Rule 0). Raised loudly instead of letting it happen."""
+
+
+def assert_unique_chunk_ids(
+    chunks: Iterable[Chunk], seen: dict[str, str] | None = None
+) -> dict[str, str]:
+    """Fail loud on an id collision between chunks of different content.
+
+    Same id + identical content is idempotent (allowed); same id + different
+    content is a silent-overwrite hazard. Pass a shared ``seen`` map across
+    sources to catch cross-source collisions. Returns the updated map.
+    """
+    seen = {} if seen is None else seen
+    for chunk in chunks:
+        content_hash = hashlib.sha256(chunk.content.encode("utf-8")).hexdigest()
+        prev = seen.get(chunk.id)
+        if prev is not None and prev != content_hash:
+            raise ChunkIdCollisionError(
+                f"chunk id {chunk.id!r} maps to two different contents — refusing to upsert"
+            )
+        seen[chunk.id] = content_hash
+    return seen
 
 
 def chunk_to_point_id(chunk_id: str) -> str:

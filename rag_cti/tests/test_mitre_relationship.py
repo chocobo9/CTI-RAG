@@ -7,6 +7,7 @@ All fixtures use real STIX 2.1 object structure with realistic IDs.
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 from rag_cti.connectors.mitre_relationship import MitreRelationshipConnector
@@ -60,6 +61,12 @@ _IDENTITY = {
     "type": "identity",
     "id": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
     "name": "The MITRE Corporation",
+}
+
+_COURSE_OF_ACTION = {
+    "type": "course-of-action",
+    "id": "course-of-action--ffffffff-0000-0000-0000-000000000001",
+    "name": "User Training",
 }
 
 # Relationships
@@ -141,6 +148,17 @@ _REL_REVOKED = {
     "modified": "2024-01-01T00:00:00.000Z",
 }
 
+_REL_MITIGATES = {
+    "type": "relationship",
+    "id": "relationship--88888888-8888-8888-8888-888888888888",
+    "relationship_type": "mitigates",
+    "source_ref": _COURSE_OF_ACTION["id"],
+    "target_ref": _ATTACK_PATTERN_T1059["id"],
+    "description": "User Training mitigates T1059.",
+    "created": "2021-01-01T00:00:00.000Z",
+    "modified": "2024-01-01T00:00:00.000Z",
+}
+
 
 def _make_bundle(*objects) -> dict:
     return {"type": "bundle", "id": "bundle--test", "objects": list(objects)}
@@ -149,6 +167,7 @@ def _make_bundle(*objects) -> dict:
 def _write_bundle(tmp_path: Path, *objects) -> Path:
     bundle = _make_bundle(
         _IDENTITY,
+        _COURSE_OF_ACTION,
         _INTRUSION_SET_APT29,
         _CAMPAIGN_NIGHTSKY,
         _ATTACK_PATTERN_T1059,
@@ -246,13 +265,26 @@ class TestEdgeCases:
 
 
 class TestAdversarial:
-    def test_malware_uses_technique_excluded(self, tmp_path: Path) -> None:
-        """malware -> uses -> attack-pattern MUST be filtered out."""
+    def test_malware_uses_technique_included(self, tmp_path: Path) -> None:
+        """malware/tool -> uses -> attack-pattern IS collected (decision 2026-06):
+        malware and tool are threat-entity subjects; dropping them lost ~10.6k
+        edges. The earlier behaviour excluded them — deliberately reversed."""
         bundle_path = _write_bundle(
             tmp_path,
             _REL_APT29_USES_T1059,
             _REL_MALWARE_USES_TECHNIQUE,
         )
+        conn = MitreRelationshipConnector(bundle_path=bundle_path)
+        docs = _fetch_and_convert(conn)
+
+        assert len(docs) == 2
+        source_names = {d.metadata["source_name"] for d in docs}
+        assert source_names == {"APT29", "Cobalt Strike"}
+
+    def test_mitigates_edge_excluded(self, tmp_path: Path) -> None:
+        """course-of-action -> mitigates -> attack-pattern MUST be filtered out:
+        mitigates is a defensive predicate, not a threat fact edge."""
+        bundle_path = _write_bundle(tmp_path, _REL_APT29_USES_T1059, _REL_MITIGATES)
         conn = MitreRelationshipConnector(bundle_path=bundle_path)
         docs = _fetch_and_convert(conn)
 
@@ -266,3 +298,23 @@ class TestAdversarial:
         docs = _fetch_and_convert(conn)
 
         assert len(docs) == 0
+
+
+def test_retrieved_at_is_fetched_at_not_stix_modified(tmp_path: Path) -> None:
+    """retrieved_at = when WE fetched (passed in), deterministic; the edge's STIX
+    modified is preserved separately in metadata.last_modified (Rule 0)."""
+    fetched = datetime(2026, 6, 1, tzinfo=UTC)
+    bundle_path = _write_bundle(tmp_path, _REL_APT29_USES_T1059)
+    doc = list(
+        MitreRelationshipConnector(bundle_path=bundle_path, fetched_at=fetched).fetch_documents()
+    )[0]
+    assert doc.retrieved_at == fetched
+    assert doc.metadata["last_modified"] == "2024-01-01T00:00:00.000Z"  # source time, separate
+
+
+def test_retrieved_at_default_is_deterministic_sentinel(tmp_path: Path) -> None:
+    """No fetched_at => deterministic sentinel, never wall-clock (rebuild reproduces)."""
+    bundle_path = _write_bundle(tmp_path, _REL_APT29_USES_T1059)
+    d1 = list(MitreRelationshipConnector(bundle_path=bundle_path).fetch_documents())[0]
+    d2 = list(MitreRelationshipConnector(bundle_path=bundle_path).fetch_documents())[0]
+    assert d1.retrieved_at == d2.retrieved_at

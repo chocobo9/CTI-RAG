@@ -104,6 +104,14 @@ def test_mitre_raises_on_missing_bundle(tmp_path: Path) -> None:
         list(MitreAttackConnector(bundle_path=tmp_path / "missing.json").fetch_documents())
 
 
+def test_mitre_retrieved_at_is_deterministic_sentinel(mitre_bundle_file: Path) -> None:
+    # retrieved_at = our fetch time (sentinel by default), deterministic — not wall-clock.
+    # The technique's STIX modified stays in metadata.last_modified (tested above).
+    d1 = list(MitreAttackConnector(bundle_path=mitre_bundle_file).fetch_documents())[0]
+    d2 = list(MitreAttackConnector(bundle_path=mitre_bundle_file).fetch_documents())[0]
+    assert d1.retrieved_at == d2.retrieved_at
+
+
 # --- WHOIS ---
 
 
@@ -146,3 +154,17 @@ def test_pdns_subdomains_appear_in_content() -> None:
 def test_pdns_skips_record_missing_domain() -> None:
     docs = list(PassiveDNSConnector(records=[{"resolutions": []}]).fetch_documents())
     assert len(docs) == 0
+
+
+def test_pdns_join_fields_are_not_capped() -> None:
+    # 25 resolutions / 30 subdomains exceed the old [:20]/[:10] caps — join
+    # fields must be preserved in full (ingestion §6/§7.3).
+    record = {
+        "domain": "big.example",
+        "resolutions": [{"ip": f"10.0.0.{i}", "asn": f"AS{i}"} for i in range(25)],
+        "subdomains": [f"s{i}.big.example" for i in range(30)],
+    }
+    doc = list(PassiveDNSConnector(records=[record]).fetch_documents())[0]
+    assert len(doc.metadata["ip_addresses"]) == 25
+    assert len(doc.metadata["asns"]) == 25
+    assert len(doc.metadata["subdomains"]) == 30

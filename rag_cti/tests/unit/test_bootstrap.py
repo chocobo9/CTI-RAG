@@ -10,6 +10,7 @@ from rag_cti.bootstrap import (
     VOCAB_PATH,
     FixedRouter,
     build_deepseek_client,
+    vocab_path_for,
 )
 
 
@@ -31,6 +32,15 @@ def test_fixed_router_returns_same_model_for_every_task() -> None:
     router = FixedRouter("deepseek-chat")
     assert router.model_for("hyde") == "deepseek-chat"
     assert router.model_for(object()) == "deepseek-chat"
+
+
+def test_vocab_path_for_pairs_per_collection(tmp_path) -> None:
+    # No collection-specific file => fall back to the shared default vocab.
+    assert vocab_path_for("cti_chunks_v2", base=tmp_path) == VOCAB_PATH
+    # A collection-specific vocab present => use it (keeps doc/query vocab paired).
+    specific = tmp_path / "sparse_vocab_cti_chunks_v3.json"
+    specific.write_text("{}", encoding="utf-8")
+    assert vocab_path_for("cti_chunks_v3", base=tmp_path) == specific
 
 
 def test_build_deepseek_client_requires_key() -> None:

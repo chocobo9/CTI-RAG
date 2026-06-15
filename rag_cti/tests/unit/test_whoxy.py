@@ -130,3 +130,10 @@ def test_history_record_feeds_whois_connector() -> None:
     assert doc.source == "whois"
     assert doc.metadata["domain"] == "evil.example"
     assert "NameCheap" in doc.content
+
+
+def test_whois_raw_returns_verbatim_payload(monkeypatch) -> None:
+    client = WhoxyClient(api_key="x")
+    monkeypatch.setattr(client, "_get", lambda **kw: {"status": 1, "echo": kw})
+    assert client.whois_raw("evil.example") == {"status": 1, "echo": {"whois": "evil.example"}}
+    assert client.history_raw("evil.example") == {"status": 1, "echo": {"history": "evil.example"}}

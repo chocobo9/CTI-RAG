@@ -1,15 +1,14 @@
-"""Rebuild data/processed/otx.jsonl from raw JSON files.
+"""Rebuild data/processed/otx.jsonl from the versioned RawStore.
 
-Usage:
-    python scripts/rebuild_otx_jsonl.py [--out data/processed/otx.jsonl]
+Reads each OTX pulse's latest raw version from the RawStore, renders it with the
+canonical connector mapping (render_pulse_content / pulse_metadata — adversary,
+malware_families, targeted_countries, references included), chunks with the
+SEMANTIC strategy, and writes the output JSONL.
 
-Reads every data/raw/otx/{pulse_id}.json, renders it with the canonical
-connector mapping (rag_cti.connectors.otx.render_pulse_content /
-pulse_metadata — adversary, malware_families, targeted_countries,
-references included), chunks with SEMANTIC strategy, and overwrites the
-output JSONL.
-
-Pure local — no API calls.
+Deterministic: chunk ``retrieved_at`` is taken from the raw version's
+``fetched_at`` (not wall-clock), so re-running reproduces byte-identical output.
+Pure local — no API calls. Run scripts/migrate_raw_store.py first to populate the
+versioned store.
 """
 
 from __future__ import annotations
@@ -19,6 +18,7 @@ import argparse
 import hashlib
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -27,46 +27,38 @@ from rag_cti.connectors.otx import pulse_metadata, render_pulse_content
 from rag_cti.preprocess.chunking import ChunkStrategy, chunk_document
 from rag_cti.preprocess.normalizers import validate_content
 from rag_cti.preprocess.seeding import chunk_to_jsonl_dict
+from rag_cti.store.raw_store import RawStore
 from rag_cti.types import Document
 
-RAW_DIR = Path("data/raw/otx")
 DEFAULT_OUT = Path("data/processed/otx.jsonl")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Rebuild otx.jsonl from data/raw/otx/*.json")
+    parser = argparse.ArgumentParser(description="Rebuild otx.jsonl from the versioned RawStore")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="Output JSONL path")
+    parser.add_argument("--raw-root", type=Path, default=Path("data/raw"))
     args = parser.parse_args()
 
-    if not RAW_DIR.exists():
-        print(f"ERROR: Raw directory not found: {RAW_DIR}", file=sys.stderr)
-        sys.exit(1)
-
-    raw_files = sorted(RAW_DIR.glob("*.json"))
-    print(f"Found {len(raw_files)} raw JSON files")
-
-    if not raw_files:
-        print("Nothing to rebuild.")
+    store = RawStore(args.raw_root)
+    source_ids = store.source_ids("otx")
+    print(f"Found {len(source_ids)} OTX raw records in versioned store")
+    if not source_ids:
+        print("Nothing to rebuild (run scripts/migrate_raw_store.py first).")
         return
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-
-    doc_count = 0
-    chunk_count = 0
-    skipped = 0
+    doc_count = chunk_count = skipped = 0
 
     with args.out.open("w", encoding="utf-8") as fh:
-        for raw_path in raw_files:
-            try:
-                raw = json.loads(raw_path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError) as exc:
-                print(f"  WARN: skipping {raw_path.name}: {exc}")
+        for pulse_id in source_ids:
+            versions = store.versions("otx", pulse_id)
+            if not versions:
                 skipped += 1
                 continue
+            fetched_at = versions[-1]
+            raw = store.read("otx", pulse_id, fetched_at)
 
-            pulse_id = raw.get("id", raw_path.stem)
             content = render_pulse_content(raw)
-
             try:
                 validated = validate_content(content, "otx", pulse_id)
             except ValueError:
@@ -79,8 +71,8 @@ def main() -> None:
                 source="otx",
                 content=validated,
                 metadata=pulse_metadata(raw),
+                retrieved_at=datetime.fromisoformat(fetched_at),
             )
-
             for chunk in chunk_document(doc, strategy=ChunkStrategy.SEMANTIC):
                 fh.write(json.dumps(chunk_to_jsonl_dict(chunk)) + "\n")
                 chunk_count += 1

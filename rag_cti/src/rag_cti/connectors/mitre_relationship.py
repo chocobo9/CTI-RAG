@@ -3,18 +3,26 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterator
+from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
 
 from rag_cti._logging import get_logger
 from rag_cti.connectors.base import BaseConnector
+from rag_cti.store.raw_store import SENTINEL_FETCHED_AT
 from rag_cti.types import Document
 
 logger = get_logger(__name__)
 
 _BUNDLE_PATH = Path("data/raw/mitre/enterprise-attack.json")
 
-_CTI_SOURCE_TYPES = frozenset({"intrusion-set", "campaign"})
+# Fact-edge subjects must be threat entities (decision 2026-06): intrusion-set,
+# campaign, malware, tool. malware/tool were previously dropped, losing ~10.6k
+# "malware/tool uses technique" edges. Defensive subjects (course-of-action for
+# `mitigates`, data-component for `detects`) are excluded via _CTI_REL_TYPES:
+# only `uses` / `attributed-to` are fact predicates here. `subtechnique-of` is an
+# ontology edge (see ontology_edges loader), not a fact edge.
+_CTI_SOURCE_TYPES = frozenset({"intrusion-set", "campaign", "malware", "tool"})
 _CTI_REL_TYPES = frozenset({"uses", "attributed-to"})
 
 
@@ -23,8 +31,13 @@ class MitreRelationshipConnector(BaseConnector):
 
     source_name = "mitre"
 
-    def __init__(self, bundle_path: Path = _BUNDLE_PATH) -> None:
+    def __init__(
+        self, bundle_path: Path = _BUNDLE_PATH, fetched_at: datetime | None = None
+    ) -> None:
         self._bundle_path = bundle_path
+        # retrieved_at = when WE fetched the bundle (RawStore fetched_at), not the
+        # edge's STIX modified (that stays in metadata.last_modified).
+        self._fetched_at = fetched_at or SENTINEL_FETCHED_AT
         self._index: dict[str, dict[str, Any]] = {}
         self._loaded = False
 
@@ -105,11 +118,13 @@ class MitreRelationshipConnector(BaseConnector):
             id=doc_id,
             source=self.source_name,
             content=content,
+            retrieved_at=self._fetched_at,
             metadata={
                 "attack_id": attack_id,
                 "relationship_type": rel_type,
                 "source_name": src_name,
                 "target_name": tgt_name,
                 "stix_id": raw["id"],
+                "last_modified": raw.get("modified", ""),
             },
         )

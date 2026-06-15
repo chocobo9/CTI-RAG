@@ -21,6 +21,7 @@ from rag_cti._logging import configure_logging, get_logger
 from rag_cti.connectors.mitre_attack import MitreAttackConnector
 from rag_cti.preprocess.chunking import ChunkStrategy
 from rag_cti.preprocess.seeding import seed_connector_to_jsonl
+from rag_cti.store.raw_store import RawStore, parse_fetched_at
 
 logger = get_logger(__name__)
 
@@ -31,7 +32,9 @@ DEFAULT_OUT = Path("data/processed/mitre.jsonl")
 def run(bundle_path: Path, out_path: Path) -> None:
     configure_logging("INFO")
     logger.info("seeding MITRE ATT&CK", bundle=str(bundle_path), out=str(out_path))
-    connector = MitreAttackConnector(bundle_path=bundle_path)
+    versions = RawStore().versions("mitre", "enterprise-attack")
+    fetched_at = parse_fetched_at(versions[-1] if versions else None)
+    connector = MitreAttackConnector(bundle_path=bundle_path, fetched_at=fetched_at)
     stats = seed_connector_to_jsonl(connector, out_path, ChunkStrategy.SEMANTIC)
     print(f"\n[ok] {stats.summary(out_path)}")
 

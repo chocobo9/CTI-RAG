@@ -8,7 +8,6 @@ Public interface:
 from __future__ import annotations
 
 from functools import lru_cache
-from pathlib import Path
 
 from rag_cti.config import get_settings
 from rag_cti.retrieval import Pipeline, build_pipeline
@@ -18,13 +17,11 @@ __all__ = ["query", "answer", "QueryResult", "GeneratedAnswer", "Pipeline", "bui
 
 __version__ = "0.1.0"
 
-_VOCAB_PATH = Path(__file__).parent.parent.parent / "data" / "sparse_vocab.json"
-
 
 @lru_cache(maxsize=1)
 def _default_pipeline() -> Pipeline:
+    from rag_cti.bootstrap import load_sparse_encoder, vocab_path_for
     from rag_cti.embeddings.embedder import Embedder
-    from rag_cti.retrieval.bm25 import BM25SparseEncoder
     from rag_cti.store.qdrant_store import QdrantStore
 
     settings = get_settings()
@@ -35,7 +32,7 @@ def _default_pipeline() -> Pipeline:
     )
     embedder = Embedder(model_name=settings.embedding_model)
     embedder._load()  # eager load: avoid first-query penalty
-    encoder = BM25SparseEncoder.load(_VOCAB_PATH) if _VOCAB_PATH.exists() else BM25SparseEncoder()
+    encoder = load_sparse_encoder(vocab_path_for(settings.qdrant_collection))
 
     llm_client = None
     llm_provider = "anthropic"
