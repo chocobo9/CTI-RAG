@@ -10,10 +10,19 @@ Every distinct mention yields exactly one Entity (nothing is dropped).
 
 from __future__ import annotations
 
-from rag_cti.preprocess.entity_registry import build_entity_registry
+from rag_cti.ingest.normalize import RelationMention
+from rag_cti.preprocess.entity_registry import build_entity_registry, resolve_relations
 
 # OntologyNodes as produced by ontology_nodes_from_bundle (group = intrusion-set).
 _NODES = [
+    {
+        "ontology_id": "T1003",
+        "type": "technique",
+        "name": "OS Credential Dumping",
+        "aliases": [],
+        "tactics": ["credential-access"],
+        "attack_version": "18.1",
+    },
     {
         "ontology_id": "G0016",
         "type": "group",
@@ -113,3 +122,42 @@ def test_resolved_entity_carries_ontology_aliases():
     r = build_entity_registry([("APT29", "actor")], _NODES)
     e = _entities(r)["actor_G0016"]
     assert e["aliases"] == ["Cozy Bear", "NOBELIUM"]
+
+
+def test_technique_resolved_by_attack_id_not_by_name():
+    # A technique mention is its attack_id (= the ontology_id), resolved directly
+    # — exact identity, ungated. Name/alias matching does not apply.
+    e = _entities(build_entity_registry([("T1003", "technique")], _NODES))["technique_T1003"]
+    assert e["ontology_id"] == "T1003"
+    assert e["resolution"] == "exact_id"
+    assert e["canonical_name"] == "OS Credential Dumping"
+
+
+def test_unknown_attack_id_becomes_orphan_technique():
+    r = build_entity_registry([("T9999", "technique")], _NODES)
+    assert r["entities"][0]["ontology_id"] is None
+    assert r["entities"][0]["resolution"] == "orphan"
+
+
+def test_family_resolves_to_software_node():
+    e = _entities(build_entity_registry([("Cobalt Strike", "family")], _NODES))["family_S0154"]
+    assert e["ontology_id"] == "S0154"
+    assert e["type"] == "family"
+
+
+def test_resolve_relations_maps_subject_and_object_to_entity_ids():
+    rels = [RelationMention("APT29", "uses", "T1003", "actor", "technique")]
+    triples = resolve_relations(rels, _NODES)
+    assert triples == [
+        {"subject_id": "actor_G0016", "predicate": "uses", "object_id": "technique_T1003"}
+    ]
+
+
+def test_resolve_relations_keeps_orphan_subject_and_object():
+    # campaign (not mirrored) -> orphan subject; a location -> orphan object.
+    # Resolved but not dropped, so the edge survives with stable ids (DECISION-2).
+    rels = [RelationMention("Operation X", "targets", "Iran", "campaign", "location")]
+    triple = resolve_relations(rels, _NODES)[0]
+    assert triple["subject_id"].startswith("campaign_orphan_")
+    assert triple["object_id"].startswith("location_orphan_")
+    assert triple["predicate"] == "targets"
