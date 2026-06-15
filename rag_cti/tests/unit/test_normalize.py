@@ -67,8 +67,18 @@ def test_normalize_otx_without_adversary_emits_no_relations():
 
 
 def _stix_index():
-    actor = {"type": "intrusion-set", "id": "is--1", "name": "APT29"}
-    malware = {"type": "malware", "id": "mal--1", "name": "Cobalt Strike"}
+    actor = {
+        "type": "intrusion-set",
+        "id": "is--1",
+        "name": "APT29",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "G0016"}],
+    }
+    malware = {
+        "type": "malware",
+        "id": "mal--1",
+        "name": "Cobalt Strike",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "S0154"}],
+    }
     technique = {
         "type": "attack-pattern",
         "id": "ap--1",
@@ -90,11 +100,34 @@ def test_normalize_mitre_relationship_reads_predicate_from_structure():
     rec = normalize_mitre_relationship(raw, index)
     assert rec.classification is SourceClass.ONTOLOGY
     assert EntityMention("APT29", "actor") in rec.entity_mentions
-    assert EntityMention("Command and Scripting Interpreter", "technique") in rec.entity_mentions
+    # A technique mention is its attack id (T####), the form the registry resolves
+    # by — NOT the technique name (which would orphan). Regression for the
+    # name-vs-id target-ref bug.
+    assert EntityMention("T1059", "technique") in rec.entity_mentions
     assert rec.relation_mentions == [
         RelationMention("APT29", "uses", "T1059", "actor", "technique")
     ]
     assert rec.content == "APT29 used PowerShell."
+
+
+def test_normalize_mitre_software_target_ref_is_name_not_attack_id():
+    """A malware/tool TARGET is referenced by NAME (resolved by name), never by its
+    S#### id — using the id would orphan it (it is not a software *name*). Regression
+    for the bug where _attack_id_of returned S#### for non-technique targets, splitting
+    the same software into a resolved entity_id and an orphan relation object."""
+    index = _stix_index()
+    raw = {
+        "id": "rel--soft",
+        "relationship_type": "uses",
+        "source_ref": "is--1",  # APT29 (actor)
+        "target_ref": "mal--1",  # Cobalt Strike (malware -> family), has external_id S0154
+    }
+    rec = normalize_mitre_relationship(raw, index)
+    assert EntityMention("Cobalt Strike", "family") in rec.entity_mentions
+    assert EntityMention("S0154", "family") not in rec.entity_mentions
+    obj = rec.relation_mentions[0]
+    assert obj.object == "Cobalt Strike"  # name, NOT "S0154"
+    assert obj.object_type == "family"
 
 
 def test_normalize_mitre_malware_subject_maps_to_family():

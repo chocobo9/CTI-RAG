@@ -80,15 +80,12 @@ def _build_indexes(
     return name_nodes, oid_nodes
 
 
-def _resolve_exact(q: str, nodes: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, str]:
-    """Exact canonical-name then exact-alias match (both certain). None if neither."""
-    for node in nodes:
-        if _norm(node["name"]) == q:
-            return node, "exact_name"
-    for node in nodes:
-        if any(q == _norm(alias) for alias in node.get("aliases", [])):
-            return node, "exact_alias"
-    return None, ""
+def _candidate_dicts(nodes: list[dict[str, Any]], how: str) -> tuple[dict[str, Any], ...]:
+    """Held merge-candidate rows (surfaced, never auto-applied) for near-miss nodes."""
+    return tuple(
+        {"candidate_ontology_id": n["ontology_id"], "candidate_name": n["name"], "how": how}
+        for n in nodes
+    )
 
 
 def _substring_candidates(q: str, nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -124,24 +121,30 @@ def _resolve_one(
 ) -> _Resolution:
     """Resolve one (name, entity_type) mention to a stable identity. See module doc."""
     if etype in _ID_RESOLVED:
-        node = oid_nodes.get(etype, {}).get(name.strip())
+        # Attack ids are case-insensitive (T1003 == t1003) — resolve on the upper form.
+        node = oid_nodes.get(etype, {}).get(name.strip().upper())
         return _resolved(etype, node, "exact_id") if node is not None else _orphan(etype, name)
 
     if etype in _NAME_RESOLVED:
         nodes = name_nodes.get(etype, [])
         q = _norm(name)
-        matched, how = _resolve_exact(q, nodes)
-        if matched is not None:
-            return _resolved(etype, matched, how)
-        cands = tuple(
-            {
-                "candidate_ontology_id": n["ontology_id"],
-                "candidate_name": n["name"],
-                "how": "substring",
-            }
-            for n in _substring_candidates(q, nodes)
-        )
-        return _orphan(etype, name, cands)
+        # Exact name (strongest), then exact alias. A UNIQUE exact match auto-reuses
+        # (certain). An AMBIGUOUS one — the same surface string claimed by two ontology
+        # nodes (e.g. the alias "DNSMessenger" shared by S0145 and S0146) — is NOT
+        # silently bound to whichever iterates first: that is a cheap+irreversible+
+        # silent fusion (Rule 0 / DECISION-1). It orphans and surfaces every claimant
+        # as a held candidate, exactly like a substring near-miss.
+        name_hits = [n for n in nodes if _norm(n["name"]) == q]
+        if len(name_hits) == 1:
+            return _resolved(etype, name_hits[0], "exact_name")
+        if len(name_hits) > 1:
+            return _orphan(etype, name, _candidate_dicts(name_hits, "ambiguous_name"))
+        alias_hits = [n for n in nodes if any(q == _norm(a) for a in n.get("aliases", []))]
+        if len(alias_hits) == 1:
+            return _resolved(etype, alias_hits[0], "exact_alias")
+        if len(alias_hits) > 1:
+            return _orphan(etype, name, _candidate_dicts(alias_hits, "ambiguous_alias"))
+        return _orphan(etype, name, _candidate_dicts(_substring_candidates(q, nodes), "substring"))
 
     return _orphan(etype, name)  # campaign / location / indicator: no MITRE mirror
 

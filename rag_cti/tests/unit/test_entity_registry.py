@@ -161,3 +161,62 @@ def test_resolve_relations_keeps_orphan_subject_and_object():
     assert triple["subject_id"].startswith("campaign_orphan_")
     assert triple["object_id"].startswith("location_orphan_")
     assert triple["predicate"] == "targets"
+
+
+def test_ambiguous_exact_alias_orphans_with_all_candidates_not_silent_merge():
+    """A surface string that is the exact alias of TWO nodes (like the real shared
+    alias "DNSMessenger" on S0145 + S0146) must NOT silently bind to whichever
+    iterates first — it orphans and surfaces every claimant (Rule 0 / DECISION-1)."""
+    nodes = [
+        {
+            "ontology_id": "S0145",
+            "type": "software",
+            "name": "POWERSOURCE",
+            "aliases": ["DNSMessenger"],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+        {
+            "ontology_id": "S0146",
+            "type": "software",
+            "name": "TEXTMATE",
+            "aliases": ["DNSMessenger"],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+    ]
+    r = build_entity_registry([("DNSMessenger", "family")], nodes)
+    e = r["entities"][0]
+    assert e["ontology_id"] is None
+    assert e["resolution"] == "orphan"
+    assert sorted(c["candidate_ontology_id"] for c in r["merge_candidates"]) == ["S0145", "S0146"]
+
+
+def test_ambiguous_exact_name_orphans_not_silent_merge():
+    nodes = [
+        {
+            "ontology_id": "G0001",
+            "type": "group",
+            "name": "Twins",
+            "aliases": [],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+        {
+            "ontology_id": "G0002",
+            "type": "group",
+            "name": "Twins",
+            "aliases": [],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+    ]
+    r = build_entity_registry([("Twins", "actor")], nodes)
+    assert r["entities"][0]["ontology_id"] is None
+    assert sorted(c["candidate_ontology_id"] for c in r["merge_candidates"]) == ["G0001", "G0002"]
+
+
+def test_id_resolution_is_case_insensitive():
+    r = build_entity_registry([("t1003", "technique")], _NODES)
+    assert r["entities"][0]["entity_id"] == "technique_T1003"
+    assert r["entities"][0]["ontology_id"] == "T1003"

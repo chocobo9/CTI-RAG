@@ -13,6 +13,8 @@ from rag_cti.ingest.normalize import (
     Provenance,
     RelationMention,
     SourceClass,
+    normalize_infrastructure,
+    normalize_mitre_relationship,
 )
 from rag_cti.preprocess.chunk_projection import project_chunk
 
@@ -33,7 +35,46 @@ _NODES = [
         "tactics": ["credential-access"],
         "attack_version": "18.1",
     },
+    {
+        "ontology_id": "S0154",
+        "type": "software",
+        "name": "Cobalt Strike",
+        "aliases": ["cobaltstrike"],
+        "tactics": [],
+        "attack_version": "18.1",
+    },
 ]
+
+# Minimal real STIX index for normalize_mitre_relationship (the path that broke).
+_STIX = {
+    "is--1": {
+        "type": "intrusion-set",
+        "id": "is--1",
+        "name": "APT29",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "G0016"}],
+    },
+    "mal--1": {
+        "type": "malware",
+        "id": "mal--1",
+        "name": "Cobalt Strike",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "S0154"}],
+    },
+    "ap--1": {
+        "type": "attack-pattern",
+        "id": "ap--1",
+        "name": "OS Credential Dumping",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "T1003"}],
+    },
+}
+
+
+def _rel(src, tgt, rtype="uses"):
+    return {
+        "id": f"rel--{src}-{tgt}",
+        "relationship_type": rtype,
+        "source_ref": src,
+        "target_ref": tgt,
+    }
 
 
 def _record() -> NormalizedRecord:
@@ -90,3 +131,40 @@ def test_narrative_record_with_no_structured_mentions_projects_empty():
         "entity_ids": [],
         "relations": [],
     }
+
+
+# --- end-to-end regression: real normalize -> project_chunk (the path that broke) ---
+
+
+def test_mitre_relationship_to_technique_projects_resolved_not_orphan():
+    """actor uses technique: attack_ids = T#### (not the technique name); the
+    technique entity_id resolves (not technique_orphan); relations[] agrees."""
+    rec = normalize_mitre_relationship(_rel("is--1", "ap--1"), _STIX)
+    proj = project_chunk(rec, _NODES)
+    assert proj["attack_ids"] == ["T1003"]
+    assert "technique_T1003" in proj["entity_ids"]
+    assert "actor_G0016" in proj["entity_ids"]
+    assert not any("orphan" in e for e in proj["entity_ids"])
+    assert proj["relations"] == [
+        {"subject_id": "actor_G0016", "predicate": "uses", "object_id": "technique_T1003"}
+    ]
+
+
+def test_mitre_relationship_to_software_entity_id_and_relation_agree():
+    """actor uses malware: the software resolves to ONE id in BOTH entity_ids and
+    relations[].object_id — no split into family_S#### vs family_orphan."""
+    rec = normalize_mitre_relationship(_rel("is--1", "mal--1"), _STIX)
+    proj = project_chunk(rec, _NODES)
+    assert "family_S0154" in proj["entity_ids"]
+    assert proj["relations"][0]["object_id"] == "family_S0154"
+    assert not any("orphan" in e for e in proj["entity_ids"])
+
+
+def test_field_source_chunk_carries_indicator_in_entity_ids():
+    """A field-source (infrastructure) chunk's keying indicator IS its entity and
+    must appear in entity_ids (retrieval §4/§5)."""
+    rec = normalize_infrastructure({"k": "v"}, source_type="vt", indicator_value="evil.com")
+    proj = project_chunk(rec, _NODES)
+    assert proj["source_type"] == "vt"
+    assert len(proj["entity_ids"]) == 1
+    assert proj["entity_ids"][0].startswith("indicator_")

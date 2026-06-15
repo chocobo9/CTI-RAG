@@ -152,7 +152,19 @@ def normalize_otx_pulse(raw: dict[str, Any], fetched_at: str = "") -> Normalized
     )
 
 
-def _attack_id_of(obj: dict[str, Any]) -> str:
+def _technique_attack_id(obj: dict[str, Any]) -> str:
+    """The T#### attack id of a *technique* object, or "".
+
+    Type-guarded to attack-pattern: intrusion-set / malware / tool also carry a
+    mitre-attack external_id (G####/S####), but those are resolved by NAME, not by
+    id (entity_registry). Returning their id here would make the relation object
+    a G####/S#### string that the name resolver cannot match → a silent orphan
+    split (the actor/family target then resolves differently from the same entity
+    seen elsewhere). Only techniques resolve by attack id, so only techniques get
+    one here.
+    """
+    if obj.get("type") != "attack-pattern":
+        return ""
     for ref in obj.get("external_references", []):
         if ref.get("source_name") == "mitre-attack":
             return str(ref.get("external_id", ""))
@@ -174,8 +186,12 @@ def normalize_mitre_relationship(
     tgt_name = str(tgt.get("name", ""))
     src_type = _STIX_TYPE_TO_ENTITY.get(str(src.get("type", "")), "")
     tgt_type = _STIX_TYPE_TO_ENTITY.get(str(tgt.get("type", "")), "")
-    attack_id = _attack_id_of(tgt)
-    object_ref = attack_id or tgt_name
+    attack_id = _technique_attack_id(tgt)
+    # The target's reference form must match how its entity type is resolved:
+    # a technique by its attack id (T####), an actor/family/campaign by name. Use
+    # the SAME ref for the entity mention and the relation object so a chunk's
+    # entity_ids and relations[] never disagree about the same target.
+    tgt_ref = attack_id or tgt_name
 
     return NormalizedRecord(
         provenance=Provenance(
@@ -186,8 +202,8 @@ def normalize_mitre_relationship(
         ),
         classification=SourceClass.ONTOLOGY,
         content=str(raw.get("description", "")),
-        entity_mentions=[EntityMention(src_name, src_type), EntityMention(tgt_name, tgt_type)],
-        relation_mentions=[RelationMention(src_name, predicate, object_ref, src_type, tgt_type)],
+        entity_mentions=[EntityMention(src_name, src_type), EntityMention(tgt_ref, tgt_type)],
+        relation_mentions=[RelationMention(src_name, predicate, tgt_ref, src_type, tgt_type)],
         metadata={"attack_id": attack_id, "relationship_type": predicate},
     )
 
