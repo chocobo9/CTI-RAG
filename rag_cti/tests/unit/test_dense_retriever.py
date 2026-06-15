@@ -40,11 +40,13 @@ class _FakeStore:
         query_vector: np.ndarray,
         top_k: int = 10,
         source_filter=None,
+        constraint=None,
     ) -> list[RetrievalResult]:
         self.last_call = {
             "query_vector": query_vector,
             "top_k": top_k,
             "source_filter": source_filter,
+            "constraint": constraint,
         }
         return self._results
 

@@ -4,7 +4,7 @@ import time
 from typing import Protocol
 
 from rag_cti._logging import get_logger
-from rag_cti.types import RetrievalResult
+from rag_cti.types import PayloadConstraint, RetrievalResult
 
 logger = get_logger(__name__)
 
@@ -18,6 +18,7 @@ class SparseSearchStore(Protocol):
         query_values: list[float],
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]: ...
 
 
@@ -39,6 +40,7 @@ class SparseRetriever:
         query: str,
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]:
         """Encode *query* with BM25 and return top-k sparse results from Qdrant.
 
@@ -56,6 +58,7 @@ class SparseRetriever:
             query_values=values,
             top_k=top_k,
             source_filter=source_filter,
+            constraint=constraint,
         )
         elapsed_ms = (time.perf_counter() - t0) * 1000
         logger.debug(

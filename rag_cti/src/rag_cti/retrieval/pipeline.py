@@ -15,6 +15,7 @@ from rag_cti.retrieval.sparse_retriever import (
     SparseSearchStore,
 )
 from rag_cti.types import (
+    PayloadConstraint,
     QueryResult,
     RetrievalResult,
     RetrieverProto,
@@ -44,6 +45,7 @@ class Pipeline:
         query: str,
         top_k: int | None = None,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> QueryResult:
         t0 = time.perf_counter()
         k = top_k if top_k is not None else self._settings.retrieval_top_k
@@ -53,7 +55,7 @@ class Pipeline:
             fetch_k = max(k, getattr(self._settings, "reranker_candidates_k", k))
 
         results: list[RetrievalResult] = self._retriever.search(
-            query, top_k=fetch_k, source_filter=source_filter
+            query, top_k=fetch_k, source_filter=source_filter, constraint=constraint
         )
         t_retrieve = time.perf_counter()
         results = self._reranker.rerank(query, results)

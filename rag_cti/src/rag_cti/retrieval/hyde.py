@@ -5,7 +5,12 @@ from typing import Any
 
 from rag_cti._logging import get_logger
 from rag_cti.observability.tracing import traced
-from rag_cti.types import RetrievalResult, SettingsProto, SparseCapableRetrieverProto
+from rag_cti.types import (
+    PayloadConstraint,
+    RetrievalResult,
+    SettingsProto,
+    SparseCapableRetrieverProto,
+)
 
 logger = get_logger(__name__)
 
@@ -59,6 +64,7 @@ class HyDERetriever:
         query: str,
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]:
         """Search using a hypothetical document embedding, or fall back to direct query."""
         query_tokens = len(query.split())
@@ -69,7 +75,9 @@ class HyDERetriever:
                 query_tokens=query_tokens,
                 min_tokens=self._settings.hyde_min_query_tokens,
             )
-            return self._base.search(query, top_k=top_k, source_filter=source_filter)
+            return self._base.search(
+                query, top_k=top_k, source_filter=source_filter, constraint=constraint
+            )
 
         t0 = time.perf_counter()
         hypothetical_doc = self._generate_hypothetical_doc(query)
@@ -82,6 +90,7 @@ class HyDERetriever:
             top_k=top_k,
             source_filter=source_filter,
             sparse_query=query,
+            constraint=constraint,
         )
         elapsed_ms = (time.perf_counter() - t0) * 1000
         logger.debug(

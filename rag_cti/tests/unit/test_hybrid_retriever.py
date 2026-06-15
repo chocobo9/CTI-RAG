@@ -30,10 +30,13 @@ class _FakeRetriever:
         self.last_source_filter = None
         self._results = results or []
 
-    def search(self, query: str, top_k: int = 10, source_filter=None) -> list[RetrievalResult]:
+    def search(
+        self, query: str, top_k: int = 10, source_filter=None, constraint=None
+    ) -> list[RetrievalResult]:
         self.last_query = query
         self.last_top_k = top_k
         self.last_source_filter = source_filter
+        self.last_constraint = constraint
         return self._results
 
 

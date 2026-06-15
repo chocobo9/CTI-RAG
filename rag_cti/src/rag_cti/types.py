@@ -56,6 +56,24 @@ class QueryResult(BaseModel, frozen=True):
     retrieval_ms: float
 
 
+class PayloadConstraint(BaseModel, frozen=True):
+    """Structured pre-filter applied before vector search (retrieval-layer §6).
+
+    Each non-empty field becomes an AND'd payload condition (MatchAny *within* a
+    field; e.g. ``attack_ids`` matches a chunk whose attack_ids list contains any
+    of the requested ids). All-empty means no structured constraint. Deterministic
+    constraints filter first instead of going through the similarity channel.
+    """
+
+    source_types: tuple[str, ...] = ()
+    attack_ids: tuple[str, ...] = ()
+    entity_ids: tuple[str, ...] = ()
+
+    @property
+    def is_empty(self) -> bool:
+        return not (self.source_types or self.attack_ids or self.entity_ids)
+
+
 class GeneratedAnswer(BaseModel, frozen=True):
     query: str
     answer: str
@@ -72,11 +90,15 @@ class GeneratedAnswer(BaseModel, frozen=True):
 
 @runtime_checkable
 class RetrieverProto(Protocol):
+    # source_filter/constraint are keyword-only so a SparseCapable retriever
+    # (whose 4th positional is sparse_query) still structurally satisfies this.
     def search(
         self,
         query: str,
         top_k: int = 10,
+        *,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]: ...
 
 
@@ -89,6 +111,7 @@ class SparseCapableRetrieverProto(Protocol):
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
         sparse_query: str | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]: ...
 
 

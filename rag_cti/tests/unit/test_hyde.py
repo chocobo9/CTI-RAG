@@ -79,12 +79,18 @@ class _FakeBaseRetriever:
         self._results = results or []
 
     def search(
-        self, query: str, top_k: int = 10, source_filter=None, sparse_query: str | None = None
+        self,
+        query: str,
+        top_k: int = 10,
+        source_filter=None,
+        sparse_query: str | None = None,
+        constraint=None,
     ) -> list[RetrievalResult]:
         self.last_query = query
         self.last_top_k = top_k
         self.last_source_filter = source_filter
         self.last_sparse_query = sparse_query
+        self.last_constraint = constraint
         return self._results
 
 

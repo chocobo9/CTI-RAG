@@ -6,7 +6,7 @@ from typing import Protocol
 import numpy as np
 
 from rag_cti._logging import get_logger
-from rag_cti.types import RetrievalResult
+from rag_cti.types import PayloadConstraint, RetrievalResult
 
 logger = get_logger(__name__)
 
@@ -19,6 +19,7 @@ class DenseSearchStore(Protocol):
         query_vector: np.ndarray,
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]: ...
 
 
@@ -41,6 +42,7 @@ class DenseRetriever:
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
         sparse_query: str | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]:
         """Embed *query* and return top-k dense results from Qdrant.
 
@@ -55,6 +57,7 @@ class DenseRetriever:
             query_vector=query_vector,
             top_k=top_k,
             source_filter=source_filter,
+            constraint=constraint,
         )
         elapsed_ms = (time.perf_counter() - t0) * 1000
         logger.debug(

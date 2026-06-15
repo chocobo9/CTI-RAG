@@ -21,7 +21,7 @@ from rag_cti.retrieval.pipeline import Pipeline
 from rag_cti.retrieval.reranker import NoOpReranker
 from rag_cti.retrieval.sparse_retriever import SparseRetriever
 from rag_cti.store.qdrant_store import QdrantStore
-from rag_cti.types import Chunk, QueryResult, RetrievalResult
+from rag_cti.types import Chunk, PayloadConstraint, QueryResult, RetrievalResult
 
 # ---------------------------------------------------------------------------
 # Constants — synthetic corpus
@@ -41,30 +41,51 @@ _CORPUS: list[dict] = [
         "source": "mitre",
         "content": "Spearphishing email attachment T1566.001 initial access technique",
         "vec": [1.0, 0.0, 0.0, 0.0],
+        "meta": {
+            "source_type": "mitre",
+            "attack_ids": ["T1566.001"],
+            "entity_ids": ["technique_T1566.001"],
+        },
     },
     {
         "id": "c2",
         "source": "mitre",
         "content": "Credential dumping NTLM hashes T1003 post-exploitation",
         "vec": [0.9, 0.1, 0.0, 0.0],
+        "meta": {
+            "source_type": "mitre",
+            "attack_ids": ["T1003"],
+            "entity_ids": ["technique_T1003"],
+        },
     },
     {
         "id": "c3",
         "source": "otx",
         "content": "Cobalt Strike beacon HTTPS C2 communication 1.2.3.4 port 443",
         "vec": [0.0, 1.0, 0.0, 0.0],
+        "meta": {
+            "source_type": "otx",
+            "attack_ids": [],
+            "entity_ids": ["family_S0154"],
+        },
     },
     {
         "id": "c4",
         "source": "otx",
         "content": "Ransomware AES-256 file encryption drops ransom note",
         "vec": [0.0, 0.8, 0.2, 0.0],
+        "meta": {"source_type": "otx", "attack_ids": [], "entity_ids": []},
     },
     {
         "id": "c5",
         "source": "mitre",
         "content": "Pass-the-hash SMB lateral movement T1550.002 CVE-2021-44228",
         "vec": [0.0, 0.0, 1.0, 0.0],
+        "meta": {
+            "source_type": "mitre",
+            "attack_ids": ["T1550.002"],
+            "entity_ids": ["technique_T1550.002"],
+        },
     },
 ]
 
@@ -120,6 +141,7 @@ def qdrant_store() -> QdrantStore:
             source=c["source"],
             content=c["content"],
             chunk_index=0,
+            metadata=c["meta"],
             retrieved_at=datetime(2024, 1, 1),
             embedding_model="fake-4d",
         )
@@ -130,6 +152,7 @@ def qdrant_store() -> QdrantStore:
     encoder = BM25SparseEncoder()
     encoder.fit(_CORPUS_TEXTS)
     store.upsert_hybrid(chunks=chunks, embeddings=embeddings, sparse_encoder=encoder)
+    store.ensure_payload_indexes()
 
     yield store
 
@@ -352,3 +375,62 @@ def test_pipeline_retrieval_ms_is_non_negative(
     pipeline = Pipeline(retriever=hybrid, reranker=NoOpReranker(), settings=_PipelineSettings())
     result = pipeline.run("lateral movement SMB")
     assert result.retrieval_ms >= 0.0
+
+
+# ---------------------------------------------------------------------------
+# Tests — M2 payload pre-filter (real Qdrant filtering + payload indexes)
+# These exercise the filter against a real Qdrant collection — not a mock — so a
+# pass is genuine proof the constraint narrows the candidate set before scoring.
+# ---------------------------------------------------------------------------
+
+_Q_VEC = np.array([1.0, 1.0, 1.0, 0.0], dtype=np.float32)  # non-zero cosine to every cluster
+
+
+def _result_ids(results: list[RetrievalResult]) -> set[str]:
+    return {r.document.id for r in results}
+
+
+def test_no_constraint_returns_whole_corpus(qdrant_store: QdrantStore) -> None:
+    results = qdrant_store.search(_Q_VEC, top_k=10)
+    assert _result_ids(results) == {"c1", "c2", "c3", "c4", "c5"}
+
+
+def test_constraint_attack_id_pre_filters_to_tagged_chunk(qdrant_store: QdrantStore) -> None:
+    results = qdrant_store.search(
+        _Q_VEC, top_k=10, constraint=PayloadConstraint(attack_ids=("T1566.001",))
+    )
+    assert _result_ids(results) == {"c1"}
+
+
+def test_constraint_source_type_pre_filters_to_source(qdrant_store: QdrantStore) -> None:
+    results = qdrant_store.search(
+        _Q_VEC, top_k=10, constraint=PayloadConstraint(source_types=("otx",))
+    )
+    assert _result_ids(results) == {"c3", "c4"}
+
+
+def test_constraint_attack_id_and_source_type_and_together(qdrant_store: QdrantStore) -> None:
+    """The M2 done-when on real Qdrant: attack_id=T1003 AND source_type=mitre
+    filters to exactly c2 before vector scoring."""
+    results = qdrant_store.search(
+        _Q_VEC,
+        top_k=10,
+        constraint=PayloadConstraint(attack_ids=("T1003",), source_types=("mitre",)),
+    )
+    assert _result_ids(results) == {"c2"}
+
+
+def test_constraint_entity_id_pre_filters_to_tagged_chunk(qdrant_store: QdrantStore) -> None:
+    results = qdrant_store.search(
+        _Q_VEC, top_k=10, constraint=PayloadConstraint(entity_ids=("family_S0154",))
+    )
+    assert _result_ids(results) == {"c3"}
+
+
+def test_payload_indexes_exist_on_live_collection(qdrant_store: QdrantStore) -> None:
+    """ensure_payload_indexes created real keyword indexes (not just API calls)."""
+    from qdrant_client import QdrantClient  # type: ignore[import]
+
+    schema = QdrantClient(url=_QDRANT_URL).get_collection(_TEST_COLLECTION).payload_schema or {}
+    for field in ("source_type", "attack_ids", "entity_ids"):
+        assert field in schema, f"payload index not created on live collection: {field}"

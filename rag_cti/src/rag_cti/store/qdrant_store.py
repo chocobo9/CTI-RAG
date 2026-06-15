@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 
 from rag_cti._logging import get_logger
-from rag_cti.types import Chunk, RetrievalResult
+from rag_cti.types import Chunk, PayloadConstraint, RetrievalResult
 
 _MAX_CONTENT_LEN = 8_000
 
@@ -197,16 +197,10 @@ class QdrantStore:
         query_vector: np.ndarray,
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]:
-        """Dense cosine search. Optionally restrict to one or more sources."""
-        from qdrant_client.http import models as qm
-
-        query_filter: qm.Filter | None = None
-        if source_filter:
-            sources = [source_filter] if isinstance(source_filter, str) else list(source_filter)
-            query_filter = qm.Filter(
-                must=[qm.FieldCondition(key="source", match=qm.MatchAny(any=sources))]
-            )
+        """Dense cosine search. Optionally pre-filter by source / structured constraint."""
+        query_filter = _build_query_filter(source_filter, constraint)
 
         hits = self._client.search(
             collection_name=self.collection,
@@ -232,17 +226,12 @@ class QdrantStore:
         query_values: list[float],
         top_k: int = 10,
         source_filter: str | list[str] | None = None,
+        constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]:
-        """BM25 sparse search. Optionally restrict to one or more sources."""
-        from qdrant_client.http import models as qm
+        """BM25 sparse search. Optionally pre-filter by source / structured constraint."""
         from qdrant_client.models import NamedSparseVector, SparseVector
 
-        query_filter: qm.Filter | None = None
-        if source_filter:
-            sources = [source_filter] if isinstance(source_filter, str) else list(source_filter)
-            query_filter = qm.Filter(
-                must=[qm.FieldCondition(key="source", match=qm.MatchAny(any=sources))]
-            )
+        query_filter = _build_query_filter(source_filter, constraint)
 
         hits = self._client.search(
             collection_name=self.collection,
@@ -285,7 +274,39 @@ class QdrantStore:
 # ---------------------------------------------------------------------------
 
 
+def _build_query_filter(
+    source_filter: str | list[str] | None,
+    constraint: PayloadConstraint | None,
+) -> Any:
+    """Combine the source filter + structured constraint into one AND'd Qdrant Filter.
+
+    Each field is a MatchAny condition on a payload key; together they pre-filter
+    the candidate set *before* vector scoring (retrieval §6). Returns None when
+    there is nothing to constrain.
+    """
+    from qdrant_client.http import models as qm
+
+    must: list[Any] = []
+    if source_filter:
+        sources = [source_filter] if isinstance(source_filter, str) else list(source_filter)
+        must.append(qm.FieldCondition(key="source", match=qm.MatchAny(any=sources)))
+    if constraint is not None and not constraint.is_empty:
+        for key, values in (
+            ("source_type", constraint.source_types),
+            ("attack_ids", constraint.attack_ids),
+            ("entity_ids", constraint.entity_ids),
+        ):
+            if values:
+                must.append(qm.FieldCondition(key=key, match=qm.MatchAny(any=list(values))))
+    return qm.Filter(must=must) if must else None
+
+
 def _chunk_to_payload(chunk: Chunk) -> dict[str, Any]:
+    # M2 §4 filter projections, surfaced top-level so they can be payload-indexed
+    # and pre-filtered (retrieval §6). They are produced by chunk_projection and
+    # carried in chunk.metadata; absent -> safe defaults (source_type falls back
+    # to source; the rest empty). These are filter keys only, never embedded.
+    md = chunk.metadata or {}
     return {
         "id": chunk.id,
         "parent_doc_id": chunk.parent_doc_id,
@@ -295,6 +316,10 @@ def _chunk_to_payload(chunk: Chunk) -> dict[str, Any]:
         "metadata": chunk.metadata,
         "retrieved_at": chunk.retrieved_at.isoformat(),
         "embedding_model": chunk.embedding_model,
+        "source_type": md.get("source_type", chunk.source),
+        "attack_ids": md.get("attack_ids", []),
+        "entity_ids": md.get("entity_ids", []),
+        "relations": md.get("relations", []),
     }
 
 

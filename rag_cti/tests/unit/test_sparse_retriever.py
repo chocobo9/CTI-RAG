@@ -43,12 +43,14 @@ class _FakeStore:
         query_values: list[float],
         top_k: int = 10,
         source_filter=None,
+        constraint=None,
     ) -> list[RetrievalResult]:
         self.last_call = {
             "query_indices": query_indices,
             "query_values": query_values,
             "top_k": top_k,
             "source_filter": source_filter,
+            "constraint": constraint,
         }
         return self._results
 

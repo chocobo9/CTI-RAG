@@ -253,6 +253,52 @@ def test_upsert_builds_points_with_expected_payload(fake_qdrant: dict[str, Magic
     assert point.payload["retrieved_at"] == "2026-04-22T12:00:00"
 
 
+def test_chunk_to_payload_surfaces_projection_fields(fake_qdrant: dict[str, MagicMock]) -> None:
+    """source_type/attack_ids/entity_ids from chunk metadata become top-level
+    payload keys so they can be payload-indexed and pre-filtered (retrieval §4)."""
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    client = MagicMock()
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    chunk = Chunk(
+        id="p1",
+        parent_doc_id="d1",
+        source="otx",
+        content="x",
+        chunk_index=0,
+        metadata={"source_type": "otx", "attack_ids": ["T1566"], "entity_ids": ["actor_G0016"]},
+        retrieved_at=datetime(2026, 1, 1),
+        embedding_model="m",
+    )
+    store.upsert([chunk], np.ones((1, 4), dtype=np.float32))
+
+    payload = client.upsert.call_args.kwargs["points"][0].payload
+    assert payload["source_type"] == "otx"
+    assert payload["attack_ids"] == ["T1566"]
+    assert payload["entity_ids"] == ["actor_G0016"]
+
+
+def test_chunk_to_payload_defaults_when_projection_absent(
+    fake_qdrant: dict[str, MagicMock],
+) -> None:
+    """A chunk with no projection metadata still gets safe payload defaults:
+    source_type falls back to source, the id lists are empty."""
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    client = MagicMock()
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    store.upsert([_make_chunk(source="mitre")], np.ones((1, 4), dtype=np.float32))
+
+    payload = client.upsert.call_args.kwargs["points"][0].payload
+    assert payload["source_type"] == "mitre"
+    assert payload["attack_ids"] == []
+    assert payload["entity_ids"] == []
+
+
 def test_upsert_raises_on_length_mismatch(fake_qdrant: dict[str, MagicMock]) -> None:
     from rag_cti.store.qdrant_store import QdrantStore
 
@@ -366,6 +412,66 @@ def test_search_with_multi_source_filter_passes_list(
 
     _, kwargs = client.search.call_args
     assert kwargs["query_filter"].must[0].match.any == ["mitre", "otx"]
+
+
+def test_search_constraint_pre_filters_attack_id_and_source_type(
+    fake_qdrant: dict[str, MagicMock],
+) -> None:
+    """The M2 done-when: attack_id=T1566 AND source_type=otx becomes an AND'd
+    payload pre-filter applied before vector scoring (retrieval §6)."""
+    from rag_cti.store.qdrant_store import QdrantStore
+    from rag_cti.types import PayloadConstraint
+
+    client = MagicMock()
+    client.search.return_value = []
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    store.search(
+        np.ones(4, dtype=np.float32),
+        constraint=PayloadConstraint(source_types=("otx",), attack_ids=("T1566",)),
+    )
+
+    _, kwargs = client.search.call_args
+    conds = {c.key: c.match.any for c in kwargs["query_filter"].must}
+    assert conds == {"source_type": ["otx"], "attack_ids": ["T1566"]}
+
+
+def test_search_combines_source_filter_with_entity_constraint(
+    fake_qdrant: dict[str, MagicMock],
+) -> None:
+    from rag_cti.store.qdrant_store import QdrantStore
+    from rag_cti.types import PayloadConstraint
+
+    client = MagicMock()
+    client.search.return_value = []
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    store.search(
+        np.ones(4, dtype=np.float32),
+        source_filter="mitre",
+        constraint=PayloadConstraint(entity_ids=("actor_G0016",)),
+    )
+
+    _, kwargs = client.search.call_args
+    conds = {c.key: c.match.any for c in kwargs["query_filter"].must}
+    assert conds == {"source": ["mitre"], "entity_ids": ["actor_G0016"]}
+
+
+def test_search_empty_constraint_yields_no_filter(fake_qdrant: dict[str, MagicMock]) -> None:
+    from rag_cti.store.qdrant_store import QdrantStore
+    from rag_cti.types import PayloadConstraint
+
+    client = MagicMock()
+    client.search.return_value = []
+    fake_qdrant["client_cls"].return_value = client
+    store = QdrantStore(url="http://x", collection="rag-cti")
+
+    store.search(np.ones(4, dtype=np.float32), constraint=PayloadConstraint())
+
+    _, kwargs = client.search.call_args
+    assert kwargs["query_filter"] is None
 
 
 # ---------------------------------------------------------------------------
