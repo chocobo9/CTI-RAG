@@ -42,9 +42,11 @@ class PassiveDNSConnector(BaseConnector):
                 "domain": domain,
                 "first_seen": raw.get("first_seen", ""),
                 "last_seen": raw.get("last_seen", ""),
+                "fetched_at": raw.get("fetched_at", ""),
                 # Join fields are preserved in full (ingestion §6/§7.3): a cap
                 # belongs only on the embedded content sample (see _render), never
                 # on the fields used for infrastructure joins/attribution.
+                "resolutions": resolutions,
                 "ip_addresses": ips,
                 "asns": asns,
                 "subdomains": raw.get("subdomains", []),
