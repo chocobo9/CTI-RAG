@@ -83,6 +83,13 @@ class Settings(BaseSettings):
     hyde_max_tokens: int = 300
     hyde_output_max_chars: int = 2000
 
+    # LLM query rewrite (normalize/decompose/contextualize). Default OFF: it adds an
+    # LLM call per query; flip on (env QUERY_REWRITE_ENABLED=true) once the A/B
+    # retrieval eval shows it earns its cost.
+    query_rewrite_enabled: bool = False
+    query_rewrite_max_subqueries: int = 4
+    query_rewrite_max_tokens: int = 300
+
     @field_validator("hybrid_alpha")
     @classmethod
     def validate_alpha(cls, v: float) -> float:
@@ -92,17 +99,17 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_required_secrets(self) -> Settings:
-        """HyDE / generation need an LLM; pure retrieval (query) does not when HyDE is off."""
-        if not self.hyde_enabled:
+        """HyDE / query-rewrite / generation need an LLM; pure retrieval does not."""
+        if not self.hyde_enabled and not self.query_rewrite_enabled:
             return self
         has_ollama = self.ollama_enabled
         has_anthropic = bool(self.anthropic_api_key.get_secret_value())
         has_groq = bool(self.groq_api_key.get_secret_value())
         if not has_ollama and not has_anthropic and not has_groq:
             raise ValueError(
-                "HyDE is enabled but no LLM provider is configured: "
+                "HyDE/query-rewrite is enabled but no LLM provider is configured: "
                 "set GROQ_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_ENABLED=true for local Ollama, "
-                "or set HYDE_ENABLED=false for retrieval-only."
+                "or disable HYDE_ENABLED / QUERY_REWRITE_ENABLED for retrieval-only."
             )
         return self
 

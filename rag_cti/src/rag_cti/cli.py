@@ -51,6 +51,30 @@ def query(
 
 
 @app.command()
+def chat(
+    k: int = typer.Option(10, "--top-k", "-k", help="Number of context chunks"),
+) -> None:
+    """Multi-turn CTI chat. Query rewrite (if enabled) resolves cross-turn references
+    like "it"/"that group" against earlier turns."""
+    import rag_cti
+
+    console.print("[dim]CTI chat — type 'exit' to quit.[/dim]")
+    history: list[str] = []
+    while True:
+        try:
+            text = typer.prompt("you")
+        except (EOFError, typer.Abort):
+            break
+        if text.strip().lower() in {"exit", "quit"}:
+            break
+        if not text.strip():
+            continue
+        ans = rag_cti.answer(text, k=k, history=history)
+        console.print(ans.answer)
+        history.append(text)  # this turn becomes context for the next
+
+
+@app.command()
 def ingest(
     source: str = typer.Argument(..., help="Source name: mitre | otx | vt | whois | pdns | pdf"),
 ) -> None:

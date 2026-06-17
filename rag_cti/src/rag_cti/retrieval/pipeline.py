@@ -9,6 +9,7 @@ from rag_cti.retrieval.dense_retriever import DenseRetriever, DenseSearchStore, 
 from rag_cti.retrieval.hybrid_retriever import HybridRetriever
 from rag_cti.retrieval.hyde import HyDERetriever
 from rag_cti.retrieval.ontology_expand import expand_constraint
+from rag_cti.retrieval.query_rewrite import LLMQueryRewriter, QueryRewriteRetriever
 from rag_cti.retrieval.reranker import NoOpReranker, Reranker
 from rag_cti.retrieval.sparse_retriever import (
     SparseQueryEncoder,
@@ -54,6 +55,7 @@ class Pipeline:
         top_k: int | None = None,
         source_filter: str | list[str] | None = None,
         constraint: PayloadConstraint | None = None,
+        history: list[str] | None = None,
     ) -> QueryResult:
         t0 = time.perf_counter()
         k = top_k if top_k is not None else self._settings.retrieval_top_k
@@ -67,9 +69,18 @@ class Pipeline:
         if constraint is not None and self._ontology_edges:
             constraint = expand_constraint(constraint, self._ontology_edges)
 
-        results: list[RetrievalResult] = self._retriever.search(
-            query, top_k=fetch_k, source_filter=source_filter, constraint=constraint
-        )
+        if isinstance(self._retriever, QueryRewriteRetriever):
+            results: list[RetrievalResult] = self._retriever.search(
+                query,
+                top_k=fetch_k,
+                source_filter=source_filter,
+                constraint=constraint,
+                history=history,
+            )
+        else:
+            results = self._retriever.search(
+                query, top_k=fetch_k, source_filter=source_filter, constraint=constraint
+            )
         t_retrieve = time.perf_counter()
         results = self._reranker.rerank(query, results)
         t_rerank = time.perf_counter()
@@ -145,6 +156,14 @@ def build_pipeline(
         )
     else:
         retriever = base_retriever
+
+    # Outermost wrapper: rewrite the query (normalize/decompose/contextualize) and
+    # fuse sub-query results. Wraps HyDE so HyDE sees clean sub-queries.
+    if getattr(settings, "query_rewrite_enabled", False) and llm_client is not None:
+        retriever = QueryRewriteRetriever(
+            retriever, LLMQueryRewriter(llm_client, settings, llm_provider)
+        )
+
     if getattr(settings, "reranker_enabled", False):
         from rag_cti.retrieval.reranker import CrossEncoderReranker
 

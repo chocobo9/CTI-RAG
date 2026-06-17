@@ -230,3 +230,30 @@ def test_metrics_prints_warning_on_violation(tmp_path) -> None:
     f.write_text(json.dumps(data), encoding="utf-8")
     result = runner.invoke(app, ["metrics", str(f)])
     assert "WARNING" in result.output
+
+
+# ---------------------------------------------------------------------------
+# Chat command (multi-turn history)
+# ---------------------------------------------------------------------------
+
+
+def test_chat_accumulates_history_across_turns() -> None:
+    from types import SimpleNamespace
+
+    captured: list[tuple[str, list[str]]] = []
+
+    def fake_answer(text: str, k: int = 10, history: list[str] | None = None) -> object:
+        captured.append((text, list(history or [])))
+        return SimpleNamespace(answer=f"answer to {text}")
+
+    with patch("rag_cti.answer", side_effect=fake_answer):
+        result = runner.invoke(app, ["chat"], input="first q\nsecond q\nexit\n")
+
+    assert result.exit_code == 0
+    # each turn sees the PRIOR user queries as history (this turn not yet included)
+    assert captured == [("first q", []), ("second q", ["first q"])]
+
+
+def test_chat_help_lists_command() -> None:
+    result = runner.invoke(app, ["chat", "--help"])
+    assert result.exit_code == 0

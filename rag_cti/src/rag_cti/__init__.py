@@ -36,7 +36,7 @@ def _default_pipeline() -> Pipeline:
 
     llm_client = None
     llm_provider = "anthropic"
-    if settings.hyde_enabled:
+    if settings.hyde_enabled or settings.query_rewrite_enabled:
         from rag_cti.generation.client import build_llm_client
 
         llm_provider, llm_client = build_llm_client(settings)
@@ -57,17 +57,19 @@ def _default_pipeline() -> Pipeline:
     return pipeline
 
 
-def query(text: str, top_k: int = 10) -> QueryResult:
+def query(text: str, top_k: int = 10, history: list[str] | None = None) -> QueryResult:
     """Retrieve the top-k most relevant CTI chunks for the given query text.
 
     Args:
         text: Natural language query or IOC string.
         top_k: Number of results to return.
+        history: Prior user queries (most recent last) for multi-turn reference
+            resolution; used only when query rewrite is enabled.
 
     Returns:
         QueryResult with ranked chunks, scores, ranks, and timing metadata.
     """
-    return _default_pipeline().run(text, top_k=top_k)
+    return _default_pipeline().run(text, top_k=top_k, history=history)
 
 
 @lru_cache(maxsize=1)
@@ -82,18 +84,20 @@ def _default_generator() -> object:
     return Generator(client=client, router=router, settings=settings)
 
 
-def answer(text: str, k: int = 10) -> GeneratedAnswer:
+def answer(text: str, k: int = 10, history: list[str] | None = None) -> GeneratedAnswer:
     """Retrieve relevant CTI chunks and generate a grounded answer with cited chunk IDs.
 
     Args:
         text: Natural language CTI query.
         k: Number of context chunks to retrieve before generation.
+        history: Prior user queries (most recent last) for multi-turn reference
+            resolution; used only when query rewrite is enabled.
 
     Returns:
         GeneratedAnswer with the response text, cited chunk IDs, and the underlying QueryResult.
     """
     from rag_cti.generation.generator import Generator
 
-    query_result = query(text, top_k=k)
+    query_result = query(text, top_k=k, history=history)
     gen: Generator = _default_generator()  # type: ignore[assignment]
     return gen.generate(text, query_result)
