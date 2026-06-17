@@ -56,6 +56,7 @@ def test_project_pdns_raw_maps_securitytrails_payload() -> None:
     assert record["last_seen"] == "2025-12-09T21:50:55"
     assert record["subdomains"] == ["www.0-02.net"]
     assert record["resolutions"][0] == {
+        "value": "23.111.191.180",
         "ip": "23.111.191.180",
         "record_type": "A",
         "asset_type": "domain",
@@ -68,6 +69,8 @@ def test_project_pdns_raw_maps_securitytrails_payload() -> None:
     }
     assert record["resolutions"][1]["record_type"] == "NS"
     assert record["resolutions"][1]["ip"] == ""
+    # NS answer (the nameserver) is preserved in `value`, not lost.
+    assert record["resolutions"][1]["value"] == "ns12.1-19.net"
 
 
 def test_project_pdns_raw_keeps_empty_payload_as_domain_record() -> None:

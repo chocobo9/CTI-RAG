@@ -30,6 +30,10 @@ _TYPE_MAP: dict[str, str] = {
     "malware": "software",
     "tool": "software",
     "campaign": "campaign",
+    # Defensive objects, mirrored so `mitigates` / `detects` fact subjects resolve
+    # to a stable id by name (M#### / DET####), like group/software.
+    "course-of-action": "mitigation",
+    "x-mitre-detection-strategy": "detection-strategy",
 }
 
 

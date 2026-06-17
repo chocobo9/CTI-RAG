@@ -16,14 +16,24 @@ logger = get_logger(__name__)
 
 _BUNDLE_PATH = Path("data/raw/mitre/enterprise-attack.json")
 
-# Fact-edge subjects must be threat entities (decision 2026-06): intrusion-set,
-# campaign, malware, tool. malware/tool were previously dropped, losing ~10.6k
-# "malware/tool uses technique" edges. Defensive subjects (course-of-action for
-# `mitigates`, data-component for `detects`) are excluded via _CTI_REL_TYPES:
-# only `uses` / `attributed-to` are fact predicates here. `subtechnique-of` is an
-# ontology edge (see ontology_edges loader), not a fact edge.
-_CTI_SOURCE_TYPES = frozenset({"intrusion-set", "campaign", "malware", "tool"})
-_CTI_REL_TYPES = frozenset({"uses", "attributed-to"})
+# Fact-edge subjects: threat entities (intrusion-set, campaign, malware, tool) plus
+# the defensive objects that ATT&CK relates to techniques — course-of-action
+# (`mitigates`, M####) and detection-strategy (`detects`, DET####; ATT&CK 18.x moved
+# detection off data-component onto x-mitre-detection-strategy). Both resolve to
+# OntologyNode mirrors by name (entity_registry), like group/software.
+# `subtechnique-of` stays an ontology edge (see ontology_edges loader), not a fact;
+# `revoked-by` is housekeeping and excluded.
+_CTI_SOURCE_TYPES = frozenset(
+    {
+        "intrusion-set",
+        "campaign",
+        "malware",
+        "tool",
+        "course-of-action",
+        "x-mitre-detection-strategy",
+    }
+)
+_CTI_REL_TYPES = frozenset({"uses", "attributed-to", "mitigates", "detects"})
 
 
 class MitreRelationshipConnector(BaseConnector):
@@ -111,11 +121,9 @@ class MitreRelationshipConnector(BaseConnector):
         if description:
             content = description
         elif attack_id:
-            content = f"{src_name} uses {tgt_name} ({attack_id})"
-        elif rel_type == "attributed-to":
-            content = f"{src_name} attributed-to {tgt_name}"
+            content = f"{src_name} {rel_type} {tgt_name} ({attack_id})"
         else:
-            content = f"{src_name} uses {tgt_name}"
+            content = f"{src_name} {rel_type} {tgt_name}"
 
         doc_id = hashlib.sha256(f"mitre-rel:{raw['id']}".encode()).hexdigest()[:16]
 

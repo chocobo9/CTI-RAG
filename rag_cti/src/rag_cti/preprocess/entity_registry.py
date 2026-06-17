@@ -39,7 +39,14 @@ from rag_cti.ingest.normalize import RelationMention
 # object itself, so the match is exact and unambiguous — no fuzzy/normalization added.
 _NAME_RESOLVED: dict[str, str] = {"actor": "group", "family": "software", "campaign": "campaign"}
 # Entity.type -> OntologyNode.type resolved by attack id (mention == ontology_id).
-_ID_RESOLVED: dict[str, str] = {"technique": "technique"}
+# technique by T####; mitigation/detection-strategy by M####/DET#### — these MITRE
+# objects have unique ids but COLLIDING names (≈29 detection-strategies share a
+# name), so id resolution avoids ambiguous-name orphaning (the mention carries the id).
+_ID_RESOLVED: dict[str, str] = {
+    "technique": "technique",
+    "mitigation": "mitigation",
+    "detection-strategy": "detection-strategy",
+}
 # Every resolvable type, for building the ontology_id -> node lookup used by both the
 # id path (technique) and the embedded-id name-back check (software/group/campaign).
 _RESOLVED: dict[str, str] = {**_NAME_RESOLVED, **_ID_RESOLVED}
@@ -80,6 +87,24 @@ def _orphan_entity_id(entity_type: str, name: str) -> str:
 def _resolved_entity_id(entity_type: str, ontology_id: str) -> str:
     """Stable id for a MITRE-backed entity (1:1 with its ontology_id)."""
     return f"{entity_type}_{ontology_id}"
+
+
+def location_entity_id(name: str) -> str:
+    """Stable id for a location entity (country). Location has no MITRE mirror, so
+    it shares the orphan scheme that OTX ``targets``→location resolves through —
+    keeping the same country a single entity across OTX and pDNS ``located-in``.
+    This is the reuse point that prevents the endpoint-id mismatch (infra edges
+    must NOT go through the generic resolver, which would re-derive a divergent id).
+    """
+    return _orphan_entity_id("location", name)
+
+
+def asn_entity_id(value: str) -> str:
+    """Stable id for an autonomous-system entity, keyed on the AS number
+    (e.g. ``AS29802``). Exact identity like an indicator (the number *is* the
+    identity), so minting it is ungated by DECISION-1/2."""
+    digest = hashlib.sha256(f"asn:{_norm(value)}".encode()).hexdigest()[:16]
+    return f"asn_{digest}"
 
 
 def _build_indexes(

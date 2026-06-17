@@ -119,11 +119,13 @@ def test_revoked_excluded():
 
 
 def test_unmirrored_type_and_missing_attack_id_excluded():
-    coa = {
-        "type": "course-of-action",
-        "id": "course-of-action--m1",
-        "name": "Mitigation",
-        "external_references": [{"source_name": "mitre-attack", "external_id": "M1040"}],
+    # x-mitre-data-source is NOT in _TYPE_MAP (we mirror techniques/tactics/software/
+    # group/campaign/mitigation/detection-strategy), so it is excluded even with a DS id.
+    data_source = {
+        "type": "x-mitre-data-source",
+        "id": "x-mitre-data-source--ds1",
+        "name": "Process",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "DS0009"}],
     }
     no_id = {
         "type": "malware",
@@ -131,7 +133,27 @@ def test_unmirrored_type_and_missing_attack_id_excluded():
         "name": "Nameless",
         "external_references": [],
     }
-    assert ontology_nodes_from_bundle(_bundle(coa, no_id)) == []
+    assert ontology_nodes_from_bundle(_bundle(data_source, no_id)) == []
+
+
+def test_defensive_objects_are_mirrored():
+    """course-of-action and x-mitre-detection-strategy mirror to mitigation /
+    detection-strategy OntologyNodes (so mitigates/detects subjects resolve)."""
+    coa = {
+        "type": "course-of-action",
+        "id": "course-of-action--m1",
+        "name": "Antivirus/Antimalware",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "M1049"}],
+    }
+    det = {
+        "type": "x-mitre-detection-strategy",
+        "id": "x-mitre-detection-strategy--d1",
+        "name": "Detection Strategy X",
+        "external_references": [{"source_name": "mitre-attack", "external_id": "DET0001"}],
+    }
+    by_id = _by_id(ontology_nodes_from_bundle(_bundle(coa, det)))
+    assert by_id["M1049"]["type"] == "mitigation"
+    assert by_id["DET0001"]["type"] == "detection-strategy"
 
 
 def test_deterministic_sort_by_ontology_id():

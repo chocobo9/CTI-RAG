@@ -168,3 +168,92 @@ def test_field_source_chunk_carries_indicator_in_entity_ids():
     assert proj["source_type"] == "vt"
     assert len(proj["entity_ids"]) == 1
     assert proj["entity_ids"][0].startswith("indicator_")
+
+
+def test_mitre_mitigates_and_detects_resolve_to_defensive_entities():
+    """Defensive edges: course-of-action mitigates / detection-strategy detects a
+    technique. Subjects resolve by name to mitigation_M#### / detection-strategy_DET####
+    (not orphan); the technique object resolves by attack id."""
+    nodes = [
+        {
+            "ontology_id": "T1003",
+            "type": "technique",
+            "name": "OS Credential Dumping",
+            "aliases": [],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+        {
+            "ontology_id": "M1049",
+            "type": "mitigation",
+            "name": "Antivirus/Antimalware",
+            "aliases": [],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+        {
+            "ontology_id": "DET0001",
+            "type": "detection-strategy",
+            "name": "Detection Strategy for OS Credential Dumping",
+            "aliases": [],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+    ]
+    stix = {
+        "coa--1": {
+            "type": "course-of-action",
+            "id": "coa--1",
+            "name": "Antivirus/Antimalware",
+            "external_references": [{"source_name": "mitre-attack", "external_id": "M1049"}],
+        },
+        "det--1": {
+            "type": "x-mitre-detection-strategy",
+            "id": "det--1",
+            "name": "Detection Strategy for OS Credential Dumping",
+            "external_references": [{"source_name": "mitre-attack", "external_id": "DET0001"}],
+        },
+        "ap--1": {
+            "type": "attack-pattern",
+            "id": "ap--1",
+            "name": "OS Credential Dumping",
+            "external_references": [{"source_name": "mitre-attack", "external_id": "T1003"}],
+        },
+    }
+
+    mit = normalize_mitre_relationship(_rel("coa--1", "ap--1", "mitigates"), stix)
+    proj = project_chunk(mit, nodes)
+    assert proj["relations"] == [
+        {"subject_id": "mitigation_M1049", "predicate": "mitigates", "object_id": "technique_T1003"}
+    ]
+    assert "mitigation_M1049" in proj["entity_ids"]
+    assert not any("orphan" in e for e in proj["entity_ids"])
+
+    det = normalize_mitre_relationship(_rel("det--1", "ap--1", "detects"), stix)
+    projd = project_chunk(det, nodes)
+    assert projd["relations"] == [
+        {
+            "subject_id": "detection-strategy_DET0001",
+            "predicate": "detects",
+            "object_id": "technique_T1003",
+        }
+    ]
+    assert not any("orphan" in e for e in projd["entity_ids"])
+
+
+def test_infrastructure_record_builds_infra_edges_from_metadata():
+    """A field-source record carrying structured resolutions (domain→ip with asn)
+    projects infra edges; every relation endpoint is also an entity_id."""
+    raw = {
+        "domain": "evil.com",
+        "resolutions": [{"value": "1.2.3.4", "ip": "1.2.3.4", "record_type": "A", "asn": "AS123"}],
+        "subdomains": [],
+    }
+    rec = normalize_infrastructure(raw, source_type="pdns", indicator_value="evil.com")
+    proj = project_chunk(rec, _NODES)
+    preds = {r["predicate"] for r in proj["relations"]}
+    assert {"resolves-to", "belongs-to"} <= preds
+    endpoints = {r["subject_id"] for r in proj["relations"]} | {
+        r["object_id"] for r in proj["relations"]
+    }
+    assert endpoints <= set(proj["entity_ids"])

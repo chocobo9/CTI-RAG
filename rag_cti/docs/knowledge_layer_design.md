@@ -92,7 +92,7 @@ illustration, not an asserted fact.
 // Entity — a canonical node. One per real-world thing, shared across all docs.
 {
   "entity_id": "actor_0016",
-  "type": "actor",                       // actor | campaign | technique | family | indicator | location
+  "type": "actor",                       // actor|campaign|technique|family|indicator|location|asn|mitigation|detection-strategy
   "canonical_name": "APT29",
   "aliases": ["Cozy Bear", "NOBELIUM"],
   "ontology_id": "G0016"                 // → OntologyNode if MITRE-backed; null for orphans
@@ -102,7 +102,7 @@ illustration, not an asserted fact.
 {
   "fact_id": "fact_...",
   "subject_id": "actor_0016",            // entity_id
-  "predicate": "uses",                   // controlled vocab: uses | attributed-to | targets
+  "predicate": "uses",                   // controlled vocab — see §3 predicate set (attribution + infrastructure + defensive)
   "object_id":  "technique_T1003.002"    // entity_id
 }
 
@@ -123,7 +123,18 @@ Controlled predicate set (data-backed today): `uses`, `attributed-to`,
 ATT&CK STIX bundle has **no `targets` relationship type** (it has
 uses/mitigates/detects/subtechnique-of/revoked-by/attributed-to; verify with a
 relationship-type count over `data/raw/mitre/enterprise-attack.json`). Do not
-claim MITRE backs `targets`. The shared-vocabulary alignment with the
+claim MITRE backs `targets`.
+
+**Infrastructure predicates** (field sources, data-backed): `resolves-to`
+(domain→ip), `belongs-to` (ip→asn), `located-in` (ip→location), `uses-nameserver`
+(domain→ns-domain), `has-subdomain` (domain→subdomain) — sourced from passive DNS
+and VT DNS records. Endpoints are indicator / asn / location entities; these are
+structural infrastructure facts, never TTP predictions (invariant 4).
+**Defensive predicates** (MITRE, read directly from STIX `relationship_type`):
+`mitigates` (mitigation M####→technique, ~1445 edges), `detects`
+(detection-strategy DET####→technique, ~691 edges).
+
+The shared-vocabulary alignment with the
 attribution-graph track (`ASSOCIATED_WITH` / `PART_OF` / `OBSERVED_IN`) is
 pending; those are not added until a data source backs them.
 `attribution_confidence` (high/med/low) is **not** a field — no current source
@@ -149,7 +160,7 @@ Identity rules:
 // OntologyNode — a mirror of one MITRE object. Reloaded wholesale on ATT&CK bump.
 {
   "ontology_id": "T1003.002",            // attack id: T####(.###) / S#### / G#### / TA####
-  "type": "technique",                   // technique | tactic | software | group
+  "type": "technique",                   // technique | tactic | software | group | mitigation | detection-strategy
   "name": "LSASS Memory",
   "tactics": ["credential-access"],
   "attack_version": "15.1"               // the definition drifts with this

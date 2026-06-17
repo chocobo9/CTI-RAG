@@ -29,23 +29,32 @@ attribution is the *inherited* part, not the only output.)
 ## Object model
 
 **Entity** — A canonical, normalized node. Type is one of: actor, campaign,
-technique, family, indicator, location. Carries aliases and a nullable
-`ontology_id`. Identity normalization is a precondition, not post-processing. An
-entity with no counterpart in the ontology (e.g. an actor MITRE does not track,
-a free-text malware family with no S-number) is an *orphan entity* — kept as its
-own node with `ontology_id: null`, never force-merged.
+technique, family, indicator, location, asn, mitigation, detection-strategy.
+Carries aliases and a nullable `ontology_id`. Identity normalization is a
+precondition, not post-processing. An entity with no counterpart in the ontology
+(e.g. an actor MITRE does not track, a free-text malware family with no S-number)
+is an *orphan entity* — kept as its own node with `ontology_id: null`, never
+force-merged. `asn` is an autonomous-system node sourced from passive DNS (no
+MITRE counterpart, always orphan); `mitigation` and `detection-strategy` mirror
+the MITRE M#### and DET#### objects (their authoritative-definition half is an
+OntologyNode).
 
 **OntologyNode** — The authoritative MITRE *definition* mirrored for one object
-(technique / sub-technique / tactic / software / group), versioned by
-`attack_version`. Distinct from Entity: **Entity is identity** (stable, what
+(technique / sub-technique / tactic / software / group / mitigation /
+detection-strategy), versioned by `attack_version`. Distinct from Entity: **Entity is identity** (stable, what
 Facts point at), **OntologyNode is definition** (drifts with ATT&CK). Linked
 1:1 by `ontology_id` where it exists. A version bump reloads OntologyNodes only;
 Entities and Facts are untouched.
 
 **Fact** — A triple (subject Entity, predicate, object Entity). All three slots
 are controlled: subject/object are entity ids, predicate is a controlled
-vocabulary (`uses` / `attributed-to` / `targets`). Identity equals the triple,
-so facts deduplicate exactly.
+vocabulary. The controlled predicates, each data-backed, are grouped by source:
+*attribution / TTP* — `uses` / `attributed-to` / `targets`; *infrastructure*
+(field sources) — `resolves-to` / `belongs-to` / `located-in` /
+`uses-nameserver` / `has-subdomain`; *defensive* (MITRE) — `mitigates` /
+`detects`. A predicate enters this set only when a source backs it; an extracted
+verb with no mapping is a human-review candidate, never auto-added. Identity
+equals the triple, so facts deduplicate exactly.
 
 **Evidence** — A citable piece of source content. Many-to-many with Fact.
 

@@ -281,15 +281,18 @@ class TestAdversarial:
         source_names = {d.metadata["source_name"] for d in docs}
         assert source_names == {"APT29", "Cobalt Strike"}
 
-    def test_mitigates_edge_excluded(self, tmp_path: Path) -> None:
-        """course-of-action -> mitigates -> attack-pattern MUST be filtered out:
-        mitigates is a defensive predicate, not a threat fact edge."""
+    def test_mitigates_edge_included(self, tmp_path: Path) -> None:
+        """course-of-action -> mitigates -> attack-pattern IS collected now (Phase
+        2b, deliberately reversed): mitigates is a data-backed defensive predicate
+        (mitigation M#### -> technique), widened into _CTI_REL_TYPES."""
         bundle_path = _write_bundle(tmp_path, _REL_APT29_USES_T1059, _REL_MITIGATES)
         conn = MitreRelationshipConnector(bundle_path=bundle_path)
         docs = _fetch_and_convert(conn)
 
-        assert len(docs) == 1
-        assert docs[0].metadata["source_name"] == "APT29"
+        assert len(docs) == 2
+        assert {d.metadata["relationship_type"] for d in docs} == {"uses", "mitigates"}
+        mit = next(d for d in docs if d.metadata["relationship_type"] == "mitigates")
+        assert mit.metadata["attack_id"] == "T1059"  # the mitigated technique
 
     def test_revoked_relationship_excluded(self, tmp_path: Path) -> None:
         """Revoked relationship MUST be filtered out."""

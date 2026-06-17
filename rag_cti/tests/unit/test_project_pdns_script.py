@@ -40,3 +40,12 @@ def test_project_pdns_writes_processed_chunks(tmp_path: Path) -> None:
     assert row["metadata"]["domain"] == "example.com"
     assert row["metadata"]["ip_addresses"] == ["1.2.3.4"]
     assert "Passive DNS history for domain example.com." in row["content"]
+    # The projection now rides along: infra edges in the payload, not just prose.
+    assert row["metadata"]["source_type"] == "pdns"
+    rels = row["metadata"]["relations"]
+    preds = {r["predicate"] for r in rels}
+    assert "resolves-to" in preds  # domain -> ip
+    assert "belongs-to" in preds  # ip -> asn
+    # every relation endpoint is also an entity_id (the consistency invariant)
+    endpoints = {r["subject_id"] for r in rels} | {r["object_id"] for r in rels}
+    assert endpoints <= set(row["metadata"]["entity_ids"])

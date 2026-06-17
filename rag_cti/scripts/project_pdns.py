@@ -9,20 +9,33 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from typing import Any
+
 from rag_cti.connectors.passive_dns import PassiveDNSConnector
 from rag_cti.connectors.pdns_projection import load_pdns_raw_dir
+from rag_cti.ingest.normalize import normalize_infrastructure
+from rag_cti.preprocess.chunk_projection import project_chunk
 from rag_cti.preprocess.normalizers import source_to_strategy
-from rag_cti.preprocess.seeding import SeedStats, seed_connector_to_jsonl
+from rag_cti.preprocess.seeding import SeedStats, seed_connector_with_projection
 
 DEFAULT_RAW_DIR = Path("data/raw/pdns")
 DEFAULT_OUT = Path("data/processed/pdns.jsonl")
 
 
+def _pdns_projection(raw: dict[str, Any]) -> dict[str, Any]:
+    """Payload projection for one structured pDNS record: infra entity_ids + edges."""
+    record = normalize_infrastructure(
+        raw, "pdns", str(raw.get("domain", "")), indicator_type="domain"
+    )
+    return project_chunk(record, ontology_nodes=[])
+
+
 def project_pdns(raw_dir: Path = DEFAULT_RAW_DIR, out_path: Path = DEFAULT_OUT) -> SeedStats:
     records = load_pdns_raw_dir(raw_dir)
     connector = PassiveDNSConnector(records=records)
-    return seed_connector_to_jsonl(
+    return seed_connector_with_projection(
         connector=connector,
+        projector=_pdns_projection,
         out_path=out_path,
         strategy=source_to_strategy("pdns"),
         progress_every=100,

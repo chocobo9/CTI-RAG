@@ -95,6 +95,8 @@ _STIX_TYPE_TO_ENTITY: dict[str, str] = {
     "malware": "family",
     "tool": "family",
     "attack-pattern": "technique",
+    "course-of-action": "mitigation",
+    "x-mitre-detection-strategy": "detection-strategy",
 }
 
 
@@ -131,6 +133,7 @@ def normalize_otx_pulse(raw: dict[str, Any], fetched_at: str = "") -> Normalized
         relations += [
             RelationMention(adversary, "uses", a, "actor", "technique") for a in attack_ids
         ]
+        relations += [RelationMention(adversary, "uses", f, "actor", "family") for f in families]
         relations += [
             RelationMention(adversary, "targets", c, "actor", "location") for c in countries
         ]
@@ -171,6 +174,22 @@ def _technique_attack_id(obj: dict[str, Any]) -> str:
     return ""
 
 
+# Subject types resolved by attack id (their names collide; ids are unique).
+_ID_SUBJECT_TYPES = frozenset({"mitigation", "detection-strategy"})
+
+
+def _subject_ref(obj: dict[str, Any], src_type: str) -> str:
+    """Reference form for a relationship subject. mitigation / detection-strategy
+    resolve by id (unique M#### / DET####; their names collide), so emit the id;
+    actor / family / campaign resolve by name (emitting their G####/S#### id would
+    break name resolution into a silent orphan split — see _technique_attack_id)."""
+    if src_type in _ID_SUBJECT_TYPES:
+        for ref in obj.get("external_references", []):
+            if ref.get("source_name") == "mitre-attack":
+                return str(ref.get("external_id", ""))
+    return str(obj.get("name", ""))
+
+
 def normalize_mitre_relationship(
     raw: dict[str, Any], index: dict[str, dict[str, Any]], fetched_at: str = ""
 ) -> NormalizedRecord:
@@ -182,16 +201,16 @@ def normalize_mitre_relationship(
         raise ValueError("unresolvable source_ref/target_ref")
 
     predicate = str(raw.get("relationship_type", ""))
-    src_name = str(src.get("name", ""))
     tgt_name = str(tgt.get("name", ""))
     src_type = _STIX_TYPE_TO_ENTITY.get(str(src.get("type", "")), "")
     tgt_type = _STIX_TYPE_TO_ENTITY.get(str(tgt.get("type", "")), "")
     attack_id = _technique_attack_id(tgt)
-    # The target's reference form must match how its entity type is resolved:
-    # a technique by its attack id (T####), an actor/family/campaign by name. Use
-    # the SAME ref for the entity mention and the relation object so a chunk's
-    # entity_ids and relations[] never disagree about the same target.
+    # Each endpoint's reference form must match how its entity type resolves: a
+    # technique / mitigation / detection-strategy by its attack id, an actor /
+    # family / campaign by name. Use the SAME ref for the entity mention and the
+    # relation endpoint so a chunk's entity_ids and relations[] never disagree.
     tgt_ref = attack_id or tgt_name
+    src_ref = _subject_ref(src, src_type)
 
     return NormalizedRecord(
         provenance=Provenance(
@@ -202,8 +221,8 @@ def normalize_mitre_relationship(
         ),
         classification=SourceClass.ONTOLOGY,
         content=str(raw.get("description", "")),
-        entity_mentions=[EntityMention(src_name, src_type), EntityMention(tgt_ref, tgt_type)],
-        relation_mentions=[RelationMention(src_name, predicate, tgt_ref, src_type, tgt_type)],
+        entity_mentions=[EntityMention(src_ref, src_type), EntityMention(tgt_ref, tgt_type)],
+        relation_mentions=[RelationMention(src_ref, predicate, tgt_ref, src_type, tgt_type)],
         metadata={"attack_id": attack_id, "relationship_type": predicate},
     )
 

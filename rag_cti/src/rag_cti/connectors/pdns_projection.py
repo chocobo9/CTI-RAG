@@ -39,6 +39,9 @@ def project_pdns_raw(raw: dict[str, Any]) -> dict[str, Any]:
 
         resolutions.append(
             {
+                # raw answer, preserved for every record type (NS/CNAME answers are
+                # not IPv4 and would otherwise be lost — they feed uses-nameserver).
+                "value": address,
                 "ip": address if _IPV4_RE.match(address) else "",
                 "record_type": record_type,
                 "asset_type": str(item.get("asset_type") or "").strip(),
