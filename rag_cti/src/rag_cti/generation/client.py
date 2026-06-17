@@ -93,6 +93,45 @@ class _RetryingOllamaCompletions:
 # ---------------------------------------------------------------------------
 
 
+class FallbackChatClient:
+    """OpenAI-compatible client that downgrades across an ordered model list on one
+    backend, returning the first success (generation model-downgrade chain).
+
+    The same DeepSeek client is called with each model in turn; a backend failure
+    (after that call's own retries) downgrades to the next model. Exposes the same
+    ``.chat.completions.create()`` surface, so ``Generator`` uses it unchanged — the
+    ``model=`` it passes is ignored; the chain decides the model.
+    """
+
+    def __init__(self, client: Any, models: list[str]) -> None:
+        if not models:
+            raise ValueError("FallbackChatClient needs at least one model")
+        self.chat = _FallbackChat(client, models)
+
+
+class _FallbackChat:
+    def __init__(self, client: Any, models: list[str]) -> None:
+        self.completions = _FallbackCompletions(client, models)
+
+
+class _FallbackCompletions:
+    def __init__(self, client: Any, models: list[str]) -> None:
+        self._client = client
+        self._models = models
+
+    def create(self, **kwargs: Any) -> Any:
+        kwargs.pop("model", None)  # the chain owns the model, not the caller
+        last_exc: Exception | None = None
+        for model in self._models:
+            try:
+                return self._client.chat.completions.create(model=model, **kwargs)
+            except Exception as exc:  # downgrade to the next model
+                last_exc = exc
+                logger.warning("generation model failed, downgrading", model=model, error=str(exc))
+        assert last_exc is not None  # loop ran >=1 time (models non-empty)
+        raise last_exc
+
+
 def build_llm_client(settings: Any) -> tuple[str, Any]:
     """Select LLM client: local Ollama if enabled, else Groq (API), else Anthropic.
 

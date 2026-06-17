@@ -7,7 +7,7 @@ from rag_cti._logging import get_logger
 from rag_cti.evaluation.set_metrics import normalize_id
 from rag_cti.evaluation.techniquerag import parse_gold_ids
 from rag_cti.generation.context_builder import build_context_messages, extract_cited_ids
-from rag_cti.generation.llm_router import LLMRouter, TaskType
+from rag_cti.generation.llm_router import ModelRouter, TaskType
 from rag_cti.generation.prompts import (
     ACTOR_ATTRIBUTION_SYSTEM,
     TECHNIQUE_ANNOTATION_SYSTEM,
@@ -44,7 +44,7 @@ _ACTOR_NONE_TOKENS = frozenset(
 class Generator:
     """Generates grounded CTI answers via Groq, with context injected in the user message."""
 
-    def __init__(self, client: Any, router: LLMRouter, settings: Any) -> None:
+    def __init__(self, client: Any, router: ModelRouter, settings: Any) -> None:
         self._client = client
         self._router = router
         self._settings = settings

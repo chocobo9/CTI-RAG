@@ -74,14 +74,17 @@ def query(text: str, top_k: int = 10, history: list[str] | None = None) -> Query
 
 @lru_cache(maxsize=1)
 def _default_generator() -> object:
-    from rag_cti.generation.client import build_llm_client
+    # Generation is pinned to DeepSeek (provider not variable) with a model-downgrade
+    # chain (settings.generation_models). HyDE/query-rewrite still run on Groq via the
+    # retrieval pipeline — they are a separate, smaller tier.
+    from rag_cti.bootstrap import FixedRouter, build_deepseek_client
+    from rag_cti.generation.client import FallbackChatClient
     from rag_cti.generation.generator import Generator
-    from rag_cti.generation.llm_router import LLMRouter
 
     settings = get_settings()
-    provider, client = build_llm_client(settings)
-    router = LLMRouter(settings=settings, provider=provider)
-    return Generator(client=client, router=router, settings=settings)
+    models = settings.generation_models
+    client = FallbackChatClient(build_deepseek_client(settings), models)
+    return Generator(client=client, router=FixedRouter(models[0]), settings=settings)
 
 
 def answer(text: str, k: int = 10, history: list[str] | None = None) -> GeneratedAnswer:

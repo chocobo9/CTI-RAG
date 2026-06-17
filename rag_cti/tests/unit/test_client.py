@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from rag_cti.generation.client import (
+    FallbackChatClient,
     RetryingGroqClient,
     RetryingOllamaClient,
     _is_retryable,
@@ -191,3 +192,72 @@ def test_build_llm_client_ollama_takes_priority_over_groq() -> None:
 def test_build_llm_client_raises_when_no_provider_configured() -> None:
     with pytest.raises(RuntimeError, match="No LLM provider"):
         build_llm_client(_FakeSettings())
+
+
+# ---------------------------------------------------------------------------
+# FallbackChatClient — generation model-downgrade chain
+# ---------------------------------------------------------------------------
+
+
+class _FakeResp:
+    def __init__(self, model: str) -> None:
+        self.model = model
+
+
+class _FakeCompletions:
+    def __init__(self, fail: set[str], tried: list[str]) -> None:
+        self._fail = fail
+        self._tried = tried
+
+    def create(self, model: str, **_: object) -> _FakeResp:
+        self._tried.append(model)
+        if model in self._fail:
+            raise RuntimeError(f"{model} unavailable")
+        return _FakeResp(model)
+
+
+class _FakeChat:
+    def __init__(self, fail: set[str], tried: list[str]) -> None:
+        self.completions = _FakeCompletions(fail, tried)
+
+
+class _FakeClient:
+    def __init__(self, fail: tuple[str, ...] = ()) -> None:
+        self.tried: list[str] = []
+        self.chat = _FakeChat(set(fail), self.tried)
+
+
+def test_fallback_uses_primary_when_it_succeeds() -> None:
+    client = _FakeClient()
+    fb = FallbackChatClient(client, ["primary", "backup"])
+    resp = fb.chat.completions.create(messages=[], max_tokens=10)
+    assert resp.model == "primary"
+    assert client.tried == ["primary"]  # backup never tried
+
+
+def test_fallback_downgrades_on_primary_failure() -> None:
+    client = _FakeClient(fail=("primary",))
+    fb = FallbackChatClient(client, ["primary", "backup"])
+    resp = fb.chat.completions.create(messages=[])
+    assert resp.model == "backup"
+    assert client.tried == ["primary", "backup"]
+
+
+def test_fallback_ignores_caller_model() -> None:
+    client = _FakeClient()
+    fb = FallbackChatClient(client, ["chain-model"])
+    resp = fb.chat.completions.create(model="ignored", messages=[])
+    assert resp.model == "chain-model"  # chain owns the model, caller's is dropped
+
+
+def test_fallback_raises_when_all_models_fail() -> None:
+    client = _FakeClient(fail=("a", "b"))
+    fb = FallbackChatClient(client, ["a", "b"])
+    with pytest.raises(RuntimeError, match="b unavailable"):
+        fb.chat.completions.create(messages=[])
+    assert client.tried == ["a", "b"]
+
+
+def test_fallback_requires_at_least_one_model() -> None:
+    with pytest.raises(ValueError, match="at least one model"):
+        FallbackChatClient(_FakeClient(), [])

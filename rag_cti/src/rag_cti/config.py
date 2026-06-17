@@ -58,8 +58,12 @@ class Settings(BaseSettings):
     hybrid_alpha: float = 0.5
     rrf_candidate_multiplier: int = 3
 
-    # Generation
+    # Generation — pinned to DeepSeek (same endpoint/key), model-downgrade chain:
+    # try generation_models[0] first, fall to the next on a backend failure. Primary
+    # deepseek-v4-flash is a reasoning model (spends tokens on reasoning_content), so
+    # generation_max_tokens must stay generous. Append more entries to extend the chain.
     generation_max_tokens: int = 1024
+    generation_models: list[str] = ["deepseek-v4-flash", "deepseek-chat"]
 
     # Model for the Anthropic provider: HyDE's Anthropic branch (hyde.py) and
     # LLMRouter when provider == "anthropic". Groq/Ollama use their own fields.

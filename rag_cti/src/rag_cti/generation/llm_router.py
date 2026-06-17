@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Protocol
 
 from rag_cti.types import SettingsProto
 
@@ -9,6 +10,13 @@ class TaskType(Enum):
     HYDE = "hyde"
     ANALYSIS = "analysis"
     REPORT = "report"
+
+
+class ModelRouter(Protocol):
+    """Anything that maps a task to a model name: LLMRouter (Groq tiers) or
+    bootstrap.FixedRouter (single pinned model, e.g. DeepSeek generation)."""
+
+    def model_for(self, task: TaskType) -> str: ...
 
 
 class LLMRouter:
