@@ -20,6 +20,13 @@ from typing import Any
 
 from rag_cti._logging import get_logger
 from rag_cti.observability.tracing import traced
+from rag_cti.retrieval.constraint_boost import apply_constraint_boost
+from rag_cti.retrieval.constraint_extract import (
+    ENTITY_TYPES,
+    ExtractedEntity,
+    RewriteOutput,
+    build_constraint,
+)
 from rag_cti.retrieval.fusion import DEFAULT_RRF_K, reciprocal_rank_fusion
 from rag_cti.retrieval.query_normalize import is_pure_ioc, prepare, refang, restore_iocs
 from rag_cti.types import PayloadConstraint, RetrievalResult, RetrieverProto, SettingsProto
@@ -30,12 +37,15 @@ logger = get_logger(__name__)
 _TEMPERATURE = 0.0
 
 _SYSTEM_PROMPT = """You are a cyber-threat-intelligence (CTI) search-query normalizer. \
-Given the conversation so far and the user's latest query, output a JSON array of one or \
-more clean, standalone CTI search queries that capture the user's intent.
+Given the conversation so far and the user's latest query, output a JSON object with two keys:
+- "queries": an array of one or more clean, standalone CTI search queries that capture intent.
+- "entities": an array of the threat-intel entities explicitly named, each \
+{"name": ..., "type": ...} with type one of "actor", "family", "technique".
 
-Output ONLY a JSON array of strings, e.g. ["first query", "second query"] — no prose, no markdown.
+Output ONLY the JSON object, e.g. \
+{"queries": ["a query"], "entities": [{"name": "APT29", "type": "actor"}]} — no prose, no markdown.
 
-Rules:
+Rules for "queries":
 - If the query is already clear and single-intent, return it unchanged as one string.
 - Fix spelling and word order; expand abbreviations (C2 -> command and control, \
 LPE / priv-esc -> privilege escalation).
@@ -48,23 +58,34 @@ output exactly one query.
 - Keep every <IOC_n> placeholder token EXACTLY as given; never alter, translate, or drop one.
 - Do NOT invent techniques, IOCs, actors, or facts not present in the query.
 
+Rules for "entities":
+- Include ONLY entities the user explicitly named: threat actors/groups (type "actor"), \
+malware/tools (type "family"), ATT&CK techniques (type "technique").
+- For a technique, set "name" to its ATT&CK id (e.g. "T1566.001") when stated or unambiguous; \
+otherwise omit that technique.
+- Use the canonical name for actors/families when known (e.g. "APT29", "Cobalt Strike").
+- "entities" may be empty. Never invent an entity not in the query. \
+Never put an <IOC_n> placeholder in an entity.
+
 Examples:
 Latest query: Office macro persistence techniques
-["Office macro persistence techniques"]
+{"queries": ["Office macro persistence techniques"], "entities": []}
 
 Latest query: waht persistnce techniqes duz Cozy Bear use
-["What persistence techniques does Cozy Bear (APT29) use"]
+{"queries": ["What persistence techniques does Cozy Bear (APT29) use"], \
+"entities": [{"name": "APT29", "type": "actor"}]}
 
 Latest query: what malware does APT28 use and which countries do they target
-["What malware does APT28 use", "Which countries does APT28 target"]
+{"queries": ["What malware does APT28 use", "Which countries does APT28 target"], \
+"entities": [{"name": "APT28", "type": "actor"}]}
 
 Conversation so far (most recent last):
 - What techniques does APT29 use
 Latest query: and who do they target?
-["Who does APT29 target"]
+{"queries": ["Who does APT29 target"], "entities": [{"name": "APT29", "type": "actor"}]}
 
 Latest query: what drops <IOC_1>
-["What malware drops <IOC_1>"]"""
+{"queries": ["What malware drops <IOC_1>"], "entities": []}"""
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
 _PLACEHOLDER_RE = re.compile(r"<IOC_\d+>")
@@ -98,20 +119,34 @@ class LLMQueryRewriter:
                 self._llm_provider = "anthropic"
 
     def rewrite(self, query: str, history: list[str] | None = None) -> list[str]:
-        """Return one or more clean standalone queries. Falls back to ``[query]``."""
+        """Return one or more clean standalone queries. Falls back to ``[query]``.
+
+        Back-compat thin wrapper over :meth:`rewrite_with_entities` for callers that
+        only need the sub-queries (the queries side is unchanged from before entities).
+        """
+        return list(self.rewrite_with_entities(query, history).queries)
+
+    def rewrite_with_entities(self, query: str, history: list[str] | None = None) -> RewriteOutput:
+        """One LLM call → clean sub-queries + named entities. Never worse than no rewrite.
+
+        On disable, a pure-IOC query, or any LLM/parse failure, returns
+        ``RewriteOutput(queries=(query-or-refang,))`` with empty entities — identical
+        sub-query behaviour to before entities existed. Entity extraction fails
+        independently (a bad ``entities`` block never degrades the sub-queries).
+        """
         if not getattr(self._settings, "query_rewrite_enabled", False):
-            return [query]
+            return RewriteOutput(queries=(query,))
         # A bare IOC lookup: the LLM can only mangle it — just refang and pass through.
         if is_pure_ioc(query):
-            return [refang(query)]
+            return RewriteOutput(queries=(refang(query),))
 
         protected, mapping = prepare(query)
         raw = self._generate_raw(_SYSTEM_PROMPT, self._user_prompt(protected, history))
-        subqueries = self._parse(raw, mapping)
-        if not subqueries:
-            return [query]  # fallback: never worse than no rewrite
+        queries, entities = self._parse(raw, mapping)
+        if not queries:
+            return RewriteOutput(queries=(query,))  # fallback: never worse than no rewrite
         max_sub = getattr(self._settings, "query_rewrite_max_subqueries", 4)
-        return subqueries[:max_sub]
+        return RewriteOutput(queries=tuple(queries[:max_sub]), entities=tuple(entities))
 
     @staticmethod
     def _user_prompt(protected_query: str, history: list[str] | None) -> str:
@@ -121,18 +156,42 @@ class LLMQueryRewriter:
             prefix = f"Conversation so far (most recent last):\n{turns}\n\n"
         return f"{prefix}Latest query: {protected_query}"
 
-    def _parse(self, raw: str | None, mapping: dict[str, str]) -> list[str]:
-        """Parse the JSON array, restore IOC placeholders, validate. [] on failure."""
+    def _parse(
+        self, raw: str | None, mapping: dict[str, str]
+    ) -> tuple[list[str], list[ExtractedEntity]]:
+        """Parse the LLM output into (queries, entities). ``([], [])`` on query failure.
+
+        Dual-form: the current object ``{"queries": [...], "entities": [...]}`` and the
+        legacy bare array (treated as queries-only, entities empty) — so older canned
+        responses / cached prompts keep working. Entities are parsed independently and
+        defensively; a malformed entities block yields ``[]`` without touching queries.
+        """
         if not raw:
-            return []
+            return [], []
         text = _FENCE_RE.sub("", raw.strip())
         try:
             parsed = json.loads(text)
         except (json.JSONDecodeError, ValueError):
+            return [], []
+        if isinstance(parsed, list):
+            raw_queries: Any = parsed
+            raw_entities: Any = []
+        elif isinstance(parsed, dict):
+            raw_queries = parsed.get("queries", [])
+            raw_entities = parsed.get("entities", [])
+        else:
+            return [], []
+        queries = self._parse_queries(raw_queries, mapping)
+        if not queries:
+            return [], []
+        return queries, self._parse_entities(raw_entities)
+
+    @staticmethod
+    def _parse_queries(raw_queries: Any, mapping: dict[str, str]) -> list[str]:
+        """Validate sub-query strings + restore IOC placeholders. [] on failure."""
+        if not isinstance(raw_queries, list):
             return []
-        if not isinstance(parsed, list):
-            return []
-        out = [str(q).strip() for q in parsed if isinstance(q, str) and str(q).strip()]
+        out = [str(q).strip() for q in raw_queries if isinstance(q, str) and str(q).strip()]
         if not out:
             return []
         # IOC-loss guard: if the query had IOCs but the model dropped every
@@ -141,6 +200,27 @@ class LLMQueryRewriter:
             logger.warning("query rewrite dropped all IOC placeholders, falling back")
             return []
         return [restore_iocs(q, mapping) for q in out]
+
+    @staticmethod
+    def _parse_entities(raw_entities: Any) -> list[ExtractedEntity]:
+        """Validate named entities defensively. Drops anything malformed silently.
+
+        An IOC placeholder must never become an entity (it is not a real name and
+        would corrupt resolution), so any name carrying one is rejected.
+        """
+        if not isinstance(raw_entities, list):
+            return []
+        out: list[ExtractedEntity] = []
+        for item in raw_entities:
+            if not isinstance(item, dict):
+                continue
+            name, etype = item.get("name"), item.get("type")
+            if not isinstance(name, str) or not name.strip():
+                continue
+            if etype not in ENTITY_TYPES or _PLACEHOLDER_RE.search(name):
+                continue
+            out.append(ExtractedEntity(name=name.strip(), type=etype))
+        return out
 
     @traced("retrieval.query_rewrite.generate", run_type="llm")
     def _generate_raw(self, system: str, user: str) -> str | None:
@@ -179,13 +259,24 @@ class LLMQueryRewriter:
 
 class QueryRewriteRetriever:
     """Retriever wrapper: rewrite the query into sub-queries, retrieve each through
-    the base retriever, fuse with RRF (query-rewrite §3).
+    the base retriever, fuse with RRF (query-rewrite §3), then optionally soft-boost
+    results that match the query's structured constraint (retrieval routing).
 
     Outermost wrapper (wraps HyDE/hybrid), so both production (``Pipeline.run``) and
-    eval (which calls ``retriever.search`` directly) get the rewrite uniformly. A
+    eval (which calls ``retriever.search`` directly) get rewrite + boost uniformly. A
     single sub-query (the common case) is a straight pass-through — identical to the
     pre-rewrite behaviour. ``history`` is keyword-only and optional, so this still
     satisfies the retriever protocol used elsewhere.
+
+    Routing has two entry shapes for one LLM call:
+    - **Direct** (``search`` with no ``subqueries``): self-rewrites via
+      :meth:`understand`, then soft-boosts here (the eval/direct-search terminus).
+    - **Pipeline-driven** (``search`` with ``subqueries`` + ``boost_constraint``):
+      the pipeline already called :meth:`understand` once and re-applies the boost
+      after reranking, so this skips the LLM and just fans out + boosts.
+
+    ``settings`` / ``ontology_nodes`` are optional: absent them, routing is off and
+    behaviour is exactly the pre-routing rewrite-only wrapper.
     """
 
     def __init__(
@@ -193,10 +284,35 @@ class QueryRewriteRetriever:
         base_retriever: RetrieverProto,
         rewriter: LLMQueryRewriter,
         rrf_k: int = DEFAULT_RRF_K,
+        *,
+        settings: SettingsProto | None = None,
+        ontology_nodes: list[dict[str, Any]] | None = None,
     ) -> None:
         self._base = base_retriever
         self._rewriter = rewriter
         self._rrf_k = rrf_k
+        self._settings = settings
+        self._ontology_nodes = ontology_nodes
+
+    def understand(
+        self, query: str, history: list[str] | None = None
+    ) -> tuple[tuple[str, ...], PayloadConstraint]:
+        """One LLM call → (sub-queries, boost constraint). The single understanding seam.
+
+        The pipeline calls this once and passes the sub-queries back into
+        :meth:`search` (so the LLM fires exactly once per query). Falls back to a
+        ``.rewrite``-only rewriter (no entity support) and to an empty constraint when
+        routing is disabled or no ontology is wired.
+        """
+        rewriter = self._rewriter
+        if hasattr(rewriter, "rewrite_with_entities"):
+            out = rewriter.rewrite_with_entities(query, history)
+            subqueries, entities = out.queries, out.entities
+        else:  # pragma: no cover - exercised via legacy test fakes only
+            subqueries, entities = tuple(rewriter.rewrite(query, history)), ()
+        if self._routing_enabled():
+            return subqueries, build_constraint(query, entities, self._ontology_nodes)
+        return subqueries, PayloadConstraint()
 
     def search(
         self,
@@ -206,8 +322,29 @@ class QueryRewriteRetriever:
         source_filter: str | list[str] | None = None,
         constraint: PayloadConstraint | None = None,
         history: list[str] | None = None,
+        subqueries: tuple[str, ...] | None = None,
+        boost_constraint: PayloadConstraint | None = None,
     ) -> list[RetrievalResult]:
-        subqueries = self._rewriter.rewrite(query, history)
+        # ``constraint`` is the hard payload pre-filter (flows to the store);
+        # ``boost_constraint`` is the soft re-scoring signal — distinct concerns.
+        # When the pipeline supplies ``subqueries`` it owns the boost (re-applied
+        # post-rerank); applying it here too would double-count if the reranker is a
+        # no-op. So seam-1 boost fires ONLY on the direct path (no subqueries given).
+        pipeline_driven = subqueries is not None
+        if subqueries is None:
+            subqueries, boost_constraint = self.understand(query, history)
+        results = self._fanout(subqueries, top_k, source_filter, constraint)
+        if pipeline_driven:
+            return results
+        return self._maybe_boost(results, boost_constraint)
+
+    def _fanout(
+        self,
+        subqueries: tuple[str, ...],
+        top_k: int,
+        source_filter: str | list[str] | None,
+        constraint: PayloadConstraint | None,
+    ) -> list[RetrievalResult]:
         if len(subqueries) == 1:
             return self._base.search(
                 subqueries[0], top_k=top_k, source_filter=source_filter, constraint=constraint
@@ -217,3 +354,16 @@ class QueryRewriteRetriever:
             for sq in subqueries
         ]
         return reciprocal_rank_fusion(result_lists, k=self._rrf_k)[:top_k]
+
+    def _maybe_boost(
+        self, results: list[RetrievalResult], boost_constraint: PayloadConstraint | None
+    ) -> list[RetrievalResult]:
+        if not self._routing_enabled() or boost_constraint is None or boost_constraint.is_empty:
+            return results
+        return apply_constraint_boost(results, boost_constraint, self._boost_weight())
+
+    def _routing_enabled(self) -> bool:
+        return bool(getattr(self._settings, "constraint_routing_enabled", False))
+
+    def _boost_weight(self) -> float:
+        return float(getattr(self._settings, "constraint_boost_weight", 0.0))

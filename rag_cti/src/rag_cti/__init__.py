@@ -20,7 +20,7 @@ __version__ = "0.1.0"
 
 @lru_cache(maxsize=1)
 def _default_pipeline() -> Pipeline:
-    from rag_cti.bootstrap import load_sparse_encoder, vocab_path_for
+    from rag_cti.bootstrap import load_ontology_nodes, load_sparse_encoder, vocab_path_for
     from rag_cti.embeddings.embedder import Embedder
     from rag_cti.store.qdrant_store import QdrantStore
 
@@ -48,6 +48,7 @@ def _default_pipeline() -> Pipeline:
         encoder=encoder,
         llm_client=llm_client,
         llm_provider=llm_provider,
+        ontology_nodes=load_ontology_nodes(),
     )
 
     # eager load reranker model if enabled

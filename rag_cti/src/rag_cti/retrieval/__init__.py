@@ -1,3 +1,5 @@
+from rag_cti.retrieval.constraint_boost import apply_constraint_boost
+from rag_cti.retrieval.constraint_extract import build_constraint
 from rag_cti.retrieval.dense_retriever import DenseRetriever
 from rag_cti.retrieval.fusion import reciprocal_rank_fusion
 from rag_cti.retrieval.hybrid_retriever import HybridRetriever
@@ -15,6 +17,8 @@ __all__ = [
     "Pipeline",
     "Reranker",
     "SparseRetriever",
+    "apply_constraint_boost",
+    "build_constraint",
     "build_pipeline",
     "reciprocal_rank_fusion",
 ]

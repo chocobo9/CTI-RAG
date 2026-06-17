@@ -21,6 +21,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 EVAL_DIR = DATA_DIR / "eval"
 VOCAB_PATH = DATA_DIR / "sparse_vocab.json"
+ONTOLOGY_NODES_PATH = DATA_DIR / "processed" / "ontology_nodes.jsonl"
 
 # Retriever config name -> dense weight in the weighted-RRF fusion.
 # 1.0 = pure dense (sparse retriever skipped); 0.5 = symmetric hybrid.
@@ -60,6 +61,20 @@ def load_sparse_encoder(vocab_path: Path = VOCAB_PATH) -> Any:
     from rag_cti.retrieval.bm25 import BM25SparseEncoder
 
     return BM25SparseEncoder.load(vocab_path) if vocab_path.exists() else BM25SparseEncoder()
+
+
+def load_ontology_nodes(path: Path = ONTOLOGY_NODES_PATH) -> list[dict[str, Any]]:
+    """Load ontology nodes (name/alias -> id) for query-time entity routing.
+
+    Returns ``[]`` when the file is absent so the pipeline degrades to
+    deterministic-only constraint routing rather than failing.
+    """
+    import json
+
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8") as fh:
+        return [json.loads(line) for line in fh if line.strip()]
 
 
 def vocab_path_for(collection: str, base: Path = DATA_DIR) -> Path:
@@ -124,6 +139,7 @@ def build_eval_pipeline(
         llm_client=llm_client if use_hyde else None,
         llm_provider=llm_provider if use_hyde else "anthropic",
         hybrid_alpha_override=ALPHA_MAP.get(config_name, 0.5),
+        ontology_nodes=load_ontology_nodes(),
     )
 
 

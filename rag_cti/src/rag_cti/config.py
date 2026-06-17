@@ -95,6 +95,14 @@ class Settings(BaseSettings):
     query_rewrite_max_subqueries: int = 4
     query_rewrite_max_tokens: int = 300
 
+    # Constraint routing (soft boost). Reuses the query-rewrite LLM call to extract
+    # named entities, plus deterministic technique-id / source-type signals, into a
+    # PayloadConstraint that *boosts* (never filters) matching results. Decoupled from
+    # query_rewrite_enabled: the deterministic signals still route when rewrite is off.
+    constraint_routing_enabled: bool = True
+    constraint_boost_weight: float = 0.5
+    constraint_boost_fetch_multiplier: int = 1
+
     @field_validator("hybrid_alpha")
     @classmethod
     def validate_alpha(cls, v: float) -> float:

@@ -11,7 +11,11 @@ Every distinct mention yields exactly one Entity (nothing is dropped).
 from __future__ import annotations
 
 from rag_cti.ingest.normalize import RelationMention
-from rag_cti.preprocess.entity_registry import build_entity_registry, resolve_relations
+from rag_cti.preprocess.entity_registry import (
+    build_entity_registry,
+    resolve_entity_ids_strict,
+    resolve_relations,
+)
 
 # OntologyNodes as produced by ontology_nodes_from_bundle (group = intrusion-set).
 _NODES = [
@@ -276,6 +280,45 @@ def test_campaign_resolves_to_mirrored_ontology_node():
     assert e["ontology_id"] == "C0024"
     assert e["type"] == "campaign"
     assert e["resolution"] == "exact_name"
+
+
+# --- resolve_entity_ids_strict (query-time boost-constraint projection) ---
+
+
+def test_strict_keeps_exact_name_alias_and_id():
+    mentions = [("APT29", "actor"), ("cozy bear", "actor"), ("T1003", "technique")]
+    assert resolve_entity_ids_strict(mentions, _NODES) == ["actor_G0016", "technique_T1003"]
+
+
+def test_strict_drops_orphan_unresolved():
+    # An unknown actor would orphan in the lenient resolver; strict yields nothing.
+    assert resolve_entity_ids_strict([("totally unknown", "actor")], _NODES) == []
+
+
+def test_strict_drops_substring_near_miss():
+    # "Cobalt" substring-matches Cobalt Group/Strike -> held candidate, not exact.
+    assert resolve_entity_ids_strict([("Cobalt", "actor")], _NODES) == []
+
+
+def test_strict_drops_ambiguous_exact_alias():
+    nodes = [
+        {"ontology_id": "S0145", "type": "software", "name": "POWERSOURCE",
+         "aliases": ["DNSMessenger"], "tactics": [], "attack_version": "18.1"},
+        {"ontology_id": "S0146", "type": "software", "name": "TEXTMATE",
+         "aliases": ["DNSMessenger"], "tactics": [], "attack_version": "18.1"},
+    ]
+    # ambiguous -> orphan resolution -> dropped (no guessed id boosts the wrong chunk)
+    assert resolve_entity_ids_strict([("DNSMessenger", "family")], nodes) == []
+
+
+def test_strict_drops_embedded_id_by_default():
+    # embedded_id is a real resolution but not in the default accept set.
+    assert resolve_entity_ids_strict([("Mimikatz - S0002", "family")], _EMB_NODES) == []
+
+
+def test_strict_dedups_and_sorts():
+    mentions = [("NOBELIUM", "actor"), ("APT29", "actor")]  # both -> actor_G0016
+    assert resolve_entity_ids_strict(mentions, _NODES) == ["actor_G0016"]
 
 
 def test_campaign_unknown_name_still_orphans_no_fuzzy_added():

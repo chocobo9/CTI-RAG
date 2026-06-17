@@ -282,6 +282,34 @@ def resolve_entity_ids(
     return sorted(seen)
 
 
+_STRICT_RESOLUTIONS = frozenset({"exact_name", "exact_alias", "exact_id"})
+
+
+def resolve_entity_ids_strict(
+    mentions: Iterable[tuple[str, str]],
+    ontology_nodes: list[dict[str, Any]],
+    accept: frozenset[str] = _STRICT_RESOLUTIONS,
+) -> list[str]:
+    """Resolve mentions to entity_ids, keeping ONLY high-confidence resolutions.
+
+    Unlike :func:`resolve_entity_ids` (which keeps orphans so every payload mention
+    gets a stable id), this drops anything whose ``resolution`` is not in *accept* —
+    orphans, ambiguous name/alias, substring near-misses and embedded-id matches all
+    yield nothing. The query-time projection used to build a structured *boost*
+    constraint: a wrong id would boost the wrong chunks, so an uncertain mention must
+    contribute no id rather than a guessed one. Returns deduped, sorted ids.
+    """
+    name_nodes, oid_nodes = _build_indexes(ontology_nodes)
+    seen: dict[str, None] = {}
+    for name, etype in mentions:
+        if not _norm(name):
+            continue
+        res = _resolve_one(name, etype, name_nodes, oid_nodes)
+        if res.resolution in accept:
+            seen[res.entity_id] = None
+    return sorted(seen)
+
+
 def resolve_relations(
     relation_mentions: Iterable[RelationMention],
     ontology_nodes: list[dict[str, Any]],

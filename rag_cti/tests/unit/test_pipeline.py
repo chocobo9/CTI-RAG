@@ -434,3 +434,126 @@ def test_pipeline_without_edges_does_not_expand() -> None:
     pipeline = Pipeline(retriever=retriever, reranker=_FakeReranker(), settings=_FakeSettings())
     pipeline.run("creds", constraint=PayloadConstraint(attack_ids=("T1003.001",)))
     assert retriever.last_constraint.attack_ids == ("T1003.001",)
+
+
+# ---------------------------------------------------------------------------
+# Tests — constraint routing (soft boost) seam-2 (after rerank)
+# ---------------------------------------------------------------------------
+
+_ROUTING_NODES = [
+    {"ontology_id": "G0016", "type": "group", "name": "APT29",
+     "aliases": ["Cozy Bear"], "tactics": [], "attack_version": "18.1"},
+]
+
+
+class _RoutingSettings:
+    """Minimal settings exposing the routing flags (no reranker over-fetch)."""
+
+    def __init__(self, enabled: bool = True, weight: float = 1.0, multiplier: int = 1) -> None:
+        self.retrieval_top_k = 10
+        self.hyde_enabled = False
+        self.constraint_routing_enabled = enabled
+        self.constraint_boost_weight = weight
+        self.constraint_boost_fetch_multiplier = multiplier
+
+
+class _FixedScoreReranker:
+    """Reranker that assigns a fixed score per chunk id then sorts — models the
+    cross-encoder fully overwriting upstream scores, independent of input order."""
+
+    def __init__(self, scores: dict[str, float]) -> None:
+        self._scores = scores
+
+    def rerank(self, query: str, results: list[RetrievalResult]) -> list[RetrievalResult]:
+        rescored = [r.model_copy(update={"score": self._scores[r.document.id]}) for r in results]
+        rescored.sort(key=lambda r: r.score, reverse=True)
+        return [r.model_copy(update={"rank": i}) for i, r in enumerate(rescored)]
+
+
+def _entity_result(cid: str, *entity_ids: str) -> RetrievalResult:
+    chunk = Chunk(
+        id=cid, parent_doc_id="d", source="mitre", content="c", chunk_index=0,
+        metadata={"entity_ids": list(entity_ids)},
+    )
+    return RetrievalResult(document=chunk, score=0.0, rank=0, retriever_source="rrf")
+
+
+def _routing_pipeline(reranker, settings, base_results):
+    """A real QueryRewriteRetriever (so understand() runs) over a fake base."""
+    from rag_cti.retrieval.constraint_extract import ExtractedEntity, RewriteOutput
+    from rag_cti.retrieval.query_rewrite import QueryRewriteRetriever
+
+    class _Base:
+        def __init__(self) -> None:
+            self.calls: list[str] = []
+
+        def search(self, query, top_k=10, **_):
+            self.calls.append(query)
+            return list(base_results)
+
+    class _Rewriter:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def rewrite_with_entities(self, query, history=None):
+            self.calls += 1
+            return RewriteOutput(queries=("q",), entities=(ExtractedEntity("APT29", "actor"),))
+
+    base, rewriter = _Base(), _Rewriter()
+    retriever = QueryRewriteRetriever(base, rewriter, settings=settings, ontology_nodes=_ROUTING_NODES)
+    pipeline = Pipeline(retriever=retriever, reranker=reranker, settings=settings,
+                        ontology_nodes=_ROUTING_NODES)
+    return pipeline, base, rewriter
+
+
+def test_boost_after_rerank_beats_score_erasure() -> None:
+    # rerank puts nonmatch on top; the post-rerank boost must flip the entity match up.
+    results = [_entity_result("nonmatch"), _entity_result("match", "actor_G0016")]
+    reranker = _FixedScoreReranker({"nonmatch": 1.0, "match": 0.5})
+    pipeline, _, _ = _routing_pipeline(reranker, _RoutingSettings(weight=1.0), results)
+    out = pipeline.run("apt29 stuff")
+    assert [r.document.id for r in out.results][0] == "match"  # 0.5 + 1.0 > 1.0
+
+
+def test_routing_disabled_preserves_reranker_order() -> None:
+    results = [_entity_result("nonmatch"), _entity_result("match", "actor_G0016")]
+    reranker = _FixedScoreReranker({"nonmatch": 1.0, "match": 0.5})
+    pipeline, _, _ = _routing_pipeline(reranker, _RoutingSettings(enabled=False), results)
+    out = pipeline.run("apt29 stuff")
+    assert [r.document.id for r in out.results][0] == "nonmatch"  # no boost
+
+
+def test_exactly_one_understanding_call_per_run() -> None:
+    results = [_entity_result("a", "actor_G0016")]
+    pipeline, base, rewriter = _routing_pipeline(
+        _FixedScoreReranker({"a": 1.0}), _RoutingSettings(), results
+    )
+    pipeline.run("apt29 stuff")
+    assert rewriter.calls == 1  # LLM understanding fires once
+    assert base.calls == ["q"]  # base searched the rewritten sub-query, not re-rewritten
+
+
+def test_cross_path_consistency_direct_vs_pipeline_noop() -> None:
+    """Same constraint + corpus through retriever.search and pipeline.run(NoOpReranker)
+    must yield identical ordering — the historical 'eval can't see the gain' fix."""
+    from rag_cti.retrieval.reranker import NoOpReranker
+
+    def fresh_results():
+        return [
+            RetrievalResult(document=Chunk(id="nonmatch", parent_doc_id="d", source="mitre",
+                                           content="c", chunk_index=0, metadata={}),
+                            score=0.9, rank=0, retriever_source="rrf"),
+            RetrievalResult(document=Chunk(id="match", parent_doc_id="d", source="mitre",
+                                           content="c", chunk_index=0,
+                                           metadata={"entity_ids": ["actor_G0016"]}),
+                            score=0.5, rank=1, retriever_source="rrf"),
+        ]
+
+    settings = _RoutingSettings(weight=1.0)
+    # Direct path: retriever.search self-rewrites + seam-1 boosts.
+    pipeline_d, _, _ = _routing_pipeline(NoOpReranker(), settings, fresh_results())
+    direct = pipeline_d._retriever.search("apt29", top_k=10)
+    # Pipeline path: understand once, NoOp rerank, seam-2 boost.
+    pipeline_p, _, _ = _routing_pipeline(NoOpReranker(), settings, fresh_results())
+    piped = pipeline_p.run("apt29", top_k=10).results
+    assert [r.document.id for r in direct] == [r.document.id for r in piped] == ["match", "nonmatch"]

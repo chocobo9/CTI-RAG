@@ -5,6 +5,8 @@ from typing import Any, Protocol
 
 from rag_cti._logging import get_logger
 from rag_cti.observability.tracing import add_trace_metadata, traced
+from rag_cti.retrieval.constraint_boost import apply_constraint_boost
+from rag_cti.retrieval.constraint_extract import build_constraint
 from rag_cti.retrieval.dense_retriever import DenseRetriever, DenseSearchStore, QueryEmbedder
 from rag_cti.retrieval.hybrid_retriever import HybridRetriever
 from rag_cti.retrieval.hyde import HyDERetriever
@@ -40,6 +42,7 @@ class Pipeline:
         reranker: Reranker,
         settings: SettingsProto,
         ontology_edges: list[dict[str, Any]] | None = None,
+        ontology_nodes: list[dict[str, Any]] | None = None,
     ) -> None:
         self._retriever = retriever
         self._reranker = reranker
@@ -47,6 +50,18 @@ class Pipeline:
         # subtechnique-of edges for query-time ontology expansion (retrieval §6);
         # None disables it (a constraint then filters on the literal attack_ids).
         self._ontology_edges = ontology_edges
+        # ontology nodes (name/alias -> id) for query-time entity resolution in the
+        # boost constraint; None disables actor/family routing (deterministic still works).
+        self._ontology_nodes = ontology_nodes
+
+    def _routing_enabled(self) -> bool:
+        return bool(getattr(self._settings, "constraint_routing_enabled", False))
+
+    def _boost_weight(self) -> float:
+        return float(getattr(self._settings, "constraint_boost_weight", 0.0))
+
+    def _fetch_multiplier(self) -> int:
+        return max(1, int(getattr(self._settings, "constraint_boost_fetch_multiplier", 1)))
 
     @traced("retrieval.pipeline", run_type="retriever")
     def run(
@@ -63,26 +78,49 @@ class Pipeline:
         fetch_k = k
         if getattr(self._settings, "reranker_enabled", False):
             fetch_k = max(k, getattr(self._settings, "reranker_candidates_k", k))
+        # Widen the candidate pool when routing so a soft-boosted but lower-scored
+        # match can still surface (matters only when reranker is off — fetch_k == k).
+        if self._routing_enabled():
+            fetch_k *= self._fetch_multiplier()
 
-        # Ontology expansion (retrieval §6): a sub-technique filter also matches its
-        # parent (and a parent its sub-techniques) before vector search.
+        # Ontology expansion (retrieval §6): a sub-technique HARD filter also matches its
+        # parent (and a parent its sub-techniques) before vector search. (Boost constraints
+        # are NOT expanded — that would dilute the signal.)
         if constraint is not None and self._ontology_edges:
             constraint = expand_constraint(constraint, self._ontology_edges)
 
+        # Query understanding happens here exactly ONCE: a QueryRewriteRetriever yields
+        # both the sub-queries and the boost constraint from a single LLM call, then
+        # search() is told the sub-queries so it skips its own rewrite call. The boost
+        # is re-applied after reranking (the cross-encoder overwrites scores), so it
+        # survives rerank in production while the retriever's own seam-1 boost covers
+        # the rerank-free direct-search path.
+        boost_constraint: PayloadConstraint | None = None
         if isinstance(self._retriever, QueryRewriteRetriever):
+            subqueries, boost_constraint = self._retriever.understand(query, history)
             results: list[RetrievalResult] = self._retriever.search(
                 query,
                 top_k=fetch_k,
                 source_filter=source_filter,
                 constraint=constraint,
-                history=history,
+                subqueries=subqueries,
+                boost_constraint=boost_constraint,
             )
         else:
+            if self._routing_enabled():
+                boost_constraint = build_constraint(query, (), self._ontology_nodes)
             results = self._retriever.search(
                 query, top_k=fetch_k, source_filter=source_filter, constraint=constraint
             )
         t_retrieve = time.perf_counter()
         results = self._reranker.rerank(query, results)
+        # Seam 2: re-apply the soft boost on the reranked scores, before truncation.
+        if (
+            self._routing_enabled()
+            and boost_constraint is not None
+            and not boost_constraint.is_empty
+        ):
+            results = apply_constraint_boost(results, boost_constraint, self._boost_weight())
         t_rerank = time.perf_counter()
         results = results[:k]
         elapsed_ms = (time.perf_counter() - t0) * 1000
@@ -124,6 +162,8 @@ def build_pipeline(
     llm_client: object | None = None,
     llm_provider: str = "anthropic",
     hybrid_alpha_override: float | None = None,
+    ontology_nodes: list[dict[str, Any]] | None = None,
+    ontology_edges: list[dict[str, Any]] | None = None,
 ) -> Pipeline:
     """Wire the full retrieval stack from components.
 
@@ -157,11 +197,15 @@ def build_pipeline(
     else:
         retriever = base_retriever
 
-    # Outermost wrapper: rewrite the query (normalize/decompose/contextualize) and
-    # fuse sub-query results. Wraps HyDE so HyDE sees clean sub-queries.
+    # Outermost wrapper: rewrite the query (normalize/decompose/contextualize), fuse
+    # sub-query results, and soft-boost on the structured constraint. Wraps HyDE so
+    # HyDE sees clean sub-queries. ontology_nodes enable actor/family entity routing.
     if getattr(settings, "query_rewrite_enabled", False) and llm_client is not None:
         retriever = QueryRewriteRetriever(
-            retriever, LLMQueryRewriter(llm_client, settings, llm_provider)
+            retriever,
+            LLMQueryRewriter(llm_client, settings, llm_provider),
+            settings=settings,
+            ontology_nodes=ontology_nodes,
         )
 
     if getattr(settings, "reranker_enabled", False):
@@ -174,4 +218,10 @@ def build_pipeline(
     else:
         reranker = NoOpReranker()
 
-    return Pipeline(retriever=retriever, reranker=reranker, settings=settings)
+    return Pipeline(
+        retriever=retriever,
+        reranker=reranker,
+        settings=settings,
+        ontology_edges=ontology_edges,
+        ontology_nodes=ontology_nodes,
+    )
