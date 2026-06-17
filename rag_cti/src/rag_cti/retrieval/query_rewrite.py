@@ -26,21 +26,45 @@ from rag_cti.types import PayloadConstraint, RetrievalResult, RetrieverProto, Se
 
 logger = get_logger(__name__)
 
-_SYSTEM_PROMPT = (
-    "You are a cyber-threat-intelligence search-query normalizer. Given the "
-    "conversation so far and the user's latest query, output a JSON array of one or "
-    "more clean, standalone search queries capturing the user's intent.\n"
-    "Rules:\n"
-    "- Fix spelling and word order; expand abbreviations (C2, LPE, priv-esc).\n"
-    "- Normalize threat-actor / malware names to their common canonical name, but "
-    "keep the original term too.\n"
-    '- Resolve references to earlier turns ("it", "that group") into explicit terms.\n'
-    "- If the query asks several distinct things, split into multiple queries; "
-    "otherwise output exactly one.\n"
-    "- Keep any <IOC_n> placeholder tokens EXACTLY as given; never alter or drop them.\n"
-    "- Do NOT invent techniques, IOCs, actors, or facts not present in the query.\n"
-    "- Output ONLY the JSON array of strings."
-)
+# Temperature 0: rewriting must be deterministic and faithful, not creative.
+_TEMPERATURE = 0.0
+
+_SYSTEM_PROMPT = """You are a cyber-threat-intelligence (CTI) search-query normalizer. \
+Given the conversation so far and the user's latest query, output a JSON array of one or \
+more clean, standalone CTI search queries that capture the user's intent.
+
+Output ONLY a JSON array of strings, e.g. ["first query", "second query"] — no prose, no markdown.
+
+Rules:
+- If the query is already clear and single-intent, return it unchanged as one string.
+- Fix spelling and word order; expand abbreviations (C2 -> command and control, \
+LPE / priv-esc -> privilege escalation).
+- Normalize a threat-actor or malware name to its common canonical name AND keep the \
+original term, both in the same query string (e.g. "Cozy Bear (APT29)").
+- Resolve references to earlier turns ("it", "they", "that group") into explicit terms \
+using the conversation.
+- Split a query that asks several distinct things into one query per thing; otherwise \
+output exactly one query.
+- Keep every <IOC_n> placeholder token EXACTLY as given; never alter, translate, or drop one.
+- Do NOT invent techniques, IOCs, actors, or facts not present in the query.
+
+Examples:
+Latest query: Office macro persistence techniques
+["Office macro persistence techniques"]
+
+Latest query: waht persistnce techniqes duz Cozy Bear use
+["What persistence techniques does Cozy Bear (APT29) use"]
+
+Latest query: what malware does APT28 use and which countries do they target
+["What malware does APT28 use", "Which countries does APT28 target"]
+
+Conversation so far (most recent last):
+- What techniques does APT29 use
+Latest query: and who do they target?
+["Who does APT29 target"]
+
+Latest query: what drops <IOC_1>
+["What malware drops <IOC_1>"]"""
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
 _PLACEHOLDER_RE = re.compile(r"<IOC_\d+>")
@@ -131,6 +155,7 @@ class LLMQueryRewriter:
                 resp = self._llm.chat.completions.create(
                     model=model,
                     max_tokens=max_tokens,
+                    temperature=_TEMPERATURE,
                     messages=[
                         {"role": "system", "content": system},
                         {"role": "user", "content": user},
@@ -141,6 +166,7 @@ class LLMQueryRewriter:
             response = self._llm.messages.create(
                 model=self._settings.llm_routing_model,
                 max_tokens=max_tokens,
+                temperature=_TEMPERATURE,
                 system=system,
                 messages=[{"role": "user", "content": user}],
             )

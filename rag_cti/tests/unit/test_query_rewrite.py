@@ -150,3 +150,40 @@ def test_history_passed_to_rewriter() -> None:
     wrap = QueryRewriteRetriever(base, rw)  # type: ignore[arg-type]
     wrap.search("follow up", top_k=5, history=["prior turn"])
     assert rw.history_seen == ["prior turn"]
+
+
+# --- real _generate_raw path: temperature + model wiring (groq-shaped client) ---
+
+
+class _FakeGroqLike:
+    """Minimal groq/OpenAI-shaped client recording the create() kwargs."""
+
+    def __init__(self) -> None:
+        self.kwargs: dict[str, Any] = {}
+        self.chat = self
+
+    @property
+    def completions(self) -> _FakeGroqLike:
+        return self
+
+    def create(self, **kwargs: Any) -> Any:
+        self.kwargs = kwargs
+        msg = SimpleNamespace(content='["clean query"]')
+        return SimpleNamespace(choices=[SimpleNamespace(message=msg)])
+
+
+def test_generate_raw_sets_temperature_zero_and_groq_model() -> None:
+    client = _FakeGroqLike()
+    settings = SimpleNamespace(
+        query_rewrite_enabled=True,
+        query_rewrite_max_subqueries=4,
+        query_rewrite_max_tokens=300,
+        ollama_enabled=False,
+        groq_query_model="llama-3.1-8b-instant",
+    )
+    rw = LLMQueryRewriter(llm_client=client, settings=settings)  # has .chat -> groq branch
+    out = rw.rewrite("messy query")
+    assert out == ["clean query"]
+    assert client.kwargs["temperature"] == 0  # deterministic, not creative
+    assert client.kwargs["model"] == "llama-3.1-8b-instant"
+    assert client.kwargs["messages"][0]["role"] == "system"
