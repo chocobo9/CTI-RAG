@@ -87,10 +87,11 @@ class Settings(BaseSettings):
     hyde_max_tokens: int = 300
     hyde_output_max_chars: int = 2000
 
-    # LLM query rewrite (normalize/decompose/contextualize). Default OFF: it adds an
-    # LLM call per query; flip on (env QUERY_REWRITE_ENABLED=true) once the A/B
-    # retrieval eval shows it earns its cost.
-    query_rewrite_enabled: bool = False
+    # LLM query rewrite (normalize/decompose/contextualize). Default ON: the
+    # four-quadrant A/B (2026-06-16) showed rewrite+HyDE >= HyDE-only on BOTH clean
+    # and adversarial technique queries (the clean-set top-1 regression appeared only
+    # in the no-HyDE quadrant, which is not the default). Costs one Groq-8b call/query.
+    query_rewrite_enabled: bool = True
     query_rewrite_max_subqueries: int = 4
     query_rewrite_max_tokens: int = 300
 
