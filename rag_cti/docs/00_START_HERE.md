@@ -37,6 +37,7 @@ it appears in a list.
 | `docs/knowledge_layer_design.md` | L2 (horizontal) | Entity / OntologyNode / Fact / supports | What knowledge **looks like** |
 | `docs/retrieval_layer_design.md` | L1 (horizontal) | chunk / Qdrant / payload index / expansion | How it is **retrieved** |
 | `docs/construction_pipeline_design.md` | vertical (spans L0→L2) | sequencing + decision rules | **When** to create / merge / generate / update |
+| `docs/M4_consumption_design.md` | L3 (consumption) | agentic graph×vector orchestration | **How** Fact/supports are consumed |
 
 Horizontal docs define static shape. The pipeline doc is vertical: it is not a
 milestone of its own — it is the rulebook applied *during* every milestone
@@ -112,11 +113,29 @@ vocabulary with that track before building, or the two will fork.
 - **Done when:** one Fact per `(subject_id, predicate, object_id)`; re-ingest
   adds supports rows, never duplicate Facts.
 
+### M4 — Consumption: agentic graph×vector  `M4_consumption_design.md`  (DEFERRED)
+Orchestrate M3's Fact/supports + M2's vector pipeline into grounded (cited,
+credibility-weighted, conflict-aware) answers. The formal answer to
+`retrieval_layer_design.md §6`'s routing open point — reframed: not "graph *or*
+vector" but an agent alternating between graph (the coverage map) and vector
+(the content). Two phases: **v0** a deterministic tool foundation (`graph_outline`
+/ `graph_query` / reverse bridge / evidence fetch; structured params, no LLM);
+**v1** the agent loop (LLM plans from the map, fetches content, re-checks
+coverage, synthesizes). The graph is auxiliary navigation, not the content trunk.
+- **Gates: DM4-1 (graph backend), DM4-2 (unify collection to v5).** v1 adds
+  DM4-4 (loop shape), DM4-5 (data breadth).
+- **Done when:** v0 — graph tools + evidence fetch land deterministic + tested,
+  the CLI enumerates one `(subject, predicate)` with citations/credibility/
+  conflict, the collection is unified to v5, `verify_bridge` passes. v1 — the
+  agent loop produces a cited answer within a budget ceiling, sufficiency judged
+  by the LLM.
+
 ```
 M0 ingestion (no gates)
   → M1 Entity + Ontology   (gates: D1, D2)
     → M2 retrieval          (no extra gates)   ← the RAG increment
     ⇢ M3 Fact/supports      (gates: D3, D4, D5 + vocab alignment)   [deferred]
+      ⇢ M4 Consumption     (gates: DM4-1, DM4-2)   [deferred: needs M3 + DM4-1/2]
 ```
 
 ---
@@ -133,6 +152,12 @@ yes/override, not silent adoption.
 | D3 | aggregate confidence stored+incremental vs computed at query | M3 | stored + incremental |
 | D4 | the aggregate-confidence function (research/tuning surface) | M3 | unspecified — do not hardcode a formula |
 | D5 | conflicting facts represented, not auto-resolved at ingest | M3 | yes, represent only |
+| DM4-1 | graph backend = **Neo4j**, separate CTI-RAG-only instance (not shared with cti-agent), Protocol-isolated | M4.v0 | **confirmed: Neo4j, isolated** |
+| DM4-2 | unify live collection to `cti_chunks_v5` + `verify_bridge` probe | M4.v0 | yes — **confirmed** |
+| DM4-3 | v0 output = structured `FactQueryResult`; prose synthesis is v1 | M4.v0 | yes, structure first |
+| DM4-4 | agent-loop shape: multi-hop, sufficiency self-assessment, budget | M4.v1 | defer to v1 |
+| DM4-5 | data breadth: 10 predicates enough for navigation; expand? | M4.v1 | enough as auxiliary |
+| DM4-6 | rewrite stays a separate small-model component; M4 untouched | — | yes |
 
 **Not in scope, do not build:** `attribution_confidence` field (no source
 populates it, OTX 0/2072) and the `ASSOCIATED_WITH` predicate (no source backs
