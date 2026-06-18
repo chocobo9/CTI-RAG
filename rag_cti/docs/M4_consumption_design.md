@@ -242,7 +242,7 @@ Defaults are *proposed*, not adopted — each needs an explicit yes/override
 | DM4-1 | Graph backend = **Neo4j**, on a **separate CTI-RAG-only instance** (NOT shared with the cti-agent graph; isolate now, ETL-align ontologies later). Protocol-isolated so consumer logic + unit tests stay backend-free. | v0 | **Confirmed: Neo4j, isolated instance.** |
 | DM4-2 | Unify the live collection to `cti_chunks_v5` (the corpus the facts were built from) + `verify_bridge` health probe. | v0 | yes. **Confirmed by user.** |
 | DM4-3 | v0 output = structured `FactQueryResult`; LLM prose synthesis is a v1 agent responsibility. | v0/v1 | yes (structure first). |
-| DM4-4 | Agent-loop shape: multi-hop depth, sufficiency self-assessment, budget/step ceiling. | v1 | defer to v1 design; answer before entering v1. |
+| DM4-4 | Agent loop on **LangGraph** (state machine + LangSmith tracing, see §9); multi-hop, coverage-gauge convergence, step/token budget. | v1 | **Confirmed: LangGraph** (system trajectory + LangSmith already wired). |
 | DM4-5 | Data breadth: are ten controlled predicates enough for *auxiliary navigation*; is predicate/relation-extraction expansion a separate track? | v1 | enough as auxiliary; expansion inherits M3's predicate-vocab alignment with the attribution-graph track. |
 | DM4-6 | Rewrite stays a separate small-model component; M4 does not touch it. | — | yes. |
 
@@ -258,6 +258,55 @@ Defaults are *proposed*, not adopted — each needs an explicit yes/override
 - **v1:** the agent loop performs the §3 alternation (plan from map → fetch
   content → re-check coverage → converge) and returns a cited answer, within a
   budget ceiling, with the sufficiency judgement in the LLM.
+
+---
+
+## 9. v1 — agentic loop (LangGraph) [design]
+
+In-process LangGraph state machine letting an LLM orchestrate the v0 tools (§3).
+Chosen (DM4-1/DM4-4) for the system trajectory — durable execution, multi-agent
+headroom, audit-grade tracing — and because LangSmith is already wired
+(`config.py`). Tools are **in-process LangChain tools, NOT MCP** (MCP is a later,
+optional cross-app concern, §1).
+
+### 9.1 Tools (in-process)
+- `resolve_entity(name) -> entity_id[]` — NL name → entity_id (reuse ontology
+  aliases / `understand()`); must handle 0 / multiple candidates. **v1-new.**
+- `graph_outline` / `graph_query` / `facts_for_evidence` — wrap the v0 FactStore.
+- `vector_search(query, top_k)` — wrap the existing retrieval pipeline.
+
+### 9.2 AgentState (the only inter-node channel)
+`query` · `entity_ids` · `outline` (coverage **numbers** only) · `collected_facts`
+· `retrieved_chunks` · `step` · `tokens_used` · `done`.
+
+### 9.3 Graph
+Nodes: `resolve` → `map` (outline → coverage numbers) → `plan` (LLM reads outline
++ collected, picks next tool or stops) → `act` (run chosen tool) → `check`
+(coverage: outline says N, collected covers M) → `synthesize` (cited answer).
+Conditional edges: `plan`→`act` | `synthesize`; `check`→`plan` (loop) | `synthesize`.
+
+### 9.4 The three real pitfalls — explicit countermeasures (not an MVP afterthought)
+- **#1 context blow-up**: `outline` holds only `predicate→count`, never the 223
+  facts. `graph_query` results do NOT all enter the LLM context — only the category
+  the agent named, summarised (object-name list); full citations sit beside the
+  state and are fetched by id only at `synthesize`.
+- **#2 convergence**: hard-bounded — LangGraph `recursion_limit` + a coverage gauge
+  (the `plan` prompt is forced to compare collected M vs outline N) + a step cap.
+  Never trust the model to "feel done".
+- **#3 error recovery**: tool errors (entity unresolved / 0 / many) are fed back for
+  the LLM to clarify or reroute; LangGraph checkpointing resumes a crashed run.
+
+### 9.5 Budget / model / observability
+- Model: DeepSeek (via langchain) or Anthropic — **measured on real queries in the
+  loop**, not chosen on paper.
+- Budget: `max_steps` + token ceiling.
+- Observability: LangSmith auto-traces every node/edge/state; custom span metadata
+  carries `iteration_count` / `coverage_ratio` / `tokens_used`.
+
+### 9.6 Surface / tests
+- `ask(query)` public fn + CLI `ask` (NL in, cited prose out).
+- Tests: node logic with mock LLM + mock tools (plan/check/convergence/error
+  branches); a few e2e with real LLM + tools.
 
 ---
 
