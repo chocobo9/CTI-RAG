@@ -48,6 +48,14 @@ class Settings(BaseSettings):
     qdrant_api_key: SecretStr = SecretStr("")
     qdrant_collection: str = "cti_chunks"
 
+    # Neo4j — CTI-RAG's OWN isolated instance (port 7689), NOT the cti-agent graph
+    # on 7687. M4 consumption-layer knowledge-graph backend (DM4-1). See
+    # docs/M4_consumption_design.md. Empty password => Neo4j features disabled.
+    neo4j_uri: str = "bolt://localhost:7689"
+    neo4j_user: str = "neo4j"
+    neo4j_password: SecretStr = SecretStr("")
+    neo4j_database: str = "neo4j"
+
     # Embedding (must be a HF repo id or local path; bare "bge-m3" is not valid on the Hub)
     embedding_model: str = "BAAI/bge-m3"
 
