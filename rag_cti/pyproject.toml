@@ -32,6 +32,16 @@ generation = [
     "openai>=1.0.0",                      # Ollama via OpenAI-compat
 ]
 
+# ── M4 consumption layer: Neo4j fact graph (v0) + agentic loop (v1) ─
+# pip install -e ".[agentic]"
+agentic = [
+    "neo4j>=6.0.0,<7.0.0",
+    "langgraph>=1.0.0",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.3.0",            # DeepSeek via OpenAI-compatible endpoint
+    "langchain-anthropic>=0.3.0",
+]
+
 # ── PDF: unstructured + pymupdf for CTI report ingestion ───────────
 # pip install -e ".[pdf]"  →  +~200MB
 pdf = [
@@ -122,6 +132,8 @@ omit = [
     "*/rag_cti/cli.py",
     "*/rag_cti/config.py",
     "*/rag_cti/evaluation/techniquerag.py",
+    # LLM-orchestration + langgraph wiring (M4 v1); verified end-to-end, not unit-testable.
+    "*/rag_cti/knowledge/agent_graph.py",
 ]
 
 [tool.ruff]

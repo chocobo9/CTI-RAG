@@ -104,6 +104,18 @@ def facts(
 
 
 @app.command()
+def ask(
+    question: str = typer.Argument(..., help="Natural-language CTI question"),
+    steps: int = typer.Option(16, "--steps", help="Hard recursion/step ceiling"),
+) -> None:
+    """Agentic answer: an LLM orchestrates graph tools + vector search and returns a
+    cited answer (M4 v1). Bypasses vector for who/what enumerate, uses it for why/how."""
+    import rag_cti
+
+    console.print(rag_cti.ask(question, recursion_limit=steps))
+
+
+@app.command()
 def chat(
     k: int = typer.Option(10, "--top-k", "-k", help="Number of context chunks"),
 ) -> None:

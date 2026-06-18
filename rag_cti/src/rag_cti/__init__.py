@@ -17,6 +17,7 @@ __all__ = [
     "query",
     "answer",
     "facts",
+    "ask",
     "QueryResult",
     "GeneratedAnswer",
     "FactQueryResult",
@@ -168,3 +169,13 @@ def facts(
         object_type=object_type,
         min_credibility=min_credibility,
     )
+
+
+def ask(text: str, *, recursion_limit: int = 16) -> str:
+    """Answer an NL question via the v1 agentic loop (M4 §9): an LLM orchestrates
+    the graph tools (resolve/outline/query) and vector search, comparing coverage
+    against the graph's counts, and returns a cited prose answer. `recursion_limit`
+    is the hard step ceiling."""
+    from rag_cti.knowledge.agent_graph import ask as _ask
+
+    return _ask(text, recursion_limit=recursion_limit)
