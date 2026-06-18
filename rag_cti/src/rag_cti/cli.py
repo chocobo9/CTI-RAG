@@ -51,6 +51,59 @@ def query(
 
 
 @app.command()
+def facts(
+    subject: str = typer.Argument(..., help="Subject entity_id, e.g. actor_G0016"),
+    predicate: str = typer.Option(None, "--predicate", "-p", help="Predicate, e.g. uses"),
+    object_type: str = typer.Option(
+        None, "--object-type", "-o", help="Object type, e.g. technique"
+    ),
+    min_credibility: float = typer.Option(
+        0.0, "--min-credibility", "-m", help="Minimum aggregate credibility"
+    ),
+) -> None:
+    """Enumerate knowledge-graph facts for a (subject[, predicate, object_type]),
+    bypassing vector search. Shows credibility, supports count, origins, citations,
+    and surfaces conflicting facts."""
+    import rag_cti
+
+    result = rag_cti.facts(
+        subject, predicate=predicate, object_type=object_type, min_credibility=min_credibility
+    )
+
+    tbl = Table(title=f"{result.query_repr} — {len(result.facts)} facts", show_lines=True)
+    tbl.add_column("Cred", justify="right")
+    tbl.add_column("⚠", justify="center", style="yellow")
+    tbl.add_column("Predicate", style="cyan")
+    tbl.add_column("Object")
+    tbl.add_column("#Sup", justify="right", style="dim")
+    tbl.add_column("Origins", style="dim")
+    tbl.add_column("Top citation", style="dim")
+
+    for r in result.facts:
+        top = r.citations[0].evidence_id[:12] if r.citations else ""
+        tbl.add_row(
+            f"{r.aggregate_credibility:.3f}",
+            "⚠" if r.conflict else "",
+            r.predicate,
+            r.object_name,
+            str(r.support_count),
+            ",".join(r.distinct_origins),
+            top,
+        )
+    console.print(tbl)
+
+    if result.conflicts:
+        console.print(
+            f"[yellow]{len(result.conflicts)} conflicting fact(s) — sources disagree:[/yellow]"
+        )
+        for r in result.conflicts:
+            console.print(
+                f"  [yellow]{r.subject_name} {r.predicate} {r.object_name}[/yellow] "
+                f"(cred {r.aggregate_credibility:.3f})"
+            )
+
+
+@app.command()
 def chat(
     k: int = typer.Option(10, "--top-k", "-k", help="Number of context chunks"),
 ) -> None:

@@ -268,6 +268,22 @@ class QdrantStore:
         )
         return int(result.count)
 
+    def get_by_chunk_ids(self, chunk_ids: list[str]) -> dict[str, Chunk]:
+        """Fetch chunks by chunk.id (== ``supports.evidence_id``) for M4 citation
+        expansion. Maps each id through :func:`chunk_to_point_id` and retrieves by
+        point id; missing ids are simply absent — never fabricated (M4 invariant)."""
+        if not chunk_ids:
+            return {}
+        point_ids = [chunk_to_point_id(cid) for cid in chunk_ids]
+        records = self._client.retrieve(
+            collection_name=self.collection, ids=point_ids, with_payload=True
+        )
+        out: dict[str, Chunk] = {}
+        for record in records:
+            chunk = _payload_to_chunk(record.payload or {}, self.max_content_len)
+            out[chunk.id] = chunk
+        return out
+
 
 # ---------------------------------------------------------------------------
 # Helpers

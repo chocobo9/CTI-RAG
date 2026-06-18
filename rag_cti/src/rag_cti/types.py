@@ -84,6 +84,85 @@ class GeneratedAnswer(BaseModel, frozen=True):
 
 
 # ---------------------------------------------------------------------------
+# M4 consumption layer — graph-query outputs (docs/M4_consumption_design.md §6)
+# ---------------------------------------------------------------------------
+
+
+class FactCitation(BaseModel, frozen=True):
+    """One ``supports`` edge: an evidence chunk attesting a fact, from one origin.
+
+    ``content`` is filled best-effort from Qdrant by ``evidence_id`` (== chunk.id);
+    "" when the chunk is absent — never fabricated (M4 invariant 2).
+    """
+
+    evidence_id: str
+    origin: str
+    confidence: float
+    label_availability: str
+    observed_first: str | None = None
+    observed_last: str | None = None
+    content: str = ""
+
+
+class FactRow(BaseModel, frozen=True):
+    """One Fact ready to render: the triple + materialized credibility + citations."""
+
+    fact_id: str
+    subject_id: str
+    subject_name: str
+    predicate: str
+    object_id: str
+    object_name: str
+    object_type: str
+    aggregate_credibility: float
+    conflict: bool
+    distinct_origins: tuple[str, ...] = ()
+    support_count: int = 0
+    citations: tuple[FactCitation, ...] = ()
+
+
+class FactQueryResult(BaseModel, frozen=True):
+    """A graph query's result: enumerated facts (credibility-desc), conflicts surfaced.
+
+    Not truncated — completeness is the point (M4 §2). ``conflicts`` keeps both
+    sides of a single-valued-predicate clash side by side (DECISION-5).
+    """
+
+    query_repr: str
+    subject_id: str | None = None
+    predicate: str | None = None
+    object_type: str | None = None
+    facts: tuple[FactRow, ...] = ()
+    fact_query_ms: float = 0.0
+
+    @property
+    def conflicts(self) -> tuple[FactRow, ...]:
+        return tuple(f for f in self.facts if f.conflict)
+
+
+class OutlineEntry(BaseModel, frozen=True):
+    """One relation category in an entity's coverage map: predicate + far-end type."""
+
+    predicate: str
+    other_type: str
+    count: int
+    max_credibility: float
+
+
+class GraphOutline(BaseModel, frozen=True):
+    """Coverage gauge for one entity (M4 §2/§3): which relation categories exist and
+    how many. The agent's planning/sufficiency basis — the graph, being exhaustively
+    enumerable, is the completeness signal a vector top-k cannot give.
+    """
+
+    entity_id: str
+    entity_name: str
+    entity_type: str
+    outgoing: tuple[OutlineEntry, ...] = ()
+    incoming: tuple[OutlineEntry, ...] = ()
+
+
+# ---------------------------------------------------------------------------
 # Structural protocols — use for type-hinting boundaries, not isinstance checks
 # ---------------------------------------------------------------------------
 

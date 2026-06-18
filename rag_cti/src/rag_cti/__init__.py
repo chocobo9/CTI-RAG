@@ -11,9 +11,18 @@ from functools import lru_cache
 
 from rag_cti.config import get_settings
 from rag_cti.retrieval import Pipeline, build_pipeline
-from rag_cti.types import GeneratedAnswer, QueryResult
+from rag_cti.types import FactQueryResult, GeneratedAnswer, QueryResult
 
-__all__ = ["query", "answer", "QueryResult", "GeneratedAnswer", "Pipeline", "build_pipeline"]
+__all__ = [
+    "query",
+    "answer",
+    "facts",
+    "QueryResult",
+    "GeneratedAnswer",
+    "FactQueryResult",
+    "Pipeline",
+    "build_pipeline",
+]
 
 __version__ = "0.1.0"
 
@@ -105,3 +114,57 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
     query_result = query(text, top_k=k, history=history)
     gen: Generator = _default_generator()  # type: ignore[assignment]
     return gen.generate(text, query_result)
+
+
+@lru_cache(maxsize=1)
+def _default_fact_store() -> object:
+    from rag_cti.knowledge import Neo4jFactStore
+
+    settings = get_settings()
+    return Neo4jFactStore.connect(
+        settings.neo4j_uri,
+        settings.neo4j_user,
+        settings.neo4j_password.get_secret_value(),
+        settings.neo4j_database,
+    )
+
+
+@lru_cache(maxsize=1)
+def _default_chunk_store() -> object:
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    settings = get_settings()
+    return QdrantStore(
+        url=settings.qdrant_url,
+        collection=settings.qdrant_collection,
+        api_key=settings.qdrant_api_key.get_secret_value(),
+    )
+
+
+def facts(
+    subject_id: str,
+    predicate: str | None = None,
+    object_type: str | None = None,
+    min_credibility: float = 0.0,
+) -> FactQueryResult:
+    """Enumerate facts for a (subject[, predicate, object_type]) from the knowledge
+    graph (M4) — bypassing vector search for exact, exhaustive enumeration. Each
+    fact carries its supports as citations (content filled from Qdrant), aggregate
+    credibility, and a conflict flag; conflicting facts are surfaced, not resolved.
+    """
+    from typing import cast
+
+    from rag_cti.knowledge.fact_query import run_fact_query
+    from rag_cti.knowledge.fact_store import FactStoreProto
+    from rag_cti.store.qdrant_store import QdrantStore
+
+    fact_store = cast("FactStoreProto", _default_fact_store())
+    chunk_store = cast("QdrantStore", _default_chunk_store())
+    return run_fact_query(
+        fact_store,
+        chunk_store.get_by_chunk_ids,
+        subject_id=subject_id,
+        predicate=predicate,
+        object_type=object_type,
+        min_credibility=min_credibility,
+    )
