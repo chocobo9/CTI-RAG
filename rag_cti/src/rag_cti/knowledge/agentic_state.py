@@ -46,5 +46,5 @@ class AgenticAnswer(BaseModel, frozen=True):
     conflicts: tuple[FactRow, ...] = ()
     iteration_count: int = 0
     tokens_used: int = 0
-    stop_reason: str = ""  # "sufficient" | "budget" | "parse_fallback"
+    stop_reason: str = ""  # sufficient | max_rounds | no_progress | timeout | budget | parse_fallback
     dropped_citation_count: int = 0

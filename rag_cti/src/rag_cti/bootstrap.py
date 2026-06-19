@@ -151,3 +151,18 @@ def build_deepseek_client(settings: Any, max_retries: int = 5, timeout: float = 
     if not key:
         raise RuntimeError("DEEPSEEK_API_KEY not set — cannot build a DeepSeek client")
     return OpenAI(base_url=DEEPSEEK_BASE_URL, api_key=key, max_retries=max_retries, timeout=timeout)
+
+
+def build_qwen_client(settings: Any, max_retries: int = 5, timeout: float = 120) -> Any:
+    """OpenAI-compatible Qwen (Alibaba DashScope) client. Raises when QWEN_API_KEY is unset.
+
+    Used for the independent sufficiency judge (a different model family from the DeepSeek
+    gatherer). Base URL is region-specific (see ``Settings.qwen_base_url``)."""
+    from openai import OpenAI
+
+    key = settings.qwen_api_key.get_secret_value()
+    if not key:
+        raise RuntimeError("QWEN_API_KEY not set — cannot build a Qwen client")
+    return OpenAI(
+        base_url=settings.qwen_base_url, api_key=key, max_retries=max_retries, timeout=timeout
+    )

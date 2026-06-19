@@ -154,7 +154,7 @@ def agentic_answer(text: str) -> AgenticAnswer:
     (empty NEO4J_PASSWORD) so the loop still runs vector-only."""
     from typing import cast
 
-    from rag_cti.bootstrap import build_deepseek_client, load_ontology_nodes
+    from rag_cti.bootstrap import load_ontology_nodes
     from rag_cti.knowledge.agent_graph import build_model
     from rag_cti.knowledge.agentic_graph import build_judge, run_agentic_answer
     from rag_cti.knowledge.agentic_nodes import GeneratorProto
@@ -179,8 +179,27 @@ def agentic_answer(text: str) -> AgenticAnswer:
         ontology_nodes=load_ontology_nodes(),
         generator=cast(GeneratorProto, _default_generator()),
         chat_model=build_model(settings),
-        judge=build_judge(build_deepseek_client(settings), settings.agentic_verifier_model),
+        judge=build_judge(
+            _build_verifier_client(settings),
+            settings.agentic_verifier_model,
+            max_tokens=settings.agentic_verifier_max_tokens,
+        ),
     )
+
+
+def _build_verifier_client(settings: object) -> object:
+    """Build the OpenAI-compatible client for the sufficiency judge, per
+    ``agentic_verifier_provider``. "qwen" gives an INDEPENDENT cross-family verifier
+    (DashScope); "deepseek" (default) reuses the DeepSeek client — same family as the
+    gatherer, so not independent. ``build_judge`` accepts any OpenAI-compatible client."""
+    provider = getattr(settings, "agentic_verifier_provider", "deepseek")
+    if provider == "qwen":
+        from rag_cti.bootstrap import build_qwen_client
+
+        return build_qwen_client(settings)
+    from rag_cti.bootstrap import build_deepseek_client
+
+    return build_deepseek_client(settings)
 
 
 @lru_cache(maxsize=1)

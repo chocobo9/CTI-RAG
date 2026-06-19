@@ -10,6 +10,7 @@ from rag_cti.generation.context_builder import build_context_messages, extract_c
 from rag_cti.generation.llm_router import ModelRouter, TaskType
 from rag_cti.generation.prompts import (
     ACTOR_ATTRIBUTION_SYSTEM,
+    ANSWER_SYNTHESIS_SYSTEM,
     TECHNIQUE_ANNOTATION_SYSTEM,
 )
 from rag_cti.observability.tracing import add_trace_metadata, traced
@@ -51,16 +52,26 @@ class Generator:
 
     @traced("generation", run_type="llm")
     def generate(
-        self, query: str, query_result: QueryResult, raise_on_failure: bool = False
+        self,
+        query: str,
+        query_result: QueryResult,
+        raise_on_failure: bool = False,
+        system_prompt: str | None = None,
     ) -> GeneratedAnswer:
         """Generate a grounded answer.
 
         By default an LLM provider failure yields the sentinel answer text
         (legacy product behaviour). ``raise_on_failure=True`` raises RuntimeError
         instead, for callers that must not treat a failure as an answer.
+
+        ``system_prompt`` overrides the default single-shot synthesis prompt; the
+        agentic loop passes a fact-aware prompt so gathered graph facts get cited
+        as ``[fact_id]``. ``None`` keeps the default product behaviour.
         """
         model = self._router.model_for(TaskType.ANALYSIS)
-        messages = build_context_messages(query, query_result.results)
+        messages = build_context_messages(
+            query, query_result.results, system_prompt or ANSWER_SYNTHESIS_SYSTEM
+        )
 
         t0 = time.perf_counter()
         answer_text = self._call_llm(model, messages)

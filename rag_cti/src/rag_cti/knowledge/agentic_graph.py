@@ -1,11 +1,13 @@
-"""Agentic answer loop — outer hard-rail StateGraph wrapping an inner create_react_agent.
+"""Agentic answer loop — outer hard-rail StateGraph wrapping an inner GATHER-only loop.
 
-The inner ``create_react_agent`` is a free ReAct burst (the agent plans + calls the
-five tools autonomously). Its tools append full structured evidence to a per-run
-``EvidenceLedger`` (side effect) before returning bounded summaries. The outer
-``StateGraph`` adds the hard rails as nodes that read the *ledger*, not the message
-transcript: a sufficiency-gate LLM judge, a budget-bounded router, and a synthesize
-step with deterministic citation assembly.
+The inner loop is a hand-rolled ReAct-style burst (``agentic_nodes.run_gather_loop``): a
+tool-bound chat model picks tool calls, each tool appends full structured evidence to a
+per-run ``EvidenceLedger`` (side effect) and returns a bounded summary, and the burst
+stops as soon as the model emits no tool call (gathered enough) or a step cap is hit. It
+is GATHER-only — it never writes the answer, so it cannot over-explore into a recursion
+stub the way ``create_react_agent`` did. The outer ``StateGraph`` adds the hard rails as
+nodes that read the *ledger*, not the transcript: a sufficiency-gate LLM judge, a
+budget-bounded router, and a synthesize step with deterministic citation assembly.
 
 This file is the langgraph/langchain WIRING only — it is coverage-omitted. The pure,
 unit-tested logic lives in ``agentic_nodes.py`` / ``evidence_ledger.py`` /
@@ -14,6 +16,7 @@ unit-tested logic lives in ``agentic_nodes.py`` / ``evidence_ledger.py`` /
 
 from __future__ import annotations
 
+import time
 from typing import Any, TypedDict
 
 from rag_cti.config import Settings
@@ -27,61 +30,59 @@ from rag_cti.observability.tracing import add_trace_metadata, traced
 # (query, top_k) -> QueryResult. Injected so this file never imports rag_cti.__init__.
 RunRetrieve = agent_tools.RunRetrieve
 
-_RETRIEVE_SYSTEM = """You are a CTI analyst gathering evidence to answer a question. Use the tools to \
-retrieve what you need, then write an answer grounded ONLY in what you retrieved, citing sources \
-inline as [chunk_id] or [fact_id].
+_GATHER_SYSTEM = """You are a CTI analyst GATHERING evidence for a question. Your ONLY job is to call \
+tools to collect the facts and prose needed to answer it. Another step writes the final answer, so do \
+NOT write the answer yourself.
 
 Tools:
 - resolve_entity(name): a CTI name like "APT29" -> entity_id(s). The graph tools need an entity_id.
-- graph_outline(entity_id): which relation categories an entity has and how many of each.
-- graph_query(subject_id, predicate, object_type): the exact, exhaustive facts in one category.
+- graph_outline(subject_id): which relation categories a subject has and how many of each.
+- graph_query(subject_id, predicate, object_type): the exact, exhaustive facts in one category. It \
+records the COMPLETE set and reports `total` + `complete: true` — once you query a category you already \
+hold all of it, so never query the same category twice.
 - facts_for_evidence(chunk_id): which facts a given evidence chunk supports.
 - retrieve(query): semantic search over source prose, for explanation/context the graph lacks.
 
-Pick the tools each question needs — the graph is exact/enumerate, vector is prose. Stop calling \
-tools once you can draft an answer; a verifier may hand you specific gaps to fill, so gather what \
-it asks and revise."""
+How to gather:
+- Graph for who/what/enumerate (exact and exhaustive); retrieve for why/how/explain prose.
+- Plan minimally: resolve the entity, outline it, query the relevant category ONCE, optionally retrieve \
+prose. Never repeat a tool call you have already made.
+- A verifier may hand you specific gaps to fill — gather exactly those.
+- When you have gathered enough to answer, STOP: emit no further tool call. Do not write the answer."""
 
 
 class _AgentState(TypedDict, total=False):
-    messages: list[Any]
+    messages: list[Any]  # this burst's transcript only (not carried across iterations)
     iteration_count: int
-    tokens_used: int
+    tokens_used: int  # running total across bursts (accumulated, not overwritten)
     new_evidence: int  # chunks+facts gathered in the last burst (0 => no progress)
+    new_facts: int  # graph facts gathered in the last burst (0 + repeated gap => stuck)
     last_draft: str
     sufficiency: Any  # SufficiencyVerdict | None
+    prev_gaps: tuple[str, ...]  # previous verdict's coverage_gaps (repeat => stuck)
     stop_reason: str
     route: str
     answer: Any  # AgenticAnswer
 
 
-def build_judge(deepseek_client: Any, model: str) -> JudgeFn:
-    """A JudgeFn (system, user) -> raw text over the DeepSeek chat endpoint."""
+def build_judge(client: Any, model: str, max_tokens: int = 1024) -> JudgeFn:
+    """A JudgeFn (system, user) -> raw text over ANY OpenAI-compatible chat endpoint
+    (DeepSeek, or — for an independent cross-family verifier — Qwen/DashScope). ``max_tokens``
+    is sized so a thinking-style model has room to reason before emitting the JSON verdict."""
 
     def judge(system: str, user: str) -> str:
-        response = deepseek_client.chat.completions.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            max_tokens=512,
+            max_tokens=max_tokens,
         )
         content: str = response.choices[0].message.content or ""
         return content
 
     return judge
-
-
-def _last_ai_text(messages: list[Any]) -> str:
-    for message in reversed(messages):
-        if getattr(message, "type", "") == "ai":
-            content = getattr(message, "content", "")
-            if isinstance(content, str) and content.strip():
-                # A recursion-limit stub is not a real draft — treat as no draft so the
-                # sufficiency judge does not reject it as ungrounded every iteration.
-                return "" if agentic_nodes.is_recursion_stub(content) else content
-    return ""
 
 
 def _sum_tokens(messages: list[Any]) -> int:
@@ -114,11 +115,11 @@ def _build_tools(
         return agent_tools.resolve_entity_candidates(name, ontology_nodes)
 
     @tool
-    def graph_outline(entity_id: str) -> dict[str, Any]:
-        """Coverage map for an entity: which relation categories exist and how many."""
+    def graph_outline(subject_id: str) -> dict[str, Any]:
+        """Coverage map for a subject_id: which relation categories exist and how many."""
         if fact_store is None:
-            return {"found": False, "entity_id": entity_id}
-        return agent_tools.outline_to_ledger(fact_store, ledger, entity_id)
+            return {"found": False, "entity_id": subject_id}
+        return agent_tools.outline_to_ledger(fact_store, ledger, subject_id)
 
     @tool
     def graph_query(
@@ -167,42 +168,44 @@ def build_agentic_graph(
     judge: JudgeFn,
 ) -> Any:
     """Compile the outer StateGraph; nodes close over the per-run deps."""
-    from langgraph.errors import GraphRecursionError
     from langgraph.graph import END, START, StateGraph
-    from langgraph.prebuilt import create_react_agent
 
+    # Per-run wall clock for the latency guardrail (graph is built once per query, right
+    # before invoke, so this ~= loop start).
+    started_at = time.monotonic()
     tools = _build_tools(fact_store, ontology_nodes, run_retrieve, ledger)
-    inner_agent = create_react_agent(chat_model, tools, prompt=_RETRIEVE_SYSTEM)
+    model_with_tools = chat_model.bind_tools(tools)
+    tools_by_name = {t.name: t for t in tools}
+
+    def dispatch(name: str, args: dict[str, Any]) -> Any:
+        """Run a tool by name (tools side-effect the ledger); used by the gather loop."""
+        tool = tools_by_name.get(name)
+        if tool is None:
+            return {"error": f"unknown tool {name}"}
+        return tool.invoke(args)
 
     def agent_turn(state: _AgentState) -> dict[str, Any]:
-        messages = list(state.get("messages", []))
+        # Working-set pattern: start each burst from a CLEAN [system, query(, directive)] —
+        # never the prior burst's transcript (redundant with the ledger, and carrying it
+        # made context + cost grow super-linearly across iterations). The ledger is the
+        # cross-iteration memory; the directive carries a summary of it + the gaps.
         verdict = state.get("sufficiency")
-        if verdict is not None and getattr(verdict, "next_action", "") == "retrieve_more":
-            from langchain_core.messages import HumanMessage
-
-            messages.append(HumanMessage(content=agentic_nodes.build_directives(verdict)))
-        before = len(ledger.facts) + len(ledger.chunks)
-        try:
-            result = inner_agent.invoke(
-                {"messages": messages},
-                config={"recursion_limit": settings.agentic_inner_recursion_limit},
-            )
-            out_messages = result["messages"]
-        except GraphRecursionError:
-            # The agent used its whole gather budget without terminating in a draft. Its
-            # tool calls already populated the ledger (side effect), so proceed with what
-            # was gathered: the sufficiency judge decides on the EVIDENCE and synthesize
-            # produces the answer. (The inner agent is unreliable at stopping to draft.)
-            out_messages = messages
-        # out_messages is the FULL accumulated transcript each burst, so summing it
-        # gives the cumulative token total directly — overwrite, never add (adding
-        # would re-count every prior turn's messages).
+        messages = agentic_nodes.build_turn_messages(_GATHER_SYSTEM, query, verdict, ledger)
+        before_facts = len(ledger.facts)
+        before = before_facts + len(ledger.chunks)
+        out_messages = agentic_nodes.run_gather_loop(
+            model_with_tools, dispatch, messages, max_steps=settings.agentic_max_inner_steps
+        )
+        # GATHER-only: synthesize produces the answer over the ledger, so no draft to carry.
+        # out_messages is just THIS burst now (not carried), so _sum_tokens(out_messages) is
+        # this burst's real cost — ACCUMULATE into the running total (linear in iterations).
         return {
             "messages": out_messages,
             "iteration_count": state.get("iteration_count", 0) + 1,
-            "tokens_used": _sum_tokens(out_messages),
+            "tokens_used": state.get("tokens_used", 0) + _sum_tokens(out_messages),
             "new_evidence": len(ledger.facts) + len(ledger.chunks) - before,
-            "last_draft": _last_ai_text(out_messages),
+            "new_facts": len(ledger.facts) - before_facts,
+            "last_draft": "",
         }
 
     def sufficiency_gate(state: _AgentState) -> dict[str, Any]:
@@ -216,6 +219,11 @@ def build_agentic_graph(
             state.get("new_evidence", 0),
             max_iterations=settings.agentic_max_iterations,
             token_ceiling=settings.agentic_token_ceiling,
+            max_retrieve_rounds=settings.agentic_max_retrieve_rounds,
+            new_facts=state.get("new_facts", 0),
+            prev_gaps=state.get("prev_gaps", ()),
+            elapsed_seconds=time.monotonic() - started_at,
+            max_wall_seconds=settings.agentic_max_wall_seconds,
         )
         add_trace_metadata(
             sufficient=bool(verdict and verdict.sufficient),
@@ -226,7 +234,13 @@ def build_agentic_graph(
             route=route,
             iteration_count=state.get("iteration_count", 0),
         )
-        return {"sufficiency": verdict, "route": route, "stop_reason": reason}
+        # Stash this verdict's gaps so the next gate can detect the judge repeating itself.
+        return {
+            "sufficiency": verdict,
+            "route": route,
+            "stop_reason": reason,
+            "prev_gaps": tuple(verdict.coverage_gaps) if verdict else (),
+        }
 
     def synthesize(state: _AgentState) -> dict[str, Any]:
         gen_answer = agentic_nodes.synthesize_answer(
@@ -298,7 +312,11 @@ def run_agentic_answer(
     # by decide_next at agentic_max_iterations. This is just the runaway backstop.
     outer_limit = max(25, settings.agentic_max_iterations * 4)
     result = graph.invoke(
-        {"messages": [("user", query)], "iteration_count": 0, "tokens_used": 0},
+        {
+            "messages": [("system", _GATHER_SYSTEM), ("user", query)],
+            "iteration_count": 0,
+            "tokens_used": 0,
+        },
         config={"recursion_limit": outer_limit},
     )
     answer: AgenticAnswer = result["answer"]

@@ -39,19 +39,6 @@ def _ledger_with_chunks(*results: RetrievalResult) -> EvidenceLedger:
     return led
 
 
-# --- is_recursion_stub (the inner-agent-never-drafted guard) -------------------
-
-
-def test_is_recursion_stub_matches_langgraph_message() -> None:
-    assert nodes.is_recursion_stub("Sorry, need more steps to process this request.")
-    assert nodes.is_recursion_stub("  Sorry, need more steps to process this request.  ")
-
-
-def test_is_recursion_stub_rejects_real_draft() -> None:
-    assert not nodes.is_recursion_stub("APT29 uses spearphishing [c1] for initial access.")
-    assert not nodes.is_recursion_stub("")
-
-
 # --- parse_verdict -------------------------------------------------------------
 
 
@@ -218,6 +205,69 @@ def test_decide_next_no_new_evidence_stops() -> None:
     ) == ("synthesize", "no_progress")
 
 
+def test_decide_next_repeated_gap_without_new_facts_stops() -> None:
+    # Judge repeats the EXACT same gap and the burst added no new graph facts (only churned
+    # prose) -> stuck -> stop, rather than looping to the budget cap. new_evidence>0 so the
+    # plain no-progress guard does NOT fire; the stuck guard must.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("same gap",))
+    assert nodes.decide_next(
+        v, 2, 0, 5, max_iterations=15, token_ceiling=100, new_facts=0, prev_gaps=("same gap",)
+    ) == ("synthesize", "no_progress")
+
+
+def test_decide_next_repeated_gap_but_new_facts_continues() -> None:
+    # Same repeated gap but the burst DID add new facts -> still making progress -> continue.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("same gap",))
+    assert nodes.decide_next(
+        v, 2, 0, 5, max_iterations=15, token_ceiling=100, new_facts=4, prev_gaps=("same gap",)
+    ) == ("agent_turn", "")
+
+
+def test_decide_next_changed_gap_continues() -> None:
+    # Gaps changed (judge refining) -> not stuck -> continue even with no new facts.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("new gap",))
+    assert nodes.decide_next(
+        v, 2, 0, 5, max_iterations=15, token_ceiling=100, new_facts=0, prev_gaps=("old gap",)
+    ) == ("agent_turn", "")
+
+
+def test_decide_next_retrieve_rounds_exhausted_stops_before_budget() -> None:
+    # Judge is insatiable (keeps wanting more, fresh gaps, real progress) — the patience cap
+    # must stop it DETERMINISTICALLY (max_rounds), NOT let it run to the token/iter backstop.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("g",))
+    # iteration_count=3 -> 2 retrieve_more rounds done == max_retrieve_rounds -> stop.
+    assert nodes.decide_next(
+        v, 3, 0, 5, max_iterations=15, token_ceiling=10**9, max_retrieve_rounds=2, new_facts=5
+    ) == ("synthesize", "max_rounds")
+
+
+def test_decide_next_within_retrieve_rounds_continues() -> None:
+    # One retrieve_more round done (iteration_count=2) < cap(2) -> still allowed to continue.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("g",))
+    assert nodes.decide_next(
+        v, 2, 0, 5, max_iterations=15, token_ceiling=10**9, max_retrieve_rounds=2, new_facts=5
+    ) == ("agent_turn", "")
+
+
+def test_decide_next_wall_clock_timeout_stops() -> None:
+    # Elapsed exceeds the wall-clock guardrail -> stop with "timeout", bounding tail latency
+    # even when iteration/token budgets are nowhere near and the judge wants more.
+    v = _verdict("retrieve_more")
+    assert nodes.decide_next(
+        v, 1, 0, 5, max_iterations=15, token_ceiling=10**9,
+        elapsed_seconds=200.0, max_wall_seconds=180.0,
+    ) == ("synthesize", "timeout")
+
+
+def test_decide_next_wall_clock_disabled_when_zero() -> None:
+    # max_wall_seconds=0 disables the guardrail -> elapsed is ignored, loop continues.
+    v = _verdict("retrieve_more")
+    assert nodes.decide_next(
+        v, 1, 0, 5, max_iterations=15, token_ceiling=10**9,
+        elapsed_seconds=9999.0, max_wall_seconds=0.0,
+    ) == ("agent_turn", "")
+
+
 # --- build_directives ----------------------------------------------------------
 
 
@@ -227,22 +277,49 @@ def test_build_directives_includes_gaps_queries_targets() -> None:
         suggested_queries=("APT29 malware",),
         suggested_graph_targets=(("actor_G0016", "uses", "family"),),
     )
-    d = nodes.build_directives(v)
+    d = nodes.build_directives(v, EvidenceLedger())
     assert "Still missing: what malware" in d
-    assert "Try vector_search for: APT29 malware" in d
+    assert "Try retrieve for: APT29 malware" in d
     assert "Try graph_query: actor_G0016 (uses, family)" in d
 
 
 def test_build_directives_empty_default() -> None:
     assert (
-        nodes.build_directives(SufficiencyVerdict())
+        nodes.build_directives(SufficiencyVerdict(), EvidenceLedger())
         == "Gather more evidence to fully answer the question."
     )
 
 
 def test_build_directives_graph_target_without_slots() -> None:
     v = SufficiencyVerdict(suggested_graph_targets=(("ip_1", None, None),))
-    assert "Try graph_query: ip_1" in nodes.build_directives(v)
+    assert "Try graph_query: ip_1" in nodes.build_directives(v, EvidenceLedger())
+
+
+def test_build_directives_prepends_ledger_working_set_summary() -> None:
+    # With a non-empty ledger, the directive tells the burst what it already has so it
+    # does not re-resolve / re-outline / re-query the completed graph (the cost fix).
+    led = _ledger_with_chunks(_result("c1"))
+    led.add_facts((_row("f1"),))
+    d = nodes.build_directives(SufficiencyVerdict(coverage_gaps=("more",)), led)
+    assert "Already gathered" in d
+    assert "1 graph facts for APT29" in d
+    assert "do NOT call resolve_entity" in d
+    assert "Still missing: more" in d  # gaps still present, after the summary
+
+
+def test_build_turn_messages_iteration_one_has_no_directive() -> None:
+    msgs = nodes.build_turn_messages("SYS", "the question", None, EvidenceLedger())
+    assert msgs == [("system", "SYS"), ("user", "the question")]  # clean start, no carry
+
+
+def test_build_turn_messages_retrieve_more_appends_directive() -> None:
+    led = _ledger_with_chunks(_result("c1"))
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("gap1",))
+    msgs = nodes.build_turn_messages("SYS", "q", v, led)
+    assert msgs[0] == ("system", "SYS")
+    assert msgs[1] == ("user", "q")
+    assert msgs[2][0] == "user" and "Still missing: gap1" in msgs[2][1]
+    assert "Already gathered" in msgs[2][1]  # working-set summary from the ledger
 
 
 # --- assemble_citations (the grounding guarantee) ------------------------------
@@ -256,6 +333,15 @@ def test_assemble_citations_keeps_real_drops_hallucinated() -> None:
     assert dropped == 1
 
 
+def test_assemble_citations_recovers_chunk_prefixed_id() -> None:
+    # The model mirrors the fact_ prefix and writes chunk_<id> for a bare chunk id;
+    # recover the real id instead of dropping a valid citation.
+    led = _ledger_with_chunks(_result("86f0abc"))
+    kept, dropped = nodes.assemble_citations("see [chunk_86f0abc] but not [chunk_nope]", led)
+    assert kept == ("86f0abc",)
+    assert dropped == 1  # chunk_nope has no real id behind it
+
+
 # --- synthesize_answer + build_agentic_answer ----------------------------------
 
 
@@ -263,11 +349,17 @@ class _FakeGenerator:
     def __init__(self, answer_text: str) -> None:
         self._text = answer_text
         self.seen: QueryResult | None = None
+        self.seen_system_prompt: str | None = None
 
     def generate(
-        self, query: str, query_result: QueryResult, raise_on_failure: bool = False
+        self,
+        query: str,
+        query_result: QueryResult,
+        raise_on_failure: bool = False,
+        system_prompt: str | None = None,
     ) -> GeneratedAnswer:
         self.seen = query_result
+        self.seen_system_prompt = system_prompt
         return GeneratedAnswer(
             query=query,
             answer=self._text,
@@ -309,6 +401,23 @@ def test_synthesize_answer_injects_facts_as_citable_pseudo_chunks() -> None:
     assert "APT29 uses Phishing" in fact_row.document.content
 
 
+def test_synthesize_answer_orders_facts_before_chunks() -> None:
+    led = _ledger_with_chunks(_result("c1", 0.9))
+    led.add_facts((_row("f1"),))
+    gen = _FakeGenerator("answer")
+    nodes.synthesize_answer(gen, "q", led)
+    assert gen.seen is not None
+    ids = [r.document.id for r in gen.seen.results]
+    assert ids == ["f1", "c1"]  # facts first (primacy) so they reach the cited answer
+
+
+def test_synthesize_answer_uses_fact_aware_system_prompt() -> None:
+    led = _ledger_with_chunks(_result("c1", 0.9))
+    gen = _FakeGenerator("answer")
+    nodes.synthesize_answer(gen, "q", led)
+    assert gen.seen_system_prompt == nodes.AGENTIC_SYNTHESIS_SYSTEM
+
+
 def test_build_agentic_answer_citation_guard_and_conflicts() -> None:
     led = _ledger_with_chunks(_result("c1"))
     led.add_facts((_row("f1", conflict=True), _row("f2")))
@@ -332,3 +441,74 @@ def test_build_agentic_answer_citation_guard_and_conflicts() -> None:
     assert ans.tokens_used == 42
     assert ans.stop_reason == "sufficient"
     assert len(ans.collected_facts) == 2
+
+
+# --- run_gather_loop (the GATHER-only inner burst) -----------------------------
+
+
+class _FakeAI:
+    """Minimal stand-in for an AIMessage with tool_calls (what model.invoke returns)."""
+
+    type = "ai"
+
+    def __init__(self, tool_calls: list[dict], content: str = "") -> None:
+        self.tool_calls = tool_calls
+        self.content = content
+
+
+class _ScriptedModel:
+    """Returns canned AIMessages in order — fakes a tool-bound chat model."""
+
+    def __init__(self, responses: list[_FakeAI]) -> None:
+        self._responses = list(responses)
+        self.invoke_count = 0
+
+    def invoke(self, messages: list) -> _FakeAI:
+        self.invoke_count += 1
+        return self._responses.pop(0)
+
+
+def test_run_gather_loop_dispatches_tools_then_stops_on_no_tool_call() -> None:
+    calls: list[tuple[str, dict]] = []
+
+    def dispatch(name: str, args: dict) -> dict:
+        calls.append((name, args))
+        return {"ok": name}
+
+    model = _ScriptedModel(
+        [
+            _FakeAI([{"name": "graph_query", "args": {"subject_id": "x"}, "id": "t1"}]),
+            _FakeAI([], content="done gathering"),  # no tool call -> stop
+        ]
+    )
+    msgs = nodes.run_gather_loop(model, dispatch, [("user", "q")], max_steps=8)
+    assert calls == [("graph_query", {"subject_id": "x"})]
+    assert model.invoke_count == 2  # stopped as soon as the model emitted no tool call
+    assert any(getattr(m, "content", "") == str({"ok": "graph_query"}) for m in msgs)
+
+
+def test_run_gather_loop_respects_max_steps() -> None:
+    calls: list[str] = []
+
+    def dispatch(name: str, args: dict) -> str:
+        calls.append(name)
+        return "r"
+
+    never_stops = _FakeAI([{"name": "retrieve", "args": {"query": "q"}, "id": "t"}])
+    model = _ScriptedModel([never_stops] * 10)
+    nodes.run_gather_loop(model, dispatch, [("user", "q")], max_steps=3)
+    assert len(calls) == 3  # capped at max_steps rounds, never runs away
+
+
+def test_run_gather_loop_surfaces_tool_error_and_continues() -> None:
+    def dispatch(name: str, args: dict) -> str:
+        raise ValueError("boom")
+
+    model = _ScriptedModel(
+        [
+            _FakeAI([{"name": "graph_query", "args": {}, "id": "t1"}]),
+            _FakeAI([], content="stop"),
+        ]
+    )
+    msgs = nodes.run_gather_loop(model, dispatch, [("user", "q")], max_steps=8)
+    assert any("boom" in getattr(m, "content", "") for m in msgs)  # error fed back, not raised

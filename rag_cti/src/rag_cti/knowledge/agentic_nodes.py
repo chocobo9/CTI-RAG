@@ -11,10 +11,12 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from collections.abc import Callable
 from typing import Any, Protocol
 
 from rag_cti.generation.context_builder import extract_cited_ids
+from rag_cti.generation.prompts import AGENTIC_SYNTHESIS_SYSTEM
 from rag_cti.knowledge.agentic_state import AgenticAnswer, SufficiencyVerdict
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
@@ -26,18 +28,6 @@ JudgeFn = Callable[[str, str], str]
 # How much evidence the judge sees — bounded so the gate's own context stays small.
 _JUDGE_MAX_CHUNKS = 20
 _JUDGE_MAX_FACTS = 50
-
-# langgraph's create_react_agent returns this AIMessage when it hits recursion_limit
-# before drafting an answer. It is NOT a real draft — judging grounding on it always
-# fails, so the loop never converges. Treat it as "no draft yet".
-_RECURSION_STUB = "Sorry, need more steps to process this request."
-
-
-def is_recursion_stub(text: str) -> bool:
-    """True if ``text`` is langgraph's recursion-limit stub (the inner agent ran out of
-    steps before writing an answer) — callers must not treat it as a real draft."""
-    return text.strip() == _RECURSION_STUB
-
 
 AGENTIC_SUFFICIENCY_SYSTEM = (
     "You are a verification gate inside a CTI retrieval loop. You are given the user's "
@@ -67,8 +57,53 @@ class GeneratorProto(Protocol):
     """Structural view of generation.Generator used by synthesize (typing aid)."""
 
     def generate(
-        self, query: str, query_result: QueryResult, raise_on_failure: bool = False
+        self,
+        query: str,
+        query_result: QueryResult,
+        raise_on_failure: bool = False,
+        system_prompt: str | None = None,
     ) -> GeneratedAnswer: ...
+
+
+# ---------------------------------------------------------------------------
+# inner gather loop — GATHER-only ReAct burst (no answer; the ledger is the output)
+# ---------------------------------------------------------------------------
+
+
+def run_gather_loop(
+    model: Any,
+    dispatch: Callable[[str, dict[str, Any]], Any],
+    messages: list[Any],
+    *,
+    max_steps: int,
+) -> list[Any]:
+    """Drive a GATHER-only tool loop and return the accumulated message transcript.
+
+    The model (a chat model with tools bound) picks tool calls; ``dispatch(name, args)``
+    runs each (side-effecting the EvidenceLedger) and its result is fed back as a
+    ``ToolMessage``. The loop stops as soon as the model emits no tool call — meaning it
+    judged it has gathered enough — or ``max_steps`` rounds are reached. The model never
+    writes the final answer (the synthesize node does), so any text it emits is ignored;
+    only the ledger (populated via ``dispatch``) and the transcript (for token counting)
+    matter. A tool error is reported back to the model instead of aborting the burst."""
+    from langchain_core.messages import ToolMessage
+
+    convo = list(messages)
+    for _ in range(max_steps):
+        ai = model.invoke(convo)
+        convo.append(ai)
+        tool_calls = getattr(ai, "tool_calls", None) or []
+        if not tool_calls:
+            break  # model emitted no tool call -> it has gathered enough
+        for call in tool_calls:
+            name = call.get("name", "")
+            args = call.get("args", {}) or {}
+            try:
+                result: Any = dispatch(name, args)
+            except Exception as exc:  # surface the error to the model, keep gathering
+                result = {"error": f"{name} failed: {exc}"}
+            convo.append(ToolMessage(content=str(result), tool_call_id=call.get("id", "")))
+    return convo
 
 
 # ---------------------------------------------------------------------------
@@ -190,6 +225,11 @@ def decide_next(
     *,
     max_iterations: int,
     token_ceiling: int,
+    max_retrieve_rounds: int = 2,
+    new_facts: int = 0,
+    prev_gaps: tuple[str, ...] = (),
+    elapsed_seconds: float = 0.0,
+    max_wall_seconds: float = 0.0,
 ) -> tuple[str, str]:
     """Return (next_node, stop_reason). next_node is "agent_turn" or "synthesize".
 
@@ -198,27 +238,95 @@ def decide_next(
     token_ceiling are generous runaway backstops, not the primary stop."""
     if iteration_count >= max_iterations or tokens_used >= token_ceiling:
         return "synthesize", "budget"
+    # Wall-clock tail-latency guardrail (checked between iterations): bound total latency
+    # even if an API hangs, regardless of iteration/token count. 0 disables it.
+    if max_wall_seconds > 0 and elapsed_seconds >= max_wall_seconds:
+        return "synthesize", "timeout"
     if verdict is not None and verdict.next_action == "stop":
         return "synthesize", "sufficient"
     if new_evidence == 0:
         return "synthesize", "no_progress"
+    # Stuck guard: the judge is repeating the EXACT same coverage gaps AND this burst added
+    # no new graph facts — further looping just churns (e.g. fetching prose that doesn't
+    # advance an enumeration). Stop instead of running to the budget cap.
+    if (
+        verdict is not None
+        and new_facts == 0
+        and prev_gaps
+        and tuple(verdict.coverage_gaps) == prev_gaps
+    ):
+        return "synthesize", "no_progress"
+    # PRIMARY convergence bound: the judge still wants more, but we've already done our
+    # allotted retrieve_more rounds (iteration 1 is the initial gather, so completed
+    # re-entries = iteration_count - 1). Synthesize with what we have — this is the
+    # deterministic stop that keeps latency bounded; "budget" should stay a rare runaway.
+    if iteration_count - 1 >= max_retrieve_rounds:
+        return "synthesize", "max_rounds"
     if verdict is None:
         return "synthesize", "parse_fallback"
     return "agent_turn", ""
 
 
-def build_directives(verdict: SufficiencyVerdict) -> str:
-    """The re-entry instruction for agent_turn — names the gap + concrete next step."""
+def _ledger_summary(ledger: EvidenceLedger) -> str:
+    """A compact 'what you already have' note for a re-entry directive. Each gather burst
+    starts from a CLEAN context (working-set pattern — the ledger, not the transcript, is
+    the cross-iteration memory), so this is how the burst learns what prior bursts found
+    and avoids re-resolving / re-outlining / re-querying the graph it already enumerated."""
+    if not ledger.facts and not ledger.chunks:
+        return ""
+    lines: list[str] = ["Already gathered (use these — do NOT collect them again):"]
+    if ledger.facts:
+        subjects = sorted({f.subject_name for f in ledger.facts.values()})
+        cats = Counter((f.predicate, f.object_type) for f in ledger.facts.values())
+        cat_str = ", ".join(f"{p}->{o}: {n}" for (p, o), n in sorted(cats.items()))
+        lines.append(
+            f"- {len(ledger.facts)} graph facts for {', '.join(subjects)} ({cat_str}); the "
+            "graph enumeration for these is COMPLETE — do NOT call resolve_entity / "
+            "graph_outline / graph_query for them again."
+        )
+    if ledger.chunks:
+        lines.append(f"- {len(ledger.chunks)} prose chunks already retrieved.")
+    return "\n".join(lines)
+
+
+def build_directives(verdict: SufficiencyVerdict, ledger: EvidenceLedger) -> str:
+    """The re-entry instruction for a fresh gather burst: a compact summary of what the
+    ledger already holds (so the burst does not re-collect it), then the concrete gaps to
+    fill. Since the burst starts from a clean context (working-set pattern), this note is
+    how it learns prior progress."""
     parts: list[str] = []
+    summary = _ledger_summary(ledger)
+    if summary:
+        parts.append(summary)
+    gap_parts: list[str] = []
     if verdict.coverage_gaps:
-        parts.append("Still missing: " + "; ".join(verdict.coverage_gaps))
+        gap_parts.append("Still missing: " + "; ".join(verdict.coverage_gaps))
     if verdict.suggested_queries:
-        parts.append("Try vector_search for: " + "; ".join(verdict.suggested_queries))
+        gap_parts.append("Try retrieve for: " + "; ".join(verdict.suggested_queries))
     for subject, predicate, object_type in verdict.suggested_graph_targets:
         slots = ", ".join(s for s in (predicate, object_type) if s)
         target = f"{subject} ({slots})" if slots else subject
-        parts.append(f"Try graph_query: {target}")
+        gap_parts.append(f"Try graph_query: {target}")
+    if gap_parts:
+        parts.append("\n".join(gap_parts))
     return "\n".join(parts) if parts else "Gather more evidence to fully answer the question."
+
+
+def build_turn_messages(
+    system_prompt: str,
+    query: str,
+    verdict: SufficiencyVerdict | None,
+    ledger: EvidenceLedger,
+) -> list[Any]:
+    """Build the STARTING messages for one gather burst (working-set pattern): a clean
+    ``[system, query]`` EVERY iteration — never the prior burst's transcript, which is
+    redundant with the ledger and made context (and cost) grow super-linearly across
+    iterations. On a retrieve_more re-entry, append the directive (ledger summary + gaps)
+    so the fresh burst knows what is done and what is missing."""
+    messages: list[Any] = [("system", system_prompt), ("user", query)]
+    if verdict is not None and verdict.next_action == "retrieve_more":
+        messages.append(("user", build_directives(verdict, ledger)))
+    return messages
 
 
 # ---------------------------------------------------------------------------
@@ -229,11 +337,30 @@ def build_directives(verdict: SufficiencyVerdict) -> str:
 def assemble_citations(answer_text: str, ledger: EvidenceLedger) -> tuple[tuple[str, ...], int]:
     """Intersect the model's cited [id]s with the ledger's real ids. Returns
     (validated cited ids, count of hallucinated ids dropped). Truth is the ledger,
-    not the regex."""
-    cited = extract_cited_ids(answer_text)
+    not the regex.
+
+    Fact pseudo-chunk ids carry a ``fact_`` prefix while prose chunk ids are bare, so the
+    model sometimes mirrors that and writes ``chunk_<id>`` for a prose chunk. That is a
+    real citation lightly mangled, not a hallucination — recover it by stripping the
+    spurious ``chunk_`` prefix rather than dropping it."""
     real = ledger.real_id_set
-    kept = tuple(cid for cid in cited if cid in real)
-    return kept, len(cited) - len(kept)
+    kept: list[str] = []
+    dropped = 0
+    for cid in extract_cited_ids(answer_text):
+        if cid in real:
+            kept.append(cid)
+        elif cid.startswith("chunk_") and cid[len("chunk_") :] in real:
+            kept.append(cid[len("chunk_") :])
+        else:
+            dropped += 1
+    # A normalized id may collide with one already kept — dedup, order-preserving.
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for k in kept:
+        if k not in seen:
+            seen.add(k)
+            deduped.append(k)
+    return tuple(deduped), dropped
 
 
 def _facts_as_results(ledger: EvidenceLedger, limit: int | None) -> list[RetrievalResult]:
@@ -283,10 +410,14 @@ def synthesize_answer(
     window-safety bounds, not task quotas."""
     chunk_results = list(ledger.union_query_result(query, limit=top_k).results)
     fact_results = _facts_as_results(ledger, fact_limit)
-    merged = [r.model_copy(update={"rank": i}) for i, r in enumerate(chunk_results + fact_results)]
+    # Facts FIRST: graph facts are the exact enumeration the answer must cite; putting
+    # them ahead of prose gives them primacy (the model anchors on early context) so the
+    # gathered [fact_id]s actually reach the answer instead of only the prose chunks.
+    merged = [r.model_copy(update={"rank": i}) for i, r in enumerate(fact_results + chunk_results)]
     return generator.generate(
         query,
         QueryResult(query=query, results=merged, total_retrieved=len(merged), retrieval_ms=0.0),
+        system_prompt=AGENTIC_SYNTHESIS_SYSTEM,
     )
 
 

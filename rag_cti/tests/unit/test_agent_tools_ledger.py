@@ -76,7 +76,11 @@ def test_graph_query_to_ledger_single_call_full_rows_to_ledger() -> None:
     assert store.graph_query_calls == 1  # one store call, not query-then-resummarize
     assert out["total"] == 60
     assert out["shown"] == 50
-    assert out["truncated"] is True
+    # No misleading "truncated" flag: the FULL set is recorded and reaches synthesis, so
+    # the bounded preview is not a reason to re-query — signal completeness instead.
+    assert "truncated" not in out
+    assert out["complete"] is True
+    assert "complete set" in out["note"]
     assert len(led.facts) == 60  # FULL rows in the ledger, untruncated
 
 

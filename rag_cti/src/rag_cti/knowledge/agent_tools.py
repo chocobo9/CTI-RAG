@@ -186,7 +186,12 @@ def graph_query_to_ledger(
     limit: int = 50,
 ) -> dict[str, Any]:
     """Enumerate one category once: append the FULL rows to the ledger, return the
-    bounded summary (avoids the v0 double-query of querying then re-summarizing)."""
+    bounded summary (avoids the v0 double-query of querying then re-summarizing).
+
+    The full rows are in the ledger and reach synthesis, so the bounded ``shown``
+    preview is NOT a reason to re-query. We therefore drop the misleading
+    ``truncated`` flag (which made the gather loop re-query for "more" it already
+    held) and return an explicit completeness signal instead."""
     rows = fact_store.graph_query(
         subject_id=subject_id,
         predicate=predicate,
@@ -194,7 +199,19 @@ def graph_query_to_ledger(
         min_credibility=min_credibility,
     )
     ledger.add_facts(rows)
-    return summarize_rows(rows, limit)
+    summary = summarize_rows(rows, limit)
+    total = summary["total"]
+    return {
+        "total": total,
+        "shown": summary["shown"],
+        "objects": summary["objects"],
+        "complete": True,
+        "note": (
+            f"All {total} facts for this query are recorded and available when "
+            "composing the answer — this is the complete set; do not query this "
+            "category again."
+        ),
+    }
 
 
 def outline_to_ledger(

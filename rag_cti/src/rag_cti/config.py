@@ -31,6 +31,13 @@ class Settings(BaseSettings):
     groq_analysis_model: str = "llama-3.3-70b-versatile"
     groq_report_model: str = "llama-3.3-70b-versatile"
 
+    # Qwen (Alibaba DashScope, OpenAI-compatible endpoint). Used as an INDEPENDENT
+    # sufficiency-judge — a different model family from the DeepSeek gatherer, so the
+    # verifier does not share the doer's blind spots. Empty key => unused. Base URL is
+    # region-specific: intl = dashscope-intl, mainland China = dashscope.aliyuncs.com.
+    qwen_api_key: SecretStr = SecretStr("")
+    qwen_base_url: str = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+
     # Data source API keys
     otx_api_key: SecretStr = SecretStr("")
     # Reserved for the experimental VirusTotal connector — no fetch script
@@ -122,20 +129,39 @@ class Settings(BaseSettings):
     # on the judge's sufficiency call + a no-progress stop (a burst that gathers nothing
     # new); the numbers below only catch pathology and should rarely bind.
     agentic_enabled: bool = False
-    # Runaway backstop, calibrated to per-iteration cost (each iteration is a slow inner
-    # burst). Real convergence = judge-sufficient OR no-new-evidence; the judge usually
-    # converges in 1-2.
+    # PRIMARY convergence bound: how many retrieve_more re-entries the loop allows before it
+    # synthesizes with what it has (stop_reason="max_rounds"). This makes latency BOUNDED by
+    # design (<= max_retrieve_rounds + 1 bursts) instead of relying on an LLM judge that may
+    # never say "sufficient" (a stricter judge can loop forever). Keep small.
+    agentic_max_retrieve_rounds: int = 2
+    # RUNAWAY backstops — should rarely/never bind now that max_retrieve_rounds is primary.
+    # If "budget" shows up as a normal stop_reason, convergence is broken, not these knobs.
     agentic_max_iterations: int = 6
-    # Cost/runaway backstop (well above any normal run).
     agentic_token_ceiling: int = 200000
-    # Inner create_react_agent gather budget per burst (graceful: agent_turn catches the
-    # limit). TASK-SIZED, NOT generous: each tool call (esp. retrieve -> HyDE+rerank) is
-    # expensive AND the agent does not reliably stop, so a large budget just makes it
-    # over-gather slowly (40 burned ~220k tokens / a burst). ~6 steps reach
-    # resolve+outline+query; this leaves slack for a couple of retrieves, then the catch
-    # proceeds. The sufficiency judge decides on the gathered EVIDENCE.
+    # Wall-clock tail-latency guardrail (seconds), checked between iterations — the standard
+    # max_execution_time companion to the iteration cap, bounds latency when an API hangs.
+    # 0 disables it.
+    agentic_max_wall_seconds: float = 180.0
+    # Inner GATHER loop budget: max LLM tool-calling rounds per burst before the loop
+    # stops regardless. The inner agent is gather-ONLY (it populates the ledger and does
+    # NOT write the answer — synthesize does), and it stops as soon as it emits no tool
+    # call (it judged it has enough), so this only caps pathology. ~8 rounds cover
+    # resolve+outline+query plus a couple of retrieves comfortably.
+    agentic_max_inner_steps: int = 8
+    # DEPRECATED (pre-gather-loop): was the recursion_limit of the inner create_react_agent,
+    # which over-explored and never drafted (15 == ~7 tool rounds, always hit). Superseded
+    # by agentic_max_inner_steps + the hand-rolled gather loop; no longer read by the loop.
     agentic_inner_recursion_limit: int = 15
+    # The sufficiency judge. ``agentic_verifier_provider`` picks WHICH client builds it:
+    # "deepseek" (default) reuses the DeepSeek client — same family as the gatherer, so
+    # NOT an independent verifier; "qwen" uses the DashScope client for a cross-family,
+    # independent verifier. ``agentic_verifier_model`` must name a model on that provider.
+    agentic_verifier_provider: str = "deepseek"
     agentic_verifier_model: str = "deepseek-chat"
+    # Judge output budget. The verdict JSON is small, so this is mostly headroom — but a
+    # thinking-style verifier (some Qwen models emit reasoning before the JSON) needs room
+    # or it returns empty content. 512 was too tight for those; 2048 is safe for both.
+    agentic_verifier_max_tokens: int = 2048
     # Generous window-safety bound on prose chunks fed to synthesis (chunks are long).
     # The answer can only cite what reaches synthesis, so this is sized to fit the context
     # window, not an arbitrary small number. Facts are fed in full (no cap).
