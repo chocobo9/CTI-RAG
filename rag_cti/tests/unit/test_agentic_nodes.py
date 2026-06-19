@@ -39,6 +39,19 @@ def _ledger_with_chunks(*results: RetrievalResult) -> EvidenceLedger:
     return led
 
 
+# --- is_recursion_stub (the inner-agent-never-drafted guard) -------------------
+
+
+def test_is_recursion_stub_matches_langgraph_message() -> None:
+    assert nodes.is_recursion_stub("Sorry, need more steps to process this request.")
+    assert nodes.is_recursion_stub("  Sorry, need more steps to process this request.  ")
+
+
+def test_is_recursion_stub_rejects_real_draft() -> None:
+    assert not nodes.is_recursion_stub("APT29 uses spearphishing [c1] for initial access.")
+    assert not nodes.is_recursion_stub("")
+
+
 # --- parse_verdict -------------------------------------------------------------
 
 
@@ -87,6 +100,14 @@ def test_parse_verdict_missing_next_action_computed_retrieve() -> None:
     v = nodes.parse_verdict(json.dumps({"grounded": True, "sufficient": False}))
     assert v is not None
     assert v.next_action == "retrieve_more"
+
+
+def test_parse_verdict_sufficient_without_grounded_stops() -> None:
+    # Sufficiency drives convergence; a missing/ungrounded draft must not block stop
+    # (grounding is enforced at synthesis). No next_action -> computed from sufficient.
+    v = nodes.parse_verdict(json.dumps({"grounded": False, "sufficient": True}))
+    assert v is not None
+    assert v.next_action == "stop"
 
 
 def test_parse_verdict_bad_faithfulness_defaults_zero() -> None:
@@ -157,37 +178,44 @@ def _verdict(action: str = "retrieve_more") -> SufficiencyVerdict:
 
 
 def test_decide_next_iteration_ceiling_is_budget() -> None:
-    assert nodes.decide_next(
-        _verdict(), iteration_count=3, tokens_used=0, max_iterations=3, token_ceiling=100
-    ) == ("synthesize", "budget")
+    assert nodes.decide_next(_verdict(), 3, 0, 5, max_iterations=3, token_ceiling=100) == (
+        "synthesize",
+        "budget",
+    )
 
 
 def test_decide_next_token_ceiling_is_budget() -> None:
-    assert nodes.decide_next(
-        _verdict(), iteration_count=1, tokens_used=100, max_iterations=3, token_ceiling=100
-    ) == ("synthesize", "budget")
+    assert nodes.decide_next(_verdict(), 1, 100, 5, max_iterations=3, token_ceiling=100) == (
+        "synthesize",
+        "budget",
+    )
 
 
 def test_decide_next_none_verdict_is_parse_fallback() -> None:
-    assert nodes.decide_next(
-        None, iteration_count=1, tokens_used=0, max_iterations=3, token_ceiling=100
-    ) == ("synthesize", "parse_fallback")
+    assert nodes.decide_next(None, 1, 0, 5, max_iterations=3, token_ceiling=100) == (
+        "synthesize",
+        "parse_fallback",
+    )
 
 
 def test_decide_next_stop_is_sufficient() -> None:
-    assert nodes.decide_next(
-        _verdict("stop"), iteration_count=1, tokens_used=0, max_iterations=3, token_ceiling=100
-    ) == ("synthesize", "sufficient")
+    assert nodes.decide_next(_verdict("stop"), 1, 0, 5, max_iterations=3, token_ceiling=100) == (
+        "synthesize",
+        "sufficient",
+    )
 
 
 def test_decide_next_continue_is_agent_turn() -> None:
     assert nodes.decide_next(
-        _verdict("retrieve_more"),
-        iteration_count=1,
-        tokens_used=0,
-        max_iterations=3,
-        token_ceiling=100,
+        _verdict("retrieve_more"), 1, 0, 5, max_iterations=15, token_ceiling=100
     ) == ("agent_turn", "")
+
+
+def test_decide_next_no_new_evidence_stops() -> None:
+    # A burst that gathered nothing new -> retrying is futile -> stop (not budget).
+    assert nodes.decide_next(
+        _verdict("retrieve_more"), 1, 0, 0, max_iterations=15, token_ceiling=100
+    ) == ("synthesize", "no_progress")
 
 
 # --- build_directives ----------------------------------------------------------

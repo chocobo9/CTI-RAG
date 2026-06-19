@@ -68,9 +68,11 @@ class Settings(BaseSettings):
 
     # Generation — pinned to DeepSeek (same endpoint/key), model-downgrade chain:
     # try generation_models[0] first, fall to the next on a backend failure. Primary
-    # deepseek-v4-flash is a reasoning model (spends tokens on reasoning_content), so
-    # generation_max_tokens must stay generous. Append more entries to extend the chain.
-    generation_max_tokens: int = 1024
+    # deepseek-v4-flash is a reasoning model: it spends the OUTPUT budget on
+    # reasoning_content BEFORE writing content. At 1024 a large synthesis context
+    # (~6k-token prompt) let reasoning (measured up to ~2400 tok) consume the whole
+    # budget -> empty content. Size generously for reasoning + a full answer.
+    generation_max_tokens: int = 8192
     generation_models: list[str] = ["deepseek-v4-flash", "deepseek-chat"]
 
     # Model for the Anthropic provider: HyDE's Anthropic branch (hyde.py) and
@@ -113,19 +115,31 @@ class Settings(BaseSettings):
 
     # Agentic answer loop (workflow->agentic). The answer() path becomes an adaptive
     # retrieve->assess-sufficiency->retrieve-more->synthesize loop. Opt-in until eval
-    # proves it beats single-shot, then answer() flips to it. The ceilings are runaway
-    # guards ONLY; the real operating point (typical iterations) is tuned from the
-    # per-iteration sufficiency spans in LangSmith — not pinned on paper.
+    # proves it beats single-shot, then answer() flips to it.
+    #
+    # Design principle: these are GENEROUS safety backstops against real limits (the
+    # model's context window; runaway cost/latency) — NOT task quotas. The loop converges
+    # on the judge's sufficiency call + a no-progress stop (a burst that gathers nothing
+    # new); the numbers below only catch pathology and should rarely bind.
     agentic_enabled: bool = False
-    agentic_max_iterations: int = 3
-    # Generous runaway backstop; iteration ceiling is the primary guard. Reasoning
-    # models burn tokens fast, so keep this well above a normal multi-iteration run.
+    # Runaway backstop, calibrated to per-iteration cost (each iteration is a slow inner
+    # burst). Real convergence = judge-sufficient OR no-new-evidence; the judge usually
+    # converges in 1-2.
+    agentic_max_iterations: int = 6
+    # Cost/runaway backstop (well above any normal run).
     agentic_token_ceiling: int = 200000
-    agentic_inner_recursion_limit: int = 8
+    # Inner create_react_agent gather budget per burst (graceful: agent_turn catches the
+    # limit). TASK-SIZED, NOT generous: each tool call (esp. retrieve -> HyDE+rerank) is
+    # expensive AND the agent does not reliably stop, so a large budget just makes it
+    # over-gather slowly (40 burned ~220k tokens / a burst). ~6 steps reach
+    # resolve+outline+query; this leaves slack for a couple of retrieves, then the catch
+    # proceeds. The sufficiency judge decides on the gathered EVIDENCE.
+    agentic_inner_recursion_limit: int = 15
     agentic_verifier_model: str = "deepseek-chat"
-    # Cap on chunks fed to the final synthesis — an unbounded ledger dump overloads
-    # the reasoning model's output budget and yields an empty answer.
-    agentic_synthesis_top_k: int = 12
+    # Generous window-safety bound on prose chunks fed to synthesis (chunks are long).
+    # The answer can only cite what reaches synthesis, so this is sized to fit the context
+    # window, not an arbitrary small number. Facts are fed in full (no cap).
+    agentic_synthesis_top_k: int = 50
 
     @field_validator("hybrid_alpha")
     @classmethod

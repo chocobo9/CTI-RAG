@@ -47,6 +47,7 @@ class _AgentState(TypedDict, total=False):
     messages: list[Any]
     iteration_count: int
     tokens_used: int
+    new_evidence: int  # chunks+facts gathered in the last burst (0 => no progress)
     last_draft: str
     sufficiency: Any  # SufficiencyVerdict | None
     stop_reason: str
@@ -77,7 +78,9 @@ def _last_ai_text(messages: list[Any]) -> str:
         if getattr(message, "type", "") == "ai":
             content = getattr(message, "content", "")
             if isinstance(content, str) and content.strip():
-                return content
+                # A recursion-limit stub is not a real draft — treat as no draft so the
+                # sufficiency judge does not reject it as ungrounded every iteration.
+                return "" if agentic_nodes.is_recursion_stub(content) else content
     return ""
 
 
@@ -164,6 +167,7 @@ def build_agentic_graph(
     judge: JudgeFn,
 ) -> Any:
     """Compile the outer StateGraph; nodes close over the per-run deps."""
+    from langgraph.errors import GraphRecursionError
     from langgraph.graph import END, START, StateGraph
     from langgraph.prebuilt import create_react_agent
 
@@ -177,11 +181,19 @@ def build_agentic_graph(
             from langchain_core.messages import HumanMessage
 
             messages.append(HumanMessage(content=agentic_nodes.build_directives(verdict)))
-        result = inner_agent.invoke(
-            {"messages": messages},
-            config={"recursion_limit": settings.agentic_inner_recursion_limit},
-        )
-        out_messages = result["messages"]
+        before = len(ledger.facts) + len(ledger.chunks)
+        try:
+            result = inner_agent.invoke(
+                {"messages": messages},
+                config={"recursion_limit": settings.agentic_inner_recursion_limit},
+            )
+            out_messages = result["messages"]
+        except GraphRecursionError:
+            # The agent used its whole gather budget without terminating in a draft. Its
+            # tool calls already populated the ledger (side effect), so proceed with what
+            # was gathered: the sufficiency judge decides on the EVIDENCE and synthesize
+            # produces the answer. (The inner agent is unreliable at stopping to draft.)
+            out_messages = messages
         # out_messages is the FULL accumulated transcript each burst, so summing it
         # gives the cumulative token total directly — overwrite, never add (adding
         # would re-count every prior turn's messages).
@@ -189,6 +201,7 @@ def build_agentic_graph(
             "messages": out_messages,
             "iteration_count": state.get("iteration_count", 0) + 1,
             "tokens_used": _sum_tokens(out_messages),
+            "new_evidence": len(ledger.facts) + len(ledger.chunks) - before,
             "last_draft": _last_ai_text(out_messages),
         }
 
@@ -200,6 +213,7 @@ def build_agentic_graph(
             verdict,
             state.get("iteration_count", 0),
             state.get("tokens_used", 0),
+            state.get("new_evidence", 0),
             max_iterations=settings.agentic_max_iterations,
             token_ceiling=settings.agentic_token_ceiling,
         )

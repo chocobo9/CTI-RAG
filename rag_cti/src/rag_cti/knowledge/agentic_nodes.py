@@ -27,19 +27,35 @@ JudgeFn = Callable[[str, str], str]
 _JUDGE_MAX_CHUNKS = 20
 _JUDGE_MAX_FACTS = 50
 
+# langgraph's create_react_agent returns this AIMessage when it hits recursion_limit
+# before drafting an answer. It is NOT a real draft — judging grounding on it always
+# fails, so the loop never converges. Treat it as "no draft yet".
+_RECURSION_STUB = "Sorry, need more steps to process this request."
+
+
+def is_recursion_stub(text: str) -> bool:
+    """True if ``text`` is langgraph's recursion-limit stub (the inner agent ran out of
+    steps before writing an answer) — callers must not treat it as a real draft."""
+    return text.strip() == _RECURSION_STUB
+
+
 AGENTIC_SUFFICIENCY_SYSTEM = (
-    "You are a verification gate inside a CTI retrieval loop. You are given the "
-    "user's QUESTION, the analyst's current DRAFT answer, and the EVIDENCE gathered "
-    "so far. Judge two things INDEPENDENTLY:\n"
-    "1. grounded: is each claim in the DRAFT supported by the EVIDENCE? "
-    "faithfulness_estimate in [0,1] = fraction of claims supported.\n"
-    "2. sufficient: does the EVIDENCE cover everything the QUESTION asks? "
-    "coverage_gaps = the sub-questions NOT yet answerable from the evidence.\n"
-    "If not sufficient, propose concrete next retrieval: suggested_queries "
-    "(vector-search strings for prose/explanation gaps) and suggested_graph_targets "
-    "([subject_id, predicate, object_type] triples for enumeration gaps; reuse ids "
-    "seen in the evidence; use null for an unknown slot).\n"
-    'next_action = "stop" only if grounded AND sufficient, else "retrieve_more".\n'
+    "You are a verification gate inside a CTI retrieval loop. You are given the user's "
+    "QUESTION, the EVIDENCE gathered so far (entity relation-category COUNTS, facts, and "
+    "prose chunks), and optionally a DRAFT answer.\n"
+    "Judge sufficiency FROM THE EVIDENCE: does it contain enough to answer the QUESTION? "
+    "coverage_gaps = the sub-questions NOT yet answerable from the evidence. Read the "
+    "relation-category counts in coverage_outlines (e.g. 'uses->technique: 195') — a large "
+    "count for the relation the QUESTION asks about means the evidence is ALREADY "
+    "sufficient; do NOT ask to retrieve more of a category you already hold in bulk.\n"
+    "If a non-empty DRAFT is present, also set grounded: is each draft claim supported by "
+    "the evidence? faithfulness_estimate in [0,1] = fraction supported. If there is NO "
+    "draft, grounding is not required to stop.\n"
+    'next_action = "stop" when the evidence is sufficient (and any non-empty draft is '
+    'grounded); otherwise "retrieve_more" with concrete suggested_queries (vector-search '
+    "strings for prose gaps) and suggested_graph_targets ([subject_id, predicate, "
+    "object_type] triples for enumeration gaps; reuse ids seen in the evidence; null for "
+    "an unknown slot).\n"
     "Output ONLY a JSON object with keys: grounded (bool), faithfulness_estimate "
     "(number), sufficient (bool), coverage_gaps (list of strings), next_action "
     "(string), suggested_queries (list of strings), suggested_graph_targets "
@@ -138,7 +154,9 @@ def parse_verdict(raw: str) -> SufficiencyVerdict | None:
     targets = _coerce_targets(data.get("suggested_graph_targets") or [])
     action = data.get("next_action")
     if action not in ("stop", "retrieve_more"):
-        action = "stop" if (grounded and sufficient) else "retrieve_more"
+        # Sufficiency drives convergence; grounding of the final answer is enforced by
+        # the citation guard at synthesis, so it is not required here.
+        action = "stop" if sufficient else "retrieve_more"
 
     return SufficiencyVerdict(
         grounded=grounded,
@@ -168,18 +186,24 @@ def decide_next(
     verdict: SufficiencyVerdict | None,
     iteration_count: int,
     tokens_used: int,
+    new_evidence: int,
     *,
     max_iterations: int,
     token_ceiling: int,
 ) -> tuple[str, str]:
-    """Return (next_node, stop_reason). next_node is "agent_turn" or "synthesize";
-    stop_reason is "" while looping, else "budget"|"parse_fallback"|"sufficient"."""
+    """Return (next_node, stop_reason). next_node is "agent_turn" or "synthesize".
+
+    Convergence is task-driven: stop when the judge says sufficient, OR the last burst
+    gathered nothing new (``new_evidence == 0`` — retrying is futile). max_iterations /
+    token_ceiling are generous runaway backstops, not the primary stop."""
     if iteration_count >= max_iterations or tokens_used >= token_ceiling:
         return "synthesize", "budget"
+    if verdict is not None and verdict.next_action == "stop":
+        return "synthesize", "sufficient"
+    if new_evidence == 0:
+        return "synthesize", "no_progress"
     if verdict is None:
         return "synthesize", "parse_fallback"
-    if verdict.next_action == "stop":
-        return "synthesize", "sufficient"
     return "agent_turn", ""
 
 
@@ -212,11 +236,7 @@ def assemble_citations(answer_text: str, ledger: EvidenceLedger) -> tuple[tuple[
     return kept, len(cited) - len(kept)
 
 
-# Graph facts injected into the synthesis as citable pseudo-chunks (top-N by credibility).
-_SYNTHESIS_FACT_LIMIT = 30
-
-
-def _facts_as_results(ledger: EvidenceLedger, limit: int) -> list[RetrievalResult]:
+def _facts_as_results(ledger: EvidenceLedger, limit: int | None) -> list[RetrievalResult]:
     """Render the top facts (credibility-desc) as pseudo-chunks so synthesis can cite
     controlled graph facts as ``[fact_id]`` beside prose ``[chunk_id]``s. Comparison /
     enumeration answers live in the graph; without this the synthesis sees only vector
@@ -253,12 +273,14 @@ def synthesize_answer(
     ledger: EvidenceLedger,
     *,
     top_k: int | None = None,
-    fact_limit: int = _SYNTHESIS_FACT_LIMIT,
+    fact_limit: int | None = None,
 ) -> GeneratedAnswer:
     """Generate the final answer over the gathered evidence: the top-``top_k`` prose
-    chunks PLUS the top-``fact_limit`` graph facts (as citable pseudo-chunks). Reuses
-    the certified Generator + synthesis prompt; bounding both keeps a context-overloaded
-    reasoning model from returning an empty answer."""
+    chunks PLUS the graph facts (as citable pseudo-chunks). ``fact_limit=None`` feeds ALL
+    gathered facts: the gold an answer can cite is bounded by what reaches synthesis, so an
+    arbitrary fact cap suppresses recall; the real bound is the model's context window, which
+    a few hundred triples sit comfortably inside. ``top_k``/``fact_limit`` are generous
+    window-safety bounds, not task quotas."""
     chunk_results = list(ledger.union_query_result(query, limit=top_k).results)
     fact_results = _facts_as_results(ledger, fact_limit)
     merged = [r.model_copy(update={"rank": i}) for i, r in enumerate(chunk_results + fact_results)]

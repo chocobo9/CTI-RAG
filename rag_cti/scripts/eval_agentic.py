@@ -58,16 +58,20 @@ def _singleshot_techniques(answer: GeneratedAnswer) -> list[str]:
 
 
 def _agentic_techniques(answer: AgenticAnswer) -> list[str]:
-    """ATT&CK ids the agentic loop gathered: graph-enumerated facts (the advantage)
-    PLUS any attack_id on the synthesis-context chunks."""
+    """ATT&CK ids the agentic ANSWER actually claims — the techniques of the facts/chunks
+    it CITED, not the full gathered set. Measuring all collected_facts conflates gathering
+    breadth (good for recall) with answer precision; the answer cites far fewer than it
+    gathers, so this reflects the answer, not the enumeration."""
+    cited = set(answer.cited_ids)
     out: list[str] = []
     for fact in answer.collected_facts:
-        if fact.object_type == "technique":
+        if fact.fact_id in cited and fact.object_type == "technique":
             out.append(fact.object_id.removeprefix("technique_"))
     for r in answer.query_result.results:
-        aid = r.document.metadata.get("attack_id")
-        if aid:
-            out.append(str(aid))
+        if r.document.id in cited:
+            aid = r.document.metadata.get("attack_id")
+            if aid:
+                out.append(str(aid))
     return out
 
 
