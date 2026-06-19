@@ -116,6 +116,32 @@ def ask(
 
 
 @app.command()
+def agentic(
+    question: str = typer.Argument(..., help="Natural-language CTI question"),
+) -> None:
+    """Agentic answer (workflow->agentic): the LLM adaptively retrieves, a sufficiency
+    gate judges whether the evidence is enough, and the loop re-retrieves on gaps before
+    synthesizing. Citations are validated against the gathered evidence; conflicts shown."""
+    import rag_cti
+
+    ans = rag_cti.agentic_answer(question)
+    console.print(ans.answer)
+    console.print(
+        f"\n[dim]iterations={ans.iteration_count}  stop={ans.stop_reason}  "
+        f"cited={list(ans.cited_ids)}  dropped={ans.dropped_citation_count}[/dim]"
+    )
+    if ans.conflicts:
+        console.print(
+            f"[yellow]{len(ans.conflicts)} conflicting fact(s) — sources disagree:[/yellow]"
+        )
+        for r in ans.conflicts:
+            console.print(
+                f"  [yellow]{r.subject_name} {r.predicate} {r.object_name}[/yellow] "
+                f"(cred {r.aggregate_credibility:.3f})"
+            )
+
+
+@app.command()
 def chat(
     k: int = typer.Option(10, "--top-k", "-k", help="Number of context chunks"),
 ) -> None:

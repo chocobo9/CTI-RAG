@@ -111,6 +111,22 @@ class Settings(BaseSettings):
     constraint_boost_weight: float = 0.5
     constraint_boost_fetch_multiplier: int = 1
 
+    # Agentic answer loop (workflow->agentic). The answer() path becomes an adaptive
+    # retrieve->assess-sufficiency->retrieve-more->synthesize loop. Opt-in until eval
+    # proves it beats single-shot, then answer() flips to it. The ceilings are runaway
+    # guards ONLY; the real operating point (typical iterations) is tuned from the
+    # per-iteration sufficiency spans in LangSmith — not pinned on paper.
+    agentic_enabled: bool = False
+    agentic_max_iterations: int = 3
+    # Generous runaway backstop; iteration ceiling is the primary guard. Reasoning
+    # models burn tokens fast, so keep this well above a normal multi-iteration run.
+    agentic_token_ceiling: int = 200000
+    agentic_inner_recursion_limit: int = 8
+    agentic_verifier_model: str = "deepseek-chat"
+    # Cap on chunks fed to the final synthesis — an unbounded ledger dump overloads
+    # the reasoning model's output budget and yields an empty answer.
+    agentic_synthesis_top_k: int = 12
+
     @field_validator("hybrid_alpha")
     @classmethod
     def validate_alpha(cls, v: float) -> float:

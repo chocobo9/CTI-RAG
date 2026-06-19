@@ -1,10 +1,16 @@
 """v1 agent tool logic — backend-free functions the LangChain @tools wrap.
 
 Kept separate from the LangGraph wiring so the tool logic unit-tests with fakes
-(no langgraph / LLM). Critically this is where the §9.4 #1 context strategy lives:
-``query_summary`` returns object names + ids + a total **count**, NOT the 223 full
-facts with citations — keeping the LLM context bounded. Full facts/citations are
-fetched by id only at synthesize time (reuse v0 ``facts()`` / ``get_by_chunk_ids``).
+(no langgraph / LLM). Two responsibilities:
+
+1. **Bounded summaries** (§9.4 #1 context strategy): ``summarize_*`` turn full
+   graph/vector results into the small object the LLM sees — names + ids + a total
+   **count**, NOT the 223 full facts with citations.
+2. **Ledger-aware adapters** (agentic plan): ``*_to_ledger`` call the underlying
+   tool once, append the **full** structured result to the per-run
+   :class:`~rag_cti.knowledge.evidence_ledger.EvidenceLedger`, and return the
+   bounded summary — so the hard-rail nodes see untruncated evidence while the LLM
+   context stays bounded.
 """
 
 from __future__ import annotations
@@ -12,13 +18,17 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.knowledge.fact_store import FactStoreProto
 from rag_cti.preprocess.entity_registry import resolve_entity_ids_strict
+from rag_cti.types import FactRow, GraphOutline, QueryResult, RetrievalResult
 
 # Subject-capable entity types resolve_entity tries (NL name -> entity_id).
 _SUBJECT_TYPES = ("actor", "family", "campaign", "technique")
 
-VectorSearch = Callable[[str, int], Any]  # (query, top_k) -> object with .results
+# (query, top_k) -> object with .results  /  (query, top_k) -> QueryResult
+VectorSearch = Callable[[str, int], Any]
+RunRetrieve = Callable[[str, int], QueryResult]
 
 
 def resolve_entity_candidates(
@@ -38,9 +48,13 @@ def resolve_entity_candidates(
     return [{"entity_id": eid, "matched_type": t} for eid, t in seen.items()]
 
 
-def outline_summary(fact_store: FactStoreProto, entity_id: str) -> dict[str, Any]:
-    """Coverage map as numbers — the agent's planning/sufficiency gauge (§9.4)."""
-    outline = fact_store.graph_outline(entity_id)
+# ---------------------------------------------------------------------------
+# Pure summarizers — full result -> bounded LLM-facing dict
+# ---------------------------------------------------------------------------
+
+
+def summarize_outline(outline: GraphOutline | None, entity_id: str) -> dict[str, Any]:
+    """Coverage map as numbers — the agent's planning/sufficiency hint."""
     if outline is None:
         return {"found": False, "entity_id": entity_id}
     return {
@@ -59,24 +73,10 @@ def outline_summary(fact_store: FactStoreProto, entity_id: str) -> dict[str, Any
     }
 
 
-def query_summary(
-    fact_store: FactStoreProto,
-    *,
-    subject_id: str,
-    predicate: str | None = None,
-    object_type: str | None = None,
-    min_credibility: float = 0.0,
-    limit: int = 50,
-) -> dict[str, Any]:
-    """Enumerate a category, return a SUMMARY (object names + ids + total), NOT full
+def summarize_rows(rows: tuple[FactRow, ...], limit: int = 50) -> dict[str, Any]:
+    """Enumerate a category as a SUMMARY (object names + ids + total), NOT full
     citations (§9.4 #1 — bound the LLM context). ``total`` lets the agent compare
-    coverage; full facts are fetched by fact_id at synthesize."""
-    rows = fact_store.graph_query(
-        subject_id=subject_id,
-        predicate=predicate,
-        object_type=object_type,
-        min_credibility=min_credibility,
-    )
+    coverage; full rows live in the ledger and are fetched by id at synthesize."""
     shown = rows[:limit]
     return {
         "total": len(rows),
@@ -96,9 +96,8 @@ def query_summary(
     }
 
 
-def facts_for_evidence_summary(fact_store: FactStoreProto, evidence_id: str) -> dict[str, Any]:
-    """Reverse bridge: a chunk -> the facts it supports (provenance for content)."""
-    rows = fact_store.facts_for_evidence(evidence_id)
+def summarize_facts_for_evidence(rows: tuple[FactRow, ...]) -> dict[str, Any]:
+    """Reverse bridge: the facts a chunk supports (provenance for content)."""
     return {
         "count": len(rows),
         "facts": [
@@ -113,9 +112,8 @@ def facts_for_evidence_summary(fact_store: FactStoreProto, evidence_id: str) -> 
     }
 
 
-def vector_search_summary(search: VectorSearch, query: str, top_k: int = 5) -> dict[str, Any]:
+def summarize_chunks(results: list[RetrievalResult]) -> dict[str, Any]:
     """Vector content as snippets (the agent decides if it needs full chunks later)."""
-    result = search(query, top_k)
     return {
         "chunks": [
             {
@@ -123,6 +121,96 @@ def vector_search_summary(search: VectorSearch, query: str, top_k: int = 5) -> d
                 "source": r.document.source,
                 "snippet": r.document.content[:240].replace("\n", " "),
             }
-            for r in result.results
+            for r in results
         ]
     }
+
+
+# ---------------------------------------------------------------------------
+# v0 tool wrappers (deterministic; used by the `facts` CLI path and unit tests)
+# ---------------------------------------------------------------------------
+
+
+def outline_summary(fact_store: FactStoreProto, entity_id: str) -> dict[str, Any]:
+    return summarize_outline(fact_store.graph_outline(entity_id), entity_id)
+
+
+def query_summary(
+    fact_store: FactStoreProto,
+    *,
+    subject_id: str,
+    predicate: str | None = None,
+    object_type: str | None = None,
+    min_credibility: float = 0.0,
+    limit: int = 50,
+) -> dict[str, Any]:
+    rows = fact_store.graph_query(
+        subject_id=subject_id,
+        predicate=predicate,
+        object_type=object_type,
+        min_credibility=min_credibility,
+    )
+    return summarize_rows(rows, limit)
+
+
+def facts_for_evidence_summary(fact_store: FactStoreProto, evidence_id: str) -> dict[str, Any]:
+    return summarize_facts_for_evidence(fact_store.facts_for_evidence(evidence_id))
+
+
+def vector_search_summary(search: VectorSearch, query: str, top_k: int = 5) -> dict[str, Any]:
+    return summarize_chunks(search(query, top_k).results)
+
+
+# ---------------------------------------------------------------------------
+# Ledger-aware adapters — append full structured evidence, return bounded summary
+# ---------------------------------------------------------------------------
+
+
+def retrieve_to_ledger(
+    run: RunRetrieve, ledger: EvidenceLedger, query: str, top_k: int = 10
+) -> dict[str, Any]:
+    """Vector retrieve: append the QueryResult to the ledger, return chunk snippets."""
+    qr = run(query, top_k)
+    ledger.add_query_result(qr)
+    return summarize_chunks(qr.results)
+
+
+def graph_query_to_ledger(
+    fact_store: FactStoreProto,
+    ledger: EvidenceLedger,
+    *,
+    subject_id: str,
+    predicate: str | None = None,
+    object_type: str | None = None,
+    min_credibility: float = 0.0,
+    limit: int = 50,
+) -> dict[str, Any]:
+    """Enumerate one category once: append the FULL rows to the ledger, return the
+    bounded summary (avoids the v0 double-query of querying then re-summarizing)."""
+    rows = fact_store.graph_query(
+        subject_id=subject_id,
+        predicate=predicate,
+        object_type=object_type,
+        min_credibility=min_credibility,
+    )
+    ledger.add_facts(rows)
+    return summarize_rows(rows, limit)
+
+
+def outline_to_ledger(
+    fact_store: FactStoreProto, ledger: EvidenceLedger, entity_id: str
+) -> dict[str, Any]:
+    """Coverage map: record it as a sufficiency hint, return the numbers summary."""
+    outline = fact_store.graph_outline(entity_id)
+    if outline is not None:
+        ledger.add_outline(outline)
+    return summarize_outline(outline, entity_id)
+
+
+def facts_for_evidence_to_ledger(
+    fact_store: FactStoreProto, ledger: EvidenceLedger, evidence_id: str
+) -> dict[str, Any]:
+    """Reverse bridge: append the supported facts to the ledger, return the summary."""
+    rows = fact_store.facts_for_evidence(evidence_id)
+    ledger.add_facts(rows)
+    return summarize_facts_for_evidence(rows)

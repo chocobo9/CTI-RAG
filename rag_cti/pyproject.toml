@@ -134,6 +134,9 @@ omit = [
     "*/rag_cti/evaluation/techniquerag.py",
     # LLM-orchestration + langgraph wiring (M4 v1); verified end-to-end, not unit-testable.
     "*/rag_cti/knowledge/agent_graph.py",
+    # Agentic answer loop wiring (workflow->agentic); pure logic in agentic_nodes/
+    # evidence_ledger IS unit-tested. This file is langgraph/langchain wiring, e2e-verified.
+    "*/rag_cti/knowledge/agentic_graph.py",
 ]
 
 [tool.ruff]

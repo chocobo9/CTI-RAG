@@ -8,14 +8,20 @@ Public interface:
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from rag_cti.config import get_settings
 from rag_cti.retrieval import Pipeline, build_pipeline
 from rag_cti.types import FactQueryResult, GeneratedAnswer, QueryResult
 
+if TYPE_CHECKING:
+    from rag_cti.knowledge.agentic_state import AgenticAnswer
+
 __all__ = [
     "query",
     "answer",
+    "answer_single_shot",
+    "agentic_answer",
     "facts",
     "ask",
     "QueryResult",
@@ -99,7 +105,29 @@ def _default_generator() -> object:
 
 
 def answer(text: str, k: int = 10, history: list[str] | None = None) -> GeneratedAnswer:
-    """Retrieve relevant CTI chunks and generate a grounded answer with cited chunk IDs.
+    """Generate a grounded answer with cited chunk IDs.
+
+    Routes by ``settings.agentic_enabled``: when ON, delegates to the agentic loop
+    (:func:`agentic_answer`) and adapts its result to ``GeneratedAnswer`` (``k`` /
+    ``history`` are ignored — the agent composes its own retrieval); when OFF
+    (default until eval proves the agentic win), runs the single-shot path
+    (:func:`answer_single_shot`).
+    """
+    if get_settings().agentic_enabled:
+        agentic = agentic_answer(text)
+        return GeneratedAnswer(
+            query=agentic.query,
+            answer=agentic.answer,
+            cited_chunk_ids=list(agentic.cited_ids),
+            query_result=agentic.query_result,
+            generation_ms=0.0,
+            model="agentic",
+        )
+    return answer_single_shot(text, k=k, history=history)
+
+
+def answer_single_shot(text: str, k: int = 10, history: list[str] | None = None) -> GeneratedAnswer:
+    """Single-shot retrieve -> generate (the pre-agentic behaviour).
 
     Args:
         text: Natural language CTI query.
@@ -115,6 +143,44 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
     query_result = query(text, top_k=k, history=history)
     gen: Generator = _default_generator()  # type: ignore[assignment]
     return gen.generate(text, query_result)
+
+
+def agentic_answer(text: str) -> AgenticAnswer:
+    """Answer a CTI question via the agentic loop (workflow->agentic): adaptive
+    retrieve -> assess sufficiency -> retrieve more -> synthesize. Reuses the
+    single-shot retrieval pipeline as the agent's `retrieve` tool and the knowledge
+    graph as graph tools; citations are validated against the gathered evidence and
+    conflicts are surfaced. Graph tools degrade to no-ops when Neo4j is disabled
+    (empty NEO4J_PASSWORD) so the loop still runs vector-only."""
+    from typing import cast
+
+    from rag_cti.bootstrap import build_deepseek_client, load_ontology_nodes
+    from rag_cti.knowledge.agent_graph import build_model
+    from rag_cti.knowledge.agentic_graph import build_judge, run_agentic_answer
+    from rag_cti.knowledge.agentic_nodes import GeneratorProto
+    from rag_cti.knowledge.fact_store import FactStoreProto
+
+    settings = get_settings()
+    pipeline = _default_pipeline()
+
+    def run_retrieve(query_text: str, top_k: int) -> QueryResult:
+        return pipeline.run(query_text, top_k=top_k)
+
+    fact_store = (
+        cast(FactStoreProto, _default_fact_store())
+        if settings.neo4j_password.get_secret_value()
+        else None
+    )
+    return run_agentic_answer(
+        text,
+        settings=settings,
+        run_retrieve=run_retrieve,
+        fact_store=fact_store,
+        ontology_nodes=load_ontology_nodes(),
+        generator=cast(GeneratorProto, _default_generator()),
+        chat_model=build_model(settings),
+        judge=build_judge(build_deepseek_client(settings), settings.agentic_verifier_model),
+    )
 
 
 @lru_cache(maxsize=1)
