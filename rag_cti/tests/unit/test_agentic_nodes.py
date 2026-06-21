@@ -5,10 +5,20 @@ from __future__ import annotations
 import json
 import time
 
+from langchain_core.messages import ToolMessage
+
 from rag_cti.knowledge import agentic_nodes as nodes
 from rag_cti.knowledge.agentic_state import AgenticAnswer, SufficiencyVerdict
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
-from rag_cti.types import Chunk, FactRow, GeneratedAnswer, QueryResult, RetrievalResult
+from rag_cti.types import (
+    Chunk,
+    FactRow,
+    GeneratedAnswer,
+    GraphOutline,
+    OutlineEntry,
+    QueryResult,
+    RetrievalResult,
+)
 
 
 def _result(cid: str, score: float = 0.9, content: str = "body") -> RetrievalResult:
@@ -476,9 +486,11 @@ class _ScriptedModel:
     def __init__(self, responses: list[_FakeAI]) -> None:
         self._responses = list(responses)
         self.invoke_count = 0
+        self.seen_inputs: list[list] = []
 
     def invoke(self, messages: list) -> _FakeAI:
         self.invoke_count += 1
+        self.seen_inputs.append(list(messages))
         return self._responses.pop(0)
 
 
@@ -570,3 +582,184 @@ def test_run_gather_loop_catches_model_error_and_reports_via_callback() -> None:
     assert model.invoke_count == 1  # tried once, did not retry-storm
     assert isinstance(seen[0], _BoomError)  # reported via callback, NOT propagated
     assert msgs == [("user", "q")]  # partial transcript returned, no crash
+
+
+# --- render_state_view + per-turn state injection (env perception, Iter1) ------
+
+
+def _outline(entity_id: str, name: str, *entries: tuple[str, str, int]) -> GraphOutline:
+    return GraphOutline(
+        entity_id=entity_id,
+        entity_name=name,
+        entity_type="actor",
+        outgoing=tuple(
+            OutlineEntry(predicate=p, other_type=o, count=c, max_credibility=0.9)
+            for p, o, c in entries
+        ),
+    )
+
+
+def test_render_state_view_empty_ledger_is_blank() -> None:
+    assert nodes.render_state_view(EvidenceLedger()) == ""
+
+
+def test_render_state_view_marks_complete_category() -> None:
+    led = EvidenceLedger()
+    led.add_outline(_outline("actor_G0016", "APT29", ("uses", "technique", 2)))
+    led.add_facts((_row("f1"), _row("f2")))  # 2 facts == count -> COMPLETE
+    view = nodes.render_state_view(led)
+    assert "APT29 (actor_G0016): resolved" in view
+    assert "COMPLETE (do NOT graph_query again): uses->technique 2/2" in view
+    assert "open categories" not in view
+
+
+def test_render_state_view_lists_open_and_zero_categories() -> None:
+    led = EvidenceLedger()
+    led.add_outline(
+        _outline("actor_G0016", "APT29", ("uses", "technique", 3), ("targets", "country", 5))
+    )
+    led.add_facts((_row("f1"), _row("f2")))  # 2/3 uses->technique; 0/5 targets->country
+    view = nodes.render_state_view(led)
+    assert "uses->technique 2/3" in view
+    assert "targets->country 0/5" in view
+    assert "open categories" in view
+    # nothing reached its total -> no per-category COMPLETE line (header word doesn't count)
+    assert "COMPLETE (do NOT graph_query again)" not in view
+
+
+def test_render_state_view_reports_prose() -> None:
+    view = nodes.render_state_view(_ledger_with_chunks(_result("c1"), _result("c2")))
+    assert "prose: 2 chunks from otx" in view
+
+
+def test_run_gather_loop_injects_fresh_state_view_at_end_each_turn() -> None:
+    model = _ScriptedModel(
+        [
+            _FakeAI([{"name": "graph_query", "args": {}, "id": "t1"}]),
+            _FakeAI([], content="stop"),
+        ]
+    )
+    states = iter(["STATE-1", "STATE-2"])
+    convo = nodes.run_gather_loop(
+        model,
+        lambda n, a: {"ok": 1},
+        [("user", "q")],
+        max_steps=8,
+        render_state=lambda: next(states),
+    )
+    # fresh state view appended LAST on each turn (high-attention end position)
+    assert model.seen_inputs[0][-1] == ("user", "STATE-1")
+    assert model.seen_inputs[1][-1] == ("user", "STATE-2")
+    # ephemeral: never persisted into the returned transcript (no stale accumulation)
+    assert ("user", "STATE-1") not in convo
+    assert ("user", "STATE-2") not in convo
+
+
+def test_run_gather_loop_empty_state_view_is_not_injected() -> None:
+    model = _ScriptedModel([_FakeAI([], content="done")])
+    nodes.run_gather_loop(
+        model, lambda n, a: {}, [("user", "q")], max_steps=8, render_state=lambda: ""
+    )
+    assert model.seen_inputs[0] == [("user", "q")]  # "" => no injection, input == convo
+
+
+# --- action log + tool_call_count telemetry (Iter2) ----------------------------
+
+
+def test_render_action_log_empty_is_blank() -> None:
+    assert nodes.render_action_log(EvidenceLedger()) == ""
+
+
+def test_render_action_log_formats_calls() -> None:
+    led = EvidenceLedger()
+    led.add_action("resolve_entity", {"name": "APT29"})
+    led.add_action("graph_query", {"subject_id": "actor_G0016", "predicate": "uses"})
+    log = nodes.render_action_log(led)
+    assert "ACTIONS ALREADY TAKEN" in log
+    assert "resolve_entity(name=APT29)" in log
+    assert "graph_query(predicate=uses, subject_id=actor_G0016)" in log
+
+
+def test_render_action_log_respects_limit_most_recent_last() -> None:
+    led = EvidenceLedger()
+    for i in range(5):
+        led.add_action("retrieve", {"query": f"q{i}"})
+    log = nodes.render_action_log(led, limit=2)
+    assert "q3" in log  # only the last 2 kept
+    assert "q4" in log
+    assert "q0" not in log
+    assert "q2" not in log
+
+
+def test_build_agentic_answer_reports_tool_call_count() -> None:
+    led = EvidenceLedger()
+    led.add_action("resolve_entity", {"name": "APT29"})
+    led.add_action("graph_query", {"subject_id": "s1"})
+    gen = GeneratedAnswer(
+        query="q",
+        answer="answer",
+        cited_chunk_ids=[],
+        query_result=QueryResult(query="q", results=[], total_retrieved=0, retrieval_ms=0.0),
+        generation_ms=0.0,
+        model="x",
+    )
+    ans = nodes.build_agentic_answer(
+        "q", gen, led, iteration_count=1, tokens_used=10, stop_reason="sufficient"
+    )
+    assert ans.tool_call_count == 2
+
+
+# --- within-burst observation masking (Iter3, eval-gated removal) --------------
+
+
+def test_mask_stale_observations_disabled_returns_same_list() -> None:
+    msgs = [ToolMessage(content="a", tool_call_id="t1")]
+    assert nodes.mask_stale_observations(msgs, 0) is msgs  # 0 => no copy, no change
+
+
+def test_mask_stale_observations_noop_when_within_keep() -> None:
+    msgs = [
+        ToolMessage(content="a", tool_call_id="t1"),
+        ToolMessage(content="b", tool_call_id="t2"),
+    ]
+    assert nodes.mask_stale_observations(msgs, 5) is msgs  # <= keep_last => unchanged
+
+
+def test_mask_stale_observations_masks_old_keeps_recent_and_ids() -> None:
+    msgs = [
+        ("user", "q"),
+        ToolMessage(content="obs1", tool_call_id="t1"),
+        ToolMessage(content="obs2", tool_call_id="t2"),
+        ToolMessage(content="obs3", tool_call_id="t3"),
+    ]
+    out = nodes.mask_stale_observations(msgs, keep_last=2)
+    assert out[1].content == nodes._TRIMMED_STUB  # oldest masked
+    assert out[1].tool_call_id == "t1"  # id preserved for pairing
+    assert out[2].content == "obs2"  # last 2 intact
+    assert out[3].content == "obs3"
+    assert out[0] == ("user", "q")  # non-tool message untouched
+    assert msgs[1].content == "obs1"  # input not mutated
+
+
+def test_run_gather_loop_masks_stale_observations_in_model_input() -> None:
+    model = _ScriptedModel(
+        [
+            _FakeAI(
+                [
+                    {"name": "retrieve", "args": {}, "id": "t1"},
+                    {"name": "retrieve", "args": {}, "id": "t2"},
+                    {"name": "retrieve", "args": {}, "id": "t3"},
+                ]
+            ),
+            _FakeAI([], content="stop"),
+        ]
+    )
+    convo = nodes.run_gather_loop(
+        model, lambda n, a: {"r": 1}, [("user", "q")], max_steps=8, keep_last_observations=1
+    )
+    turn2 = model.seen_inputs[1]  # second turn's model input
+    tool_msgs = [m for m in turn2 if isinstance(m, ToolMessage)]
+    assert len(tool_msgs) == 3  # all kept (pairing intact)
+    assert sum(m.content == nodes._TRIMMED_STUB for m in tool_msgs) == 2  # 2 oldest masked
+    # the persistent transcript keeps the real observations (masking is input-only)
+    assert sum(isinstance(m, ToolMessage) and m.content == "{'r': 1}" for m in convo) == 3

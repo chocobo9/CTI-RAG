@@ -129,3 +129,31 @@ def test_merge_fact_collision_dedups_by_fact_id() -> None:
     branch.add_facts((_row("f1"),))
     master.merge(branch)
     assert set(master.facts) == {"f1"}
+
+
+def test_add_action_records_name_and_compact_sorted_args() -> None:
+    led = EvidenceLedger()
+    led.add_action(
+        "graph_query",
+        {"subject_id": "actor_G0016", "predicate": "uses", "object_type": "technique"},
+    )
+    led.add_action("resolve_entity", {"name": "APT29"})
+    assert len(led.actions) == 2
+    assert led.actions[0].name == "graph_query"
+    assert led.actions[0].args == "object_type=technique, predicate=uses, subject_id=actor_G0016"
+    assert led.actions[1].args == "name=APT29"
+
+
+def test_add_action_truncates_long_values() -> None:
+    led = EvidenceLedger()
+    led.add_action("retrieve", {"query": "x" * 100, "top_k": 10})
+    assert "…" in led.actions[0].args
+    assert led.actions[0].args.startswith("query=" + "x" * 60)
+
+
+def test_merge_carries_actions_across_branches() -> None:
+    master, branch = EvidenceLedger(), EvidenceLedger()
+    master.add_action("graph_query", {"subject_id": "s1"})
+    branch.add_action("retrieve", {"query": "q"})
+    master.merge(branch)
+    assert [r.name for r in master.actions] == ["graph_query", "retrieve"]

@@ -179,6 +179,26 @@ class Settings(BaseSettings):
     # The answer can only cite what reaches synthesis, so this is sized to fit the context
     # window, not an arbitrary small number. Facts are fed in full (no cap).
     agentic_synthesis_top_k: int = 50
+    # Environment-perception: inject a deterministic, fresh-each-turn "gathered state" view
+    # (entities resolved, which graph categories are COMPLETE vs open with counts, prose
+    # held) at the high-attention end of each gather turn, so the model can SEE what it
+    # already has instead of re-deriving it from scattered bounded tool summaries (the
+    # over-calling driver). ON: eval (relationship_direct x10) showed GATHERED recall
+    # IDENTICAL (R=0.826) with tokens_mean -37% and redundant graph re-queries gone; the
+    # cited-F1 dip (0.618->0.574) is within synthesis nondeterminism and accepted.
+    agentic_state_view_enabled: bool = True
+    # Surface a fresh "actions already taken" log (tool name + compact args) to the model
+    # each turn, so it sees it already called e.g. resolve_entity(name=APT29) and skips an
+    # identical repeat. Complements the state view ("what I have" + "what I did"). Tool
+    # calls are ALWAYS recorded (the answer's tool_call_count); this flag only controls
+    # whether the log is shown to the model. Off until eval proves recall/F1 not worse.
+    agentic_action_log_enabled: bool = False
+    # Within-burst context trimming: when > 0, mask all but the most-recent N ToolMessage
+    # contents in the model input each turn (their essence is in the state view), cutting
+    # the growing-context latency. 0 = disabled (full transcript, current behavior). This
+    # is a REMOVAL of context the model used to see, so it stays 0 until eval PROVES the
+    # win: recall/F1 unchanged-or-better AND tokens/latency/tool_calls down (else revert).
+    agentic_keep_last_observations: int = 0
 
     # Multi-agent supervisor (compound / parallelizable queries). Opt-in layer ABOVE the
     # single-agent agentic loop: a decompose step splits a genuinely parallel question into

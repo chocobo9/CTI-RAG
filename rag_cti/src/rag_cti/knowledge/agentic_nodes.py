@@ -73,6 +73,29 @@ class GeneratorProto(Protocol):
 # inner gather loop — GATHER-only ReAct burst (no answer; the ledger is the output)
 # ---------------------------------------------------------------------------
 
+_TRIMMED_STUB = "[observation trimmed — see GATHERED STATE]"
+
+
+def mask_stale_observations(messages: list[Any], keep_last: int) -> list[Any]:
+    """Return a copy of the model-input messages with every ToolMessage CONTENT except the
+    most recent ``keep_last`` replaced by a stub. The ToolMessage objects (and their
+    tool_call_ids) are KEPT so the AIMessage(tool_calls)->ToolMessage pairing the chat API
+    requires stays intact; only the stale observation TEXT is dropped — its gathered
+    essence is carried by the fresh state view + action log. ``keep_last <= 0`` disables
+    (returns ``messages`` unchanged). Never mutates the input list."""
+    from langchain_core.messages import ToolMessage
+
+    if keep_last <= 0:
+        return messages
+    tool_idxs = [i for i, m in enumerate(messages) if isinstance(m, ToolMessage)]
+    if len(tool_idxs) <= keep_last:
+        return messages
+    stale = set(tool_idxs[:-keep_last])
+    return [
+        m.model_copy(update={"content": _TRIMMED_STUB}) if i in stale else m
+        for i, m in enumerate(messages)
+    ]
+
 
 def run_gather_loop(
     model: Any,
@@ -82,6 +105,8 @@ def run_gather_loop(
     max_steps: int,
     deadline: float | None = None,
     on_model_error: Callable[[BaseException], None] | None = None,
+    render_state: Callable[[], str] | None = None,
+    keep_last_observations: int = 0,
 ) -> list[Any]:
     """Drive a GATHER-only tool loop and return the accumulated message transcript.
 
@@ -107,8 +132,19 @@ def run_gather_loop(
     for _ in range(max_steps):
         if deadline is not None and time.monotonic() >= deadline:
             break  # wall-clock budget spent mid-burst -> stop with what we have
+        # Build the model-input copy: optionally mask stale ToolMessage contents (their
+        # essence lives in the state view) to cut growing-context latency, then append the
+        # ephemeral, end-positioned "what you already have" state view. The persistent
+        # `convo` is NEVER mutated, so the returned transcript and token accounting stay
+        # exact. keep_last_observations<=0 => no masking; render_state()=="" => no inject.
+        base = mask_stale_observations(convo, keep_last_observations)
+        turn_input = base
+        if render_state is not None:
+            state = render_state()
+            if state:
+                turn_input = base + [("user", state)]
         try:
-            ai = model.invoke(convo)
+            ai = model.invoke(turn_input)
         except Exception as exc:  # provider failure: end the burst, keep the partial ledger
             logger.warning("gather model call failed, ending burst", error=str(exc))
             if on_model_error is not None:
@@ -354,6 +390,60 @@ def build_turn_messages(
     return messages
 
 
+def render_state_view(ledger: EvidenceLedger) -> str:
+    """Deterministic 'what you already have' coverage view, rebuilt from the ledger and
+    injected fresh each gather turn so the model can SEE its accumulated state — which
+    entities are resolved, which graph categories are already COMPLETE vs still open (with
+    gathered/total counts from the outlines), and how much prose it holds — instead of
+    re-deriving it from scattered bounded tool summaries. The ledger holds the truth the
+    summaries never showed the model; this surfaces a faithful index of it. The outline's
+    per-category ``count`` is the graph TOTAL; a category whose gathered facts reach that
+    total is COMPLETE (re-querying it adds nothing). Empty ledger -> '' (nothing yet)."""
+    if not ledger.facts and not ledger.outlines and not ledger.chunks:
+        return ""
+    entities: dict[str, str] = {o.entity_id: o.entity_name for o in ledger.outlines.values()}
+    for f in ledger.facts.values():
+        entities.setdefault(f.subject_id, f.subject_name)
+    gathered: Counter[tuple[str, str, str]] = Counter(
+        (f.subject_id, f.predicate, f.object_type) for f in ledger.facts.values()
+    )
+    lines: list[str] = [
+        "GATHERED STATE (refreshed each turn — do NOT re-collect what is marked COMPLETE):"
+    ]
+    for entity_id, name in sorted(entities.items(), key=lambda kv: kv[1]):
+        lines.append(f"- {name} ({entity_id}): resolved.")
+        outline = ledger.outlines.get(entity_id)
+        if outline is None:
+            continue
+        complete: list[str] = []
+        open_cats: list[str] = []
+        for e in outline.outgoing:
+            g = gathered.get((entity_id, e.predicate, e.other_type), 0)
+            label = f"{e.predicate}->{e.other_type} {g}/{e.count}"
+            (complete if e.count > 0 and g >= e.count else open_cats).append(label)
+        if complete:
+            lines.append("    COMPLETE (do NOT graph_query again): " + ", ".join(complete))
+        if open_cats:
+            lines.append("    open categories (query only if relevant): " + ", ".join(open_cats))
+    if ledger.chunks:
+        sources = sorted({r.document.source for r in ledger.chunks.values()})
+        lines.append(f"- prose: {len(ledger.chunks)} chunks from {', '.join(sources)}.")
+    return "\n".join(lines)
+
+
+def render_action_log(ledger: EvidenceLedger, limit: int = 30) -> str:
+    """The model-facing 'what I already did' view: one line per dispatched tool call (name
+    + compact args), most-recent last, bounded to the last ``limit`` so the block stays
+    small. Lets the model see it already called e.g. resolve_entity(name=APT29) and skip an
+    identical repeat — the amnesia / duplicate-work mitigation. Empty log -> ''."""
+    if not ledger.actions:
+        return ""
+    recent = ledger.actions[-limit:]
+    lines = ["ACTIONS ALREADY TAKEN (do NOT repeat an identical call):"]
+    lines += [f"- {a.name}({a.args})" for a in recent]
+    return "\n".join(lines)
+
+
 # ---------------------------------------------------------------------------
 # synthesize + citation guarantee + final assembly
 # ---------------------------------------------------------------------------
@@ -468,4 +558,5 @@ def build_agentic_answer(
         tokens_used=tokens_used,
         stop_reason=stop_reason,
         dropped_citation_count=dropped,
+        tool_call_count=len(ledger.actions),
     )

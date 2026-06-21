@@ -193,10 +193,14 @@ def build_agentic_graph(
     tools_by_name = {t.name: t for t in tools}
 
     def dispatch(name: str, args: dict[str, Any]) -> Any:
-        """Run a tool by name (tools side-effect the ledger); used by the gather loop."""
+        """Run a tool by name (tools side-effect the ledger); used by the gather loop.
+
+        Records every valid dispatch on the ledger action log — the model-facing 'what I
+        already did' view (when shown) AND the exact tool-call count on the answer."""
         tool = tools_by_name.get(name)
         if tool is None:
             return {"error": f"unknown tool {name}"}
+        ledger.add_action(name, args)
         return tool.invoke(args)
 
     def agent_turn(state: _AgentState) -> dict[str, Any]:
@@ -209,6 +213,22 @@ def build_agentic_graph(
         before_facts = len(ledger.facts)
         before = before_facts + len(ledger.chunks)
         errors: list[BaseException] = []
+
+        def _render_context() -> str:
+            # One end-of-turn block carrying BOTH "what I have" (state view) and "what I
+            # already did" (action log), each independently flag-gated; "" => not injected.
+            blocks: list[str] = []
+            if settings.agentic_state_view_enabled:
+                blocks.append(agentic_nodes.render_state_view(ledger))
+            if settings.agentic_action_log_enabled:
+                blocks.append(agentic_nodes.render_action_log(ledger))
+            return "\n\n".join(b for b in blocks if b)
+
+        render_state = (
+            _render_context
+            if (settings.agentic_state_view_enabled or settings.agentic_action_log_enabled)
+            else None
+        )
         out_messages = agentic_nodes.run_gather_loop(
             model_with_tools,
             dispatch,
@@ -216,6 +236,8 @@ def build_agentic_graph(
             max_steps=settings.agentic_max_inner_steps,
             deadline=deadline,
             on_model_error=errors.append,
+            render_state=render_state,
+            keep_last_observations=settings.agentic_keep_last_observations,
         )
         # GATHER-only: synthesize produces the answer over the ledger, so no draft to carry.
         # out_messages is just THIS burst now (not carried), so _sum_tokens(out_messages) is

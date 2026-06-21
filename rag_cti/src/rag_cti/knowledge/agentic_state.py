@@ -80,6 +80,9 @@ class AgenticAnswer(BaseModel, frozen=True):
         ""  # sufficient | max_rounds | no_progress | timeout | budget | parse_fallback
     )
     dropped_citation_count: int = 0
+    # Total tool calls the gather loop dispatched (len of the ledger action log) — the
+    # exact over-calling metric the eval gate reads; 0 when the action log is unused.
+    tool_call_count: int = 0
     # Multi-agent supervisor telemetry (0 / False on the single-agent path).
     branch_count: int = 0
     decomposed: bool = False

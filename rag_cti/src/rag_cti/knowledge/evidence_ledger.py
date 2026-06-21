@@ -14,8 +14,19 @@ Mutable by design: one ledger per ``agentic_answer`` invocation, never shared.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from rag_cti.types import FactRow, GraphOutline, QueryResult, RetrievalResult
+
+
+@dataclass(frozen=True)
+class ActionRecord:
+    """One tool call the gather loop already dispatched — its name + a compact, value-
+    truncated arg string — so the model can be shown 'what I already did' and skip an
+    identical repeat (the documented amnesia / duplicate-work mitigation)."""
+
+    name: str
+    args: str
 
 
 @dataclass
@@ -25,6 +36,7 @@ class EvidenceLedger:
     chunks: dict[str, RetrievalResult] = field(default_factory=dict)
     facts: dict[str, FactRow] = field(default_factory=dict)
     outlines: dict[str, GraphOutline] = field(default_factory=dict)
+    actions: list[ActionRecord] = field(default_factory=list)
 
     def add_query_result(self, qr: QueryResult) -> int:
         """Union retrieved chunks by chunk id (keep the higher-scoring duplicate).
@@ -56,6 +68,18 @@ class EvidenceLedger:
         """Record a coverage map (a sufficiency *hint*, not citable evidence)."""
         self.outlines[outline.entity_id] = outline
 
+    def add_action(self, name: str, args: dict[str, Any]) -> None:
+        """Record a dispatched tool call as its name + a compact, value-truncated arg
+        string (sorted keys). The recorded log is the model-facing 'what I already did'
+        view (render_action_log) AND the exact tool-call count surfaced on the answer."""
+        parts: list[str] = []
+        for key in sorted(args):
+            value = str(args[key])
+            if len(value) > 60:
+                value = value[:60] + "…"
+            parts.append(f"{key}={value}")
+        self.actions.append(ActionRecord(name=name, args=", ".join(parts)))
+
     def merge(self, other: EvidenceLedger) -> None:
         """Fold another ledger into this one — used to combine N parallel branch ledgers
         into a single master ledger for ONE grounded synthesis. Reuses the existing union
@@ -74,6 +98,7 @@ class EvidenceLedger:
         self.add_facts(tuple(other.facts.values()))
         for outline in other.outlines.values():
             self.add_outline(outline)
+        self.actions.extend(other.actions)
 
     @property
     def real_id_set(self) -> frozenset[str]:

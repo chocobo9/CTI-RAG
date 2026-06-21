@@ -69,6 +69,9 @@ def _settings() -> SimpleNamespace:
         agentic_max_retrieve_rounds=2,
         agentic_max_wall_seconds=180.0,
         agentic_synthesis_top_k=50,
+        agentic_state_view_enabled=False,
+        agentic_action_log_enabled=False,
+        agentic_keep_last_observations=0,
     )
 
 
