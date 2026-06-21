@@ -33,6 +33,36 @@ class SufficiencyVerdict(BaseModel, frozen=True):
     suggested_graph_targets: tuple[tuple[str, str | None, str | None], ...] = ()
 
 
+class SubQuestion(BaseModel, frozen=True):
+    """One independent branch of a decomposed compound question. ``focus_entity`` is
+    the CTI name the branch centers on (e.g. "APT29"); ``facet`` names the aspect when
+    a single entity is split by aspect (e.g. "ttps" | "infrastructure" | "targets")."""
+
+    sub_question: str
+    focus_entity: str | None = None
+    facet: str | None = None
+
+
+class BranchReport(BaseModel, frozen=True):
+    """One worker sub-agent's self-contained REPORT, handed up to the Composer. Carries
+    the worker's own grounded ``sub_answer`` plus the structured ``techniques`` set (so
+    the Composer can do union/intersection over facts, not lossy prose) and the validated
+    ``cited_ids`` (the Composer's citations inherit from these; the deterministic guard
+    validates against their union). The branch's full EvidenceLedger is kept separately
+    for that union — NOT stored on this frozen record."""
+
+    sub_question: str
+    focus_entity: str | None = None
+    sub_answer: str = ""
+    techniques: tuple[tuple[str, str, str], ...] = ()  # (attack_id, name, fact_id)
+    cited_ids: tuple[str, ...] = ()
+    n_facts: int = 0
+    n_chunks: int = 0
+    stop_reason: str = ""
+    tokens_used: int = 0
+    iteration_count: int = 0
+
+
 class AgenticAnswer(BaseModel, frozen=True):
     """Public result of the agentic loop. ``query_result`` is the ledger-union so it
     stays RAGAS-compatible; ``cited_ids`` are validated against the ledger (the
@@ -46,5 +76,10 @@ class AgenticAnswer(BaseModel, frozen=True):
     conflicts: tuple[FactRow, ...] = ()
     iteration_count: int = 0
     tokens_used: int = 0
-    stop_reason: str = ""  # sufficient | max_rounds | no_progress | timeout | budget | parse_fallback
+    stop_reason: str = (
+        ""  # sufficient | max_rounds | no_progress | timeout | budget | parse_fallback
+    )
     dropped_citation_count: int = 0
+    # Multi-agent supervisor telemetry (0 / False on the single-agent path).
+    branch_count: int = 0
+    decomposed: bool = False

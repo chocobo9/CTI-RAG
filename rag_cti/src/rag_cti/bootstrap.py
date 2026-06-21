@@ -143,26 +143,44 @@ def build_eval_pipeline(
     )
 
 
-def build_deepseek_client(settings: Any, max_retries: int = 5, timeout: float = 120) -> Any:
-    """OpenAI-compatible DeepSeek client. Raises when DEEPSEEK_API_KEY is unset."""
+def build_deepseek_client(settings: Any, max_retries: int = 1, timeout: float | None = None) -> Any:
+    """OpenAI-compatible DeepSeek client. Raises when DEEPSEEK_API_KEY is unset.
+
+    ``max_retries=1`` keeps this a fast-fail client: generation wraps it in
+    ``FallbackChatClient`` (model-downgrade is the cross-call retry authority) and the
+    judge fails closed rather than hang, so a high per-call retry count only amplifies a
+    429. ``timeout`` defaults to ``settings.deepseek_request_timeout`` (bounds one request)."""
     from openai import OpenAI
 
     key = settings.deepseek_api_key.get_secret_value()
     if not key:
         raise RuntimeError("DEEPSEEK_API_KEY not set — cannot build a DeepSeek client")
-    return OpenAI(base_url=DEEPSEEK_BASE_URL, api_key=key, max_retries=max_retries, timeout=timeout)
+    request_timeout = (
+        timeout if timeout is not None else getattr(settings, "deepseek_request_timeout", 60.0)
+    )
+    return OpenAI(
+        base_url=DEEPSEEK_BASE_URL, api_key=key, max_retries=max_retries, timeout=request_timeout
+    )
 
 
-def build_qwen_client(settings: Any, max_retries: int = 5, timeout: float = 120) -> Any:
+def build_qwen_client(settings: Any, max_retries: int = 1, timeout: float | None = None) -> Any:
     """OpenAI-compatible Qwen (Alibaba DashScope) client. Raises when QWEN_API_KEY is unset.
 
     Used for the independent sufficiency judge (a different model family from the DeepSeek
-    gatherer). Base URL is region-specific (see ``Settings.qwen_base_url``)."""
+    gatherer). Base URL is region-specific (see ``Settings.qwen_base_url``). ``max_retries=1``
+    /``timeout`` mirror :func:`build_deepseek_client` — fast-fail so a 429 cannot hang the
+    judge."""
     from openai import OpenAI
 
     key = settings.qwen_api_key.get_secret_value()
     if not key:
         raise RuntimeError("QWEN_API_KEY not set — cannot build a Qwen client")
+    request_timeout = (
+        timeout if timeout is not None else getattr(settings, "deepseek_request_timeout", 60.0)
+    )
     return OpenAI(
-        base_url=settings.qwen_base_url, api_key=key, max_retries=max_retries, timeout=timeout
+        base_url=settings.qwen_base_url,
+        api_key=key,
+        max_retries=max_retries,
+        timeout=request_timeout,
     )

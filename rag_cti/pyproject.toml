@@ -137,6 +137,9 @@ omit = [
     # Agentic answer loop wiring (workflow->agentic); pure logic in agentic_nodes/
     # evidence_ledger IS unit-tested. This file is langgraph/langchain wiring, e2e-verified.
     "*/rag_cti/knowledge/agentic_graph.py",
+    # Multi-agent supervisor wiring; pure logic in supervisor_nodes IS unit-tested. This
+    # file is the langgraph branch-invoke + decompose-client wiring, e2e-verified.
+    "*/rag_cti/knowledge/supervisor_graph.py",
 ]
 
 [tool.ruff]

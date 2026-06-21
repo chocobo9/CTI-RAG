@@ -14,9 +14,11 @@ Behaviour:
 
 from __future__ import annotations
 
+import atexit
 import functools
 import os
 import re
+import threading
 from collections.abc import Callable
 from typing import Any, Literal, TypeVar, cast
 
@@ -71,6 +73,14 @@ def _setup_env_once() -> None:
             os.environ["LANGCHAIN_API_KEY"] = key
         os.environ.setdefault("LANGCHAIN_TRACING_V2", "true" if s.langchain_tracing_v2 else "false")
         os.environ.setdefault("LANGCHAIN_PROJECT", s.langsmith_project)
+        # Default the submission to synchronous-but-bounded (background=false) so a
+        # tracing-side 429 cannot leave a background queue blocking process exit; bound
+        # the worst case further with an atexit flush (abandoned after its own timeout).
+        os.environ.setdefault(
+            "LANGCHAIN_CALLBACKS_BACKGROUND",
+            "true" if s.langchain_callbacks_background else "false",
+        )
+        atexit.register(flush_tracers)
     except Exception as exc:
         logger.warning("langsmith env setup failed", error=str(exc))
 
@@ -117,6 +127,27 @@ def traced(
             return fn
 
     return decorator
+
+
+def flush_tracers(timeout: float = 5.0) -> None:
+    """Best-effort, time-bounded flush of pending LangSmith traces.
+
+    No-op when tracing is disabled. Never raises and never blocks longer than ``timeout``:
+    the SDK's blocking ``wait_for_all_tracers`` runs in a daemon thread we only join for
+    ``timeout`` seconds, so a tracing-side 429 (which would otherwise retry on the
+    background queue) cannot hang process exit — the daemon thread is abandoned at exit.
+    Registered via ``atexit`` when tracing is enabled."""
+    if not is_tracing_enabled():
+        return
+    try:
+        # Canonical, version-stable location (langsmith dropped the top-level re-export).
+        from langchain_core.tracers.langchain import wait_for_all_tracers
+
+        worker = threading.Thread(target=wait_for_all_tracers, daemon=True)
+        worker.start()
+        worker.join(timeout)
+    except Exception as exc:
+        logger.debug("flush_tracers failed", error=str(exc))
 
 
 def add_trace_metadata(**kwargs: Any) -> None:

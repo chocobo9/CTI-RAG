@@ -37,7 +37,12 @@ Principles (not a sequence):
 
 
 def build_model(settings: Settings) -> Any:
-    """DeepSeek (OpenAI-compatible) chat model bound for tool calling; temperature 0."""
+    """DeepSeek (OpenAI-compatible) chat model bound for tool calling; temperature 0.
+
+    ``max_retries`` / ``timeout`` are set explicitly (LangChain's default is max_retries=2
+    with NO timeout — an unbounded hang source for the gather/judge model under a stalled
+    or rate-limited provider). Bounded here so a persistent 429 fails fast into the loop's
+    graceful-degradation path instead of stalling a gather burst."""
     from langchain_openai import ChatOpenAI
 
     return ChatOpenAI(
@@ -45,6 +50,8 @@ def build_model(settings: Settings) -> Any:
         base_url="https://api.deepseek.com",
         api_key=settings.deepseek_api_key,
         temperature=0,
+        max_retries=settings.llm_max_retries,
+        timeout=settings.deepseek_request_timeout,
     )
 
 

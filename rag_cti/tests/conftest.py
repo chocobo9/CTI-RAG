@@ -1,11 +1,23 @@
 from __future__ import annotations
 
+import time
 from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
 
 from rag_cti.types import Chunk, Document
+
+
+@pytest.fixture(autouse=True)
+def _no_retry_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Kill tenacity's exponential backoff in tests so a retry-exhaustion path runs in
+    ~0s instead of ~15s. tenacity 9's ``nap.sleep`` wrapper calls ``time.sleep`` at call
+    time (the controller holds the wrapper, so patching ``nap.sleep`` itself is a no-op),
+    so we patch ``time.sleep`` — the single point every backoff strategy routes through.
+    No unit test depends on real wall-clock sleep; deadline tests drive ``monotonic``
+    arithmetic directly. Production retry COUNTS are unchanged — only the waiting is."""
+    monkeypatch.setattr(time, "sleep", lambda *_a: None)
 
 
 @pytest.fixture

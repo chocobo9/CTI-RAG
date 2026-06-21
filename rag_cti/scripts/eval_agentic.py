@@ -75,6 +75,19 @@ def _agentic_techniques(answer: AgenticAnswer) -> list[str]:
     return out
 
 
+def _gathered_techniques(answer: AgenticAnswer) -> list[str]:
+    """ATT&CK ids the path GATHERED (all collected technique facts), regardless of whether
+    the final answer cited them. This isolates ENUMERATION COMPLETENESS (did parallel
+    branches collect more?) from synthesis-citation behaviour — the cited-technique metric
+    is unreliable on prose comparison answers (bimodal/zero), so gathered-recall is the
+    cleaner read on whether the multi-agent mechanism actually works."""
+    return [
+        fact.object_id.removeprefix("technique_")
+        for fact in answer.collected_facts
+        if fact.object_type == "technique"
+    ]
+
+
 def _to_generated(answer: AgenticAnswer) -> GeneratedAnswer:
     """AgenticAnswer -> GeneratedAnswer so RAGAS (which reads query/answer/contexts)
     scores both paths through the same harness."""
@@ -107,6 +120,11 @@ def main() -> None:
     parser.add_argument("--categories", nargs="+", default=["relationship_direct"])
     parser.add_argument("--per-category", type=int, default=3)
     parser.add_argument("--ragas", action="store_true", help="also run RAGAS faithfulness (slow)")
+    parser.add_argument(
+        "--supervised",
+        action="store_true",
+        help="also run the multi-agent supervisor arm (compound queries; expensive)",
+    )
     args = parser.parse_args()
 
     configure_logging("INFO")
@@ -124,12 +142,22 @@ def main() -> None:
         flush=True,
     )
 
+    # Categories whose gold is a multi-label ATT&CK technique set scored with set-Micro-F1.
+    gold_scored = {"relationship_direct", "compound"}
+
     per_query: list[dict[str, object]] = []
     single_answers: list[GeneratedAnswer] = []
     agentic_answers: list[AgenticAnswer] = []
-    rd_gold: list[list[str]] = []
-    rd_single_pred: list[list[str]] = []
-    rd_agentic_pred: list[list[str]] = []
+    supervised_answers: list[AgenticAnswer] = []
+    # Per-category gold/pred so a mixed run (e.g. compound + relationship_direct for the
+    # no-regression check) is reported side by side, never averaged across categories.
+    gold_by_cat: dict[str, list[list[str]]] = defaultdict(list)
+    single_by_cat: dict[str, list[list[str]]] = defaultdict(list)
+    agentic_by_cat: dict[str, list[list[str]]] = defaultdict(list)
+    supervised_by_cat: dict[str, list[list[str]]] = defaultdict(list)
+    # gathered-technique sets (enumeration completeness, decoupled from citation)
+    agentic_gath_by_cat: dict[str, list[list[str]]] = defaultdict(list)
+    supervised_gath_by_cat: dict[str, list[list[str]]] = defaultdict(list)
 
     for i, rec in enumerate(chosen):
         print(f"[{i + 1}/{len(chosen)}] {rec.category}: {rec.query[:60]}", flush=True)
@@ -137,6 +165,9 @@ def main() -> None:
         agentic = rag_cti.agentic_answer(rec.query)
         single_answers.append(single)
         agentic_answers.append(agentic)
+        supervised = rag_cti.supervised_answer(rec.query) if args.supervised else None
+        if supervised is not None:
+            supervised_answers.append(supervised)
 
         entry: dict[str, object] = {
             "query_id": rec.query_id,
@@ -155,37 +186,72 @@ def main() -> None:
                 "dropped_citations": agentic.dropped_citation_count,
             },
         }
-        if rec.category == "relationship_direct" and rec.gold_attack_ids:
+        if supervised is not None:
+            entry["supervised"] = {
+                "answer_len": len(supervised.answer),
+                "decomposed": supervised.decomposed,
+                "branches": supervised.branch_count,
+                "tokens": supervised.tokens_used,
+                "stop": supervised.stop_reason,
+                "n_facts": len(supervised.collected_facts),
+                "dropped_citations": supervised.dropped_citation_count,
+            }
+
+        if rec.category in gold_scored and rec.gold_attack_ids:
             single_tech = _singleshot_techniques(single)
             agentic_tech = _agentic_techniques(agentic)
-            rd_gold.append(rec.gold_attack_ids)
-            rd_single_pred.append(single_tech)
-            rd_agentic_pred.append(agentic_tech)
-            entry["recall_eval"] = {
+            gold_by_cat[rec.category].append(rec.gold_attack_ids)
+            single_by_cat[rec.category].append(single_tech)
+            agentic_by_cat[rec.category].append(agentic_tech)
+            agentic_gath_by_cat[rec.category].append(_gathered_techniques(agentic))
+            recall_eval: dict[str, object] = {
                 "gold_n": len(set(rec.gold_attack_ids)),
                 "single_tech_n": len(set(single_tech)),
                 "agentic_tech_n": len(set(agentic_tech)),
+                "agentic_gathered_n": len(set(_gathered_techniques(agentic))),
             }
+            if supervised is not None:
+                supervised_tech = _agentic_techniques(supervised)
+                supervised_by_cat[rec.category].append(supervised_tech)
+                supervised_gath_by_cat[rec.category].append(_gathered_techniques(supervised))
+                recall_eval["supervised_tech_n"] = len(set(supervised_tech))
+                recall_eval["supervised_gathered_n"] = len(set(_gathered_techniques(supervised)))
+            entry["recall_eval"] = recall_eval
         per_query.append(entry)
 
     summary: dict[str, object] = {"n": len(chosen), "categories": args.categories}
 
-    if rd_gold:
-        single_prf = micro_f1(rd_gold, rd_single_pred, level="technique")
-        agentic_prf = micro_f1(rd_gold, rd_agentic_pred, level="technique")
-        summary["recall_relationship_direct"] = {
-            "n": len(rd_gold),
-            "single_shot": {
-                "P": round(single_prf.precision, 4),
-                "R": round(single_prf.recall, 4),
-                "F1": round(single_prf.f1, 4),
-            },
-            "agentic": {
-                "P": round(agentic_prf.precision, 4),
-                "R": round(agentic_prf.recall, 4),
-                "F1": round(agentic_prf.f1, 4),
-            },
+    def _prf(gold: list[list[str]], pred: list[list[str]]) -> dict[str, float]:
+        prf = micro_f1(gold, pred, level="technique")
+        return {"P": round(prf.precision, 4), "R": round(prf.recall, 4), "F1": round(prf.f1, 4)}
+
+    recall_by_cat: dict[str, object] = {}
+    for cat, golds in gold_by_cat.items():
+        cat_block: dict[str, object] = {
+            "n": len(golds),
+            "single_shot": _prf(golds, single_by_cat[cat]),
+            "agentic": _prf(golds, agentic_by_cat[cat]),
         }
+        if supervised_by_cat[cat]:
+            cat_block["supervised"] = _prf(golds, supervised_by_cat[cat])
+        recall_by_cat[cat] = cat_block
+    if recall_by_cat:
+        summary["recall_by_category"] = recall_by_cat
+
+    # Gathered-recall (enumeration completeness, decoupled from citation) — the clean read
+    # on whether the multi-agent mechanism actually collects more, when the cited metric is
+    # unreliable on prose comparison answers.
+    gathered_by_cat: dict[str, object] = {}
+    for cat, golds in gold_by_cat.items():
+        block: dict[str, object] = {
+            "n": len(golds),
+            "agentic": _prf(golds, agentic_gath_by_cat[cat]),
+        }
+        if supervised_gath_by_cat[cat]:
+            block["supervised"] = _prf(golds, supervised_gath_by_cat[cat])
+        gathered_by_cat[cat] = block
+    if gathered_by_cat:
+        summary["gathered_recall_by_category"] = gathered_by_cat
 
     summary["agentic_cost"] = {
         "iterations": dict(Counter(a.iteration_count for a in agentic_answers)),
@@ -196,6 +262,15 @@ def main() -> None:
             else 0
         ),
     }
+    if supervised_answers:
+        summary["supervised_cost"] = {
+            "decomposed": dict(Counter(a.decomposed for a in supervised_answers)),
+            "branches": dict(Counter(a.branch_count for a in supervised_answers)),
+            "stop_reason": dict(Counter(a.stop_reason for a in supervised_answers)),
+            "tokens_mean": round(
+                sum(a.tokens_used for a in supervised_answers) / len(supervised_answers)
+            ),
+        }
 
     if args.ragas:
         from rag_cti.evaluation.ragas_eval import run_ragas_eval
@@ -206,10 +281,19 @@ def main() -> None:
         agentic_ragas = run_ragas_eval(
             [_to_generated(a) for a in agentic_answers], config="agentic", settings=settings
         )
-        summary["faithfulness"] = {
+        faithfulness: dict[str, float] = {
             "single_shot": round(single_ragas.faithfulness, 4),
             "agentic": round(agentic_ragas.faithfulness, 4),
         }
+        if supervised_answers:
+            print("Running RAGAS faithfulness (supervised)...", flush=True)
+            supervised_ragas = run_ragas_eval(
+                [_to_generated(a) for a in supervised_answers],
+                config="supervised",
+                settings=settings,
+            )
+            faithfulness["supervised"] = round(supervised_ragas.faithfulness, 4)
+        summary["faithfulness"] = faithfulness
 
     print("\n" + json.dumps(summary, indent=2, ensure_ascii=False), flush=True)
     output_path = Path(args.output)

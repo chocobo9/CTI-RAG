@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+import os
+import threading
+import time
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 import rag_cti.observability.tracing as tracing_mod
-from rag_cti.observability.tracing import add_trace_metadata, is_tracing_enabled, redact, traced
+from rag_cti.observability.tracing import (
+    add_trace_metadata,
+    flush_tracers,
+    is_tracing_enabled,
+    redact,
+    traced,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -202,6 +211,58 @@ def test_add_trace_metadata_calls_add_metadata_on_run() -> None:
         add_trace_metadata(score=0.9, model="qwen2.5")
 
     mock_run.add_metadata.assert_called_once_with({"score": 0.9, "model": "qwen2.5"})
+    _reset_cache()
+
+
+# ---------------------------------------------------------------------------
+# flush_tracers + LANGCHAIN_CALLBACKS_BACKGROUND (exit-hang containment)
+# ---------------------------------------------------------------------------
+
+
+def test_flush_tracers_noop_when_disabled() -> None:
+    _reset_cache()
+    tracing_mod._TRACING_ENABLED = False
+    flush_tracers()  # must not raise, must not block
+    _reset_cache()
+
+
+def test_flush_tracers_is_time_bounded_when_enabled() -> None:
+    # A hung wait_for_all_tracers (simulating a tracing-side 429 retry storm) must not
+    # block flush_tracers beyond ~timeout — the daemon thread is abandoned. Uses
+    # Event.wait (NOT time.sleep, which the autouse fixture no-ops) for a real block.
+    _reset_cache()
+    tracing_mod._TRACING_ENABLED = True
+    release = threading.Event()
+
+    def _hang() -> None:
+        release.wait()
+
+    fake_mod = MagicMock()
+    fake_mod.wait_for_all_tracers = _hang
+    try:
+        with patch.dict("sys.modules", {"langchain_core.tracers.langchain": fake_mod}):
+            t0 = time.monotonic()
+            flush_tracers(timeout=0.2)
+            elapsed = time.monotonic() - t0
+        assert elapsed < 2.0  # bounded by timeout, not blocked on the hung flush
+    finally:
+        release.set()  # let the abandoned daemon thread exit
+        _reset_cache()
+
+
+def test_setup_env_sets_callbacks_background_false_from_settings() -> None:
+    _reset_cache()
+    with patch("rag_cti.observability.tracing.atexit.register"):
+        with patch("rag_cti.config.get_settings") as mock_settings:
+            s = mock_settings.return_value
+            s.langsmith_api_key.get_secret_value.return_value = "sk-test"
+            s.langchain_tracing_v2 = True
+            s.langsmith_project = "proj"
+            s.langchain_callbacks_background = False
+            with patch.dict("os.environ", {}, clear=False):
+                os.environ.pop("LANGCHAIN_CALLBACKS_BACKGROUND", None)
+                tracing_mod._setup_env_once()
+                assert os.environ.get("LANGCHAIN_CALLBACKS_BACKGROUND") == "false"
     _reset_cache()
 
 

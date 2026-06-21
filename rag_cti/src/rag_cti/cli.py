@@ -142,6 +142,34 @@ def agentic(
 
 
 @app.command()
+def supervised(
+    question: str = typer.Argument(..., help="Natural-language CTI question"),
+) -> None:
+    """Multi-agent supervisor answer: decompose a compound/parallel question (compare or
+    intersect multiple entities, multi-facet profile) into independent branches, gather
+    each in parallel by reusing the single-agent loop, then synthesize once over the
+    merged evidence. Dependent/simple questions degrade to the single agent (branches=1)."""
+    import rag_cti
+
+    ans = rag_cti.supervised_answer(question)
+    console.print(ans.answer)
+    console.print(
+        f"\n[dim]decomposed={ans.decomposed}  branches={ans.branch_count}  "
+        f"stop={ans.stop_reason}  cited={list(ans.cited_ids)}  "
+        f"dropped={ans.dropped_citation_count}[/dim]"
+    )
+    if ans.conflicts:
+        console.print(
+            f"[yellow]{len(ans.conflicts)} conflicting fact(s) — sources disagree:[/yellow]"
+        )
+        for r in ans.conflicts:
+            console.print(
+                f"  [yellow]{r.subject_name} {r.predicate} {r.object_name}[/yellow] "
+                f"(cred {r.aggregate_credibility:.3f})"
+            )
+
+
+@app.command()
 def chat(
     k: int = typer.Option(10, "--top-k", "-k", help="Number of context chunks"),
 ) -> None:

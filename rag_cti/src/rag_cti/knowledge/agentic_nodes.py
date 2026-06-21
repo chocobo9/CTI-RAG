@@ -11,15 +11,19 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from collections import Counter
 from collections.abc import Callable
 from typing import Any, Protocol
 
+from rag_cti._logging import get_logger
 from rag_cti.generation.context_builder import extract_cited_ids
 from rag_cti.generation.prompts import AGENTIC_SYNTHESIS_SYSTEM
 from rag_cti.knowledge.agentic_state import AgenticAnswer, SufficiencyVerdict
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
+
+logger = get_logger(__name__)
 
 # (system_prompt, user_prompt) -> raw model text. Injected so the gate unit-tests
 # with a canned-JSON fake instead of a real LLM.
@@ -76,6 +80,8 @@ def run_gather_loop(
     messages: list[Any],
     *,
     max_steps: int,
+    deadline: float | None = None,
+    on_model_error: Callable[[BaseException], None] | None = None,
 ) -> list[Any]:
     """Drive a GATHER-only tool loop and return the accumulated message transcript.
 
@@ -85,17 +91,36 @@ def run_gather_loop(
     judged it has gathered enough — or ``max_steps`` rounds are reached. The model never
     writes the final answer (the synthesize node does), so any text it emits is ignored;
     only the ledger (populated via ``dispatch``) and the transcript (for token counting)
-    matter. A tool error is reported back to the model instead of aborting the burst."""
+    matter. A tool error is reported back to the model instead of aborting the burst.
+
+    ``deadline`` (a ``time.monotonic()`` value) is the per-answer wall-clock budget pushed
+    DOWN into the loop body — checked before each model turn and each tool call — so a burst
+    stalled in provider-retry latency stops at the deadline instead of only between graph
+    nodes. ``None`` disables it. ``on_model_error`` is invoked when ``model.invoke`` raises
+    (a persistent provider failure): the burst ends with whatever it gathered rather than
+    propagating and crashing the whole answer — the gather-side analogue of the tool-error
+    guard below and of ``Generator``'s failure sentinel. ``None`` keeps the prior behaviour
+    except that the error is now caught and logged."""
     from langchain_core.messages import ToolMessage
 
     convo = list(messages)
     for _ in range(max_steps):
-        ai = model.invoke(convo)
+        if deadline is not None and time.monotonic() >= deadline:
+            break  # wall-clock budget spent mid-burst -> stop with what we have
+        try:
+            ai = model.invoke(convo)
+        except Exception as exc:  # provider failure: end the burst, keep the partial ledger
+            logger.warning("gather model call failed, ending burst", error=str(exc))
+            if on_model_error is not None:
+                on_model_error(exc)
+            break
         convo.append(ai)
         tool_calls = getattr(ai, "tool_calls", None) or []
         if not tool_calls:
             break  # model emitted no tool call -> it has gathered enough
         for call in tool_calls:
+            if deadline is not None and time.monotonic() >= deadline:
+                break  # budget spent between tool calls -> stop
             name = call.get("name", "")
             args = call.get("args", {}) or {}
             try:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 
 from rag_cti.knowledge import agentic_nodes as nodes
 from rag_cti.knowledge.agentic_state import AgenticAnswer, SufficiencyVerdict
@@ -254,8 +255,14 @@ def test_decide_next_wall_clock_timeout_stops() -> None:
     # even when iteration/token budgets are nowhere near and the judge wants more.
     v = _verdict("retrieve_more")
     assert nodes.decide_next(
-        v, 1, 0, 5, max_iterations=15, token_ceiling=10**9,
-        elapsed_seconds=200.0, max_wall_seconds=180.0,
+        v,
+        1,
+        0,
+        5,
+        max_iterations=15,
+        token_ceiling=10**9,
+        elapsed_seconds=200.0,
+        max_wall_seconds=180.0,
     ) == ("synthesize", "timeout")
 
 
@@ -263,8 +270,14 @@ def test_decide_next_wall_clock_disabled_when_zero() -> None:
     # max_wall_seconds=0 disables the guardrail -> elapsed is ignored, loop continues.
     v = _verdict("retrieve_more")
     assert nodes.decide_next(
-        v, 1, 0, 5, max_iterations=15, token_ceiling=10**9,
-        elapsed_seconds=9999.0, max_wall_seconds=0.0,
+        v,
+        1,
+        0,
+        5,
+        max_iterations=15,
+        token_ceiling=10**9,
+        elapsed_seconds=9999.0,
+        max_wall_seconds=0.0,
     ) == ("agent_turn", "")
 
 
@@ -318,7 +331,8 @@ def test_build_turn_messages_retrieve_more_appends_directive() -> None:
     msgs = nodes.build_turn_messages("SYS", "q", v, led)
     assert msgs[0] == ("system", "SYS")
     assert msgs[1] == ("user", "q")
-    assert msgs[2][0] == "user" and "Still missing: gap1" in msgs[2][1]
+    assert msgs[2][0] == "user"
+    assert "Still missing: gap1" in msgs[2][1]
     assert "Already gathered" in msgs[2][1]  # working-set summary from the ledger
 
 
@@ -512,3 +526,47 @@ def test_run_gather_loop_surfaces_tool_error_and_continues() -> None:
     )
     msgs = nodes.run_gather_loop(model, dispatch, [("user", "q")], max_steps=8)
     assert any("boom" in getattr(m, "content", "") for m in msgs)  # error fed back, not raised
+
+
+class _RaisingModel:
+    """A tool-bound chat model whose invoke always raises (a persistent provider 429)."""
+
+    def __init__(self, exc: BaseException) -> None:
+        self._exc = exc
+        self.invoke_count = 0
+
+    def invoke(self, messages: list) -> object:
+        self.invoke_count += 1
+        raise self._exc
+
+
+def test_run_gather_loop_stops_immediately_when_deadline_passed() -> None:
+    # An already-expired deadline stops the burst BEFORE the first model turn (the
+    # fine-grained guard the coarse decide_next check cannot provide).
+    model = _ScriptedModel([_FakeAI([], content="never reached")])
+    msgs = nodes.run_gather_loop(
+        model, lambda n, a: {}, [("user", "q")], max_steps=8, deadline=time.monotonic() - 1.0
+    )
+    assert model.invoke_count == 0
+    assert msgs == [("user", "q")]  # transcript untouched
+
+
+def test_run_gather_loop_none_deadline_keeps_prior_behaviour() -> None:
+    model = _ScriptedModel([_FakeAI([], content="done")])
+    nodes.run_gather_loop(model, lambda n, a: {}, [("user", "q")], max_steps=8, deadline=None)
+    assert model.invoke_count == 1  # default None == pre-deadline behaviour
+
+
+def test_run_gather_loop_catches_model_error_and_reports_via_callback() -> None:
+    seen: list[BaseException] = []
+
+    class _BoomError(Exception):
+        pass
+
+    model = _RaisingModel(_BoomError("429 provider down"))
+    msgs = nodes.run_gather_loop(
+        model, lambda n, a: {}, [("user", "q")], max_steps=8, on_model_error=seen.append
+    )
+    assert model.invoke_count == 1  # tried once, did not retry-storm
+    assert isinstance(seen[0], _BoomError)  # reported via callback, NOT propagated
+    assert msgs == [("user", "q")]  # partial transcript returned, no crash

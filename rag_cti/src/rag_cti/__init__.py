@@ -22,6 +22,7 @@ __all__ = [
     "answer",
     "answer_single_shot",
     "agentic_answer",
+    "supervised_answer",
     "facts",
     "ask",
     "QueryResult",
@@ -107,13 +108,25 @@ def _default_generator() -> object:
 def answer(text: str, k: int = 10, history: list[str] | None = None) -> GeneratedAnswer:
     """Generate a grounded answer with cited chunk IDs.
 
-    Routes by ``settings.agentic_enabled``: when ON, delegates to the agentic loop
-    (:func:`agentic_answer`) and adapts its result to ``GeneratedAnswer`` (``k`` /
-    ``history`` are ignored — the agent composes its own retrieval); when OFF
-    (default until eval proves the agentic win), runs the single-shot path
-    (:func:`answer_single_shot`).
+    Routes by config (both flags default OFF until eval proves the win): when
+    ``supervisor_enabled``, delegates to the multi-agent supervisor
+    (:func:`supervised_answer`); else when ``agentic_enabled``, the single-agent agentic
+    loop (:func:`agentic_answer`); else the single-shot path
+    (:func:`answer_single_shot`). The agentic/supervisor paths compose their own
+    retrieval, so ``k`` / ``history`` are ignored there.
     """
-    if get_settings().agentic_enabled:
+    settings = get_settings()
+    if settings.supervisor_enabled:
+        supervised = supervised_answer(text)
+        return GeneratedAnswer(
+            query=supervised.query,
+            answer=supervised.answer,
+            cited_chunk_ids=list(supervised.cited_ids),
+            query_result=supervised.query_result,
+            generation_ms=0.0,
+            model="supervisor",
+        )
+    if settings.agentic_enabled:
         agentic = agentic_answer(text)
         return GeneratedAnswer(
             query=agentic.query,
@@ -183,6 +196,56 @@ def agentic_answer(text: str) -> AgenticAnswer:
             _build_verifier_client(settings),
             settings.agentic_verifier_model,
             max_tokens=settings.agentic_verifier_max_tokens,
+        ),
+    )
+
+
+def supervised_answer(text: str) -> AgenticAnswer:
+    """Answer a CTI question via the multi-agent supervisor (Model B): a ReAct ORCHESTRATION
+    agent dispatches worker sub-agents (one per independent entity/facet, in parallel),
+    each gathering + synthesizing its own grounded sub-answer, then a distinct Composer LLM
+    combines the reports into the final answer. The supervisor never gathers or synthesizes;
+    a deterministic citation guard validates the answer against the union of branch evidence.
+    Simple / dependent questions degrade to a single worker (no regression). Builds the same
+    deps as the agentic loop plus a composer (which reuses the verifier client)."""
+    from typing import cast
+
+    from rag_cti.bootstrap import load_ontology_nodes
+    from rag_cti.knowledge.agent_graph import build_model
+    from rag_cti.knowledge.agentic_graph import build_judge
+    from rag_cti.knowledge.agentic_nodes import GeneratorProto
+    from rag_cti.knowledge.fact_store import FactStoreProto
+    from rag_cti.knowledge.supervisor_graph import build_composer, run_supervised_answer
+
+    settings = get_settings()
+    pipeline = _default_pipeline()
+
+    def run_retrieve(query_text: str, top_k: int) -> QueryResult:
+        return pipeline.run(query_text, top_k=top_k)
+
+    fact_store = (
+        cast(FactStoreProto, _default_fact_store())
+        if settings.neo4j_password.get_secret_value()
+        else None
+    )
+    verifier_client = _build_verifier_client(settings)
+    return run_supervised_answer(
+        text,
+        settings=settings,
+        run_retrieve=run_retrieve,
+        fact_store=fact_store,
+        ontology_nodes=load_ontology_nodes(),
+        generator=cast(GeneratorProto, _default_generator()),
+        chat_model=build_model(settings),
+        judge=build_judge(
+            verifier_client,
+            settings.agentic_verifier_model,
+            max_tokens=settings.agentic_verifier_max_tokens,
+        ),
+        composer=build_composer(
+            verifier_client,
+            settings.agentic_verifier_model,
+            max_tokens=settings.supervisor_compose_max_tokens,
         ),
     )
 

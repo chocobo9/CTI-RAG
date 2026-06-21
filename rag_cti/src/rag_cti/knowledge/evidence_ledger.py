@@ -56,6 +56,25 @@ class EvidenceLedger:
         """Record a coverage map (a sufficiency *hint*, not citable evidence)."""
         self.outlines[outline.entity_id] = outline
 
+    def merge(self, other: EvidenceLedger) -> None:
+        """Fold another ledger into this one — used to combine N parallel branch ledgers
+        into a single master ledger for ONE grounded synthesis. Reuses the existing union
+        semantics: chunks keep the higher score (``add_query_result``), facts are
+        first-wins (``add_facts``), outlines are overwritten by entity_id. Ids are
+        globally unique, so a cross-branch id collision is a correct union, not a clash.
+        """
+        self.add_query_result(
+            QueryResult(
+                query="",
+                results=list(other.chunks.values()),
+                total_retrieved=len(other.chunks),
+                retrieval_ms=0.0,
+            )
+        )
+        self.add_facts(tuple(other.facts.values()))
+        for outline in other.outlines.values():
+            self.add_outline(outline)
+
     @property
     def real_id_set(self) -> frozenset[str]:
         """Every citable id: chunk ids ∪ fact ids. The citation guard intersects the

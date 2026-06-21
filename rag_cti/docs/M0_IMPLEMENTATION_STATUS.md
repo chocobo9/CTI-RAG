@@ -1,4 +1,4 @@
-# M0 入口层重构 — 实施状态
+shi# M0 入口层重构 — 实施状态
 
 > 分支 `feat/optimization`(worktree `.claude/worktrees/optimization/`,base `cd481c5` ← `feat/cti-eval-certification`)。
 > 本文记录截至 2026-06-14 的实现、验证证据、产出数据、与未完成项。**全部数字均为本轮实跑验证,非文档原值。**

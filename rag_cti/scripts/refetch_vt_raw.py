@@ -10,6 +10,7 @@ from __future__ import annotations
 
 # ruff: noqa: E402  (sys.path bootstrap before imports — run-without-install pattern)
 import argparse
+import json
 import os
 import sys
 import time
@@ -23,8 +24,23 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from rag_cti.connectors.virustotal import VirusTotalConnector
-from rag_cti.ingest.raw_ingest import read_domains_from_index
 from rag_cti.store.raw_store import RawStore
+
+
+def _registered_domains(index_path: Path) -> list[str]:
+    """Registered domains (``indicator_type=domain``) from the index — the OTX threat
+    indicators (C2 / phishing). Skips ``hostname`` entries (subdomains / ISP PTR /
+    CDN), which are pDNS-resolution infrastructure noise with no VT threat value."""
+    out: list[str] = []
+    with index_path.open(encoding="utf-8") as fh:
+        for line in fh:
+            if not line.strip():
+                continue
+            rec = json.loads(line)
+            if rec.get("indicator_type") == "domain" and rec.get("value"):
+                out.append(rec["value"])
+    return out
+
 
 _INDEX = Path("data/processed/indicator_index.jsonl")
 _THROTTLE_SECONDS = 15.0  # 4 requests/min on the VT free tier
@@ -43,7 +59,16 @@ def main() -> None:
         print("ERROR: VT_API_KEY not set in .env", file=sys.stderr)
         sys.exit(1)
 
-    domains = read_domains_from_index(args.index)
+    # Registered domains only (indicator_type=domain) — skips hostname/PTR/CDN noise.
+    domains = _registered_domains(args.index)
+    # VT API returns 400 for wildcard (*.x) domains — skip them.
+    domains = [d for d in domains if not d.startswith("*")]
+    # Skip domains already in the raw store: RawStore writes are idempotent, but
+    # re-fetching wastes the rate-limited free-tier quota.
+    vt_dir = args.raw_root / "vt"
+    if vt_dir.is_dir():
+        already = set(os.listdir(vt_dir))
+        domains = [d for d in domains if d not in already]
     if args.limit:
         domains = domains[: args.limit]
     if not domains:

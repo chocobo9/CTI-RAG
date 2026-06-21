@@ -57,21 +57,32 @@ already does.
 The two stores answer different *kinds* of question. M4's whole design rests on
 not confusing them.
 
-- **Graph (Fact/supports) = the meta layer / map / coverage gauge.** It answers
-  *"what categories of relation exist for this entity, how many, organized how —
-  and what is missing?"* Because the facts are **controlled hard triples**
-  (entity-ids + a closed predicate set + deterministic `fact_id`), the graph can
-  be **enumerated exactly and exhaustively**. This is what a vector top-k can
-  never give: completeness. The graph is the agent's basis for *planning* and
-  for *judging sufficiency*.
-- **Vector (chunks) = the content layer.** It answers *"what does the source
-  actually say?"* — prose, semantics, detail. It is the home of the data itself.
+- **Graph (Fact/supports) = one exact retriever, strong at enumeration.** Because
+  the facts are **controlled hard triples** (entity-ids + a closed predicate set +
+  deterministic `fact_id`), the graph can be **enumerated exactly and
+  exhaustively** — completeness a vector top-k cannot give, *for the slice the
+  graph covers*. It is strong for entity-anchored enumeration ("all techniques X
+  uses"), IOC/infra pivots, and credibility annotation of retrieved prose.
+- **Vector (chunks) = the content layer.** *"What does the source actually say?"*
+  — prose, semantics, detail; the home of the data itself, including the PDF
+  reports the graph never sees.
 
-**The graph is auxiliary, not the trunk.** It is bounded by data breadth (ten
-controlled predicates today; DM4-5). It cannot carry the *content* of an answer.
-But it supplies the one thing vector retrieval structurally cannot: a
-**completeness gauge** ("the graph says 30 `uses` edges exist; the answer
-covered 5 → incomplete").
+**The graph is one retriever, NOT the completeness oracle (revised).** The earlier
+draft made the graph "the coverage gauge / map" that governs the loop and judges
+sufficiency. That does **not** hold, for three data-backed reasons (verified
+against the live corpus):
+- *PDF-blind*: facts are built only from MITRE/OTX/pDNS/VT — **zero** PDF facts —
+  yet PDFs carry the richest analysis. The graph's "N" silently excludes them.
+- *Enumeration-only*: ~10 controlled predicates can gauge "how many techniques does
+  X use" but not "compare X vs Y" or "is this incident likely Z".
+- *Extraction ≠ answer completeness*: `uses` dominates (~23k) over infra plumbing
+  (~17k) with `attributed-to` at ~25 — enumerating all graph facts is not answering
+  the question; for a focused query it is noise.
+
+So the graph is **auxiliary navigation**, used where it is strong; it is **not**
+what decides "done" (that is the v1 sufficiency judge, §9). It cannot carry the
+*content* of an answer either. (This corrects the original "graph says 30, answer
+covered 5 → incomplete" gauge — that signal is PDF-blind and enumeration-shaped.)
 
 **We do not follow the LightRAG route** (verified against LightRAG's design):
 LightRAG embeds *entity/relation descriptions* as vectors and retrieves graph
@@ -92,25 +103,23 @@ Graph and vector are **not separable as parallel pipelines**. They are separable
 only **by responsibility**, and an agent **alternates** between them within one
 reasoning loop:
 
-1. **Graph gives the map.** For the entity in play, what relation categories
-   exist and how many (the coverage gauge).
-2. **Agent plans + judges sufficiency against the map.** "To answer this, which
-   categories do I need? Which do I not yet have content for?" — this is the
-   "does it need more categories / more organized data" judgement.
-3. **Vector fetches content.** For the parts the map says must be expanded,
-   retrieve the actual chunks.
-4. **Agent re-checks coverage against the graph.** Graph says 30 `uses`; answer
-   covers 5 → not done → loop.
+1. **Agent gathers.** It freely calls graph (enumerate / pivot) and vector (prose)
+   for whatever the question needs — no fixed order, no task→store router.
+2. **A sufficiency gate judges.** A dedicated LLM judge decides whether the
+   gathered evidence answers the question (recall) and whether the draft is
+   supported by it (grounding). This is the stop decision.
+3. **On a gap, the agent re-retrieves.** The judge emits the concrete next query /
+   graph target; the loop re-enters until the gate is satisfied or the budget cap.
 
-So "it can't be split" is correct: graph and vector are **interleaved** — graph
-governs *what to fetch and whether it's complete*, vector governs *what the
-content is*. This is exactly the original intent — *"the agent decides based on
-the completeness of the graph collection and the vector evidence"* — made
-precise: the graph, being exhaustively enumerable, **is** the objective
-completeness gauge; the vector supplies the evidence content.
+The split between graph and vector never appears as a routing decision on a
+pipeline; it is role division inside the agent loop (v1).
 
-The split between graph and vector therefore never appears as a routing decision
-on a pipeline. It appears only as role division inside the agent loop (v1).
+**Corrected from the earlier draft:** convergence is **not** "graph says 30, answer
+covered 5 → loop" (graph M-vs-N). The graph is PDF-blind and enumerable-question-
+shaped (§2), so it cannot be the universal completeness signal. Convergence is the
+**sufficiency judge** (§9.3); the graph counts are one of its inputs, never the
+sole gate. Likewise **grounding (is the draft supported)** and **sufficiency (did
+we gather enough)** are two distinct axes — the design no longer conflates them.
 
 ---
 
@@ -128,11 +137,12 @@ the LLM decides (autonomous orchestration).
   the necessary precondition for v1, and it stands alone (a CLI exercises it with
   structured params). Determinism here is what keeps the layer testable under the
   project's certification/coverage culture.
-- **M4.v1 — Agent loop [change, deferred].** Wrap the v0 tools in a ReAct-style
-  loop where the LLM does the §3 alternation: plan from the map → fetch content
-  → re-check coverage → converge, then synthesize a cited prose answer. The
-  *sufficiency judgement lives in the LLM*; the tools only ever return objective
-  numbers (invariant 2). Gated by DM4-4.
+- **M4.v1 — Agent loop [built].** Wrap the v0 tools in an outer hard-rail
+  StateGraph around an inner ReAct burst (§9): the LLM gathers via graph+vector, a
+  **sufficiency judge** decides enough/grounded, the loop re-retrieves on gaps,
+  then synthesizes a cited answer. The *sufficiency judgement lives in a dedicated
+  judge node* (not in a graph-count comparison); the tools only ever return
+  objective evidence (invariant 2). Gated by DM4-4.
 
 ---
 
@@ -242,7 +252,7 @@ Defaults are *proposed*, not adopted — each needs an explicit yes/override
 | DM4-1 | Graph backend = **Neo4j**, on a **separate CTI-RAG-only instance** (NOT shared with the cti-agent graph; isolate now, ETL-align ontologies later). Protocol-isolated so consumer logic + unit tests stay backend-free. | v0 | **Confirmed: Neo4j, isolated instance.** |
 | DM4-2 | Unify the live collection to `cti_chunks_v5` (the corpus the facts were built from) + `verify_bridge` health probe. | v0 | yes. **Confirmed by user.** |
 | DM4-3 | v0 output = structured `FactQueryResult`; LLM prose synthesis is a v1 agent responsibility. | v0/v1 | yes (structure first). |
-| DM4-4 | Agent loop on **LangGraph** (state machine + LangSmith tracing, see §9); multi-hop, coverage-gauge convergence, step/token budget. | v1 | **Confirmed: LangGraph** (system trajectory + LangSmith already wired). |
+| DM4-4 | Agent loop on **LangGraph** (outer hard-rail StateGraph + inner create_react_agent + LangSmith tracing, see §9); **sufficiency-judge** convergence (NOT graph-count), step/token budget. | v1 | **Confirmed + built: LangGraph.** |
 | DM4-5 | Data breadth: are ten controlled predicates enough for *auxiliary navigation*; is predicate/relation-extraction expansion a separate track? | v1 | enough as auxiliary; expansion inherits M3's predicate-vocab alignment with the attribution-graph track. |
 | DM4-6 | Rewrite stays a separate small-model component; M4 does not touch it. | — | yes. |
 
@@ -255,58 +265,111 @@ Defaults are *proposed*, not adopted — each needs an explicit yes/override
   enumerates "all objects of one (subject, predicate)" with citations,
   credibility, and conflicts from structured params; the live collection is
   unified to v5 and `verify_bridge` passes. No LLM, no routing, no prose.
-- **v1:** the agent loop performs the §3 alternation (plan from map → fetch
-  content → re-check coverage → converge) and returns a cited answer, within a
-  budget ceiling, with the sufficiency judgement in the LLM.
+- **v1 [done]:** the agent loop gathers via graph+vector, a **sufficiency judge**
+  decides enough/grounded (not graph M-vs-N), the loop re-retrieves on gaps and
+  synthesizes a cited answer within a budget ceiling; citations are validated
+  against the gathered evidence. `agentic_answer()` + CLI `agentic`; `answer()`
+  routes on `agentic_enabled` (default off until eval proves the win).
 
 ---
 
-## 9. v1 — agentic loop (LangGraph) [design]
+## 9. v1 — agentic loop (LangGraph) [built]
 
-In-process LangGraph state machine letting an LLM orchestrate the v0 tools (§3).
-Chosen (DM4-1/DM4-4) for the system trajectory — durable execution, multi-agent
-headroom, audit-grade tracing — and because LangSmith is already wired
-(`config.py`). Tools are **in-process LangChain tools, NOT MCP** (MCP is a later,
-optional cross-app concern, §1).
+**Revised from the original §9**, which described a prompt-steered
+`create_react_agent` whose convergence leaned on the graph as a "coverage gauge".
+Acceptance testing showed that approach was unstable: it oscillated between a
+de-facto workflow (over-prescribed prompt) and unreliable free planning, and the
+"graph M-vs-N" convergence is PDF-blind / enumeration-only (§2). The built design
+relocates the reliability guarantees from the prompt into LangGraph structure —
+**structure the guarantees, not the steps.**
 
-### 9.1 Tools (in-process)
-- `resolve_entity(name) -> entity_id[]` — NL name → entity_id (reuse ontology
-  aliases / `understand()`); must handle 0 / multiple candidates. **v1-new.**
-- `graph_outline` / `graph_query` / `facts_for_evidence` — wrap the v0 FactStore.
-- `vector_search(query, top_k)` — wrap the existing retrieval pipeline.
+### 9.1 Topology — outer hard-rail StateGraph + inner ReAct + EvidenceLedger
+An outer `StateGraph` wraps an inner prebuilt `create_react_agent` (the free ReAct
+burst — tool choice and multi-hop stay autonomous in the LLM). The outer nodes are
+the hard rails. The bridge between them is a side-effect **`EvidenceLedger`**: each
+tool closure appends its *full structured result* to the ledger before returning a
+bounded LLM-facing summary, so the rail nodes read structured evidence (chunks,
+facts, outlines) instead of `create_react_agent`'s stringified `ToolMessage`
+transcript.
 
-### 9.2 AgentState (the only inter-node channel)
-`query` · `entity_ids` · `outline` (coverage **numbers** only) · `collected_facts`
-· `retrieved_chunks` · `step` · `tokens_used` · `done`.
+```
+START → agent_turn → sufficiency_gate → (router) → agent_turn | synthesize
+                                                       synthesize → citation_assembly → END
+```
 
-### 9.3 Graph
-Nodes: `resolve` → `map` (outline → coverage numbers) → `plan` (LLM reads outline
-+ collected, picks next tool or stops) → `act` (run chosen tool) → `check`
-(coverage: outline says N, collected covers M) → `synthesize` (cited answer).
-Conditional edges: `plan`→`act` | `synthesize`; `check`→`plan` (loop) | `synthesize`.
+### 9.2 Tools (in-process, ledger-aware)
+- `resolve_entity(name)` — NL name → entity_id candidates (strict, exact-only).
+- `graph_outline` / `graph_query` / `facts_for_evidence` — wrap the v0 FactStore;
+  append full rows / outlines to the ledger.
+- `retrieve(query, top_k)` — wrap the existing single-shot pipeline; append the
+  QueryResult to the ledger.
+When Neo4j is disabled (empty password) the graph tools degrade to no-ops and the
+loop runs vector-only — the architecture is **orthogonal to whether facts exist**
+(PDF→graph stays a separate, deferred labelling track).
 
-### 9.4 The three real pitfalls — explicit countermeasures (not an MVP afterthought)
-- **#1 context blow-up**: `outline` holds only `predicate→count`, never the 223
-  facts. `graph_query` results do NOT all enter the LLM context — only the category
-  the agent named, summarised (object-name list); full citations sit beside the
-  state and are fetched by id only at `synthesize`.
-- **#2 convergence**: hard-bounded — LangGraph `recursion_limit` + a coverage gauge
-  (the `plan` prompt is forced to compare collected M vs outline N) + a step cap.
-  Never trust the model to "feel done".
-- **#3 error recovery**: tool errors (entity unresolved / 0 / many) are fed back for
-  the LLM to clarify or reroute; LangGraph checkpointing resumes a crashed run.
+### 9.3 The stop decision — a sufficiency judge, NOT a graph gauge (the crux)
+`sufficiency_gate` is a dedicated LLM-judge node that triangulates, all read from
+the ledger (never the transcript):
+- **Grounding (faithfulness)** — decompose the draft into claims; is each supported
+  by gathered evidence? → `grounded`, `faithfulness_estimate`.
+- **Sufficiency (recall)** — decompose the question into sub-questions; which are
+  not yet answerable? → `sufficient`, `coverage_gaps`. The judge **owns** this — it
+  covers the PDF / prose / comparison cases the graph cannot. Graph outline counts
+  are one input, never the sole gate.
+- **Budget** — the only *hard* stop.
+On insufficient, the judge emits the concrete next step (`suggested_queries`,
+`suggested_graph_targets`) and the loop re-enters. The router is a pure function:
+`stop`+grounded → synthesize; budget exceeded → synthesize (`stop_reason=budget`);
+unparseable verdict → fail closed (`parse_fallback`). Grounding ≠ sufficiency is
+kept as two axes; the design no longer conflates faithfulness with recall.
+
+### 9.4 The three pitfalls — structural countermeasures
+- **#1 context blow-up**: tools return bounded summaries; the ledger holds the full
+  evidence by id. Synthesis is over the top-K chunks **plus** top-N facts (rendered
+  as citable pseudo-chunks so graph facts reach the answer), not an unbounded dump
+  — an unbounded dump made the reasoning model spend its budget and return an empty
+  answer (fixed: `agentic_synthesis_top_k`).
+- **#2 convergence**: hard budget ceiling (`agentic_max_iterations` / token cap) +
+  the sufficiency judge. Never the model's "feel done", never graph M-vs-N. The
+  ceiling is a runaway guard; the operating point is **measured** from LangSmith
+  spans, not pinned.
+- **#3 grounding guarantee**: `citation_assembly` intersects the model's cited ids
+  with `ledger.real_id_set` and drops/counts hallucinated ones — truth is the
+  ledger, not the regex. Conflicts are surfaced from `FactRow.conflict`, never
+  resolved.
 
 ### 9.5 Budget / model / observability
-- Model: DeepSeek (via langchain) or Anthropic — **measured on real queries in the
-  loop**, not chosen on paper.
-- Budget: `max_steps` + token ceiling.
-- Observability: LangSmith auto-traces every node/edge/state; custom span metadata
-  carries `iteration_count` / `coverage_ratio` / `tokens_used`.
+- Model: inner agent + judge on DeepSeek (`agentic_verifier_model=deepseek-chat`);
+  synthesis on the certified `["deepseek-v4-flash","deepseek-chat"]` chain.
+- Budget: `agentic_max_iterations` (3) + `agentic_token_ceiling` (runaway guard).
+- Observability: LangSmith spans per node carry `iteration_count` / `tokens_used` /
+  the per-iteration sufficiency verdict — the data to tune the operating point.
 
-### 9.6 Surface / tests
-- `ask(query)` public fn + CLI `ask` (NL in, cited prose out).
-- Tests: node logic with mock LLM + mock tools (plan/check/convergence/error
-  branches); a few e2e with real LLM + tools.
+### 9.6 Surface / tests / eval
+- `agentic_answer(text) -> AgenticAnswer` + CLI `agentic`; `answer()` routes on
+  `settings.agentic_enabled` (default **off** until eval proves the win) →
+  `answer_single_shot`.
+- Tests: pure node logic (ledger, judge-parse, router branches, citation guard,
+  synthesize) unit-tested with fakes; `agentic_graph.py` is coverage-omitted,
+  verified by a key-guarded e2e (`RAG_CTI_E2E=1`).
+- Eval (`scripts/eval_agentic.py`, capability-split, never averaged): sufficiency
+  (technique-recall vs gold on `relationship_direct`), grounding (RAGAS
+  faithfulness), cost (iterations / tokens / stop_reason). **Measured
+  (relationship_direct):** agentic recall **0.79** vs single-shot **0.125** (the
+  graph's enumeration completeness), at a **precision cost** (0.086 vs 0.20) —
+  over-enumeration: it lists an actor's *full* technique set, not the queried
+  subset (partly because graph facts carry no tactic label).
+
+### 9.7 Known open items (measured, not yet tuned)
+- **Judge over-eager**: at `max_iterations=3` it tends to keep returning
+  `retrieve_more` and hit the budget cap — it sees only the bounded top-N facts
+  while the agent gathered many more, so it cannot confirm sufficiency. Fix
+  direction: feed the judge the gathered *counts* (per-predicate `n_facts`,
+  `n_chunks`), not raw items, and nudge toward "default sufficient unless a clear
+  gap".
+- **Over-enumeration hurts precision**: the answer needs query / tactic focusing,
+  but the graph facts lack tactic labels — a structural limit tied to the labelling
+  track, not the loop.
 
 ---
 

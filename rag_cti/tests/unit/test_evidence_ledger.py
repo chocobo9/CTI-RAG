@@ -92,3 +92,40 @@ def test_conflicts_filters_conflict_flag() -> None:
     led = EvidenceLedger()
     led.add_facts((_row("f1", conflict=True), _row("f2")))
     assert tuple(r.fact_id for r in led.conflicts()) == ("f1",)
+
+
+def test_merge_unions_chunks_facts_and_outlines() -> None:
+    master = EvidenceLedger()
+    master.add_query_result(_qr(_result("c1", 0.5)))
+    master.add_facts((_row("f1"),))
+
+    branch = EvidenceLedger()
+    branch.add_query_result(_qr(_result("c2", 0.4)))
+    branch.add_facts((_row("f2"),))
+    branch.add_outline(
+        GraphOutline(entity_id="actor_G0007", entity_name="APT28", entity_type="actor")
+    )
+
+    master.merge(branch)
+    assert set(master.chunks) == {"c1", "c2"}
+    assert set(master.facts) == {"f1", "f2"}
+    assert "actor_G0007" in master.outlines
+    assert master.real_id_set == frozenset({"c1", "c2", "f1", "f2"})
+
+
+def test_merge_keeps_higher_score_on_chunk_collision() -> None:
+    master = EvidenceLedger()
+    master.add_query_result(_qr(_result("c1", 0.3)))
+    branch = EvidenceLedger()
+    branch.add_query_result(_qr(_result("c1", 0.9)))
+    master.merge(branch)
+    assert master.chunks["c1"].score == 0.9
+
+
+def test_merge_fact_collision_dedups_by_fact_id() -> None:
+    master = EvidenceLedger()
+    master.add_facts((_row("f1"),))
+    branch = EvidenceLedger()
+    branch.add_facts((_row("f1"),))
+    master.merge(branch)
+    assert set(master.facts) == {"f1"}

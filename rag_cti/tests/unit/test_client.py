@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,6 +10,7 @@ from rag_cti.generation.client import (
     RetryingGroqClient,
     RetryingOllamaClient,
     _is_retryable,
+    _RetryingCompletions,
     build_llm_client,
 )
 
@@ -40,6 +42,8 @@ class _FakeSettings:
         self.groq_query_model = "llama-3.1-8b-instant"
         self.groq_analysis_model = "llama-3.3-70b-versatile"
         self.groq_report_model = "llama-3.3-70b-versatile"
+        self.groq_request_timeout = 30.0
+        self.retry_after_ceiling_seconds = 60.0
         self.anthropic_api_key = _FakeSecret(anthropic)
 
 
@@ -261,3 +265,89 @@ def test_fallback_raises_when_all_models_fail() -> None:
 def test_fallback_requires_at_least_one_model() -> None:
     with pytest.raises(ValueError, match="at least one model"):
         FallbackChatClient(_FakeClient(), [])
+
+
+# ---------------------------------------------------------------------------
+# 429 classification — TPM (retry) vs TPD / large retry-after (fail fast)
+# ---------------------------------------------------------------------------
+
+
+class _RichRateLimitError(Exception):
+    """A 429 SDK-style error carrying optional response headers + structured body."""
+
+    def __init__(
+        self,
+        *,
+        retry_after: str | None = None,
+        body: object | None = None,
+        message: str = "rate limit",
+    ) -> None:
+        super().__init__(message)
+        self.status_code = 429
+        self.message = message
+        self.body = body
+        self.response = (
+            SimpleNamespace(headers={"retry-after": retry_after})
+            if retry_after is not None
+            else None
+        )
+
+
+def test_429_with_large_retry_after_not_retryable() -> None:
+    # retry-after beyond the ceiling => recovery is hours away (daily cap) => fail fast.
+    assert not _is_retryable(_RichRateLimitError(retry_after="120"), 60.0)
+
+
+def test_429_with_small_retry_after_is_retryable() -> None:
+    # retry-after within the ceiling => transient per-minute (TPM) => keep retrying.
+    assert _is_retryable(_RichRateLimitError(retry_after="5"), 60.0)
+
+
+def test_429_daily_cap_body_not_retryable() -> None:
+    body = {"error": {"message": "Rate limit reached: tokens per day (TPD) exhausted"}}
+    assert not _is_retryable(_RichRateLimitError(body=body))
+
+
+def test_429_per_minute_body_is_retryable() -> None:
+    body = {"error": {"message": "Rate limit reached for requests per minute"}}
+    assert _is_retryable(_RichRateLimitError(body=body))
+
+
+def test_429_bare_status_still_retryable_backcompat() -> None:
+    # No response/body (the original _StatusError shape) keeps the old behaviour.
+    assert _is_retryable(_StatusError(429))
+
+
+# ---------------------------------------------------------------------------
+# Single retry authority: groq SDK retries disabled, per-request timeout set
+# ---------------------------------------------------------------------------
+
+
+def test_groq_client_disables_sdk_retries_and_sets_timeout() -> None:
+    captured: dict[str, object] = {}
+
+    def _factory(**kwargs: object) -> MagicMock:
+        captured.update(kwargs)
+        return MagicMock()
+
+    with patch("groq.Groq", side_effect=_factory):
+        RetryingGroqClient(api_key="fake-key", timeout=12.5, retry_after_ceiling=42.0)
+    assert captured["max_retries"] == 0  # tenacity is the only retry layer
+    assert captured["timeout"] == 12.5
+
+
+def test_groq_retry_exhausts_then_reraises_without_real_sleep() -> None:
+    # A persistent TPM 429 is retried up to stop_after_attempt(5) then reraised. The
+    # autouse _no_retry_backoff fixture removes the ~15s of real backoff.
+    calls = {"n": 0}
+
+    class _Raising:
+        def create(self, **_: object) -> object:
+            calls["n"] += 1
+            raise _RichRateLimitError(body={"error": {"message": "rate limit per minute"}})
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=_Raising()))
+    completions = _RetryingCompletions(client, retry_after_ceiling=60.0)
+    with pytest.raises(_RichRateLimitError):
+        completions.create(model="llama-3.1-8b-instant", messages=[])
+    assert calls["n"] == 5  # exactly the tenacity attempt cap, no infinite loop

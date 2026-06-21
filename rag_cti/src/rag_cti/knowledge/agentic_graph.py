@@ -26,6 +26,7 @@ from rag_cti.knowledge.agentic_state import AgenticAnswer
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.knowledge.fact_store import FactStoreProto
 from rag_cti.observability.tracing import add_trace_metadata, traced
+from rag_cti.types import GeneratedAnswer
 
 # (query, top_k) -> QueryResult. Injected so this file never imports rag_cti.__init__.
 RunRetrieve = agent_tools.RunRetrieve
@@ -63,6 +64,7 @@ class _AgentState(TypedDict, total=False):
     stop_reason: str
     route: str
     answer: Any  # AgenticAnswer
+    provider_error: bool  # last burst's gather model.invoke raised (persistent 429 etc.)
 
 
 def build_judge(client: Any, model: str, max_tokens: int = 1024) -> JudgeFn:
@@ -166,13 +168,26 @@ def build_agentic_graph(
     generator: GeneratorProto,
     chat_model: Any,
     judge: JudgeFn,
+    gather_only: bool = False,
 ) -> Any:
-    """Compile the outer StateGraph; nodes close over the per-run deps."""
+    """Compile the outer StateGraph; nodes close over the per-run deps.
+
+    ``gather_only=True`` skips the (expensive) synthesize generation: the loop gathers into
+    the ledger and the final node packages the evidence with an EMPTY answer. Used by the
+    multi-agent supervisor's workers — only the Composer synthesizes, so a per-worker
+    synthesis is wasted (the N+1-synthesis cost sink)."""
     from langgraph.graph import END, START, StateGraph
 
     # Per-run wall clock for the latency guardrail (graph is built once per query, right
-    # before invoke, so this ~= loop start).
+    # before invoke, so this ~= loop start). The deadline is the SAME budget the coarse
+    # decide_next check uses, pushed DOWN into the gather loop so an in-node retry storm is
+    # bounded too (0 disables it).
     started_at = time.monotonic()
+    deadline = (
+        started_at + settings.agentic_max_wall_seconds
+        if settings.agentic_max_wall_seconds > 0
+        else None
+    )
     tools = _build_tools(fact_store, ontology_nodes, run_retrieve, ledger)
     model_with_tools = chat_model.bind_tools(tools)
     tools_by_name = {t.name: t for t in tools}
@@ -193,8 +208,14 @@ def build_agentic_graph(
         messages = agentic_nodes.build_turn_messages(_GATHER_SYSTEM, query, verdict, ledger)
         before_facts = len(ledger.facts)
         before = before_facts + len(ledger.chunks)
+        errors: list[BaseException] = []
         out_messages = agentic_nodes.run_gather_loop(
-            model_with_tools, dispatch, messages, max_steps=settings.agentic_max_inner_steps
+            model_with_tools,
+            dispatch,
+            messages,
+            max_steps=settings.agentic_max_inner_steps,
+            deadline=deadline,
+            on_model_error=errors.append,
         )
         # GATHER-only: synthesize produces the answer over the ledger, so no draft to carry.
         # out_messages is just THIS burst now (not carried), so _sum_tokens(out_messages) is
@@ -206,9 +227,21 @@ def build_agentic_graph(
             "new_evidence": len(ledger.facts) + len(ledger.chunks) - before,
             "new_facts": len(ledger.facts) - before_facts,
             "last_draft": "",
+            "provider_error": bool(errors),
         }
 
     def sufficiency_gate(state: _AgentState) -> dict[str, Any]:
+        # A persistent gather-model failure (provider 429) ends the run: the judge runs on
+        # the same provider, so skip it and synthesize over whatever the ledger holds —
+        # degrade gracefully instead of crashing the answer (mirrors Generator's sentinel).
+        if state.get("provider_error"):
+            add_trace_metadata(route="synthesize", stop_reason="provider_error")
+            return {
+                "sufficiency": None,
+                "route": "synthesize",
+                "stop_reason": "provider_error",
+                "prev_gaps": (),
+            }
         verdict = agentic_nodes.assess_sufficiency(
             judge, query, state.get("last_draft", ""), ledger
         )
@@ -243,9 +276,23 @@ def build_agentic_graph(
         }
 
     def synthesize(state: _AgentState) -> dict[str, Any]:
-        gen_answer = agentic_nodes.synthesize_answer(
-            generator, query, ledger, top_k=settings.agentic_synthesis_top_k
-        )
+        if gather_only:
+            # No generation: package the gathered evidence with an empty answer. The
+            # supervisor's Composer is the only synthesizer.
+            gen_answer = GeneratedAnswer(
+                query=query,
+                answer="",
+                cited_chunk_ids=[],
+                query_result=ledger.union_query_result(
+                    query, limit=settings.agentic_synthesis_top_k
+                ),
+                generation_ms=0.0,
+                model="gather-only",
+            )
+        else:
+            gen_answer = agentic_nodes.synthesize_answer(
+                generator, query, ledger, top_k=settings.agentic_synthesis_top_k
+            )
         answer = agentic_nodes.build_agentic_answer(
             query,
             gen_answer,

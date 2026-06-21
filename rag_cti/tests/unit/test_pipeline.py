@@ -441,8 +441,14 @@ def test_pipeline_without_edges_does_not_expand() -> None:
 # ---------------------------------------------------------------------------
 
 _ROUTING_NODES = [
-    {"ontology_id": "G0016", "type": "group", "name": "APT29",
-     "aliases": ["Cozy Bear"], "tactics": [], "attack_version": "18.1"},
+    {
+        "ontology_id": "G0016",
+        "type": "group",
+        "name": "APT29",
+        "aliases": ["Cozy Bear"],
+        "tactics": [],
+        "attack_version": "18.1",
+    },
 ]
 
 
@@ -472,7 +478,11 @@ class _FixedScoreReranker:
 
 def _entity_result(cid: str, *entity_ids: str) -> RetrievalResult:
     chunk = Chunk(
-        id=cid, parent_doc_id="d", source="mitre", content="c", chunk_index=0,
+        id=cid,
+        parent_doc_id="d",
+        source="mitre",
+        content="c",
+        chunk_index=0,
         metadata={"entity_ids": list(entity_ids)},
     )
     return RetrievalResult(document=chunk, score=0.0, rank=0, retriever_source="rrf")
@@ -500,9 +510,12 @@ def _routing_pipeline(reranker, settings, base_results):
             return RewriteOutput(queries=("q",), entities=(ExtractedEntity("APT29", "actor"),))
 
     base, rewriter = _Base(), _Rewriter()
-    retriever = QueryRewriteRetriever(base, rewriter, settings=settings, ontology_nodes=_ROUTING_NODES)
-    pipeline = Pipeline(retriever=retriever, reranker=reranker, settings=settings,
-                        ontology_nodes=_ROUTING_NODES)
+    retriever = QueryRewriteRetriever(
+        base, rewriter, settings=settings, ontology_nodes=_ROUTING_NODES
+    )
+    pipeline = Pipeline(
+        retriever=retriever, reranker=reranker, settings=settings, ontology_nodes=_ROUTING_NODES
+    )
     return pipeline, base, rewriter
 
 
@@ -540,13 +553,32 @@ def test_cross_path_consistency_direct_vs_pipeline_noop() -> None:
 
     def fresh_results():
         return [
-            RetrievalResult(document=Chunk(id="nonmatch", parent_doc_id="d", source="mitre",
-                                           content="c", chunk_index=0, metadata={}),
-                            score=0.9, rank=0, retriever_source="rrf"),
-            RetrievalResult(document=Chunk(id="match", parent_doc_id="d", source="mitre",
-                                           content="c", chunk_index=0,
-                                           metadata={"entity_ids": ["actor_G0016"]}),
-                            score=0.5, rank=1, retriever_source="rrf"),
+            RetrievalResult(
+                document=Chunk(
+                    id="nonmatch",
+                    parent_doc_id="d",
+                    source="mitre",
+                    content="c",
+                    chunk_index=0,
+                    metadata={},
+                ),
+                score=0.9,
+                rank=0,
+                retriever_source="rrf",
+            ),
+            RetrievalResult(
+                document=Chunk(
+                    id="match",
+                    parent_doc_id="d",
+                    source="mitre",
+                    content="c",
+                    chunk_index=0,
+                    metadata={"entity_ids": ["actor_G0016"]},
+                ),
+                score=0.5,
+                rank=1,
+                retriever_source="rrf",
+            ),
         ]
 
     settings = _RoutingSettings(weight=1.0)
@@ -556,4 +588,6 @@ def test_cross_path_consistency_direct_vs_pipeline_noop() -> None:
     # Pipeline path: understand once, NoOp rerank, seam-2 boost.
     pipeline_p, _, _ = _routing_pipeline(NoOpReranker(), settings, fresh_results())
     piped = pipeline_p.run("apt29", top_k=10).results
-    assert [r.document.id for r in direct] == [r.document.id for r in piped] == ["match", "nonmatch"]
+    assert (
+        [r.document.id for r in direct] == [r.document.id for r in piped] == ["match", "nonmatch"]
+    )

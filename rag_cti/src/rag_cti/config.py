@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     langsmith_api_key: SecretStr = SecretStr("")
     langsmith_project: str = "rag-cti"
     langchain_tracing_v2: bool = True
+    # When tracing is enabled, run LangSmith trace submission in a background thread.
+    # Default False: submission is synchronous-but-bounded so a tracing-side 429 cannot
+    # leave a background queue blocking process exit (paired with flush_tracers()).
+    langchain_callbacks_background: bool = False
 
     # Qdrant
     qdrant_url: str = "http://localhost:6333"
@@ -81,6 +85,15 @@ class Settings(BaseSettings):
     # budget -> empty content. Size generously for reasoning + a full answer.
     generation_max_tokens: int = 8192
     generation_models: list[str] = ["deepseek-v4-flash", "deepseek-chat"]
+
+    # LLM client retry/timeout — bounds the 429 failure mode. One retry authority per
+    # client (no nested SDK retries multiplying with tenacity), a per-request wall
+    # timeout, and a retry-after ceiling above which a 429 is treated as un-recoverable
+    # (daily-cap / TPD) so the call fails fast instead of burning the backoff ladder.
+    groq_request_timeout: float = 30.0
+    deepseek_request_timeout: float = 60.0
+    llm_max_retries: int = 2
+    retry_after_ceiling_seconds: float = 60.0
 
     # Model for the Anthropic provider: HyDE's Anthropic branch (hyde.py) and
     # LLMRouter when provider == "anthropic". Groq/Ollama use their own fields.
@@ -166,6 +179,24 @@ class Settings(BaseSettings):
     # The answer can only cite what reaches synthesis, so this is sized to fit the context
     # window, not an arbitrary small number. Facts are fed in full (no cap).
     agentic_synthesis_top_k: int = 50
+
+    # Multi-agent supervisor (compound / parallelizable queries). Opt-in layer ABOVE the
+    # single-agent agentic loop: a decompose step splits a genuinely parallel question into
+    # independent branches, each gathered by the existing single-agent loop in its OWN
+    # ledger, then merged into ONE grounded synthesis. Dependent/sequential queries degrade
+    # to the untouched single-agent path (no regression). Off until eval proves a
+    # compound-class win.
+    supervisor_enabled: bool = False
+    # Max worker sub-agents (Anthropic's 3-5 subagent guidance). Hard cap on total
+    # dispatch_worker calls (over-decomposition backstop) AND the ThreadPoolExecutor
+    # max_workers for parallel dispatch.
+    supervisor_max_branches: int = 4
+    # Runaway backstop on supervisor ReAct loop turns (dispatch round(s) + compose + stop
+    # fit in a few; this only catches pathology). Analogous to agentic_max_inner_steps.
+    supervisor_max_steps: int = 6
+    # Composer call output budget. The Composer writes the full combined answer (a CTI
+    # comparison can be long), so this is generous; it reuses the agentic_verifier_* client.
+    supervisor_compose_max_tokens: int = 4096
 
     @field_validator("hybrid_alpha")
     @classmethod

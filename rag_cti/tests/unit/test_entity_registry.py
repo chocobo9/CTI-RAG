@@ -302,10 +302,22 @@ def test_strict_drops_substring_near_miss():
 
 def test_strict_drops_ambiguous_exact_alias():
     nodes = [
-        {"ontology_id": "S0145", "type": "software", "name": "POWERSOURCE",
-         "aliases": ["DNSMessenger"], "tactics": [], "attack_version": "18.1"},
-        {"ontology_id": "S0146", "type": "software", "name": "TEXTMATE",
-         "aliases": ["DNSMessenger"], "tactics": [], "attack_version": "18.1"},
+        {
+            "ontology_id": "S0145",
+            "type": "software",
+            "name": "POWERSOURCE",
+            "aliases": ["DNSMessenger"],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
+        {
+            "ontology_id": "S0146",
+            "type": "software",
+            "name": "TEXTMATE",
+            "aliases": ["DNSMessenger"],
+            "tactics": [],
+            "attack_version": "18.1",
+        },
     ]
     # ambiguous -> orphan resolution -> dropped (no guessed id boosts the wrong chunk)
     assert resolve_entity_ids_strict([("DNSMessenger", "family")], nodes) == []
