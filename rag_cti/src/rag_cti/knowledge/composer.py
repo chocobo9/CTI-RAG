@@ -46,16 +46,21 @@ def _render_report(report: BranchReport) -> dict[str, object]:
     }
 
 
-def build_compose_user(query: str, reports: Sequence[BranchReport]) -> str:
+def build_compose_user(
+    query: str, reports: Sequence[BranchReport], history: list[str] | None = None
+) -> str:
     """Render the original compound question + each branch's report as JSON for the
     Composer (structured, so it can do exact set operations over the technique ids)."""
     payload = {
         "question": query,
+        "conversation_history": tuple(history or ()),
         "branch_reports": [_render_report(r) for r in reports],
     }
     return json.dumps(payload, default=str)
 
 
-def compose(composer: ComposeFn, query: str, reports: Sequence[BranchReport]) -> str:
+def compose(
+    composer: ComposeFn, query: str, reports: Sequence[BranchReport], history: list[str] | None = None
+) -> str:
     """Combine the branch reports into the final answer text (over an injected LLM)."""
-    return composer(AGENTIC_COMPOSE_SYSTEM, build_compose_user(query, reports))
+    return composer(AGENTIC_COMPOSE_SYSTEM, build_compose_user(query, reports, history))

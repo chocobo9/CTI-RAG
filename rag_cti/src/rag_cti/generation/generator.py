@@ -166,7 +166,11 @@ class Generator:
                 max_tokens=self._settings.generation_max_tokens,
                 messages=messages,
             )
-            return _extract_text(response)
+            text = _extract_text(response)
+            if not text.strip():
+                logger.warning("generation llm returned empty content", model=model)
+                return _LLM_FAILURE_SENTINEL
+            return text
         except Exception as exc:
             logger.warning("generation llm call failed", error=str(exc))
             return _LLM_FAILURE_SENTINEL

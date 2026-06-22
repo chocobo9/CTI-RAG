@@ -77,7 +77,9 @@ class AgenticAnswer(BaseModel, frozen=True):
     iteration_count: int = 0
     tokens_used: int = 0
     stop_reason: str = (
-        ""  # sufficient | max_rounds | no_progress | timeout | budget | parse_fallback
+        # sufficient | graph_sufficient | max_rounds | no_progress | open_cat_stall |
+        # timeout | budget | tool_budget | parse_fallback | provider_error
+        ""
     )
     dropped_citation_count: int = 0
     # Total tool calls the gather loop dispatched (len of the ledger action log) — the

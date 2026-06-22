@@ -12,6 +12,7 @@ from tenacity import (
 )
 
 from rag_cti._logging import get_logger
+from rag_cti.generation.limiter import ConcurrencyLimiter
 
 logger = get_logger(__name__)
 
@@ -116,23 +117,37 @@ class RetryingGroqClient:
         *,
         timeout: float = 30.0,
         retry_after_ceiling: float = _DEFAULT_RETRY_AFTER_CEILING,
+        limiter: ConcurrencyLimiter | None = None,
     ) -> None:
         self._raw = groq.Groq(api_key=api_key, max_retries=0, timeout=timeout)
-        self.chat = _RetryingChat(self._raw, retry_after_ceiling=retry_after_ceiling)
+        self.chat = _RetryingChat(
+            self._raw, retry_after_ceiling=retry_after_ceiling, limiter=limiter
+        )
 
 
 class _RetryingChat:
     def __init__(
-        self, client: groq.Groq, *, retry_after_ceiling: float = _DEFAULT_RETRY_AFTER_CEILING
+        self,
+        client: groq.Groq,
+        *,
+        retry_after_ceiling: float = _DEFAULT_RETRY_AFTER_CEILING,
+        limiter: ConcurrencyLimiter | None = None,
     ) -> None:
-        self.completions = _RetryingCompletions(client, retry_after_ceiling=retry_after_ceiling)
+        self.completions = _RetryingCompletions(
+            client, retry_after_ceiling=retry_after_ceiling, limiter=limiter
+        )
 
 
 class _RetryingCompletions:
     def __init__(
-        self, client: groq.Groq, *, retry_after_ceiling: float = _DEFAULT_RETRY_AFTER_CEILING
+        self,
+        client: groq.Groq,
+        *,
+        retry_after_ceiling: float = _DEFAULT_RETRY_AFTER_CEILING,
+        limiter: ConcurrencyLimiter | None = None,
     ) -> None:
         self._client = client
+        self._limiter = limiter
         # Instance-level Retrying (not a class decorator) so the per-config retry-after
         # ceiling closes over the predicate. tenacity is the single retry authority.
         self._retrying = Retrying(
@@ -147,8 +162,20 @@ class _RetryingCompletions:
 
     def _create_once(self, **kwargs: Any) -> groq.types.chat.ChatCompletion:
         logger.debug("groq chat.completions.create", model=kwargs.get("model"))
-        response: groq.types.chat.ChatCompletion = self._client.chat.completions.create(**kwargs)
-        return response
+        try:
+            if self._limiter is None:
+                response: groq.types.chat.ChatCompletion = self._client.chat.completions.create(
+                    **kwargs
+                )
+            else:
+                with self._limiter.slot():
+                    response = self._client.chat.completions.create(**kwargs)
+            return response
+        except Exception as exc:
+            retry_after = _retry_after_seconds(exc)
+            if retry_after is not None and self._limiter is not None:
+                self._limiter.cooldown(retry_after)
+            raise
 
 
 # ---------------------------------------------------------------------------
@@ -225,12 +252,24 @@ class _FallbackCompletions:
         last_exc: Exception | None = None
         for model in self._models:
             try:
-                return self._client.chat.completions.create(model=model, **kwargs)
+                response = self._client.chat.completions.create(model=model, **kwargs)
+                if _is_empty_chat_response(response):
+                    raise RuntimeError(f"{model} returned empty content")
+                return response
             except Exception as exc:  # downgrade to the next model
                 last_exc = exc
                 logger.warning("generation model failed, downgrading", model=model, error=str(exc))
         assert last_exc is not None  # loop ran >=1 time (models non-empty)
         raise last_exc
+
+
+def _is_empty_chat_response(response: Any) -> bool:
+    """True when a chat completion succeeded transport-wise but produced no content."""
+    try:
+        content = response.choices[0].message.content
+    except Exception:
+        return False
+    return not str(content or "").strip()
 
 
 def build_llm_client(settings: Any) -> tuple[str, Any]:
@@ -247,6 +286,8 @@ def build_llm_client(settings: Any) -> tuple[str, Any]:
 
     groq_key = settings.groq_api_key.get_secret_value()
     if groq_key:
+        from rag_cti.generation.limiter import get_limiter
+
         logger.info(
             "llm provider: groq",
             hyde_model=settings.groq_query_model,
@@ -256,6 +297,7 @@ def build_llm_client(settings: Any) -> tuple[str, Any]:
             api_key=groq_key,
             timeout=settings.groq_request_timeout,
             retry_after_ceiling=settings.retry_after_ceiling_seconds,
+            limiter=get_limiter("groq", settings),
         )
 
     anthropic_key = settings.anthropic_api_key.get_secret_value()

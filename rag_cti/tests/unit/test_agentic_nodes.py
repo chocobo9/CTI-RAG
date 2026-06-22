@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import threading
 import time
 
+import pytest
 from langchain_core.messages import ToolMessage
 
 from rag_cti.knowledge import agentic_nodes as nodes
+from rag_cti.knowledge import react_loop
 from rag_cti.knowledge.agentic_state import AgenticAnswer, SufficiencyVerdict
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.types import (
@@ -291,6 +294,83 @@ def test_decide_next_wall_clock_disabled_when_zero() -> None:
     ) == ("agent_turn", "")
 
 
+def test_decide_next_tool_budget_stops() -> None:
+    v = _verdict("retrieve_more")
+    assert nodes.decide_next(
+        v,
+        1,
+        0,
+        5,
+        max_iterations=15,
+        token_ceiling=10**9,
+        tool_calls_used=3,
+        max_tool_calls=3,
+    ) == ("synthesize", "tool_budget")
+
+
+def test_decide_next_tool_budget_does_not_preempt_sufficient() -> None:
+    assert nodes.decide_next(
+        _verdict("stop"),
+        1,
+        0,
+        5,
+        max_iterations=15,
+        token_ceiling=10**9,
+        tool_calls_used=99,
+        max_tool_calls=3,
+    ) == ("synthesize", "sufficient")
+
+
+def test_decide_next_open_cat_stall_stops() -> None:
+    # No new facts AND the open-category count hasn't shrunk for the stall limit -> stop early
+    # with a meaningful reason instead of churning prose to max_rounds. new_evidence>0 so the
+    # plain no-progress guard does NOT fire; no prev_gaps so the stuck guard does NOT fire.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("g",))
+    assert nodes.decide_next(
+        v,
+        2,
+        0,
+        5,
+        max_iterations=15,
+        token_ceiling=10**9,
+        new_facts=0,
+        open_cat_stall=2,
+        max_open_cat_stall=2,
+    ) == ("synthesize", "open_cat_stall")
+
+
+def test_decide_next_open_cat_stall_disabled_when_zero() -> None:
+    # max_open_cat_stall=0 disables the guard -> the stall count is ignored, loop continues.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("g",))
+    assert nodes.decide_next(
+        v,
+        2,
+        0,
+        5,
+        max_iterations=15,
+        token_ceiling=10**9,
+        new_facts=0,
+        open_cat_stall=9,
+        max_open_cat_stall=0,
+    ) == ("agent_turn", "")
+
+
+def test_decide_next_open_cat_stall_but_new_facts_continues() -> None:
+    # Still adding facts -> the enumeration IS advancing -> continue even if open count is flat.
+    v = SufficiencyVerdict(next_action="retrieve_more", coverage_gaps=("g",))
+    assert nodes.decide_next(
+        v,
+        2,
+        0,
+        5,
+        max_iterations=15,
+        token_ceiling=10**9,
+        new_facts=4,
+        open_cat_stall=2,
+        max_open_cat_stall=2,
+    ) == ("agent_turn", "")
+
+
 # --- build_directives ----------------------------------------------------------
 
 
@@ -346,6 +426,15 @@ def test_build_turn_messages_retrieve_more_appends_directive() -> None:
     assert "Already gathered" in msgs[2][1]  # working-set summary from the ledger
 
 
+def test_build_turn_messages_includes_history() -> None:
+    msgs = nodes.build_turn_messages(
+        "SYS", "and who do they target?", None, EvidenceLedger(), history=["What does APT29 use?"]
+    )
+    assert "Conversation so far" in msgs[1][1]
+    assert "What does APT29 use?" in msgs[1][1]
+    assert "Latest query: and who do they target?" in msgs[1][1]
+
+
 # --- assemble_citations (the grounding guarantee) ------------------------------
 
 
@@ -364,6 +453,14 @@ def test_assemble_citations_recovers_chunk_prefixed_id() -> None:
     kept, dropped = nodes.assemble_citations("see [chunk_86f0abc] but not [chunk_nope]", led)
     assert kept == ("86f0abc",)
     assert dropped == 1  # chunk_nope has no real id behind it
+
+
+def test_assemble_citations_recovers_bare_fact_ids() -> None:
+    led = _ledger_with_chunks()
+    led.add_facts((_row("fact_f1"),))
+    kept, dropped = nodes.assemble_citations("APT29 fact_f1 supports this.", led)
+    assert kept == ("fact_f1",)
+    assert dropped == 0
 
 
 # --- synthesize_answer + build_agentic_answer ----------------------------------
@@ -409,6 +506,16 @@ def test_synthesize_answer_caps_context_to_top_k() -> None:
     nodes.synthesize_answer(gen, "q", led, top_k=1, fact_limit=0)
     assert gen.seen is not None
     assert [r.document.id for r in gen.seen.results] == ["c2"]  # only the top-1 by score
+
+
+def test_synthesize_answer_caps_fact_context() -> None:
+    led = _ledger_with_chunks(_result("c1", 0.9))
+    led.add_facts((_row("f1"), _row("f2"), _row("f3")))
+    gen = _FakeGenerator("answer")
+    nodes.synthesize_answer(gen, "q", led, fact_limit=2)
+    assert gen.seen is not None
+    fact_ids = [r.document.id for r in gen.seen.results if r.document.source == "graph"]
+    assert fact_ids == ["f1", "f2"]
 
 
 def test_synthesize_answer_injects_facts_as_citable_pseudo_chunks() -> None:
@@ -632,6 +739,29 @@ def test_render_state_view_reports_prose() -> None:
     assert "prose: 2 chunks from otx" in view
 
 
+# --- count_open_categories (A2 deterministic convergence signal) ---------------
+
+
+def test_count_open_categories_empty_is_zero() -> None:
+    assert nodes.count_open_categories(EvidenceLedger()) == 0
+
+
+def test_count_open_categories_complete_category_not_counted() -> None:
+    led = EvidenceLedger()
+    led.add_outline(_outline("actor_G0016", "APT29", ("uses", "technique", 2)))
+    led.add_facts((_row("f1"), _row("f2")))  # 2/2 reached the total -> COMPLETE -> not open
+    assert nodes.count_open_categories(led) == 0
+
+
+def test_count_open_categories_counts_open_and_zero_categories() -> None:
+    led = EvidenceLedger()
+    led.add_outline(
+        _outline("actor_G0016", "APT29", ("uses", "technique", 3), ("targets", "country", 5))
+    )
+    led.add_facts((_row("f1"), _row("f2")))  # 2/3 uses->technique open; 0/5 targets->country open
+    assert nodes.count_open_categories(led) == 2
+
+
 def test_run_gather_loop_injects_fresh_state_view_at_end_each_turn() -> None:
     model = _ScriptedModel(
         [
@@ -763,3 +893,135 @@ def test_run_gather_loop_masks_stale_observations_in_model_input() -> None:
     assert sum(m.content == nodes._TRIMMED_STUB for m in tool_msgs) == 2  # 2 oldest masked
     # the persistent transcript keeps the real observations (masking is input-only)
     assert sum(isinstance(m, ToolMessage) and m.content == "{'r': 1}" for m in convo) == 3
+
+
+# --- within-turn parallel dispatch (B2, experimental) --------------------------
+
+
+def _three_call_model() -> _ScriptedModel:
+    return _ScriptedModel(
+        [
+            _FakeAI(
+                [
+                    {"name": "graph_query", "args": {}, "id": "t1"},
+                    {"name": "retrieve", "args": {}, "id": "t2"},
+                    {"name": "graph_outline", "args": {}, "id": "t3"},
+                ]
+            ),
+            _FakeAI([], content="done"),
+        ]
+    )
+
+
+def test_run_gather_loop_parallel_preserves_toolmessage_order() -> None:
+    convo = nodes.run_gather_loop(
+        _three_call_model(),
+        lambda n, a: {"tool": n},
+        [("user", "q")],
+        max_steps=8,
+        parallel_dispatch=True,
+        max_parallel_tools=3,
+    )
+    ids = [m.tool_call_id for m in convo if isinstance(m, ToolMessage)]
+    assert ids == ["t1", "t2", "t3"]  # ex.map preserves submission order -> pairing intact
+
+
+def test_run_gather_loop_parallel_disabled_is_serial() -> None:
+    calls: list[str] = []
+    nodes.run_gather_loop(
+        _three_call_model(),
+        lambda n, a: calls.append(n) or {"ok": 1},
+        [("user", "q")],
+        max_steps=8,
+        parallel_dispatch=False,
+    )
+    assert calls == ["graph_query", "retrieve", "graph_outline"]  # serial, in order
+
+
+def test_run_gather_loop_parallel_runs_concurrently() -> None:
+    # A 3-party barrier only releases if all three dispatches run AT ONCE — a definitive
+    # concurrency proof immune to timing jitter. Serial dispatch would block on the first call,
+    # time out the barrier, and leave `passed` empty.
+    barrier = threading.Barrier(3, timeout=5.0)
+    passed: list[str] = []
+    plock = threading.Lock()
+
+    def dispatch(name: str, args: dict) -> dict:
+        barrier.wait()  # returns only when all 3 are concurrently in flight
+        with plock:
+            passed.append(name)
+        return {"ok": name}
+
+    nodes.run_gather_loop(
+        _three_call_model(),
+        dispatch,
+        [("user", "q")],
+        max_steps=8,
+        parallel_dispatch=True,
+        max_parallel_tools=3,
+    )
+    assert sorted(passed) == ["graph_outline", "graph_query", "retrieve"]  # all 3 cleared together
+
+
+def test_run_gather_loop_parallel_surfaces_tool_error() -> None:
+    def dispatch(name: str, args: dict) -> dict:
+        if name == "retrieve":
+            raise RuntimeError("kaboom")
+        return {"ok": name}
+
+    convo = nodes.run_gather_loop(
+        _three_call_model(),
+        dispatch,
+        [("user", "q")],
+        max_steps=8,
+        parallel_dispatch=True,
+        max_parallel_tools=3,
+    )
+    tool_msgs = [m for m in convo if isinstance(m, ToolMessage)]
+    assert len(tool_msgs) == 3  # every call produced a ToolMessage, the burst did not crash
+    assert any("kaboom" in str(m.content) for m in tool_msgs)  # error surfaced, not raised
+
+
+def test_run_gather_loop_parallel_skips_dispatch_past_deadline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # time.sleep is a suite-wide no-op (conftest), so DRIVE the monotonic clock instead (per the
+    # conftest note "deadline tests drive monotonic"): the FIRST reading (the outer-loop check) is
+    # under the deadline so the burst proceeds, every LATER reading (the per-call _run_one checks)
+    # is past it — so each parallel call skips its dispatch and returns the sentinel. The clock fn
+    # is thread-safe because the parallel _run_one checks read it concurrently.
+    first = {"pending": True}
+    guard = threading.Lock()
+
+    def fake_monotonic() -> float:
+        with guard:
+            if first["pending"]:
+                first["pending"] = False
+                return 0.0
+        return 100.0
+
+    monkeypatch.setattr(react_loop.time, "monotonic", fake_monotonic)
+    dispatched: list[str] = []
+    model = _ScriptedModel(
+        [
+            _FakeAI(
+                [
+                    {"name": "retrieve", "args": {}, "id": "t1"},
+                    {"name": "retrieve", "args": {}, "id": "t2"},
+                ]
+            )
+        ]
+    )
+    convo = nodes.run_gather_loop(
+        model,
+        lambda n, a: dispatched.append(n) or {"ok": 1},
+        [("user", "q")],
+        max_steps=8,
+        deadline=5.0,
+        parallel_dispatch=True,
+        max_parallel_tools=2,
+    )
+    assert dispatched == []  # nothing dispatched after the deadline
+    sentinels = [m for m in convo if isinstance(m, ToolMessage)]
+    assert sentinels  # both calls still produced a (sentinel) ToolMessage -> pairing intact
+    assert all("skipped" in str(m.content) for m in sentinels)

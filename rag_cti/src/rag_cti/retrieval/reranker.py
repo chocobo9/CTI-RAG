@@ -12,6 +12,13 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
+# Process-global lock to SERIALIZE cross-encoder forward passes when several retrieve tool
+# calls dispatch concurrently (B2 parallel dispatch): one 8GB GPU cannot run parallel predicts
+# without risking CUDA OOM, and they would serialize on the compute stream anyway — so guard the
+# forward pass while the I/O-bound Groq/Qdrant/Neo4j stages of the concurrent retrieves overlap.
+# Only used when a reranker is built with serialize_predict=True.
+_PREDICT_LOCK = threading.Lock()
+
 
 @runtime_checkable
 class Reranker(Protocol):
@@ -28,12 +35,22 @@ class NoOpReranker:
 class CrossEncoderReranker:
     """Cross-encoder reranker using sentence-transformers CrossEncoder."""
 
-    def __init__(self, model_name: str, device: str | None = None, max_length: int = 512) -> None:
+    def __init__(
+        self,
+        model_name: str,
+        device: str | None = None,
+        max_length: int = 512,
+        *,
+        serialize_predict: bool = False,
+    ) -> None:
         self._model_name = model_name
         self._device = device or self._detect_device()
         self._max_length = max_length
         self._model: CrossEncoder | None = None
         self._lock = threading.Lock()
+        # Serialize forward passes across threads (B2): the GPU is the binding constraint under
+        # concurrent retrieve dispatch. Off by default — single-threaded retrieval pays nothing.
+        self._serialize_predict = serialize_predict
 
     @staticmethod
     def _detect_device() -> str:
@@ -77,7 +94,11 @@ class CrossEncoderReranker:
         # Each [query, content] list is a valid PairInput at runtime; only list
         # invariance keeps mypy from accepting list[list[str]] directly.
         pairs = cast("list[PairInput]", [[query, r.document.content] for r in results])
-        scores = model.predict(pairs, show_progress_bar=False, batch_size=8)
+        if self._serialize_predict:
+            with _PREDICT_LOCK:  # one forward pass at a time on the shared GPU (B2)
+                scores = model.predict(pairs, show_progress_bar=False, batch_size=8)
+        else:
+            scores = model.predict(pairs, show_progress_bar=False, batch_size=8)
         t_predict = time.perf_counter()
 
         reranked = sorted(

@@ -1,4 +1,4 @@
-"""v1 agent tool logic — backend-free functions the LangChain @tools wrap.
+"""Agent tool logic — backend-free functions the LangChain @tools wrap.
 
 Kept separate from the LangGraph wiring so the tool logic unit-tests with fakes
 (no langgraph / LLM). Two responsibilities:
@@ -6,7 +6,7 @@ Kept separate from the LangGraph wiring so the tool logic unit-tests with fakes
 1. **Bounded summaries** (§9.4 #1 context strategy): ``summarize_*`` turn full
    graph/vector results into the small object the LLM sees — names + ids + a total
    **count**, NOT the 223 full facts with citations.
-2. **Ledger-aware adapters** (agentic plan): ``*_to_ledger`` call the underlying
+2. **Ledger-aware adapters**: ``*_to_ledger`` call the underlying
    tool once, append the **full** structured result to the per-run
    :class:`~rag_cti.knowledge.evidence_ledger.EvidenceLedger`, and return the
    bounded summary — so the hard-rail nodes see untruncated evidence while the LLM
@@ -26,8 +26,7 @@ from rag_cti.types import FactRow, GraphOutline, QueryResult, RetrievalResult
 # Subject-capable entity types resolve_entity tries (NL name -> entity_id).
 _SUBJECT_TYPES = ("actor", "family", "campaign", "technique")
 
-# (query, top_k) -> object with .results  /  (query, top_k) -> QueryResult
-VectorSearch = Callable[[str, int], Any]
+# (query, top_k) -> QueryResult
 RunRetrieve = Callable[[str, int], QueryResult]
 
 
@@ -124,41 +123,6 @@ def summarize_chunks(results: list[RetrievalResult]) -> dict[str, Any]:
             for r in results
         ]
     }
-
-
-# ---------------------------------------------------------------------------
-# v0 tool wrappers (deterministic; used by the `facts` CLI path and unit tests)
-# ---------------------------------------------------------------------------
-
-
-def outline_summary(fact_store: FactStoreProto, entity_id: str) -> dict[str, Any]:
-    return summarize_outline(fact_store.graph_outline(entity_id), entity_id)
-
-
-def query_summary(
-    fact_store: FactStoreProto,
-    *,
-    subject_id: str,
-    predicate: str | None = None,
-    object_type: str | None = None,
-    min_credibility: float = 0.0,
-    limit: int = 50,
-) -> dict[str, Any]:
-    rows = fact_store.graph_query(
-        subject_id=subject_id,
-        predicate=predicate,
-        object_type=object_type,
-        min_credibility=min_credibility,
-    )
-    return summarize_rows(rows, limit)
-
-
-def facts_for_evidence_summary(fact_store: FactStoreProto, evidence_id: str) -> dict[str, Any]:
-    return summarize_facts_for_evidence(fact_store.facts_for_evidence(evidence_id))
-
-
-def vector_search_summary(search: VectorSearch, query: str, top_k: int = 5) -> dict[str, Any]:
-    return summarize_chunks(search(query, top_k).results)
 
 
 # ---------------------------------------------------------------------------

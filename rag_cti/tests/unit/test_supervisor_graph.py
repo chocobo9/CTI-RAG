@@ -23,6 +23,9 @@ def _settings() -> Any:
         supervisor_max_steps=6,
         agentic_synthesis_top_k=50,
         agentic_max_iterations=6,
+        agentic_verifier_provider="deepseek",
+        llm_max_global_concurrency=4,
+        llm_rate_limit_per_sec=0.0,
     )
 
 

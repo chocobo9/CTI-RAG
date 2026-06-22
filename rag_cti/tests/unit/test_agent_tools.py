@@ -1,4 +1,4 @@
-"""Unit tests for v1 agent tool logic (knowledge.agent_tools)."""
+"""Unit tests for agent tool logic (knowledge.agent_tools)."""
 
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def test_resolve_entity_candidates_unresolved_is_empty(monkeypatch: pytest.Monke
     assert agent_tools.resolve_entity_candidates("nonsense", []) == []
 
 
-def test_outline_summary_maps_numbers() -> None:
+def test_summarize_outline_maps_numbers() -> None:
     outline = GraphOutline(
         entity_id="actor_G0016",
         entity_name="APT29",
@@ -79,7 +79,7 @@ def test_outline_summary_maps_numbers() -> None:
             ),
         ),
     )
-    out = agent_tools.outline_summary(_FakeFactStore(outline=outline), "actor_G0016")
+    out = agent_tools.summarize_outline(outline, "actor_G0016")
     assert out["found"] is True
     assert out["entity_name"] == "APT29"
     assert out["outgoing"][0] == {"predicate": "uses", "object_type": "technique", "count": 173}
@@ -90,14 +90,14 @@ def test_outline_summary_maps_numbers() -> None:
     }
 
 
-def test_outline_summary_not_found() -> None:
-    out = agent_tools.outline_summary(_FakeFactStore(outline=None), "actor_X")
+def test_summarize_outline_not_found() -> None:
+    out = agent_tools.summarize_outline(None, "actor_X")
     assert out == {"found": False, "entity_id": "actor_X"}
 
 
-def test_query_summary_truncates_and_reports_total() -> None:
+def test_summarize_rows_truncates_and_reports_total() -> None:
     rows = tuple(_row(f"f{i}") for i in range(60))
-    out = agent_tools.query_summary(_FakeFactStore(rows=rows), subject_id="actor_G0016", limit=50)
+    out = agent_tools.summarize_rows(rows, limit=50)
     assert out["total"] == 60
     assert out["shown"] == 50
     assert out["truncated"] is True
@@ -105,13 +105,13 @@ def test_query_summary_truncates_and_reports_total() -> None:
     assert out["objects"][0]["fact_id"] == "f0"
 
 
-def test_facts_for_evidence_summary() -> None:
-    out = agent_tools.facts_for_evidence_summary(_FakeFactStore(rows=(_row("f1"),)), "chunk1")
+def test_summarize_facts_for_evidence() -> None:
+    out = agent_tools.summarize_facts_for_evidence((_row("f1"),))
     assert out["count"] == 1
     assert out["facts"][0]["predicate"] == "uses"
 
 
-def test_vector_search_summary() -> None:
+def test_summarize_chunks() -> None:
     chunk = Chunk(id="c1", parent_doc_id="d", source="otx", content="body text", chunk_index=0)
     qr = QueryResult(
         query="q",
@@ -119,5 +119,5 @@ def test_vector_search_summary() -> None:
         total_retrieved=1,
         retrieval_ms=1.0,
     )
-    out = agent_tools.vector_search_summary(lambda q, k: qr, "query")
+    out = agent_tools.summarize_chunks(qr.results)
     assert out["chunks"][0] == {"chunk_id": "c1", "source": "otx", "snippet": "body text"}

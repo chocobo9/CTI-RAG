@@ -293,7 +293,9 @@ def test_build_pipeline_reranker_enabled_uses_cross_encoder() -> None:
             embedder=_FakeEmbedder(),
             encoder=_FakeEncoder(),
         )
-    mock_cls.assert_called_once_with(model_name="BAAI/bge-reranker-v2-m3", max_length=512)
+    mock_cls.assert_called_once_with(
+        model_name="BAAI/bge-reranker-v2-m3", max_length=512, serialize_predict=False
+    )
     assert isinstance(pipeline, Pipeline)
 
 

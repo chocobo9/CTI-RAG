@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import threading
+import time
 from types import SimpleNamespace
 from typing import Any
 
@@ -150,6 +152,86 @@ def test_history_passed_to_rewriter() -> None:
     wrap = QueryRewriteRetriever(base, rw)  # type: ignore[arg-type]
     wrap.search("follow up", top_k=5, history=["prior turn"])
     assert rw.history_seen == ["prior turn"]
+
+
+# --- B1: parallel sub-query fan-out (latency; flag-gated, fusion-parity) --------
+
+
+def _parallel_settings(**over: Any) -> Any:
+    base = {
+        "query_rewrite_parallel_fanout_enabled": True,
+        "query_rewrite_max_parallel_subqueries": 4,
+        "llm_max_global_concurrency": 4,
+        "llm_rate_limit_per_sec": 0.0,
+    }
+    base.update(over)
+    return SimpleNamespace(**base)
+
+
+def _wrap(base: object, rewriter: object, settings: object) -> QueryRewriteRetriever:
+    return QueryRewriteRetriever(base, rewriter, settings=settings)  # type: ignore[arg-type]
+
+
+def test_parallel_fanout_matches_serial_fusion() -> None:
+    # Same base + rewriter as the serial test_multi_subquery_fans_out_and_fuses: the parallel
+    # fan-out must produce the IDENTICAL fused set + ordering (RRF is order-independent and
+    # submission order is preserved), so turning the flag on changes latency, not results.
+    base = _FakeBase(
+        {
+            "q1": [_res("A", 0, 0.9), _res("B", 1, 0.5)],
+            "q2": [_res("B", 0, 0.8), _res("C", 1, 0.4)],
+        }
+    )
+    wrap = _wrap(base, _FakeRewriter(["q1", "q2"]), _parallel_settings())
+    ids = [r.document.id for r in wrap.search("compound", top_k=10)]
+    assert set(ids) == {"A", "B", "C"}
+    assert ids[0] == "B"  # B ranked in both -> highest fused score, identical to serial
+    assert sorted(base.calls) == ["q1", "q2"]  # both searched (call order may vary under threads)
+
+
+def test_parallel_fanout_cap_one_is_serial() -> None:
+    base = _FakeBase({"q1": [_res("A", 0, 0.9)], "q2": [_res("B", 0, 0.8)]})
+    wrap = _wrap(
+        base,
+        _FakeRewriter(["q1", "q2"]),
+        _parallel_settings(query_rewrite_max_parallel_subqueries=1),
+    )
+    out = wrap.search("compound", top_k=10)
+    assert base.calls == ["q1", "q2"]  # serial path: searched in submission order
+    assert {r.document.id for r in out} == {"A", "B"}
+
+
+class _ConcurrencyBase:
+    """A base retriever that records the peak number of overlapping searches."""
+
+    def __init__(self, hold: float = 0.02) -> None:
+        self.calls: list[str] = []
+        self._hold = hold
+        self._lock = threading.Lock()
+        self._current = 0
+        self.peak = 0
+
+    def search(self, query: str, top_k: int = 10, **_: Any) -> list[RetrievalResult]:
+        with self._lock:
+            self.calls.append(query)
+            self._current += 1
+            self.peak = max(self.peak, self._current)
+        time.sleep(self._hold)
+        with self._lock:
+            self._current -= 1
+        return [_res(query, 0, 0.9)]
+
+
+def test_parallel_fanout_caps_concurrency() -> None:
+    base = _ConcurrencyBase()
+    wrap = _wrap(
+        base,
+        _FakeRewriter(["q1", "q2", "q3", "q4", "q5", "q6"]),
+        _parallel_settings(query_rewrite_max_parallel_subqueries=2),
+    )
+    wrap.search("compound", top_k=10)
+    assert len(base.calls) == 6  # all sub-queries searched
+    assert base.peak <= 2  # never more than the cap ran concurrently
 
 
 # --- real _generate_raw path: temperature + model wiring (groq-shaped client) ---

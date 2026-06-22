@@ -21,6 +21,8 @@ langchain WIRING (coverage-omitted); the pure logic is in ``supervisor_nodes.py`
 
 from __future__ import annotations
 
+import threading
+import time
 from typing import Any
 
 from rag_cti.config import Settings
@@ -28,9 +30,11 @@ from rag_cti.knowledge.agent_tools import RunRetrieve
 from rag_cti.knowledge.agentic_graph import build_agentic_graph
 from rag_cti.knowledge.agentic_nodes import GeneratorProto, JudgeFn, build_agentic_answer
 from rag_cti.knowledge.agentic_state import AgenticAnswer, BranchReport, SubQuestion
+from rag_cti.knowledge.chat_fn import build_chat_fn
 from rag_cti.knowledge.composer import ComposeFn, compose
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.knowledge.fact_store import FactStoreProto
+from rag_cti.knowledge.graph_limits import outer_recursion_limit
 from rag_cti.knowledge.supervisor_nodes import (
     extract_techniques,
     merge_branch_ledgers,
@@ -63,26 +67,14 @@ def build_composer(client: Any, model: str, max_tokens: int = 1024) -> ComposeFn
     """A ComposeFn (system, user) -> raw answer text over any OpenAI-compatible chat
     endpoint. Mirrors ``agentic_graph.build_judge`` — the Composer is a distinct LLM role
     that only combines reports, so it reuses the same client plumbing."""
-
-    def compose_fn(system: str, user: str) -> str:
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            max_tokens=max_tokens,
-        )
-        content: str = response.choices[0].message.content or ""
-        return content
-
-    return compose_fn
+    return build_chat_fn(client, model, max_tokens)
 
 
 def gather_branch(
     branch: SubQuestion,
     *,
     settings: Settings,
+    history: list[str] | None = None,
     run_retrieve: RunRetrieve,
     fact_store: FactStoreProto | None,
     ontology_nodes: list[dict[str, Any]],
@@ -98,6 +90,7 @@ def gather_branch(
         settings=settings,
         ledger=ledger,
         query=branch.sub_question,
+        history=history,
         run_retrieve=run_retrieve,
         fact_store=fact_store,
         ontology_nodes=ontology_nodes,
@@ -106,7 +99,7 @@ def gather_branch(
         judge=judge,
         gather_only=True,  # workers GATHER only; the Composer is the sole synthesizer
     )
-    outer_limit = max(25, settings.agentic_max_iterations * 4)
+    outer_limit = outer_recursion_limit(settings)
     result = graph.invoke(
         {"iteration_count": 0, "tokens_used": 0},
         config={"recursion_limit": outer_limit},
@@ -133,6 +126,7 @@ def run_supervised_answer(
     query: str,
     *,
     settings: Settings,
+    history: list[str] | None = None,
     run_retrieve: RunRetrieve,
     fact_store: FactStoreProto | None,
     ontology_nodes: list[dict[str, Any]],
@@ -151,12 +145,16 @@ def run_supervised_answer(
 
     reports: list[BranchReport] = []
     ledgers: list[EvidenceLedger] = []
+    reports_lock = threading.Lock()
     composed: dict[str, str] = {}
+    max_wall_seconds = getattr(settings, "agentic_max_wall_seconds", 0.0)
+    deadline = time.monotonic() + max_wall_seconds if max_wall_seconds > 0 else None
 
     def _run_worker(sub_question: str, focus_entity: str | None) -> BranchReport:
         ledger, report = gather_branch(
             SubQuestion(sub_question=sub_question, focus_entity=focus_entity),
             settings=settings,
+            history=history,
             run_retrieve=run_retrieve,
             fact_store=fact_store,
             ontology_nodes=ontology_nodes,
@@ -164,15 +162,18 @@ def run_supervised_answer(
             chat_model=chat_model,
             judge=judge,
         )
-        ledgers.append(ledger)
-        reports.append(report)
+        with reports_lock:
+            ledgers.append(ledger)
+            reports.append(report)
         return report
 
     @tool
     def dispatch_worker(sub_question: str, focus_entity: str | None = None) -> dict[str, Any]:
         """Assign one self-contained sub-question to a worker sub-agent; it gathers and
         returns a report. Returns a bounded summary (entity, technique count, answer preview)."""
-        if len(reports) >= settings.supervisor_max_branches:
+        with reports_lock:
+            dispatched = len(reports)
+        if dispatched >= settings.supervisor_max_branches:
             return {"error": f"max {settings.supervisor_max_branches} workers already dispatched"}
         report = _run_worker(sub_question, focus_entity)
         return {
@@ -187,7 +188,9 @@ def run_supervised_answer(
         """Combine all gathered branch reports into the final answer (call once, at the end)."""
         if not reports:
             return "no reports gathered yet — dispatch workers first"
-        composed["text"] = compose(composer, query, reports)
+        with reports_lock:
+            snapshot = list(reports)
+        composed["text"] = compose(composer, query, snapshot, history=history)
         return "composed the final answer from the branch reports"
 
     tools = [dispatch_worker, compose_answer]
@@ -200,12 +203,19 @@ def run_supervised_answer(
             return {"error": f"unknown tool {name}"}
         return selected.invoke(args)
 
+    # B3 admission control: bound the in-flight worker branches (each runs a full inner loop of
+    # provider calls) so a 4-branch fan-out cannot stampede the DeepSeek 429 ceiling. Reuses
+    # the verifier provider's quota family (the gather/judge family).
+    from rag_cti.generation.limiter import get_limiter
+
     run_supervisor_loop(
         model_with_tools,
         dispatch,
         [("system", _SUPERVISOR_SYSTEM), ("user", query)],
         max_steps=settings.supervisor_max_steps,
         max_workers=settings.supervisor_max_branches,
+        limiter=get_limiter(settings.agentic_verifier_provider, settings),
+        deadline=deadline,
     )
 
     # --- deterministic post-assembly (no LLM reasoning in the supervisor) ---
@@ -214,9 +224,14 @@ def run_supervised_answer(
 
     # The Composer is the SOLE synthesizer (workers are gather-only). If the supervisor
     # already called compose_answer in-loop, use that; else compose now. Works for 1 or N.
-    answer_text = composed.get("text") or compose(composer, query, reports)
+    with reports_lock:
+        report_snapshot = list(reports)
+        ledger_snapshot = list(ledgers)
+    answer_text = composed.get("text") or compose(
+        composer, query, report_snapshot, history=history
+    )
 
-    master = merge_branch_ledgers(ledgers)
+    master = merge_branch_ledgers(ledger_snapshot)
     gen_answer = GeneratedAnswer(
         query=query,
         answer=answer_text,
@@ -228,22 +243,22 @@ def run_supervised_answer(
     # build_agentic_answer runs the deterministic citation guard (assemble_citations) over
     # the merged master ledger — validates the answer's [id]s against the union of branch
     # evidence. No synthesis here; the text already came from the Composer.
-    decomposed = len(reports) > 1
+    decomposed = len(report_snapshot) > 1
     answer = build_agentic_answer(
         query,
         gen_answer,
         master,
-        iteration_count=sum(r.iteration_count for r in reports),
-        tokens_used=sum(r.tokens_used for r in reports),
+        iteration_count=sum(r.iteration_count for r in report_snapshot),
+        tokens_used=sum(r.tokens_used for r in report_snapshot),
         stop_reason="decomposed" if decomposed else "single",
     )
     add_trace_metadata(
         decomposed=decomposed,
-        branch_count=len(reports),
-        branch_stop_reasons=[r.stop_reason for r in reports],
+        branch_count=len(report_snapshot),
+        branch_stop_reasons=[r.stop_reason for r in report_snapshot],
         n_facts=len(master.facts),
         n_chunks=len(master.chunks),
         cited_ids=list(answer.cited_ids),
         dropped_citation_count=answer.dropped_citation_count,
     )
-    return answer.model_copy(update={"branch_count": len(reports), "decomposed": decomposed})
+    return answer.model_copy(update={"branch_count": len(report_snapshot), "decomposed": decomposed})

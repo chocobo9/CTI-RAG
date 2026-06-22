@@ -204,31 +204,33 @@ def test_build_llm_client_raises_when_no_provider_configured() -> None:
 
 
 class _FakeResp:
-    def __init__(self, model: str) -> None:
+    def __init__(self, model: str, content: str = "ok") -> None:
         self.model = model
+        self.choices = [SimpleNamespace(message=SimpleNamespace(content=content))]
 
 
 class _FakeCompletions:
-    def __init__(self, fail: set[str], tried: list[str]) -> None:
+    def __init__(self, fail: set[str], tried: list[str], empty: set[str] | None = None) -> None:
         self._fail = fail
         self._tried = tried
+        self._empty = empty or set()
 
     def create(self, model: str, **_: object) -> _FakeResp:
         self._tried.append(model)
         if model in self._fail:
             raise RuntimeError(f"{model} unavailable")
-        return _FakeResp(model)
+        return _FakeResp(model, content=("" if model in self._empty else "ok"))
 
 
 class _FakeChat:
-    def __init__(self, fail: set[str], tried: list[str]) -> None:
-        self.completions = _FakeCompletions(fail, tried)
+    def __init__(self, fail: set[str], tried: list[str], empty: set[str] | None = None) -> None:
+        self.completions = _FakeCompletions(fail, tried, empty)
 
 
 class _FakeClient:
-    def __init__(self, fail: tuple[str, ...] = ()) -> None:
+    def __init__(self, fail: tuple[str, ...] = (), empty: tuple[str, ...] = ()) -> None:
         self.tried: list[str] = []
-        self.chat = _FakeChat(set(fail), self.tried)
+        self.chat = _FakeChat(set(fail), self.tried, set(empty))
 
 
 def test_fallback_uses_primary_when_it_succeeds() -> None:
@@ -241,6 +243,14 @@ def test_fallback_uses_primary_when_it_succeeds() -> None:
 
 def test_fallback_downgrades_on_primary_failure() -> None:
     client = _FakeClient(fail=("primary",))
+    fb = FallbackChatClient(client, ["primary", "backup"])
+    resp = fb.chat.completions.create(messages=[])
+    assert resp.model == "backup"
+    assert client.tried == ["primary", "backup"]
+
+
+def test_fallback_downgrades_on_empty_primary_content() -> None:
+    client = _FakeClient(empty=("primary",))
     fb = FallbackChatClient(client, ["primary", "backup"])
     resp = fb.chat.completions.create(messages=[])
     assert resp.model == "backup"
