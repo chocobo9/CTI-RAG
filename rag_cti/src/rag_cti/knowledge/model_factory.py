@@ -21,7 +21,7 @@ class _LimitedChatModel:
         self._inner = inner
         self._limiter = limiter
 
-    def bind_tools(self, tools: list[Any]) -> "_LimitedChatModel":
+    def bind_tools(self, tools: list[Any]) -> _LimitedChatModel:
         return _LimitedChatModel(self._inner.bind_tools(tools), self._limiter)
 
     def invoke(self, *args: Any, **kwargs: Any) -> Any:

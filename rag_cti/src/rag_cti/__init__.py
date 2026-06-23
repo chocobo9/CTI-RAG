@@ -13,13 +13,9 @@ from typing import TYPE_CHECKING, Any
 from rag_cti.config import get_settings
 from rag_cti.observability.tracing import traced
 from rag_cti.retrieval import Pipeline, build_pipeline
-from rag_cti.retrieval.constraint_extract import build_constraint
-from rag_cti.retrieval.query_rewrite import QueryRewriteRetriever
 from rag_cti.runtime_harness import (
-    DecompositionProposal,
-    ProposedBranch,
     RuntimeDeps,
-    RuntimeQueryUnderstanding,
+    build_runtime_query_understanding,
     evaluate_supervisor_admission,
 )
 from rag_cti.types import FactQueryResult, GeneratedAnswer, QueryResult
@@ -299,45 +295,13 @@ def _build_runtime_deps(history: list[str] | None = None) -> RuntimeDeps:
     def run_retrieve(query_text: str, top_k: int) -> QueryResult:
         return pipeline.run(query_text, top_k=top_k, history=history)
 
-    def query_understanding(
-        query_text: str, query_history: list[str] | None = None
-    ) -> RuntimeQueryUnderstanding:
-        retrieval_queries: tuple[str, ...]
-        constraint = None
-        entities = ()
-        status = "ok"
-        fallback_reason = ""
-        try:
-            retriever = getattr(pipeline, "_retriever", None)
-            if isinstance(retriever, QueryRewriteRetriever):
-                rewriter = getattr(retriever, "_rewriter", None)
-                if hasattr(rewriter, "rewrite_with_entities"):
-                    out = rewriter.rewrite_with_entities(query_text, query_history)
-                    retrieval_queries = out.queries
-                    entities = out.entities
-                else:
-                    retrieval_queries = tuple(rewriter.rewrite(query_text, query_history))
-                if bool(getattr(settings, "constraint_routing_enabled", False)):
-                    constraint = build_constraint(query_text, entities, ontology_nodes)
-            else:
-                retrieval_queries = (query_text,)
-                if bool(getattr(settings, "constraint_routing_enabled", False)):
-                    constraint = build_constraint(query_text, (), ontology_nodes)
-        except Exception as exc:
-            retrieval_queries = (query_text,)
-            status = "fallback"
-            fallback_reason = f"query_understanding_error:{type(exc).__name__}"
-        return RuntimeQueryUnderstanding(
-            original_query=query_text,
-            standalone_query=retrieval_queries[0] if retrieval_queries else query_text,
-            retrieval_queries=retrieval_queries,
-            entities=entities,
-            payload_constraint=constraint,
-            decomposition=_propose_runtime_decomposition(query_text, retrieval_queries, entities),
-            status=status,  # type: ignore[arg-type]
-            fallback_reason=fallback_reason,
-            confidence=1.0 if status == "ok" else 0.0,
-            reason="retrieval_understanding_bridge",
+    def query_understanding(query_text: str, query_history: list[str] | None = None) -> Any:
+        return build_runtime_query_understanding(
+            query_text,
+            query_history,
+            pipeline=pipeline,
+            settings=settings,
+            ontology_nodes=ontology_nodes,
         )
 
     fact_store = (
@@ -365,42 +329,6 @@ def _build_runtime_deps(history: list[str] | None = None) -> RuntimeDeps:
             settings.agentic_verifier_model,
             max_tokens=settings.supervisor_compose_max_tokens,
         ),
-    )
-
-
-def _propose_runtime_decomposition(
-    query: str,
-    retrieval_queries: tuple[str, ...],
-    entities: tuple[object, ...],
-) -> DecompositionProposal | None:
-    """Small conservative bridge until runtime decomposition has its own model prompt."""
-    lowered = query.lower()
-    if not any(word in lowered for word in ("compare", "shared", "between", "versus", " vs ")):
-        return None
-    names: list[str] = []
-    for entity in entities:
-        name = getattr(entity, "name", "")
-        etype = getattr(entity, "type", "")
-        if etype in {"actor", "family"} and name and name not in names:
-            names.append(name)
-    if len(names) < 2:
-        return None
-    facet = "comparison"
-    branches = tuple(
-        ProposedBranch(
-            branch_id=f"b{i}",
-            sub_question=f"What evidence is relevant to {name} for: {query}",
-            focus_entity=name,
-            facet=facet,
-            independent_reason="Separate named entity in an explicit comparison.",
-        )
-        for i, name in enumerate(names, start=1)
-    )
-    return DecompositionProposal(
-        branches=branches,
-        suitable_for_supervisor=True,
-        task_requires_composition=True,
-        reason="explicit_comparison_between_named_entities",
     )
 
 

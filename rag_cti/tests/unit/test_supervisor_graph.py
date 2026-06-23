@@ -356,3 +356,54 @@ def test_failed_branch_is_reported_and_composed(monkeypatch: pytest.MonkeyPatch)
     assert ans.cited_ids == ("fact_APT29",)
     assert '"status": "failed"' in captured_user["text"]
     assert "provider unavailable" in captured_user["text"]
+
+
+def test_empty_branch_is_reported_and_composed(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured_user: dict[str, str] = {}
+
+    def gather(branch: SubQuestion, **_kwargs: Any) -> tuple[EvidenceLedger, BranchReport]:
+        ledger = EvidenceLedger()
+        return ledger, BranchReport(
+            branch_id=branch.branch_id,
+            sub_question=branch.sub_question,
+            focus_entity=branch.focus_entity,
+            status="empty",
+            evidence_summary="No usable evidence gathered.",
+            gaps=("No facts or chunks were found.",),
+            stop_reason="empty",
+        )
+
+    def composer(system: str, user: str) -> str:
+        captured_user["text"] = user
+        return "No usable evidence was gathered for Turla."
+
+    monkeypatch.setattr(supervisor_graph, "gather_branch", gather)
+    ans = supervisor_graph.run_supervised_answer(
+        "What evidence exists for Turla?",
+        settings=_settings(),
+        run_retrieve=lambda q, k: _empty_qr(q, k),
+        fact_store=None,
+        ontology_nodes=[],
+        generator=object(),
+        chat_model=_FakeChatModel(
+            [
+                _FakeAI(
+                    [
+                        {
+                            "name": "dispatch_worker",
+                            "args": {"sub_question": "Turla evidence", "focus_entity": "Turla"},
+                            "id": "c1",
+                        }
+                    ]
+                ),
+                _FakeAI([]),
+            ]
+        ),
+        judge=lambda s, u: "{}",
+        composer=composer,
+    )
+
+    assert ans.branch_count == 1
+    assert ans.cited_ids == ()
+    assert '"status": "empty"' in captured_user["text"]
+    assert "No facts or chunks were found." in captured_user["text"]

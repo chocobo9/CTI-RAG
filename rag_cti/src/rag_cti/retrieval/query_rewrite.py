@@ -224,8 +224,8 @@ class LLMQueryRewriter:
         return out
 
     @traced("retrieval.query_rewrite.generate", run_type="llm")
-    def _generate_raw(self, system: str, user: str) -> str | None:
-        max_tokens = getattr(self._settings, "query_rewrite_max_tokens", 300)
+    def _generate_raw(self, system: str, user: str, max_tokens: int | None = None) -> str | None:
+        output_tokens = max_tokens or getattr(self._settings, "query_rewrite_max_tokens", 300)
         try:
             if self._llm_provider in ("groq", "ollama"):
                 model = (
@@ -235,7 +235,7 @@ class LLMQueryRewriter:
                 )
                 resp = self._llm.chat.completions.create(
                     model=model,
-                    max_tokens=max_tokens,
+                    max_tokens=output_tokens,
                     temperature=_TEMPERATURE,
                     messages=[
                         {"role": "system", "content": system},
@@ -246,7 +246,7 @@ class LLMQueryRewriter:
                 return text or None
             response = self._llm.messages.create(
                 model=self._settings.llm_routing_model,
-                max_tokens=max_tokens,
+                max_tokens=output_tokens,
                 temperature=_TEMPERATURE,
                 system=system,
                 messages=[{"role": "user", "content": user}],

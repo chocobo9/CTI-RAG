@@ -23,7 +23,7 @@ from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.knowledge.react_loop import (
     DEADLINE_OBSERVATION_STUB,
     TRIMMED_OBSERVATION_STUB,
-    mask_stale_observations,
+    mask_stale_observations,  # noqa: F401 - re-exported for tests/debug callers
     run_react_tool_loop,
 )
 from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
