@@ -33,6 +33,8 @@ def test_build_compose_user_carries_question_and_structured_reports() -> None:
     # structured (attack_id, name, fact_id) triple reaches the Composer
     assert first["techniques"] == [["T1059", "Command", "fact_a"]]
     assert first["cited_ids"] == ["fact_a"]
+    assert first["status"] == "ok"
+    assert "n_facts" in first
 
 
 def test_compose_invokes_composer_with_system_and_rendered_user() -> None:
@@ -55,3 +57,22 @@ def test_compose_invokes_composer_with_system_and_rendered_user() -> None:
 def test_compose_handles_empty_reports() -> None:
     out = compose(lambda s, u: "no branches", "q", [])
     assert out == "no branches"
+
+
+def test_build_compose_user_carries_failed_branch_status_and_errors() -> None:
+    report = BranchReport(
+        branch_id="b1",
+        sub_question="APT29 infrastructure",
+        focus_entity="APT29",
+        status="failed",
+        evidence_summary="Branch failed before gathering usable evidence.",
+        gaps=("infrastructure evidence unavailable",),
+        errors=("RuntimeError: provider unavailable",),
+    )
+    payload = json.loads(build_compose_user("Compare infrastructure", [report]))
+    rendered = payload["branch_reports"][0]
+    assert rendered["branch_id"] == "b1"
+    assert rendered["status"] == "failed"
+    assert rendered["evidence_summary"] == "Branch failed before gathering usable evidence."
+    assert rendered["gaps"] == ["infrastructure evidence unavailable"]
+    assert rendered["errors"] == ["RuntimeError: provider unavailable"]

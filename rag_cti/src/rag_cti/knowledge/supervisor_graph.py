@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from rag_cti.config import Settings
@@ -41,6 +43,7 @@ from rag_cti.knowledge.supervisor_nodes import (
     run_supervisor_loop,
 )
 from rag_cti.observability.tracing import add_trace_metadata, traced
+from rag_cti.runtime_harness import ProposedBranch
 from rag_cti.types import GeneratedAnswer
 
 _SUPERVISOR_SYSTEM = """You are a CTI ORCHESTRATOR. You do NOT answer questions yourself and \
@@ -106,14 +109,23 @@ def gather_branch(
     )
     branch_answer: AgenticAnswer = result["answer"]
     techniques = extract_techniques(ledger.facts.values())
+    status = "ok" if ledger.facts or ledger.chunks else "empty"
     report = BranchReport(
+        branch_id=branch.branch_id,
         sub_question=branch.sub_question,
         focus_entity=branch.focus_entity,
+        facet=branch.facet,
+        status=status,
+        evidence_summary=(
+            f"Gathered {len(ledger.facts)} facts, {len(ledger.chunks)} chunks, "
+            f"and {len(ledger.outlines)} outlines."
+        ),
         sub_answer="",  # gather-only: no per-worker synthesis (the Composer synthesizes once)
         techniques=techniques,
         cited_ids=tuple(fid for _, _, fid in techniques),
         n_facts=len(ledger.facts),
         n_chunks=len(ledger.chunks),
+        n_outlines=len(ledger.outlines),
         stop_reason=branch_answer.stop_reason,
         tokens_used=branch_answer.tokens_used,
         iteration_count=branch_answer.iteration_count,
@@ -134,6 +146,7 @@ def run_supervised_answer(
     chat_model: Any,
     judge: JudgeFn,
     composer: ComposeFn,
+    branch_plan: Sequence[ProposedBranch] | None = None,
 ) -> AgenticAnswer:
     """Run the ReAct orchestration loop and assemble the final grounded answer.
 
@@ -150,28 +163,69 @@ def run_supervised_answer(
     max_wall_seconds = getattr(settings, "agentic_max_wall_seconds", 0.0)
     deadline = time.monotonic() + max_wall_seconds if max_wall_seconds > 0 else None
 
-    def _run_worker(sub_question: str, focus_entity: str | None) -> BranchReport:
-        ledger, report = gather_branch(
-            SubQuestion(sub_question=sub_question, focus_entity=focus_entity),
-            settings=settings,
-            history=history,
-            run_retrieve=run_retrieve,
-            fact_store=fact_store,
-            ontology_nodes=ontology_nodes,
-            generator=generator,
-            chat_model=chat_model,
-            judge=judge,
+    def _run_worker(
+        sub_question: str,
+        focus_entity: str | None,
+        *,
+        branch_id: str = "",
+        facet: str | None = None,
+    ) -> BranchReport:
+        branch = SubQuestion(
+            sub_question=sub_question,
+            branch_id=branch_id,
+            focus_entity=focus_entity,
+            facet=facet,
         )
+        try:
+            ledger, report = gather_branch(
+                branch,
+                settings=settings,
+                history=history,
+                run_retrieve=run_retrieve,
+                fact_store=fact_store,
+                ontology_nodes=ontology_nodes,
+                generator=generator,
+                chat_model=chat_model,
+                judge=judge,
+            )
+        except Exception as exc:
+            ledger = EvidenceLedger()
+            report = BranchReport(
+                branch_id=branch.branch_id,
+                sub_question=branch.sub_question,
+                focus_entity=branch.focus_entity,
+                facet=branch.facet,
+                status="failed",
+                evidence_summary="Branch failed before gathering usable evidence.",
+                errors=(f"{type(exc).__name__}: {exc}",),
+                stop_reason="failed",
+            )
         with reports_lock:
             ledgers.append(ledger)
             reports.append(report)
         return report
+
+    def _run_validated_plan(plan: Sequence[ProposedBranch]) -> None:
+        branches = list(plan[: settings.supervisor_max_branches])
+
+        def _one(branch: ProposedBranch) -> BranchReport:
+            return _run_worker(
+                branch.sub_question,
+                branch.focus_entity,
+                branch_id=branch.branch_id,
+                facet=branch.facet,
+            )
+
+        with ThreadPoolExecutor(max_workers=max(1, min(len(branches), settings.supervisor_max_branches))) as ex:
+            list(ex.map(_one, branches))
 
     @tool
     def dispatch_worker(sub_question: str, focus_entity: str | None = None) -> dict[str, Any]:
         """Assign one self-contained sub-question to a worker sub-agent; it gathers and
         returns a report. Returns a bounded summary (entity, technique count, answer preview)."""
         with reports_lock:
+            if composed:
+                return {"error": "final answer already composed"}
             dispatched = len(reports)
         if dispatched >= settings.supervisor_max_branches:
             return {"error": f"max {settings.supervisor_max_branches} workers already dispatched"}
@@ -193,30 +247,33 @@ def run_supervised_answer(
         composed["text"] = compose(composer, query, snapshot, history=history)
         return "composed the final answer from the branch reports"
 
-    tools = [dispatch_worker, compose_answer]
-    model_with_tools = chat_model.bind_tools(tools)
-    tools_by_name = {t.name: t for t in tools}
+    if branch_plan is not None:
+        _run_validated_plan(branch_plan)
+    else:
+        tools = [dispatch_worker, compose_answer]
+        model_with_tools = chat_model.bind_tools(tools)
+        tools_by_name = {t.name: t for t in tools}
 
-    def dispatch(name: str, args: dict[str, Any]) -> Any:
-        selected = tools_by_name.get(name)
-        if selected is None:
-            return {"error": f"unknown tool {name}"}
-        return selected.invoke(args)
+        def dispatch(name: str, args: dict[str, Any]) -> Any:
+            selected = tools_by_name.get(name)
+            if selected is None:
+                return {"error": f"unknown tool {name}"}
+            return selected.invoke(args)
 
-    # B3 admission control: bound the in-flight worker branches (each runs a full inner loop of
-    # provider calls) so a 4-branch fan-out cannot stampede the DeepSeek 429 ceiling. Reuses
-    # the verifier provider's quota family (the gather/judge family).
-    from rag_cti.generation.limiter import get_limiter
+        # B3 admission control: bound the in-flight worker branches (each runs a full inner loop of
+        # provider calls) so a 4-branch fan-out cannot stampede the DeepSeek 429 ceiling. Reuses
+        # the verifier provider's quota family (the gather/judge family).
+        from rag_cti.generation.limiter import get_limiter
 
-    run_supervisor_loop(
-        model_with_tools,
-        dispatch,
-        [("system", _SUPERVISOR_SYSTEM), ("user", query)],
-        max_steps=settings.supervisor_max_steps,
-        max_workers=settings.supervisor_max_branches,
-        limiter=get_limiter(settings.agentic_verifier_provider, settings),
-        deadline=deadline,
-    )
+        run_supervisor_loop(
+            model_with_tools,
+            dispatch,
+            [("system", _SUPERVISOR_SYSTEM), ("user", query)],
+            max_steps=settings.supervisor_max_steps,
+            max_workers=settings.supervisor_max_branches,
+            limiter=get_limiter(settings.agentic_verifier_provider, settings),
+            deadline=deadline,
+        )
 
     # --- deterministic post-assembly (no LLM reasoning in the supervisor) ---
     if not reports:  # supervisor dispatched nothing -> degrade to one worker on the query
