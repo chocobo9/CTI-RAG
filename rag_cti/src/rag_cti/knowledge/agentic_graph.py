@@ -1,5 +1,9 @@
 """Agentic answer loop — outer hard-rail StateGraph wrapping an inner GATHER-only loop.
 
+Production/public agentic paths are owned by ``runtime_harness.run_agentic_investigation``.
+This module remains as legacy debug/baseline wiring and for tests that exercise the old
+LangGraph integration directly.
+
 The inner loop is a hand-rolled ReAct-style burst (``agentic_nodes.run_gather_loop``): a
 tool-bound chat model picks tool calls, each tool appends full structured evidence to a
 per-run ``EvidenceLedger`` (side effect) and returns a bounded summary, and the burst

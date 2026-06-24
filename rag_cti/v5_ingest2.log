@@ -1,0 +1,361 @@
+[2m2026-06-17T00:55:37.400623Z[0m [[32m[1minfo     [0m] [1mloading embedding model       [0m [36mdevice[0m=[35mcuda[0m [36mmodel[0m=[35mBAAI/bge-m3[0m
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/modules.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config_sentence_transformers.json "HTTP/1.1 200 OK"
+Loading SentenceTransformer model from BAAI/bge-m3.
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config_sentence_transformers.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/README.md "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/modules.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/sentence_bert_config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3 "HTTP/1.1 200 OK"
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/commits/main "HTTP/1.1 200 OK"
+Loading weights: 100%|██████████| 391/391 [00:00<00:00, 14508.41it/s]
+HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/discussions?p=0 "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/commits/refs%2Fpr%2F130 "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/refs%2Fpr%2F130/model.safetensors.index.json "HTTP/1.1 404 Not Found"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/refs%2Fpr%2F130/model.safetensors "HTTP/1.1 302 Found"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/tokenizer_config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/tokenizer_config.json "HTTP/1.1 200 OK"
+HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3 "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3 "HTTP/1.1 200 OK"
+/mnt/d/proj/CTI-RAG/.claude/worktrees/optimization/rag_cti/src/rag_cti/embeddings/embedder.py:70: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
+  dim = model.get_sentence_embedding_dimension()
+HTTP Request: GET http://localhost:6333/collections "HTTP/1.1 200 OK"
+[2m2026-06-17T00:55:44.009483Z[0m [[32m[1minfo     [0m] [1mcollection already exists     [0m [36mcollection[0m=[35mcti_chunks_v5[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/index?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:55:44.020816Z[0m [[32m[1minfo     [0m] [1mpayload index ensured         [0m [36mcollection[0m=[35mcti_chunks_v5[0m [36mfield[0m=[35msource_type[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/index?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:55:44.030304Z[0m [[32m[1minfo     [0m] [1mpayload index ensured         [0m [36mcollection[0m=[35mcti_chunks_v5[0m [36mfield[0m=[35mattack_ids[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/index?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:55:44.041508Z[0m [[32m[1minfo     [0m] [1mpayload index ensured         [0m [36mcollection[0m=[35mcti_chunks_v5[0m [36mfield[0m=[35mentity_ids[0m
+[2m2026-06-17T00:55:44.103108Z[0m [[32m[1minfo     [0m] [1mBM25 encoder loaded           [0m [36mpath[0m=[35mdata/sparse_vocab_cti_chunks_v5.json[0m [36mvocab_size[0m=[35m47751[0m
+[2m2026-06-17T00:55:44.335689Z[0m [[32m[1minfo     [0m] [1membedding chunks              [0m [36mcount[0m=[35m2072[0m [36mhybrid[0m=[35mTrue[0m [36msource[0m=[35motx[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:55:46.330859Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m16[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:55:54.976753Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m96[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:02.789639Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m176[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:10.751735Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m256[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:18.474931Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m336[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:26.095458Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m416[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:33.091943Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m496[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:39.137935Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m576[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:44.935823Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m656[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:51.484128Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m736[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:56:58.562790Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m816[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:05.443842Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m896[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:12.048286Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m976[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:20.424397Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1056[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:28.011582Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1136[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:35.578818Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1216[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:44.095675Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1296[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:51.241722Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1376[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:57:58.596561Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1456[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:05.492899Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1536[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:12.098975Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1616[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:17.981027Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1696[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:24.126961Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1776[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:29.893670Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1856[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:34.571496Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m1936[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:41.168906Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m2016[0m [36msource[0m=[35motx[0m [36mtotal[0m=[35m2072[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:45.682523Z[0m [[32m[1minfo     [0m] [1msource ingested               [0m [36mchunks[0m=[35m2072[0m [36msource[0m=[35motx[0m [36mwritten[0m=[35m2072[0m
+[2m2026-06-17T00:58:45.724158Z[0m [[32m[1minfo     [0m] [1membedding chunks              [0m [36mcount[0m=[35m626[0m [36mhybrid[0m=[35mTrue[0m [36msource[0m=[35mpdfs[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:46.725304Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m16[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:51.132009Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m96[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:54.496159Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m176[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:58:59.446966Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m256[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:06.283220Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m336[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:10.444975Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m416[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:14.052229Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m496[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:17.834637Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m576[0m [36msource[0m=[35mpdfs[0m [36mtotal[0m=[35m626[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:18.535037Z[0m [[32m[1minfo     [0m] [1msource ingested               [0m [36mchunks[0m=[35m626[0m [36msource[0m=[35mpdfs[0m [36mwritten[0m=[35m626[0m
+[2m2026-06-17T00:59:18.682561Z[0m [[32m[1minfo     [0m] [1membedding chunks              [0m [36mcount[0m=[35m693[0m [36mhybrid[0m=[35mTrue[0m [36msource[0m=[35mpdns[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:19.265696Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m16[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:22.667240Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m96[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:26.643123Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m176[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:30.279732Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m256[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:33.627893Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m336[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:37.262168Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m416[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:40.348766Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m496[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:43.311013Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m576[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:46.458708Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m656[0m [36msource[0m=[35mpdns[0m [36mtotal[0m=[35m693[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:48.055200Z[0m [[32m[1minfo     [0m] [1msource ingested               [0m [36mchunks[0m=[35m693[0m [36msource[0m=[35mpdns[0m [36mwritten[0m=[35m693[0m
+[2m2026-06-17T00:59:48.132364Z[0m [[32m[1minfo     [0m] [1membedding chunks              [0m [36mcount[0m=[35m473[0m [36mhybrid[0m=[35mTrue[0m [36msource[0m=[35mvt[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:48.294417Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m16[0m [36msource[0m=[35mvt[0m [36mtotal[0m=[35m473[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:49.087165Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m96[0m [36msource[0m=[35mvt[0m [36mtotal[0m=[35m473[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:49.948894Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m176[0m [36msource[0m=[35mvt[0m [36mtotal[0m=[35m473[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:50.864637Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m256[0m [36msource[0m=[35mvt[0m [36mtotal[0m=[35m473[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:51.774947Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m336[0m [36msource[0m=[35mvt[0m [36mtotal[0m=[35m473[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:52.651719Z[0m [[32m[1minfo     [0m] [1mprogress                      [0m [36membedded[0m=[35m416[0m [36msource[0m=[35mvt[0m [36mtotal[0m=[35m473[0m
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+HTTP Request: PUT http://localhost:6333/collections/cti_chunks_v5/points?wait=true "HTTP/1.1 200 OK"
+[2m2026-06-17T00:59:53.229421Z[0m [[32m[1minfo     [0m] [1msource ingested               [0m [36mchunks[0m=[35m473[0m [36msource[0m=[35mvt[0m [36mwritten[0m=[35m473[0m
+[2m2026-06-17T00:59:53.232875Z[0m [[32m[1minfo     [0m] [1mingest complete               [0m [36mchunks[0m=[35m3864[0m [36mcollection[0m=[35mcti_chunks_v5[0m [36msources[0m=[35m['otx', 'pdfs', 'pdns', 'vt'][0m [36mwritten[0m=[35m3864[0m
+
+✓ 3864 points written to Qdrant collection 'cti_chunks_v5' from 3864 chunks across 4 source(s)
+INGEST_EXIT=0

@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 
 from rag_cti.knowledge import supervisor_graph
-from rag_cti.knowledge.agentic_state import BranchReport, SubQuestion
+from rag_cti.knowledge.agentic_state import AgenticAnswer, BranchReport, SubQuestion
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.runtime_harness import ProposedBranch
 from rag_cti.types import FactRow, QueryResult
@@ -199,6 +199,11 @@ def test_validated_branch_plan_skips_supervisor_model_and_composes_once(
         return _fake_composer(system, user)
 
     monkeypatch.setattr(supervisor_graph, "gather_branch", gather)
+
+    def fail_supervisor_loop(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("validated branch plans must not run the supervisor loop")
+
+    monkeypatch.setattr(supervisor_graph, "run_supervisor_loop", fail_supervisor_loop)
     ans = supervisor_graph.run_supervised_answer(
         "Compare APT29 and Turla",
         settings=_settings(),
@@ -229,6 +234,51 @@ def test_validated_branch_plan_skips_supervisor_model_and_composes_once(
     assert compose_calls == 1
     assert ans.branch_count == 2
     assert ans.decomposed is True
+
+
+def test_gather_branch_uses_runtime_gather_investigation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    ledger = EvidenceLedger()
+    ledger.add_facts((_fact("fact_APT29"),))
+
+    def runtime_gather(query: str, **_kwargs: Any) -> Any:
+        calls.append(query)
+        return SimpleNamespace(
+            ledger=ledger,
+            answer=AgenticAnswer(
+                query=query,
+                answer="",
+                query_result=_empty_qr(query),
+                stop_reason="sufficient",
+                tokens_used=7,
+                iteration_count=1,
+            ),
+        )
+
+    monkeypatch.setattr(supervisor_graph, "run_agentic_gather_investigation", runtime_gather)
+    out_ledger, report = supervisor_graph.gather_branch(
+        SubQuestion(
+            branch_id="apt29",
+            sub_question="APT29 branch",
+            focus_entity="APT29",
+        ),
+        settings=_settings(),
+        run_retrieve=lambda q, k: _empty_qr(q, k),
+        fact_store=None,
+        ontology_nodes=[],
+        generator=object(),
+        chat_model=object(),
+        judge=lambda s, u: "{}",
+    )
+
+    assert calls == ["APT29 branch"]
+    assert out_ledger is ledger
+    assert report.branch_id == "apt29"
+    assert report.status == "ok"
+    assert report.stop_reason == "sufficient"
+    assert report.tokens_used == 7
 
 
 def test_dispatch_after_compose_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -1,0 +1,1204 @@
+2026-06-16 22:02:38 [info     ] llm provider: groq             analysis_model=llama-3.3-70b-versatile hyde_model=llama-3.1-8b-instant
+n=29 technique queries | collection=cti_chunks_v5
+sample adv: P001 'template Office macros perssitence'
+config         | CLEAN                                    | ADVERSARIAL
+2026-06-16 22:03:05 [debug    ] sparse search complete         elapsed_ms=90.1 query_terms=4 returned=30 top_k=30
+2026-06-16 22:05:14 [info     ] loading embedding model        device=cuda model=BAAI/bge-m3
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 19332.92it/s]
+2026-06-16 22:05:26 [debug    ] dense search complete          elapsed_ms=141426.9 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] hybrid search complete         dense=30 elapsed_ms=141428.3 fused=10 sparse=30
+2026-06-16 22:05:26 [debug    ] sparse search complete         elapsed_ms=30.5 query_terms=5 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] dense search complete          elapsed_ms=79.6 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] hybrid search complete         dense=30 elapsed_ms=80.8 fused=10 sparse=30
+2026-06-16 22:05:26 [debug    ] sparse search complete         elapsed_ms=59.5 query_terms=4 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] dense search complete          elapsed_ms=98.5 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] hybrid search complete         dense=30 elapsed_ms=99.7 fused=10 sparse=30
+2026-06-16 22:05:26 [debug    ] sparse search complete         elapsed_ms=20.0 query_terms=4 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] dense search complete          elapsed_ms=78.0 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] hybrid search complete         dense=30 elapsed_ms=79.4 fused=10 sparse=30
+2026-06-16 22:05:26 [debug    ] sparse search complete         elapsed_ms=36.4 query_terms=4 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] dense search complete          elapsed_ms=92.2 returned=30 top_k=30
+2026-06-16 22:05:26 [debug    ] hybrid search complete         dense=30 elapsed_ms=93.5 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=24.2 query_terms=13 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=71.8 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=73.1 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=22.7 query_terms=14 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=82.1 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=83.4 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=15.1 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=70.1 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=71.7 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=11.1 query_terms=13 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=55.7 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.3 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=10.5 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=74.4 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=76.4 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=11.8 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=68.5 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=70.0 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=17.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=74.4 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=75.6 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=11.5 query_terms=13 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=53.7 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=55.3 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=10.8 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=141.8 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=143.1 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=59.0 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.5 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=9.0 query_terms=7 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=53.3 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.6 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=10.1 query_terms=7 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=70.5 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=71.8 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=8.6 query_terms=7 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] dense search complete          elapsed_ms=58.5 returned=30 top_k=30
+2026-06-16 22:05:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.5 fused=10 sparse=30
+2026-06-16 22:05:27 [debug    ] sparse search complete         elapsed_ms=10.4 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=55.7 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.0 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=10.5 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=71.9 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=73.1 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=12.6 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=64.1 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=65.4 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=11.4 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=76.3 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=77.8 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=9.2 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=62.6 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=64.4 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=66.9 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.4 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=10.6 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=61.9 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.9 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=10.3 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=69.3 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=70.7 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=8.5 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=56.7 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.4 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=65.3 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=66.4 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=8.9 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=60.2 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.6 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=5.7 query_terms=3 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=58.2 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.5 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=4 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=67.7 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=69.1 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=9.0 query_terms=4 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=70.0 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=71.2 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=7.0 query_terms=3 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] dense search complete          elapsed_ms=61.9 returned=30 top_k=30
+2026-06-16 22:05:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.0 fused=10 sparse=30
+2026-06-16 22:05:28 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=3 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=62.5 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.7 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=9.7 query_terms=12 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=58.3 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.4 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=8.6 query_terms=13 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=66.4 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=67.7 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=5.5 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=60.8 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.3 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=6.8 query_terms=12 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=72.7 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=74.3 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=72.0 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=73.8 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=8.5 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=64.9 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=66.4 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=7.4 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=64.2 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=65.4 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=7.7 query_terms=12 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=61.0 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.7 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=6.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=60.0 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.1 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=9.0 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=63.2 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=64.7 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=6.2 query_terms=6 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=54.4 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=56.5 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=6.5 query_terms=6 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=59.1 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.2 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=6.4 query_terms=6 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=61.5 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.4 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=8.1 query_terms=7 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=64.4 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=66.1 fused=10 sparse=30
+2026-06-16 22:05:29 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] dense search complete          elapsed_ms=62.1 returned=30 top_k=30
+2026-06-16 22:05:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.4 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=8.5 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=53.6 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.8 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=55.5 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=56.7 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=10.2 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=61.1 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.3 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=7.6 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=60.9 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.2 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=8.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=57.8 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.8 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=8.8 query_terms=7 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=65.1 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=66.7 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=53.4 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.8 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=5.9 query_terms=7 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=49.0 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=50.5 fused=10 sparse=30
+2026-06-16 22:05:30 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] dense search complete          elapsed_ms=59.3 returned=30 top_k=30
+2026-06-16 22:05:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.6 fused=10 sparse=30
+hyde=0 rw=0     | {'hit@1': 0.586, 'hit@5': 0.862, 'hit@10': 0.897, 'mrr': 0.699} | {'hit@1': 0.448, 'hit@5': 0.862, 'hit@10': 0.862, 'mrr': 0.6}
+2026-06-16 22:05:31 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:32 [debug    ] sparse search complete         elapsed_ms=7.7 query_terms=5 returned=30 top_k=30
+2026-06-16 22:05:32 [debug    ] dense search complete          elapsed_ms=65.4 returned=30 top_k=30
+2026-06-16 22:05:32 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.1 fused=10 sparse=30
+2026-06-16 22:05:32 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:32 [debug    ] sparse search complete         elapsed_ms=6.2 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:32 [debug    ] dense search complete          elapsed_ms=54.0 returned=30 top_k=30
+2026-06-16 22:05:32 [debug    ] hybrid search complete         dense=30 elapsed_ms=55.2 fused=10 sparse=30
+2026-06-16 22:05:32 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:33 [debug    ] sparse search complete         elapsed_ms=10.3 query_terms=5 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] dense search complete          elapsed_ms=52.2 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.3 fused=10 sparse=30
+2026-06-16 22:05:33 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:33 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=6 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] dense search complete          elapsed_ms=64.0 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] hybrid search complete         dense=30 elapsed_ms=65.6 fused=10 sparse=30
+2026-06-16 22:05:33 [debug    ] sparse search complete         elapsed_ms=5.7 query_terms=7 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] dense search complete          elapsed_ms=61.9 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.0 fused=10 sparse=30
+2026-06-16 22:05:33 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:33 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=4 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] dense search complete          elapsed_ms=53.7 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] hybrid search complete         dense=30 elapsed_ms=55.3 fused=10 sparse=30
+2026-06-16 22:05:33 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:33 [debug    ] sparse search complete         elapsed_ms=14.8 query_terms=13 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] dense search complete          elapsed_ms=75.1 returned=30 top_k=30
+2026-06-16 22:05:33 [debug    ] hybrid search complete         dense=30 elapsed_ms=76.3 fused=10 sparse=30
+2026-06-16 22:05:33 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:34 [debug    ] sparse search complete         elapsed_ms=5.8 query_terms=14 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] dense search complete          elapsed_ms=55.3 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] hybrid search complete         dense=30 elapsed_ms=56.7 fused=10 sparse=30
+2026-06-16 22:05:34 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:34 [debug    ] sparse search complete         elapsed_ms=7.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] dense search complete          elapsed_ms=53.8 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.8 fused=10 sparse=30
+2026-06-16 22:05:34 [debug    ] sparse search complete         elapsed_ms=6.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] dense search complete          elapsed_ms=53.2 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.7 fused=10 sparse=30
+2026-06-16 22:05:34 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:34 [debug    ] sparse search complete         elapsed_ms=6.6 query_terms=13 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] dense search complete          elapsed_ms=60.2 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.5 fused=10 sparse=30
+2026-06-16 22:05:34 [debug    ] sparse search complete         elapsed_ms=8.1 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] dense search complete          elapsed_ms=59.3 returned=30 top_k=30
+2026-06-16 22:05:34 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.0 fused=10 sparse=30
+2026-06-16 22:05:34 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:42 [debug    ] sparse search complete         elapsed_ms=9.2 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:42 [debug    ] dense search complete          elapsed_ms=67.0 returned=30 top_k=30
+2026-06-16 22:05:42 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.3 fused=10 sparse=30
+2026-06-16 22:05:42 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:43 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] dense search complete          elapsed_ms=62.9 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] hybrid search complete         dense=30 elapsed_ms=64.5 fused=10 sparse=30
+2026-06-16 22:05:43 [debug    ] sparse search complete         elapsed_ms=7.0 query_terms=12 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] dense search complete          elapsed_ms=65.8 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] hybrid search complete         dense=30 elapsed_ms=67.6 fused=10 sparse=30
+2026-06-16 22:05:43 [debug    ] sparse search complete         elapsed_ms=6.3 query_terms=8 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] dense search complete          elapsed_ms=64.2 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] hybrid search complete         dense=30 elapsed_ms=65.4 fused=10 sparse=30
+2026-06-16 22:05:43 [debug    ] sparse search complete         elapsed_ms=5.4 query_terms=12 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] dense search complete          elapsed_ms=59.5 returned=30 top_k=30
+2026-06-16 22:05:43 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.7 fused=10 sparse=30
+2026-06-16 22:05:43 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:48 [debug    ] sparse search complete         elapsed_ms=9.7 query_terms=6 returned=30 top_k=30
+2026-06-16 22:05:48 [debug    ] dense search complete          elapsed_ms=58.3 returned=30 top_k=30
+2026-06-16 22:05:48 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.9 fused=10 sparse=30
+2026-06-16 22:05:48 [debug    ] sparse search complete         elapsed_ms=12.4 query_terms=6 returned=30 top_k=30
+2026-06-16 22:05:48 [debug    ] dense search complete          elapsed_ms=64.7 returned=30 top_k=30
+2026-06-16 22:05:48 [debug    ] hybrid search complete         dense=30 elapsed_ms=65.8 fused=10 sparse=30
+2026-06-16 22:05:48 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:53 [debug    ] sparse search complete         elapsed_ms=51.3 query_terms=13 returned=30 top_k=30
+2026-06-16 22:05:53 [debug    ] dense search complete          elapsed_ms=80.4 returned=30 top_k=30
+2026-06-16 22:05:53 [debug    ] hybrid search complete         dense=30 elapsed_ms=93.6 fused=10 sparse=30
+2026-06-16 22:05:53 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:05:58 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:58 [debug    ] dense search complete          elapsed_ms=54.9 returned=30 top_k=30
+2026-06-16 22:05:58 [debug    ] hybrid search complete         dense=30 elapsed_ms=56.5 fused=10 sparse=30
+2026-06-16 22:05:58 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=10 returned=30 top_k=30
+2026-06-16 22:05:58 [debug    ] dense search complete          elapsed_ms=62.6 returned=30 top_k=30
+2026-06-16 22:05:58 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.8 fused=10 sparse=30
+2026-06-16 22:05:58 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:02 [debug    ] sparse search complete         elapsed_ms=11.8 query_terms=10 returned=30 top_k=30
+2026-06-16 22:06:03 [debug    ] dense search complete          elapsed_ms=52.7 returned=30 top_k=30
+2026-06-16 22:06:03 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.1 fused=10 sparse=30
+2026-06-16 22:06:03 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:07 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=7 returned=30 top_k=30
+2026-06-16 22:06:07 [debug    ] dense search complete          elapsed_ms=56.9 returned=30 top_k=30
+2026-06-16 22:06:07 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.1 fused=10 sparse=30
+2026-06-16 22:06:07 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:11 [debug    ] sparse search complete         elapsed_ms=7.2 query_terms=8 returned=30 top_k=30
+2026-06-16 22:06:11 [debug    ] dense search complete          elapsed_ms=56.4 returned=30 top_k=30
+2026-06-16 22:06:11 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.4 fused=10 sparse=30
+2026-06-16 22:06:11 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=6 returned=30 top_k=30
+2026-06-16 22:06:11 [debug    ] dense search complete          elapsed_ms=51.1 returned=30 top_k=30
+2026-06-16 22:06:11 [debug    ] hybrid search complete         dense=30 elapsed_ms=52.1 fused=10 sparse=30
+2026-06-16 22:06:11 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:15 [debug    ] sparse search complete         elapsed_ms=9.3 query_terms=6 returned=30 top_k=30
+2026-06-16 22:06:15 [debug    ] dense search complete          elapsed_ms=69.5 returned=30 top_k=30
+2026-06-16 22:06:15 [debug    ] hybrid search complete         dense=30 elapsed_ms=70.7 fused=10 sparse=30
+2026-06-16 22:06:16 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=7 returned=30 top_k=30
+2026-06-16 22:06:16 [debug    ] dense search complete          elapsed_ms=71.8 returned=30 top_k=30
+2026-06-16 22:06:16 [debug    ] hybrid search complete         dense=30 elapsed_ms=73.0 fused=10 sparse=30
+2026-06-16 22:06:16 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:21 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:06:21 [debug    ] dense search complete          elapsed_ms=55.5 returned=30 top_k=30
+2026-06-16 22:06:21 [debug    ] hybrid search complete         dense=30 elapsed_ms=56.8 fused=10 sparse=30
+2026-06-16 22:06:21 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:25 [debug    ] sparse search complete         elapsed_ms=10.6 query_terms=9 returned=30 top_k=30
+2026-06-16 22:06:25 [debug    ] dense search complete          elapsed_ms=67.5 returned=30 top_k=30
+2026-06-16 22:06:25 [debug    ] hybrid search complete         dense=30 elapsed_ms=70.8 fused=10 sparse=30
+2026-06-16 22:06:25 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:29 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=11 returned=30 top_k=30
+2026-06-16 22:06:30 [debug    ] dense search complete          elapsed_ms=52.1 returned=30 top_k=30
+2026-06-16 22:06:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=53.4 fused=10 sparse=30
+2026-06-16 22:06:30 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:34 [debug    ] sparse search complete         elapsed_ms=8.2 query_terms=8 returned=30 top_k=30
+2026-06-16 22:06:34 [debug    ] dense search complete          elapsed_ms=59.1 returned=30 top_k=30
+2026-06-16 22:06:34 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.1 fused=10 sparse=30
+2026-06-16 22:06:34 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:38 [debug    ] sparse search complete         elapsed_ms=8.8 query_terms=9 returned=30 top_k=30
+2026-06-16 22:06:38 [debug    ] dense search complete          elapsed_ms=58.2 returned=30 top_k=30
+2026-06-16 22:06:38 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.3 fused=10 sparse=30
+2026-06-16 22:06:38 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:45 [debug    ] sparse search complete         elapsed_ms=8.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:06:45 [debug    ] dense search complete          elapsed_ms=61.2 returned=30 top_k=30
+2026-06-16 22:06:45 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.7 fused=10 sparse=30
+2026-06-16 22:06:45 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:06:53 [debug    ] sparse search complete         elapsed_ms=8.1 query_terms=9 returned=30 top_k=30
+2026-06-16 22:06:53 [debug    ] dense search complete          elapsed_ms=56.7 returned=30 top_k=30
+2026-06-16 22:06:53 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.1 fused=10 sparse=30
+2026-06-16 22:06:53 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:01 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=5 returned=30 top_k=30
+2026-06-16 22:07:01 [debug    ] dense search complete          elapsed_ms=62.8 returned=30 top_k=30
+2026-06-16 22:07:01 [debug    ] hybrid search complete         dense=30 elapsed_ms=64.0 fused=10 sparse=30
+2026-06-16 22:07:01 [debug    ] sparse search complete         elapsed_ms=5.3 query_terms=5 returned=30 top_k=30
+2026-06-16 22:07:01 [debug    ] dense search complete          elapsed_ms=65.6 returned=30 top_k=30
+2026-06-16 22:07:01 [debug    ] hybrid search complete         dense=30 elapsed_ms=67.1 fused=10 sparse=30
+2026-06-16 22:07:01 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:05 [debug    ] sparse search complete         elapsed_ms=9.2 query_terms=8 returned=30 top_k=30
+2026-06-16 22:07:05 [debug    ] dense search complete          elapsed_ms=70.8 returned=30 top_k=30
+2026-06-16 22:07:05 [debug    ] hybrid search complete         dense=30 elapsed_ms=72.5 fused=10 sparse=30
+2026-06-16 22:07:05 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:10 [debug    ] sparse search complete         elapsed_ms=8.2 query_terms=9 returned=30 top_k=30
+2026-06-16 22:07:10 [debug    ] dense search complete          elapsed_ms=59.1 returned=30 top_k=30
+2026-06-16 22:07:10 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.5 fused=10 sparse=30
+2026-06-16 22:07:10 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:14 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:07:14 [debug    ] dense search complete          elapsed_ms=62.2 returned=30 top_k=30
+2026-06-16 22:07:14 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.3 fused=10 sparse=30
+2026-06-16 22:07:14 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:19 [debug    ] sparse search complete         elapsed_ms=8.2 query_terms=5 returned=30 top_k=30
+2026-06-16 22:07:19 [debug    ] dense search complete          elapsed_ms=50.1 returned=30 top_k=30
+2026-06-16 22:07:19 [debug    ] hybrid search complete         dense=30 elapsed_ms=51.3 fused=10 sparse=30
+2026-06-16 22:07:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:24 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:07:24 [debug    ] dense search complete          elapsed_ms=58.0 returned=30 top_k=30
+2026-06-16 22:07:24 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.3 fused=10 sparse=30
+2026-06-16 22:07:24 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:28 [debug    ] sparse search complete         elapsed_ms=8.5 query_terms=4 returned=30 top_k=30
+2026-06-16 22:07:28 [debug    ] dense search complete          elapsed_ms=49.3 returned=30 top_k=30
+2026-06-16 22:07:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=50.4 fused=10 sparse=30
+2026-06-16 22:07:28 [debug    ] sparse search complete         elapsed_ms=11.1 query_terms=5 returned=30 top_k=30
+2026-06-16 22:07:28 [debug    ] dense search complete          elapsed_ms=49.2 returned=30 top_k=30
+2026-06-16 22:07:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=51.4 fused=10 sparse=30
+2026-06-16 22:07:28 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:32 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=7 returned=30 top_k=30
+2026-06-16 22:07:32 [debug    ] dense search complete          elapsed_ms=59.6 returned=30 top_k=30
+2026-06-16 22:07:32 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.7 fused=10 sparse=30
+2026-06-16 22:07:32 [debug    ] sparse search complete         elapsed_ms=6.6 query_terms=8 returned=30 top_k=30
+2026-06-16 22:07:32 [debug    ] dense search complete          elapsed_ms=56.8 returned=30 top_k=30
+2026-06-16 22:07:32 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.9 fused=10 sparse=30
+2026-06-16 22:07:32 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:37 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=4 returned=30 top_k=30
+2026-06-16 22:07:37 [debug    ] dense search complete          elapsed_ms=56.9 returned=30 top_k=30
+2026-06-16 22:07:37 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.0 fused=10 sparse=30
+2026-06-16 22:07:37 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:41 [debug    ] sparse search complete         elapsed_ms=8.1 query_terms=14 returned=30 top_k=30
+2026-06-16 22:07:41 [debug    ] dense search complete          elapsed_ms=53.6 returned=30 top_k=30
+2026-06-16 22:07:41 [debug    ] hybrid search complete         dense=30 elapsed_ms=54.9 fused=10 sparse=30
+2026-06-16 22:07:41 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:46 [debug    ] sparse search complete         elapsed_ms=7.7 query_terms=13 returned=30 top_k=30
+2026-06-16 22:07:46 [debug    ] dense search complete          elapsed_ms=47.5 returned=30 top_k=30
+2026-06-16 22:07:46 [debug    ] hybrid search complete         dense=30 elapsed_ms=48.6 fused=10 sparse=30
+2026-06-16 22:07:46 [debug    ] sparse search complete         elapsed_ms=5.9 query_terms=14 returned=30 top_k=30
+2026-06-16 22:07:46 [debug    ] dense search complete          elapsed_ms=55.3 returned=30 top_k=30
+2026-06-16 22:07:46 [debug    ] hybrid search complete         dense=30 elapsed_ms=56.9 fused=10 sparse=30
+2026-06-16 22:07:46 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:52 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=10 returned=30 top_k=30
+2026-06-16 22:07:52 [debug    ] dense search complete          elapsed_ms=55.2 returned=30 top_k=30
+2026-06-16 22:07:52 [debug    ] hybrid search complete         dense=30 elapsed_ms=56.4 fused=10 sparse=30
+2026-06-16 22:07:52 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=10 returned=30 top_k=30
+2026-06-16 22:07:52 [debug    ] dense search complete          elapsed_ms=60.6 returned=30 top_k=30
+2026-06-16 22:07:52 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.4 fused=10 sparse=30
+2026-06-16 22:07:52 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:07:56 [debug    ] sparse search complete         elapsed_ms=5.4 query_terms=13 returned=30 top_k=30
+2026-06-16 22:07:56 [debug    ] dense search complete          elapsed_ms=45.3 returned=30 top_k=30
+2026-06-16 22:07:56 [debug    ] hybrid search complete         dense=30 elapsed_ms=46.5 fused=10 sparse=30
+2026-06-16 22:07:56 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:00 [debug    ] sparse search complete         elapsed_ms=8.5 query_terms=9 returned=30 top_k=30
+2026-06-16 22:08:00 [debug    ] dense search complete          elapsed_ms=48.0 returned=30 top_k=30
+2026-06-16 22:08:00 [debug    ] hybrid search complete         dense=30 elapsed_ms=49.3 fused=10 sparse=30
+2026-06-16 22:08:00 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:04 [debug    ] sparse search complete         elapsed_ms=7.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:08:04 [debug    ] dense search complete          elapsed_ms=47.6 returned=30 top_k=30
+2026-06-16 22:08:04 [debug    ] hybrid search complete         dense=30 elapsed_ms=48.9 fused=10 sparse=30
+2026-06-16 22:08:04 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:10 [debug    ] sparse search complete         elapsed_ms=17.6 query_terms=9 returned=30 top_k=30
+2026-06-16 22:08:10 [debug    ] dense search complete          elapsed_ms=59.7 returned=30 top_k=30
+2026-06-16 22:08:10 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.0 fused=10 sparse=30
+2026-06-16 22:08:10 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:14 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=13 returned=30 top_k=30
+2026-06-16 22:08:14 [debug    ] dense search complete          elapsed_ms=57.1 returned=30 top_k=30
+2026-06-16 22:08:14 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.2 fused=10 sparse=30
+2026-06-16 22:08:14 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:18 [debug    ] sparse search complete         elapsed_ms=7.3 query_terms=10 returned=30 top_k=30
+2026-06-16 22:08:18 [debug    ] dense search complete          elapsed_ms=65.8 returned=30 top_k=30
+2026-06-16 22:08:18 [debug    ] hybrid search complete         dense=30 elapsed_ms=67.3 fused=10 sparse=30
+2026-06-16 22:08:18 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:23 [debug    ] sparse search complete         elapsed_ms=6.8 query_terms=9 returned=30 top_k=30
+2026-06-16 22:08:23 [debug    ] dense search complete          elapsed_ms=51.6 returned=30 top_k=30
+2026-06-16 22:08:23 [debug    ] hybrid search complete         dense=30 elapsed_ms=52.6 fused=10 sparse=30
+2026-06-16 22:08:23 [debug    ] sparse search complete         elapsed_ms=6.3 query_terms=10 returned=30 top_k=30
+2026-06-16 22:08:23 [debug    ] dense search complete          elapsed_ms=56.4 returned=30 top_k=30
+2026-06-16 22:08:23 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.6 fused=10 sparse=30
+2026-06-16 22:08:23 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:27 [debug    ] sparse search complete         elapsed_ms=5.7 query_terms=7 returned=30 top_k=30
+2026-06-16 22:08:27 [debug    ] dense search complete          elapsed_ms=48.6 returned=30 top_k=30
+2026-06-16 22:08:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=49.9 fused=10 sparse=30
+2026-06-16 22:08:27 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:32 [debug    ] sparse search complete         elapsed_ms=7.2 query_terms=6 returned=30 top_k=30
+2026-06-16 22:08:32 [debug    ] dense search complete          elapsed_ms=58.3 returned=30 top_k=30
+2026-06-16 22:08:32 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.2 fused=10 sparse=30
+2026-06-16 22:08:32 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:37 [debug    ] sparse search complete         elapsed_ms=9.9 query_terms=4 returned=30 top_k=30
+2026-06-16 22:08:37 [debug    ] dense search complete          elapsed_ms=61.0 returned=30 top_k=30
+2026-06-16 22:08:37 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.1 fused=10 sparse=30
+2026-06-16 22:08:37 [debug    ] sparse search complete         elapsed_ms=10.4 query_terms=7 returned=30 top_k=30
+2026-06-16 22:08:37 [debug    ] dense search complete          elapsed_ms=69.8 returned=30 top_k=30
+2026-06-16 22:08:37 [debug    ] hybrid search complete         dense=30 elapsed_ms=71.0 fused=10 sparse=30
+2026-06-16 22:08:37 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:41 [debug    ] sparse search complete         elapsed_ms=10.2 query_terms=7 returned=30 top_k=30
+2026-06-16 22:08:41 [debug    ] dense search complete          elapsed_ms=54.1 returned=30 top_k=30
+2026-06-16 22:08:41 [debug    ] hybrid search complete         dense=30 elapsed_ms=55.4 fused=10 sparse=30
+2026-06-16 22:08:41 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:45 [debug    ] sparse search complete         elapsed_ms=9.7 query_terms=9 returned=30 top_k=30
+2026-06-16 22:08:45 [debug    ] dense search complete          elapsed_ms=61.5 returned=30 top_k=30
+2026-06-16 22:08:45 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.0 fused=10 sparse=30
+2026-06-16 22:08:45 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:50 [debug    ] sparse search complete         elapsed_ms=7.5 query_terms=8 returned=30 top_k=30
+2026-06-16 22:08:50 [debug    ] dense search complete          elapsed_ms=57.7 returned=30 top_k=30
+2026-06-16 22:08:50 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.7 fused=10 sparse=30
+2026-06-16 22:08:50 [debug    ] sparse search complete         elapsed_ms=13.0 query_terms=7 returned=30 top_k=30
+2026-06-16 22:08:51 [debug    ] dense search complete          elapsed_ms=57.3 returned=30 top_k=30
+2026-06-16 22:08:51 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.6 fused=10 sparse=30
+2026-06-16 22:08:51 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:55 [debug    ] sparse search complete         elapsed_ms=9.0 query_terms=10 returned=30 top_k=30
+2026-06-16 22:08:55 [debug    ] dense search complete          elapsed_ms=51.6 returned=30 top_k=30
+2026-06-16 22:08:55 [debug    ] hybrid search complete         dense=30 elapsed_ms=52.7 fused=10 sparse=30
+2026-06-16 22:08:55 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:08:59 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:08:59 [debug    ] dense search complete          elapsed_ms=54.2 returned=30 top_k=30
+2026-06-16 22:08:59 [debug    ] hybrid search complete         dense=30 elapsed_ms=55.4 fused=10 sparse=30
+2026-06-16 22:08:59 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:04 [debug    ] sparse search complete         elapsed_ms=10.1 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:04 [debug    ] dense search complete          elapsed_ms=53.7 returned=30 top_k=30
+2026-06-16 22:09:04 [debug    ] hybrid search complete         dense=30 elapsed_ms=55.0 fused=10 sparse=30
+2026-06-16 22:09:04 [debug    ] sparse search complete         elapsed_ms=6.4 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:04 [debug    ] dense search complete          elapsed_ms=59.1 returned=30 top_k=30
+2026-06-16 22:09:04 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.8 fused=10 sparse=30
+2026-06-16 22:09:04 [debug    ] sparse search complete         elapsed_ms=7.7 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:04 [debug    ] dense search complete          elapsed_ms=56.3 returned=30 top_k=30
+2026-06-16 22:09:04 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.7 fused=10 sparse=30
+2026-06-16 22:09:04 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:09 [debug    ] sparse search complete         elapsed_ms=6.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:09 [debug    ] dense search complete          elapsed_ms=57.0 returned=30 top_k=30
+2026-06-16 22:09:09 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.8 fused=10 sparse=30
+2026-06-16 22:09:09 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:13 [debug    ] sparse search complete         elapsed_ms=9.1 query_terms=8 returned=30 top_k=30
+2026-06-16 22:09:13 [debug    ] dense search complete          elapsed_ms=58.6 returned=30 top_k=30
+2026-06-16 22:09:13 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.9 fused=10 sparse=30
+2026-06-16 22:09:13 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:19 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:19 [debug    ] dense search complete          elapsed_ms=51.9 returned=30 top_k=30
+2026-06-16 22:09:19 [debug    ] hybrid search complete         dense=30 elapsed_ms=53.4 fused=10 sparse=30
+2026-06-16 22:09:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:23 [debug    ] sparse search complete         elapsed_ms=8.6 query_terms=9 returned=30 top_k=30
+2026-06-16 22:09:23 [debug    ] dense search complete          elapsed_ms=58.9 returned=30 top_k=30
+2026-06-16 22:09:23 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.0 fused=10 sparse=30
+2026-06-16 22:09:23 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:27 [debug    ] sparse search complete         elapsed_ms=8.8 query_terms=11 returned=30 top_k=30
+2026-06-16 22:09:27 [debug    ] dense search complete          elapsed_ms=59.2 returned=30 top_k=30
+2026-06-16 22:09:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.2 fused=10 sparse=30
+hyde=0 rw=1     | {'hit@1': 0.483, 'hit@5': 0.828, 'hit@10': 0.897, 'mrr': 0.633} | {'hit@1': 0.552, 'hit@5': 0.828, 'hit@10': 0.862, 'mrr': 0.662}
+2026-06-16 22:09:27 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:09:27 [debug    ] sparse search complete         elapsed_ms=6.2 query_terms=4 returned=30 top_k=30
+2026-06-16 22:09:27 [debug    ] dense search complete          elapsed_ms=56.2 returned=30 top_k=30
+2026-06-16 22:09:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.5 fused=10 sparse=30
+2026-06-16 22:09:27 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:29 [debug    ] sparse search complete         elapsed_ms=6.4 query_terms=5 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] dense search complete          elapsed_ms=95.1 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=96.2 fused=10 sparse=30
+2026-06-16 22:09:29 [debug    ] hyde search complete           elapsed_ms=1650.8 returned=10 top_k=10
+2026-06-16 22:09:29 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:09:29 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=4 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] dense search complete          elapsed_ms=54.4 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=55.5 fused=10 sparse=30
+2026-06-16 22:09:29 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:09:29 [debug    ] sparse search complete         elapsed_ms=5.7 query_terms=4 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] dense search complete          elapsed_ms=48.1 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=49.3 fused=10 sparse=30
+2026-06-16 22:09:29 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:09:29 [debug    ] sparse search complete         elapsed_ms=8.9 query_terms=4 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] dense search complete          elapsed_ms=47.5 returned=30 top_k=30
+2026-06-16 22:09:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=48.6 fused=10 sparse=30
+2026-06-16 22:09:29 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:32 [debug    ] sparse search complete         elapsed_ms=8.9 query_terms=13 returned=30 top_k=30
+2026-06-16 22:09:32 [debug    ] dense search complete          elapsed_ms=115.9 returned=30 top_k=30
+2026-06-16 22:09:32 [debug    ] hybrid search complete         dense=30 elapsed_ms=117.2 fused=10 sparse=30
+2026-06-16 22:09:32 [debug    ] hyde search complete           elapsed_ms=2624.6 returned=10 top_k=10
+2026-06-16 22:09:32 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:35 [debug    ] sparse search complete         elapsed_ms=6.2 query_terms=14 returned=30 top_k=30
+2026-06-16 22:09:35 [debug    ] dense search complete          elapsed_ms=97.4 returned=30 top_k=30
+2026-06-16 22:09:35 [debug    ] hybrid search complete         dense=30 elapsed_ms=98.7 fused=10 sparse=30
+2026-06-16 22:09:35 [debug    ] hyde search complete           elapsed_ms=3664.2 returned=10 top_k=10
+2026-06-16 22:09:35 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:38 [debug    ] sparse search complete         elapsed_ms=5.7 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:38 [debug    ] dense search complete          elapsed_ms=60.3 returned=30 top_k=30
+2026-06-16 22:09:38 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.4 fused=10 sparse=30
+2026-06-16 22:09:38 [debug    ] hyde search complete           elapsed_ms=2454.5 returned=10 top_k=10
+2026-06-16 22:09:38 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:38 [debug    ] sparse search complete         elapsed_ms=5.8 query_terms=13 returned=30 top_k=30
+2026-06-16 22:09:38 [debug    ] dense search complete          elapsed_ms=98.3 returned=30 top_k=30
+2026-06-16 22:09:38 [debug    ] hybrid search complete         dense=30 elapsed_ms=99.5 fused=10 sparse=30
+2026-06-16 22:09:38 [debug    ] hyde search complete           elapsed_ms=668.2 returned=10 top_k=10
+2026-06-16 22:09:38 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:41 [debug    ] sparse search complete         elapsed_ms=5.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:09:41 [debug    ] dense search complete          elapsed_ms=81.9 returned=30 top_k=30
+2026-06-16 22:09:41 [debug    ] hybrid search complete         dense=30 elapsed_ms=83.2 fused=10 sparse=30
+2026-06-16 22:09:41 [debug    ] hyde search complete           elapsed_ms=2806.8 returned=10 top_k=10
+2026-06-16 22:09:41 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:44 [debug    ] sparse search complete         elapsed_ms=5.8 query_terms=9 returned=30 top_k=30
+2026-06-16 22:09:44 [debug    ] dense search complete          elapsed_ms=110.3 returned=30 top_k=30
+2026-06-16 22:09:44 [debug    ] hybrid search complete         dense=30 elapsed_ms=111.4 fused=10 sparse=30
+2026-06-16 22:09:44 [debug    ] hyde search complete           elapsed_ms=2850.5 returned=10 top_k=10
+2026-06-16 22:09:44 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:48 [debug    ] sparse search complete         elapsed_ms=9.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:09:48 [debug    ] dense search complete          elapsed_ms=76.3 returned=30 top_k=30
+2026-06-16 22:09:48 [debug    ] hybrid search complete         dense=30 elapsed_ms=77.5 fused=10 sparse=30
+2026-06-16 22:09:48 [debug    ] hyde search complete           elapsed_ms=3609.3 returned=10 top_k=10
+2026-06-16 22:09:48 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:49 [debug    ] sparse search complete         elapsed_ms=6.8 query_terms=13 returned=30 top_k=30
+2026-06-16 22:09:49 [debug    ] dense search complete          elapsed_ms=74.8 returned=30 top_k=30
+2026-06-16 22:09:49 [debug    ] hybrid search complete         dense=30 elapsed_ms=76.1 fused=10 sparse=30
+2026-06-16 22:09:49 [debug    ] hyde search complete           elapsed_ms=1621.0 returned=10 top_k=10
+2026-06-16 22:09:49 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:52 [debug    ] sparse search complete         elapsed_ms=8.0 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:52 [debug    ] dense search complete          elapsed_ms=73.3 returned=30 top_k=30
+2026-06-16 22:09:52 [debug    ] hybrid search complete         dense=30 elapsed_ms=74.5 fused=10 sparse=30
+2026-06-16 22:09:52 [debug    ] hyde search complete           elapsed_ms=2562.0 returned=10 top_k=10
+2026-06-16 22:09:52 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:55 [debug    ] sparse search complete         elapsed_ms=7.3 query_terms=10 returned=30 top_k=30
+2026-06-16 22:09:55 [debug    ] dense search complete          elapsed_ms=77.6 returned=30 top_k=30
+2026-06-16 22:09:55 [debug    ] hybrid search complete         dense=30 elapsed_ms=78.8 fused=10 sparse=30
+2026-06-16 22:09:55 [debug    ] hyde search complete           elapsed_ms=2716.4 returned=10 top_k=10
+2026-06-16 22:09:55 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:57 [debug    ] sparse search complete         elapsed_ms=5.4 query_terms=7 returned=30 top_k=30
+2026-06-16 22:09:57 [debug    ] dense search complete          elapsed_ms=70.7 returned=30 top_k=30
+2026-06-16 22:09:57 [debug    ] hybrid search complete         dense=30 elapsed_ms=72.0 fused=10 sparse=30
+2026-06-16 22:09:57 [debug    ] hyde search complete           elapsed_ms=2605.1 returned=10 top_k=10
+2026-06-16 22:09:57 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:09:58 [debug    ] sparse search complete         elapsed_ms=5.9 query_terms=7 returned=30 top_k=30
+2026-06-16 22:09:58 [debug    ] dense search complete          elapsed_ms=93.2 returned=30 top_k=30
+2026-06-16 22:09:58 [debug    ] hybrid search complete         dense=30 elapsed_ms=94.4 fused=10 sparse=30
+2026-06-16 22:09:58 [debug    ] hyde search complete           elapsed_ms=504.0 returned=10 top_k=10
+2026-06-16 22:09:58 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:01 [debug    ] sparse search complete         elapsed_ms=6.2 query_terms=7 returned=30 top_k=30
+2026-06-16 22:10:01 [debug    ] dense search complete          elapsed_ms=76.6 returned=30 top_k=30
+2026-06-16 22:10:01 [debug    ] hybrid search complete         dense=30 elapsed_ms=77.8 fused=10 sparse=30
+2026-06-16 22:10:01 [debug    ] hyde search complete           elapsed_ms=3555.6 returned=10 top_k=10
+2026-06-16 22:10:01 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:04 [debug    ] sparse search complete         elapsed_ms=6.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:04 [debug    ] dense search complete          elapsed_ms=123.9 returned=30 top_k=30
+2026-06-16 22:10:04 [debug    ] hybrid search complete         dense=30 elapsed_ms=125.0 fused=10 sparse=30
+2026-06-16 22:10:04 [debug    ] hyde search complete           elapsed_ms=2840.3 returned=10 top_k=10
+2026-06-16 22:10:04 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:06 [debug    ] sparse search complete         elapsed_ms=7.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:06 [debug    ] dense search complete          elapsed_ms=103.2 returned=30 top_k=30
+2026-06-16 22:10:06 [debug    ] hybrid search complete         dense=30 elapsed_ms=104.8 fused=10 sparse=30
+2026-06-16 22:10:06 [debug    ] hyde search complete           elapsed_ms=1549.3 returned=10 top_k=10
+2026-06-16 22:10:06 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:08 [debug    ] sparse search complete         elapsed_ms=8.2 query_terms=10 returned=30 top_k=30
+2026-06-16 22:10:08 [debug    ] dense search complete          elapsed_ms=105.8 returned=30 top_k=30
+2026-06-16 22:10:08 [debug    ] hybrid search complete         dense=30 elapsed_ms=106.9 fused=10 sparse=30
+2026-06-16 22:10:08 [debug    ] hyde search complete           elapsed_ms=2739.0 returned=10 top_k=10
+2026-06-16 22:10:08 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:11 [debug    ] sparse search complete         elapsed_ms=6.0 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:11 [debug    ] dense search complete          elapsed_ms=103.0 returned=30 top_k=30
+2026-06-16 22:10:11 [debug    ] hybrid search complete         dense=30 elapsed_ms=104.3 fused=10 sparse=30
+2026-06-16 22:10:11 [debug    ] hyde search complete           elapsed_ms=2615.3 returned=10 top_k=10
+2026-06-16 22:10:11 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:14 [debug    ] sparse search complete         elapsed_ms=74.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:14 [debug    ] dense search complete          elapsed_ms=81.7 returned=30 top_k=30
+2026-06-16 22:10:14 [debug    ] hybrid search complete         dense=30 elapsed_ms=83.0 fused=10 sparse=30
+2026-06-16 22:10:14 [debug    ] hyde search complete           elapsed_ms=2555.7 returned=10 top_k=10
+2026-06-16 22:10:14 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:16 [debug    ] sparse search complete         elapsed_ms=6.4 query_terms=10 returned=30 top_k=30
+2026-06-16 22:10:16 [debug    ] dense search complete          elapsed_ms=93.1 returned=30 top_k=30
+2026-06-16 22:10:16 [debug    ] hybrid search complete         dense=30 elapsed_ms=94.4 fused=10 sparse=30
+2026-06-16 22:10:16 [debug    ] hyde search complete           elapsed_ms=2708.7 returned=10 top_k=10
+2026-06-16 22:10:16 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:19 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:19 [debug    ] dense search complete          elapsed_ms=87.0 returned=30 top_k=30
+2026-06-16 22:10:19 [debug    ] hybrid search complete         dense=30 elapsed_ms=88.5 fused=10 sparse=30
+2026-06-16 22:10:19 [debug    ] hyde search complete           elapsed_ms=2555.8 returned=10 top_k=10
+2026-06-16 22:10:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:20 [debug    ] sparse search complete         elapsed_ms=6.2 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:20 [debug    ] dense search complete          elapsed_ms=83.5 returned=30 top_k=30
+2026-06-16 22:10:20 [debug    ] hybrid search complete         dense=30 elapsed_ms=84.6 fused=10 sparse=30
+2026-06-16 22:10:20 [debug    ] hyde search complete           elapsed_ms=1577.1 returned=10 top_k=10
+2026-06-16 22:10:20 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:23 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:23 [debug    ] dense search complete          elapsed_ms=99.6 returned=30 top_k=30
+2026-06-16 22:10:23 [debug    ] hybrid search complete         dense=30 elapsed_ms=100.6 fused=10 sparse=30
+2026-06-16 22:10:23 [debug    ] hyde search complete           elapsed_ms=2558.8 returned=10 top_k=10
+2026-06-16 22:10:23 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:26 [debug    ] sparse search complete         elapsed_ms=7.0 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:26 [debug    ] dense search complete          elapsed_ms=99.6 returned=30 top_k=30
+2026-06-16 22:10:26 [debug    ] hybrid search complete         dense=30 elapsed_ms=101.8 fused=10 sparse=30
+2026-06-16 22:10:26 [debug    ] hyde search complete           elapsed_ms=2659.8 returned=10 top_k=10
+2026-06-16 22:10:26 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:28 [debug    ] sparse search complete         elapsed_ms=8.5 query_terms=9 returned=30 top_k=30
+2026-06-16 22:10:28 [debug    ] dense search complete          elapsed_ms=131.6 returned=30 top_k=30
+2026-06-16 22:10:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=133.0 fused=10 sparse=30
+2026-06-16 22:10:28 [debug    ] hyde search complete           elapsed_ms=2807.0 returned=10 top_k=10
+2026-06-16 22:10:28 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:10:28 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=3 returned=30 top_k=30
+2026-06-16 22:10:28 [debug    ] dense search complete          elapsed_ms=64.7 returned=30 top_k=30
+2026-06-16 22:10:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=66.0 fused=10 sparse=30
+2026-06-16 22:10:28 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:30 [debug    ] sparse search complete         elapsed_ms=6.1 query_terms=4 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] dense search complete          elapsed_ms=98.9 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=99.9 fused=10 sparse=30
+2026-06-16 22:10:30 [debug    ] hyde search complete           elapsed_ms=1620.9 returned=10 top_k=10
+2026-06-16 22:10:30 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:10:30 [debug    ] sparse search complete         elapsed_ms=8.6 query_terms=4 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] dense search complete          elapsed_ms=59.9 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.2 fused=10 sparse=30
+2026-06-16 22:10:30 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:10:30 [debug    ] sparse search complete         elapsed_ms=7.5 query_terms=3 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] dense search complete          elapsed_ms=67.4 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.8 fused=10 sparse=30
+2026-06-16 22:10:30 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:10:30 [debug    ] sparse search complete         elapsed_ms=6.8 query_terms=3 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] dense search complete          elapsed_ms=56.0 returned=30 top_k=30
+2026-06-16 22:10:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.2 fused=10 sparse=30
+2026-06-16 22:10:30 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:33 [debug    ] sparse search complete         elapsed_ms=5.6 query_terms=12 returned=30 top_k=30
+2026-06-16 22:10:33 [debug    ] dense search complete          elapsed_ms=67.8 returned=30 top_k=30
+2026-06-16 22:10:33 [debug    ] hybrid search complete         dense=30 elapsed_ms=69.4 fused=10 sparse=30
+2026-06-16 22:10:33 [debug    ] hyde search complete           elapsed_ms=2660.9 returned=10 top_k=10
+2026-06-16 22:10:33 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:36 [debug    ] sparse search complete         elapsed_ms=7.4 query_terms=13 returned=30 top_k=30
+2026-06-16 22:10:36 [debug    ] dense search complete          elapsed_ms=117.3 returned=30 top_k=30
+2026-06-16 22:10:36 [debug    ] hybrid search complete         dense=30 elapsed_ms=118.5 fused=10 sparse=30
+2026-06-16 22:10:36 [debug    ] hyde search complete           elapsed_ms=2812.4 returned=10 top_k=10
+2026-06-16 22:10:36 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:38 [debug    ] sparse search complete         elapsed_ms=6.1 query_terms=9 returned=30 top_k=30
+2026-06-16 22:10:38 [debug    ] dense search complete          elapsed_ms=91.5 returned=30 top_k=30
+2026-06-16 22:10:38 [debug    ] hybrid search complete         dense=30 elapsed_ms=92.6 fused=10 sparse=30
+2026-06-16 22:10:38 [debug    ] hyde search complete           elapsed_ms=2567.0 returned=10 top_k=10
+2026-06-16 22:10:38 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:41 [debug    ] sparse search complete         elapsed_ms=7.5 query_terms=12 returned=30 top_k=30
+2026-06-16 22:10:41 [debug    ] dense search complete          elapsed_ms=81.6 returned=30 top_k=30
+2026-06-16 22:10:41 [debug    ] hybrid search complete         dense=30 elapsed_ms=82.7 fused=10 sparse=30
+2026-06-16 22:10:41 [debug    ] hyde search complete           elapsed_ms=2663.7 returned=10 top_k=10
+2026-06-16 22:10:41 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:44 [debug    ] sparse search complete         elapsed_ms=5.6 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:44 [debug    ] dense search complete          elapsed_ms=170.8 returned=30 top_k=30
+2026-06-16 22:10:44 [debug    ] hybrid search complete         dense=30 elapsed_ms=171.8 fused=10 sparse=30
+2026-06-16 22:10:44 [debug    ] hyde search complete           elapsed_ms=2688.4 returned=10 top_k=10
+2026-06-16 22:10:44 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:47 [debug    ] sparse search complete         elapsed_ms=7.3 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:47 [debug    ] dense search complete          elapsed_ms=227.5 returned=30 top_k=30
+2026-06-16 22:10:47 [debug    ] hybrid search complete         dense=30 elapsed_ms=228.5 fused=10 sparse=30
+2026-06-16 22:10:47 [debug    ] hyde search complete           elapsed_ms=3159.8 returned=10 top_k=10
+2026-06-16 22:10:47 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:48 [debug    ] sparse search complete         elapsed_ms=10.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:10:48 [debug    ] dense search complete          elapsed_ms=86.3 returned=30 top_k=30
+2026-06-16 22:10:48 [debug    ] hybrid search complete         dense=30 elapsed_ms=87.6 fused=10 sparse=30
+2026-06-16 22:10:48 [debug    ] hyde search complete           elapsed_ms=1501.5 returned=10 top_k=10
+2026-06-16 22:10:48 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:51 [debug    ] sparse search complete         elapsed_ms=6.6 query_terms=12 returned=30 top_k=30
+2026-06-16 22:10:51 [debug    ] dense search complete          elapsed_ms=79.2 returned=30 top_k=30
+2026-06-16 22:10:51 [debug    ] hybrid search complete         dense=30 elapsed_ms=80.4 fused=10 sparse=30
+2026-06-16 22:10:51 [debug    ] hyde search complete           elapsed_ms=2514.0 returned=10 top_k=10
+2026-06-16 22:10:51 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:53 [debug    ] sparse search complete         elapsed_ms=8.8 query_terms=9 returned=30 top_k=30
+2026-06-16 22:10:53 [debug    ] dense search complete          elapsed_ms=84.3 returned=30 top_k=30
+2026-06-16 22:10:54 [debug    ] hybrid search complete         dense=30 elapsed_ms=85.9 fused=10 sparse=30
+2026-06-16 22:10:54 [debug    ] hyde search complete           elapsed_ms=2629.9 returned=10 top_k=10
+2026-06-16 22:10:54 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:55 [debug    ] sparse search complete         elapsed_ms=8.9 query_terms=9 returned=30 top_k=30
+2026-06-16 22:10:55 [debug    ] dense search complete          elapsed_ms=96.4 returned=30 top_k=30
+2026-06-16 22:10:55 [debug    ] hybrid search complete         dense=30 elapsed_ms=97.6 fused=10 sparse=30
+2026-06-16 22:10:55 [debug    ] hyde search complete           elapsed_ms=1561.5 returned=10 top_k=10
+2026-06-16 22:10:55 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:10:58 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=6 returned=30 top_k=30
+2026-06-16 22:10:58 [debug    ] dense search complete          elapsed_ms=84.7 returned=30 top_k=30
+2026-06-16 22:10:58 [debug    ] hybrid search complete         dense=30 elapsed_ms=85.9 fused=10 sparse=30
+2026-06-16 22:10:58 [debug    ] hyde search complete           elapsed_ms=2630.8 returned=10 top_k=10
+2026-06-16 22:10:58 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:00 [debug    ] sparse search complete         elapsed_ms=7.6 query_terms=6 returned=30 top_k=30
+2026-06-16 22:11:00 [debug    ] dense search complete          elapsed_ms=81.3 returned=30 top_k=30
+2026-06-16 22:11:00 [debug    ] hybrid search complete         dense=30 elapsed_ms=82.4 fused=10 sparse=30
+2026-06-16 22:11:00 [debug    ] hyde search complete           elapsed_ms=2577.5 returned=10 top_k=10
+2026-06-16 22:11:00 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:03 [debug    ] sparse search complete         elapsed_ms=7.2 query_terms=6 returned=30 top_k=30
+2026-06-16 22:11:03 [debug    ] dense search complete          elapsed_ms=86.4 returned=30 top_k=30
+2026-06-16 22:11:03 [debug    ] hybrid search complete         dense=30 elapsed_ms=87.6 fused=10 sparse=30
+2026-06-16 22:11:03 [debug    ] hyde search complete           elapsed_ms=2598.2 returned=10 top_k=10
+2026-06-16 22:11:03 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:06 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=7 returned=30 top_k=30
+2026-06-16 22:11:06 [debug    ] dense search complete          elapsed_ms=95.1 returned=30 top_k=30
+2026-06-16 22:11:06 [debug    ] hybrid search complete         dense=30 elapsed_ms=96.3 fused=10 sparse=30
+2026-06-16 22:11:06 [debug    ] hyde search complete           elapsed_ms=2782.0 returned=10 top_k=10
+2026-06-16 22:11:06 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:08 [debug    ] sparse search complete         elapsed_ms=9.5 query_terms=8 returned=30 top_k=30
+2026-06-16 22:11:08 [debug    ] dense search complete          elapsed_ms=89.6 returned=30 top_k=30
+2026-06-16 22:11:08 [debug    ] hybrid search complete         dense=30 elapsed_ms=90.7 fused=10 sparse=30
+2026-06-16 22:11:08 [debug    ] hyde search complete           elapsed_ms=2606.6 returned=10 top_k=10
+2026-06-16 22:11:08 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:11 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:11:11 [debug    ] dense search complete          elapsed_ms=82.3 returned=30 top_k=30
+2026-06-16 22:11:11 [debug    ] hybrid search complete         dense=30 elapsed_ms=83.3 fused=10 sparse=30
+2026-06-16 22:11:11 [debug    ] hyde search complete           elapsed_ms=2573.8 returned=10 top_k=10
+2026-06-16 22:11:11 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:13 [debug    ] sparse search complete         elapsed_ms=9.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:11:14 [debug    ] dense search complete          elapsed_ms=92.5 returned=30 top_k=30
+2026-06-16 22:11:14 [debug    ] hybrid search complete         dense=30 elapsed_ms=93.7 fused=10 sparse=30
+2026-06-16 22:11:14 [debug    ] hyde search complete           elapsed_ms=2713.3 returned=10 top_k=10
+2026-06-16 22:11:14 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:16 [debug    ] sparse search complete         elapsed_ms=9.0 query_terms=8 returned=30 top_k=30
+2026-06-16 22:11:16 [debug    ] dense search complete          elapsed_ms=84.2 returned=30 top_k=30
+2026-06-16 22:11:16 [debug    ] hybrid search complete         dense=30 elapsed_ms=85.3 fused=10 sparse=30
+2026-06-16 22:11:16 [debug    ] hyde search complete           elapsed_ms=2563.9 returned=10 top_k=10
+2026-06-16 22:11:16 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:19 [debug    ] sparse search complete         elapsed_ms=7.6 query_terms=9 returned=30 top_k=30
+2026-06-16 22:11:19 [debug    ] dense search complete          elapsed_ms=91.3 returned=30 top_k=30
+2026-06-16 22:11:19 [debug    ] hybrid search complete         dense=30 elapsed_ms=92.3 fused=10 sparse=30
+2026-06-16 22:11:19 [debug    ] hyde search complete           elapsed_ms=2579.8 returned=10 top_k=10
+2026-06-16 22:11:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:20 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:11:20 [debug    ] dense search complete          elapsed_ms=80.6 returned=30 top_k=30
+2026-06-16 22:11:20 [debug    ] hybrid search complete         dense=30 elapsed_ms=81.8 fused=10 sparse=30
+2026-06-16 22:11:20 [debug    ] hyde search complete           elapsed_ms=1570.3 returned=10 top_k=10
+2026-06-16 22:11:20 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:23 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=7 returned=30 top_k=30
+2026-06-16 22:11:23 [debug    ] dense search complete          elapsed_ms=74.5 returned=30 top_k=30
+2026-06-16 22:11:23 [debug    ] hybrid search complete         dense=30 elapsed_ms=77.1 fused=10 sparse=30
+2026-06-16 22:11:23 [debug    ] hyde search complete           elapsed_ms=2548.3 returned=10 top_k=10
+2026-06-16 22:11:23 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:26 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:11:26 [debug    ] dense search complete          elapsed_ms=84.5 returned=30 top_k=30
+2026-06-16 22:11:26 [debug    ] hybrid search complete         dense=30 elapsed_ms=85.7 fused=10 sparse=30
+2026-06-16 22:11:26 [debug    ] hyde search complete           elapsed_ms=2865.6 returned=10 top_k=10
+2026-06-16 22:11:26 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:28 [debug    ] sparse search complete         elapsed_ms=9.0 query_terms=7 returned=30 top_k=30
+2026-06-16 22:11:28 [debug    ] dense search complete          elapsed_ms=85.1 returned=30 top_k=30
+2026-06-16 22:11:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=86.3 fused=10 sparse=30
+2026-06-16 22:11:28 [debug    ] hyde search complete           elapsed_ms=2638.5 returned=10 top_k=10
+2026-06-16 22:11:28 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:31 [debug    ] sparse search complete         elapsed_ms=9.1 query_terms=9 returned=30 top_k=30
+2026-06-16 22:11:31 [debug    ] dense search complete          elapsed_ms=80.0 returned=30 top_k=30
+2026-06-16 22:11:31 [debug    ] hybrid search complete         dense=30 elapsed_ms=81.0 fused=10 sparse=30
+2026-06-16 22:11:31 [debug    ] hyde search complete           elapsed_ms=2648.2 returned=10 top_k=10
+hyde=1 rw=0     | {'hit@1': 0.655, 'hit@5': 0.862, 'hit@10': 0.897, 'mrr': 0.725} | {'hit@1': 0.483, 'hit@5': 0.793, 'hit@10': 0.862, 'mrr': 0.604}
+2026-06-16 22:11:31 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:36 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:38 [debug    ] sparse search complete         elapsed_ms=6.5 query_terms=5 returned=30 top_k=30
+2026-06-16 22:11:38 [debug    ] dense search complete          elapsed_ms=225.1 returned=30 top_k=30
+2026-06-16 22:11:38 [debug    ] hybrid search complete         dense=30 elapsed_ms=226.1 fused=10 sparse=30
+2026-06-16 22:11:38 [debug    ] hyde search complete           elapsed_ms=1877.9 returned=10 top_k=10
+2026-06-16 22:11:38 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:43 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:45 [debug    ] sparse search complete         elapsed_ms=5.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:11:45 [debug    ] dense search complete          elapsed_ms=90.7 returned=30 top_k=30
+2026-06-16 22:11:45 [debug    ] hybrid search complete         dense=30 elapsed_ms=91.8 fused=10 sparse=30
+2026-06-16 22:11:45 [debug    ] hyde search complete           elapsed_ms=1473.8 returned=10 top_k=10
+2026-06-16 22:11:45 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:50 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:51 [debug    ] sparse search complete         elapsed_ms=6.3 query_terms=5 returned=30 top_k=30
+2026-06-16 22:11:52 [debug    ] dense search complete          elapsed_ms=96.4 returned=30 top_k=30
+2026-06-16 22:11:52 [debug    ] hybrid search complete         dense=30 elapsed_ms=97.3 fused=10 sparse=30
+2026-06-16 22:11:52 [debug    ] hyde search complete           elapsed_ms=1568.8 returned=10 top_k=10
+2026-06-16 22:11:52 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:57 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:11:58 [debug    ] sparse search complete         elapsed_ms=5.5 query_terms=6 returned=30 top_k=30
+2026-06-16 22:11:59 [debug    ] dense search complete          elapsed_ms=101.1 returned=30 top_k=30
+2026-06-16 22:11:59 [debug    ] hybrid search complete         dense=30 elapsed_ms=102.5 fused=10 sparse=30
+2026-06-16 22:11:59 [debug    ] hyde search complete           elapsed_ms=1574.8 returned=10 top_k=10
+2026-06-16 22:11:59 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:00 [debug    ] sparse search complete         elapsed_ms=5.2 query_terms=7 returned=30 top_k=30
+2026-06-16 22:12:00 [debug    ] dense search complete          elapsed_ms=70.8 returned=30 top_k=30
+2026-06-16 22:12:00 [debug    ] hybrid search complete         dense=30 elapsed_ms=72.0 fused=10 sparse=30
+2026-06-16 22:12:00 [debug    ] hyde search complete           elapsed_ms=1620.7 returned=10 top_k=10
+2026-06-16 22:12:00 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:06 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:12:06 [debug    ] sparse search complete         elapsed_ms=7.5 query_terms=4 returned=30 top_k=30
+2026-06-16 22:12:06 [debug    ] dense search complete          elapsed_ms=46.3 returned=30 top_k=30
+2026-06-16 22:12:06 [debug    ] hybrid search complete         dense=30 elapsed_ms=47.3 fused=10 sparse=30
+2026-06-16 22:12:06 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:11 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:12 [debug    ] sparse search complete         elapsed_ms=9.4 query_terms=13 returned=30 top_k=30
+2026-06-16 22:12:12 [debug    ] dense search complete          elapsed_ms=70.9 returned=30 top_k=30
+2026-06-16 22:12:12 [debug    ] hybrid search complete         dense=30 elapsed_ms=72.4 fused=10 sparse=30
+2026-06-16 22:12:12 [debug    ] hyde search complete           elapsed_ms=1775.4 returned=10 top_k=10
+2026-06-16 22:12:12 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:19 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=14 returned=30 top_k=30
+2026-06-16 22:12:19 [debug    ] dense search complete          elapsed_ms=63.6 returned=30 top_k=30
+2026-06-16 22:12:19 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.9 fused=10 sparse=30
+2026-06-16 22:12:19 [debug    ] hyde search complete           elapsed_ms=605.1 returned=10 top_k=10
+2026-06-16 22:12:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:26 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:27 [debug    ] sparse search complete         elapsed_ms=11.2 query_terms=9 returned=30 top_k=30
+2026-06-16 22:12:27 [debug    ] dense search complete          elapsed_ms=102.7 returned=30 top_k=30
+2026-06-16 22:12:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=105.6 fused=10 sparse=30
+2026-06-16 22:12:27 [debug    ] hyde search complete           elapsed_ms=1707.1 returned=10 top_k=10
+2026-06-16 22:12:27 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:30 [debug    ] sparse search complete         elapsed_ms=6.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:12:30 [debug    ] dense search complete          elapsed_ms=117.6 returned=30 top_k=30
+2026-06-16 22:12:30 [debug    ] hybrid search complete         dense=30 elapsed_ms=119.2 fused=10 sparse=30
+2026-06-16 22:12:30 [debug    ] hyde search complete           elapsed_ms=2637.7 returned=10 top_k=10
+2026-06-16 22:12:30 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:35 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:37 [debug    ] sparse search complete         elapsed_ms=18.6 query_terms=13 returned=30 top_k=30
+2026-06-16 22:12:37 [debug    ] dense search complete          elapsed_ms=74.5 returned=30 top_k=30
+2026-06-16 22:12:37 [debug    ] hybrid search complete         dense=30 elapsed_ms=76.3 fused=10 sparse=30
+2026-06-16 22:12:37 [debug    ] hyde search complete           elapsed_ms=1602.1 returned=10 top_k=10
+2026-06-16 22:12:37 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:39 [debug    ] sparse search complete         elapsed_ms=9.6 query_terms=10 returned=30 top_k=30
+2026-06-16 22:12:40 [debug    ] dense search complete          elapsed_ms=89.5 returned=30 top_k=30
+2026-06-16 22:12:40 [debug    ] hybrid search complete         dense=30 elapsed_ms=90.7 fused=10 sparse=30
+2026-06-16 22:12:40 [debug    ] hyde search complete           elapsed_ms=2505.8 returned=10 top_k=10
+2026-06-16 22:12:40 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:46 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:46 [debug    ] sparse search complete         elapsed_ms=9.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:12:46 [debug    ] dense search complete          elapsed_ms=65.4 returned=30 top_k=30
+2026-06-16 22:12:46 [debug    ] hybrid search complete         dense=30 elapsed_ms=67.0 fused=10 sparse=30
+2026-06-16 22:12:46 [debug    ] hyde search complete           elapsed_ms=518.3 returned=10 top_k=10
+2026-06-16 22:12:46 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:53 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:54 [debug    ] sparse search complete         elapsed_ms=8.2 query_terms=9 returned=30 top_k=30
+2026-06-16 22:12:54 [debug    ] dense search complete          elapsed_ms=76.9 returned=30 top_k=30
+2026-06-16 22:12:54 [debug    ] hybrid search complete         dense=30 elapsed_ms=78.2 fused=10 sparse=30
+2026-06-16 22:12:54 [debug    ] hyde search complete           elapsed_ms=1619.6 returned=10 top_k=10
+2026-06-16 22:12:54 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:57 [debug    ] sparse search complete         elapsed_ms=5.9 query_terms=12 returned=30 top_k=30
+2026-06-16 22:12:57 [debug    ] dense search complete          elapsed_ms=61.0 returned=30 top_k=30
+2026-06-16 22:12:57 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.4 fused=10 sparse=30
+2026-06-16 22:12:57 [debug    ] hyde search complete           elapsed_ms=2465.8 returned=10 top_k=10
+2026-06-16 22:12:57 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:12:59 [debug    ] sparse search complete         elapsed_ms=5.5 query_terms=8 returned=30 top_k=30
+2026-06-16 22:12:59 [debug    ] dense search complete          elapsed_ms=83.0 returned=30 top_k=30
+2026-06-16 22:12:59 [debug    ] hybrid search complete         dense=30 elapsed_ms=84.2 fused=10 sparse=30
+2026-06-16 22:12:59 [debug    ] hyde search complete           elapsed_ms=2653.7 returned=10 top_k=10
+2026-06-16 22:12:59 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:02 [debug    ] sparse search complete         elapsed_ms=7.7 query_terms=12 returned=30 top_k=30
+2026-06-16 22:13:02 [debug    ] dense search complete          elapsed_ms=62.4 returned=30 top_k=30
+2026-06-16 22:13:02 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.7 fused=10 sparse=30
+2026-06-16 22:13:02 [debug    ] hyde search complete           elapsed_ms=2612.2 returned=10 top_k=10
+2026-06-16 22:13:02 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:07 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:09 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=6 returned=30 top_k=30
+2026-06-16 22:13:09 [debug    ] dense search complete          elapsed_ms=62.7 returned=30 top_k=30
+2026-06-16 22:13:09 [debug    ] hybrid search complete         dense=30 elapsed_ms=64.0 fused=10 sparse=30
+2026-06-16 22:13:09 [debug    ] hyde search complete           elapsed_ms=1555.5 returned=10 top_k=10
+2026-06-16 22:13:09 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:11 [debug    ] sparse search complete         elapsed_ms=7.3 query_terms=6 returned=30 top_k=30
+2026-06-16 22:13:11 [debug    ] dense search complete          elapsed_ms=69.1 returned=30 top_k=30
+2026-06-16 22:13:11 [debug    ] hybrid search complete         dense=30 elapsed_ms=70.5 fused=10 sparse=30
+2026-06-16 22:13:11 [debug    ] hyde search complete           elapsed_ms=2558.7 returned=10 top_k=10
+2026-06-16 22:13:11 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:17 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:18 [debug    ] sparse search complete         elapsed_ms=6.9 query_terms=13 returned=30 top_k=30
+2026-06-16 22:13:18 [debug    ] dense search complete          elapsed_ms=62.4 returned=30 top_k=30
+2026-06-16 22:13:18 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.6 fused=10 sparse=30
+2026-06-16 22:13:18 [debug    ] hyde search complete           elapsed_ms=1535.3 returned=10 top_k=10
+2026-06-16 22:13:18 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:23 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:25 [debug    ] sparse search complete         elapsed_ms=6.3 query_terms=10 returned=30 top_k=30
+2026-06-16 22:13:25 [debug    ] dense search complete          elapsed_ms=67.5 returned=30 top_k=30
+2026-06-16 22:13:25 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.6 fused=10 sparse=30
+2026-06-16 22:13:25 [debug    ] hyde search complete           elapsed_ms=1600.2 returned=10 top_k=10
+2026-06-16 22:13:25 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:28 [debug    ] sparse search complete         elapsed_ms=7.1 query_terms=10 returned=30 top_k=30
+2026-06-16 22:13:28 [debug    ] dense search complete          elapsed_ms=71.9 returned=30 top_k=30
+2026-06-16 22:13:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=73.1 fused=10 sparse=30
+2026-06-16 22:13:28 [debug    ] hyde search complete           elapsed_ms=2787.3 returned=10 top_k=10
+2026-06-16 22:13:28 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:33 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:35 [debug    ] sparse search complete         elapsed_ms=6.8 query_terms=10 returned=30 top_k=30
+2026-06-16 22:13:35 [debug    ] dense search complete          elapsed_ms=62.7 returned=30 top_k=30
+2026-06-16 22:13:35 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.7 fused=10 sparse=30
+2026-06-16 22:13:35 [debug    ] hyde search complete           elapsed_ms=1575.8 returned=10 top_k=10
+2026-06-16 22:13:35 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:40 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:41 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=7 returned=30 top_k=30
+2026-06-16 22:13:41 [debug    ] dense search complete          elapsed_ms=66.8 returned=30 top_k=30
+2026-06-16 22:13:41 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.1 fused=10 sparse=30
+2026-06-16 22:13:41 [debug    ] hyde search complete           elapsed_ms=1581.3 returned=10 top_k=10
+2026-06-16 22:13:41 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:47 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:48 [debug    ] sparse search complete         elapsed_ms=6.4 query_terms=8 returned=30 top_k=30
+2026-06-16 22:13:48 [debug    ] dense search complete          elapsed_ms=62.2 returned=30 top_k=30
+2026-06-16 22:13:48 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.5 fused=10 sparse=30
+2026-06-16 22:13:48 [debug    ] hyde search complete           elapsed_ms=1526.0 returned=10 top_k=10
+2026-06-16 22:13:48 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:51 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=6 returned=30 top_k=30
+2026-06-16 22:13:51 [debug    ] dense search complete          elapsed_ms=68.1 returned=30 top_k=30
+2026-06-16 22:13:51 [debug    ] hybrid search complete         dense=30 elapsed_ms=69.5 fused=10 sparse=30
+2026-06-16 22:13:51 [debug    ] hyde search complete           elapsed_ms=2538.7 returned=10 top_k=10
+2026-06-16 22:13:51 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:56 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:13:58 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=6 returned=30 top_k=30
+2026-06-16 22:13:58 [debug    ] dense search complete          elapsed_ms=66.7 returned=30 top_k=30
+2026-06-16 22:13:58 [debug    ] hybrid search complete         dense=30 elapsed_ms=67.7 fused=10 sparse=30
+2026-06-16 22:13:58 [debug    ] hyde search complete           elapsed_ms=1560.3 returned=10 top_k=10
+2026-06-16 22:13:58 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:00 [debug    ] sparse search complete         elapsed_ms=6.3 query_terms=7 returned=30 top_k=30
+2026-06-16 22:14:00 [debug    ] dense search complete          elapsed_ms=63.0 returned=30 top_k=30
+2026-06-16 22:14:00 [debug    ] hybrid search complete         dense=30 elapsed_ms=64.1 fused=10 sparse=30
+2026-06-16 22:14:00 [debug    ] hyde search complete           elapsed_ms=2578.1 returned=10 top_k=10
+2026-06-16 22:14:00 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:06 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:07 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=8 returned=30 top_k=30
+2026-06-16 22:14:07 [debug    ] dense search complete          elapsed_ms=92.0 returned=30 top_k=30
+2026-06-16 22:14:07 [debug    ] hybrid search complete         dense=30 elapsed_ms=94.1 fused=10 sparse=30
+2026-06-16 22:14:07 [debug    ] hyde search complete           elapsed_ms=1837.0 returned=10 top_k=10
+2026-06-16 22:14:07 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:13 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:14 [debug    ] sparse search complete         elapsed_ms=8.8 query_terms=9 returned=30 top_k=30
+2026-06-16 22:14:14 [debug    ] dense search complete          elapsed_ms=69.6 returned=30 top_k=30
+2026-06-16 22:14:14 [debug    ] hybrid search complete         dense=30 elapsed_ms=70.8 fused=10 sparse=30
+2026-06-16 22:14:14 [debug    ] hyde search complete           elapsed_ms=1593.6 returned=10 top_k=10
+2026-06-16 22:14:14 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:20 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:21 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=11 returned=30 top_k=30
+2026-06-16 22:14:21 [debug    ] dense search complete          elapsed_ms=73.2 returned=30 top_k=30
+2026-06-16 22:14:21 [debug    ] hybrid search complete         dense=30 elapsed_ms=74.6 fused=10 sparse=30
+2026-06-16 22:14:21 [debug    ] hyde search complete           elapsed_ms=1677.0 returned=10 top_k=10
+2026-06-16 22:14:21 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:28 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:29 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=8 returned=30 top_k=30
+2026-06-16 22:14:29 [debug    ] dense search complete          elapsed_ms=56.5 returned=30 top_k=30
+2026-06-16 22:14:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=57.9 fused=10 sparse=30
+2026-06-16 22:14:29 [debug    ] hyde search complete           elapsed_ms=1580.2 returned=10 top_k=10
+2026-06-16 22:14:29 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:34 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:36 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:14:36 [debug    ] dense search complete          elapsed_ms=71.0 returned=30 top_k=30
+2026-06-16 22:14:36 [debug    ] hybrid search complete         dense=30 elapsed_ms=72.7 fused=10 sparse=30
+2026-06-16 22:14:36 [debug    ] hyde search complete           elapsed_ms=1585.3 returned=10 top_k=10
+2026-06-16 22:14:36 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:41 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:43 [debug    ] sparse search complete         elapsed_ms=7.6 query_terms=10 returned=30 top_k=30
+2026-06-16 22:14:43 [debug    ] dense search complete          elapsed_ms=67.5 returned=30 top_k=30
+2026-06-16 22:14:43 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.8 fused=10 sparse=30
+2026-06-16 22:14:43 [debug    ] hyde search complete           elapsed_ms=1610.2 returned=10 top_k=10
+2026-06-16 22:14:43 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:48 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:51 [debug    ] sparse search complete         elapsed_ms=7.2 query_terms=9 returned=30 top_k=30
+2026-06-16 22:14:51 [debug    ] dense search complete          elapsed_ms=68.5 returned=30 top_k=30
+2026-06-16 22:14:51 [debug    ] hybrid search complete         dense=30 elapsed_ms=69.7 fused=10 sparse=30
+2026-06-16 22:14:51 [debug    ] hyde search complete           elapsed_ms=2573.3 returned=10 top_k=10
+2026-06-16 22:14:51 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:55 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:14:57 [debug    ] sparse search complete         elapsed_ms=7.6 query_terms=5 returned=30 top_k=30
+2026-06-16 22:14:57 [debug    ] dense search complete          elapsed_ms=79.3 returned=30 top_k=30
+2026-06-16 22:14:57 [debug    ] hybrid search complete         dense=30 elapsed_ms=82.4 fused=10 sparse=30
+2026-06-16 22:14:57 [debug    ] hyde search complete           elapsed_ms=2532.9 returned=10 top_k=10
+2026-06-16 22:14:57 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:00 [debug    ] sparse search complete         elapsed_ms=6.5 query_terms=5 returned=30 top_k=30
+2026-06-16 22:15:00 [debug    ] dense search complete          elapsed_ms=107.0 returned=30 top_k=30
+2026-06-16 22:15:00 [debug    ] hybrid search complete         dense=30 elapsed_ms=108.2 fused=10 sparse=30
+2026-06-16 22:15:00 [debug    ] hyde search complete           elapsed_ms=2638.5 returned=10 top_k=10
+2026-06-16 22:15:00 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:05 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:07 [debug    ] sparse search complete         elapsed_ms=8.0 query_terms=8 returned=30 top_k=30
+2026-06-16 22:15:07 [debug    ] dense search complete          elapsed_ms=81.0 returned=30 top_k=30
+2026-06-16 22:15:07 [debug    ] hybrid search complete         dense=30 elapsed_ms=82.1 fused=10 sparse=30
+2026-06-16 22:15:07 [debug    ] hyde search complete           elapsed_ms=1705.7 returned=10 top_k=10
+2026-06-16 22:15:07 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:12 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:14 [debug    ] sparse search complete         elapsed_ms=7.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:15:14 [debug    ] dense search complete          elapsed_ms=68.7 returned=30 top_k=30
+2026-06-16 22:15:14 [debug    ] hybrid search complete         dense=30 elapsed_ms=69.7 fused=10 sparse=30
+2026-06-16 22:15:14 [debug    ] hyde search complete           elapsed_ms=1879.6 returned=10 top_k=10
+2026-06-16 22:15:14 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:21 [debug    ] sparse search complete         elapsed_ms=7.5 query_terms=9 returned=30 top_k=30
+2026-06-16 22:15:21 [debug    ] dense search complete          elapsed_ms=68.6 returned=30 top_k=30
+2026-06-16 22:15:21 [debug    ] hybrid search complete         dense=30 elapsed_ms=69.5 fused=10 sparse=30
+2026-06-16 22:15:21 [debug    ] hyde search complete           elapsed_ms=1472.1 returned=10 top_k=10
+2026-06-16 22:15:21 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:26 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:28 [debug    ] sparse search complete         elapsed_ms=7.5 query_terms=5 returned=30 top_k=30
+2026-06-16 22:15:28 [debug    ] dense search complete          elapsed_ms=64.7 returned=30 top_k=30
+2026-06-16 22:15:28 [debug    ] hybrid search complete         dense=30 elapsed_ms=65.8 fused=10 sparse=30
+2026-06-16 22:15:28 [debug    ] hyde search complete           elapsed_ms=1713.6 returned=10 top_k=10
+2026-06-16 22:15:28 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:33 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:35 [debug    ] sparse search complete         elapsed_ms=7.4 query_terms=8 returned=30 top_k=30
+2026-06-16 22:15:35 [debug    ] dense search complete          elapsed_ms=88.3 returned=30 top_k=30
+2026-06-16 22:15:35 [debug    ] hybrid search complete         dense=30 elapsed_ms=89.3 fused=10 sparse=30
+2026-06-16 22:15:35 [debug    ] hyde search complete           elapsed_ms=1692.1 returned=10 top_k=10
+2026-06-16 22:15:35 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:40 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:15:40 [debug    ] sparse search complete         elapsed_ms=9.1 query_terms=4 returned=30 top_k=30
+2026-06-16 22:15:40 [debug    ] dense search complete          elapsed_ms=48.0 returned=30 top_k=30
+2026-06-16 22:15:40 [debug    ] hybrid search complete         dense=30 elapsed_ms=49.1 fused=10 sparse=30
+2026-06-16 22:15:40 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:42 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=5 returned=30 top_k=30
+2026-06-16 22:15:42 [debug    ] dense search complete          elapsed_ms=80.8 returned=30 top_k=30
+2026-06-16 22:15:42 [debug    ] hybrid search complete         dense=30 elapsed_ms=82.0 fused=10 sparse=30
+2026-06-16 22:15:42 [debug    ] hyde search complete           elapsed_ms=1543.5 returned=10 top_k=10
+2026-06-16 22:15:42 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:47 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:48 [debug    ] sparse search complete         elapsed_ms=6.5 query_terms=7 returned=30 top_k=30
+2026-06-16 22:15:48 [debug    ] dense search complete          elapsed_ms=57.6 returned=30 top_k=30
+2026-06-16 22:15:48 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.6 fused=10 sparse=30
+2026-06-16 22:15:48 [debug    ] hyde search complete           elapsed_ms=1620.8 returned=10 top_k=10
+2026-06-16 22:15:48 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:51 [debug    ] sparse search complete         elapsed_ms=4.8 query_terms=8 returned=30 top_k=30
+2026-06-16 22:15:51 [debug    ] dense search complete          elapsed_ms=62.3 returned=30 top_k=30
+2026-06-16 22:15:51 [debug    ] hybrid search complete         dense=30 elapsed_ms=63.2 fused=10 sparse=30
+2026-06-16 22:15:51 [debug    ] hyde search complete           elapsed_ms=2846.8 returned=10 top_k=10
+2026-06-16 22:15:51 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:15:57 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:15:57 [debug    ] sparse search complete         elapsed_ms=6.7 query_terms=4 returned=30 top_k=30
+2026-06-16 22:15:57 [debug    ] dense search complete          elapsed_ms=36.7 returned=30 top_k=30
+2026-06-16 22:15:57 [debug    ] hybrid search complete         dense=30 elapsed_ms=37.9 fused=10 sparse=30
+2026-06-16 22:15:57 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:01 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:03 [debug    ] sparse search complete         elapsed_ms=7.5 query_terms=14 returned=30 top_k=30
+2026-06-16 22:16:04 [debug    ] dense search complete          elapsed_ms=67.2 returned=30 top_k=30
+2026-06-16 22:16:04 [debug    ] hybrid search complete         dense=30 elapsed_ms=68.3 fused=10 sparse=30
+2026-06-16 22:16:04 [debug    ] hyde search complete           elapsed_ms=2633.0 returned=10 top_k=10
+2026-06-16 22:16:04 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:09 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:10 [debug    ] sparse search complete         elapsed_ms=5.6 query_terms=13 returned=30 top_k=30
+2026-06-16 22:16:10 [debug    ] dense search complete          elapsed_ms=97.7 returned=30 top_k=30
+2026-06-16 22:16:10 [debug    ] hybrid search complete         dense=30 elapsed_ms=98.8 fused=10 sparse=30
+2026-06-16 22:16:10 [debug    ] hyde search complete           elapsed_ms=1660.6 returned=10 top_k=10
+2026-06-16 22:16:10 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:13 [debug    ] sparse search complete         elapsed_ms=5.1 query_terms=14 returned=30 top_k=30
+2026-06-16 22:16:13 [debug    ] dense search complete          elapsed_ms=43.0 returned=30 top_k=30
+2026-06-16 22:16:13 [debug    ] hybrid search complete         dense=30 elapsed_ms=44.0 fused=10 sparse=30
+2026-06-16 22:16:13 [debug    ] hyde search complete           elapsed_ms=2487.2 returned=10 top_k=10
+2026-06-16 22:16:13 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:19 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:20 [debug    ] sparse search complete         elapsed_ms=9.6 query_terms=10 returned=30 top_k=30
+2026-06-16 22:16:20 [debug    ] dense search complete          elapsed_ms=81.4 returned=30 top_k=30
+2026-06-16 22:16:20 [debug    ] hybrid search complete         dense=30 elapsed_ms=82.5 fused=10 sparse=30
+2026-06-16 22:16:20 [debug    ] hyde search complete           elapsed_ms=699.4 returned=10 top_k=10
+2026-06-16 22:16:20 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:24 [debug    ] sparse search complete         elapsed_ms=6.1 query_terms=10 returned=30 top_k=30
+2026-06-16 22:16:24 [debug    ] dense search complete          elapsed_ms=84.5 returned=30 top_k=30
+2026-06-16 22:16:24 [debug    ] hybrid search complete         dense=30 elapsed_ms=86.0 fused=10 sparse=30
+2026-06-16 22:16:24 [debug    ] hyde search complete           elapsed_ms=3520.0 returned=10 top_k=10
+2026-06-16 22:16:24 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:29 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:30 [debug    ] sparse search complete         elapsed_ms=8.1 query_terms=13 returned=30 top_k=30
+2026-06-16 22:16:31 [debug    ] dense search complete          elapsed_ms=69.1 returned=30 top_k=30
+2026-06-16 22:16:31 [debug    ] hybrid search complete         dense=30 elapsed_ms=70.1 fused=10 sparse=30
+2026-06-16 22:16:31 [debug    ] hyde search complete           elapsed_ms=1632.2 returned=10 top_k=10
+2026-06-16 22:16:31 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:36 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:37 [debug    ] sparse search complete         elapsed_ms=8.3 query_terms=9 returned=30 top_k=30
+2026-06-16 22:16:37 [debug    ] dense search complete          elapsed_ms=99.6 returned=30 top_k=30
+2026-06-16 22:16:37 [debug    ] hybrid search complete         dense=30 elapsed_ms=101.0 fused=10 sparse=30
+2026-06-16 22:16:37 [debug    ] hyde search complete           elapsed_ms=1552.2 returned=10 top_k=10
+2026-06-16 22:16:37 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:43 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:44 [debug    ] sparse search complete         elapsed_ms=11.2 query_terms=9 returned=30 top_k=30
+2026-06-16 22:16:44 [debug    ] dense search complete          elapsed_ms=85.0 returned=30 top_k=30
+2026-06-16 22:16:44 [debug    ] hybrid search complete         dense=30 elapsed_ms=86.2 fused=10 sparse=30
+2026-06-16 22:16:44 [debug    ] hyde search complete           elapsed_ms=1657.6 returned=10 top_k=10
+2026-06-16 22:16:44 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:49 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:51 [debug    ] sparse search complete         elapsed_ms=9.1 query_terms=9 returned=30 top_k=30
+2026-06-16 22:16:51 [debug    ] dense search complete          elapsed_ms=75.8 returned=30 top_k=30
+2026-06-16 22:16:51 [debug    ] hybrid search complete         dense=30 elapsed_ms=77.1 fused=10 sparse=30
+2026-06-16 22:16:51 [debug    ] hyde search complete           elapsed_ms=1678.8 returned=10 top_k=10
+2026-06-16 22:16:51 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:57 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:16:59 [debug    ] sparse search complete         elapsed_ms=9.6 query_terms=13 returned=30 top_k=30
+2026-06-16 22:16:59 [debug    ] dense search complete          elapsed_ms=89.4 returned=30 top_k=30
+2026-06-16 22:16:59 [debug    ] hybrid search complete         dense=30 elapsed_ms=91.0 fused=10 sparse=30
+2026-06-16 22:16:59 [debug    ] hyde search complete           elapsed_ms=1573.0 returned=10 top_k=10
+2026-06-16 22:16:59 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:04 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:05 [debug    ] sparse search complete         elapsed_ms=7.7 query_terms=10 returned=30 top_k=30
+2026-06-16 22:17:05 [debug    ] dense search complete          elapsed_ms=79.5 returned=30 top_k=30
+2026-06-16 22:17:05 [debug    ] hybrid search complete         dense=30 elapsed_ms=81.0 fused=10 sparse=30
+2026-06-16 22:17:05 [debug    ] hyde search complete           elapsed_ms=722.6 returned=10 top_k=10
+2026-06-16 22:17:05 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:11 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:13 [debug    ] sparse search complete         elapsed_ms=25.5 query_terms=9 returned=30 top_k=30
+2026-06-16 22:17:13 [debug    ] dense search complete          elapsed_ms=77.8 returned=30 top_k=30
+2026-06-16 22:17:13 [debug    ] hybrid search complete         dense=30 elapsed_ms=79.2 fused=10 sparse=30
+2026-06-16 22:17:13 [debug    ] hyde search complete           elapsed_ms=1511.1 returned=10 top_k=10
+2026-06-16 22:17:13 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:15 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=10 returned=30 top_k=30
+2026-06-16 22:17:16 [debug    ] dense search complete          elapsed_ms=76.8 returned=30 top_k=30
+2026-06-16 22:17:16 [debug    ] hybrid search complete         dense=30 elapsed_ms=78.3 fused=10 sparse=30
+2026-06-16 22:17:16 [debug    ] hyde search complete           elapsed_ms=2620.6 returned=10 top_k=10
+2026-06-16 22:17:16 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:21 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:22 [debug    ] sparse search complete         elapsed_ms=5.8 query_terms=7 returned=30 top_k=30
+2026-06-16 22:17:22 [debug    ] dense search complete          elapsed_ms=73.3 returned=30 top_k=30
+2026-06-16 22:17:22 [debug    ] hybrid search complete         dense=30 elapsed_ms=74.4 fused=10 sparse=30
+2026-06-16 22:17:22 [debug    ] hyde search complete           elapsed_ms=1606.4 returned=10 top_k=10
+2026-06-16 22:17:22 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:28 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:29 [debug    ] sparse search complete         elapsed_ms=7.2 query_terms=6 returned=30 top_k=30
+2026-06-16 22:17:29 [debug    ] dense search complete          elapsed_ms=93.7 returned=30 top_k=30
+2026-06-16 22:17:29 [debug    ] hybrid search complete         dense=30 elapsed_ms=94.8 fused=10 sparse=30
+2026-06-16 22:17:29 [debug    ] hyde search complete           elapsed_ms=1716.1 returned=10 top_k=10
+2026-06-16 22:17:29 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:35 [debug    ] hyde bypassed                  hyde_enabled=True min_tokens=5 query_tokens=4
+2026-06-16 22:17:35 [debug    ] sparse search complete         elapsed_ms=8.5 query_terms=4 returned=30 top_k=30
+2026-06-16 22:17:35 [debug    ] dense search complete          elapsed_ms=51.7 returned=30 top_k=30
+2026-06-16 22:17:35 [debug    ] hybrid search complete         dense=30 elapsed_ms=53.7 fused=10 sparse=30
+2026-06-16 22:17:35 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:36 [debug    ] sparse search complete         elapsed_ms=7.8 query_terms=7 returned=30 top_k=30
+2026-06-16 22:17:36 [debug    ] dense search complete          elapsed_ms=52.7 returned=30 top_k=30
+2026-06-16 22:17:36 [debug    ] hybrid search complete         dense=30 elapsed_ms=53.6 fused=10 sparse=30
+2026-06-16 22:17:36 [debug    ] hyde search complete           elapsed_ms=1606.7 returned=10 top_k=10
+2026-06-16 22:17:36 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:42 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:43 [debug    ] sparse search complete         elapsed_ms=6.9 query_terms=7 returned=30 top_k=30
+2026-06-16 22:17:43 [debug    ] dense search complete          elapsed_ms=71.6 returned=30 top_k=30
+2026-06-16 22:17:43 [debug    ] hybrid search complete         dense=30 elapsed_ms=72.7 fused=10 sparse=30
+2026-06-16 22:17:43 [debug    ] hyde search complete           elapsed_ms=1798.2 returned=10 top_k=10
+2026-06-16 22:17:43 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:49 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:50 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:17:50 [debug    ] dense search complete          elapsed_ms=58.3 returned=30 top_k=30
+2026-06-16 22:17:50 [debug    ] hybrid search complete         dense=30 elapsed_ms=59.2 fused=10 sparse=30
+2026-06-16 22:17:50 [debug    ] hyde search complete           elapsed_ms=1540.7 returned=10 top_k=10
+2026-06-16 22:17:50 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:56 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:17:57 [debug    ] sparse search complete         elapsed_ms=5.7 query_terms=8 returned=30 top_k=30
+2026-06-16 22:17:57 [debug    ] dense search complete          elapsed_ms=57.5 returned=30 top_k=30
+2026-06-16 22:17:57 [debug    ] hybrid search complete         dense=30 elapsed_ms=58.5 fused=10 sparse=30
+2026-06-16 22:17:57 [debug    ] hyde search complete           elapsed_ms=1640.2 returned=10 top_k=10
+2026-06-16 22:17:57 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:01 [debug    ] sparse search complete         elapsed_ms=6.1 query_terms=7 returned=30 top_k=30
+2026-06-16 22:18:01 [debug    ] dense search complete          elapsed_ms=61.3 returned=30 top_k=30
+2026-06-16 22:18:01 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.3 fused=10 sparse=30
+2026-06-16 22:18:01 [debug    ] hyde search complete           elapsed_ms=3617.7 returned=10 top_k=10
+2026-06-16 22:18:01 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:05 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:07 [debug    ] sparse search complete         elapsed_ms=7.1 query_terms=10 returned=30 top_k=30
+2026-06-16 22:18:07 [debug    ] dense search complete          elapsed_ms=202.3 returned=30 top_k=30
+2026-06-16 22:18:07 [debug    ] hybrid search complete         dense=30 elapsed_ms=203.3 fused=10 sparse=30
+2026-06-16 22:18:07 [debug    ] hyde search complete           elapsed_ms=1908.7 returned=10 top_k=10
+2026-06-16 22:18:07 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:13 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:15 [debug    ] sparse search complete         elapsed_ms=8.4 query_terms=10 returned=30 top_k=30
+2026-06-16 22:18:15 [debug    ] dense search complete          elapsed_ms=60.0 returned=30 top_k=30
+2026-06-16 22:18:15 [debug    ] hybrid search complete         dense=30 elapsed_ms=61.4 fused=10 sparse=30
+2026-06-16 22:18:15 [debug    ] hyde search complete           elapsed_ms=1553.2 returned=10 top_k=10
+2026-06-16 22:18:15 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:20 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:22 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=10 returned=30 top_k=30
+2026-06-16 22:18:22 [debug    ] dense search complete          elapsed_ms=65.6 returned=30 top_k=30
+2026-06-16 22:18:22 [debug    ] hybrid search complete         dense=30 elapsed_ms=66.6 fused=10 sparse=30
+2026-06-16 22:18:22 [debug    ] hyde search complete           elapsed_ms=1699.3 returned=10 top_k=10
+2026-06-16 22:18:22 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:24 [debug    ] sparse search complete         elapsed_ms=8.0 query_terms=10 returned=30 top_k=30
+2026-06-16 22:18:24 [debug    ] dense search complete          elapsed_ms=60.7 returned=30 top_k=30
+2026-06-16 22:18:24 [debug    ] hybrid search complete         dense=30 elapsed_ms=62.2 fused=10 sparse=30
+2026-06-16 22:18:24 [debug    ] hyde search complete           elapsed_ms=2608.9 returned=10 top_k=10
+2026-06-16 22:18:24 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:27 [debug    ] sparse search complete         elapsed_ms=5.6 query_terms=10 returned=30 top_k=30
+2026-06-16 22:18:27 [debug    ] dense search complete          elapsed_ms=49.6 returned=30 top_k=30
+2026-06-16 22:18:27 [debug    ] hybrid search complete         dense=30 elapsed_ms=50.7 fused=10 sparse=30
+2026-06-16 22:18:27 [debug    ] hyde search complete           elapsed_ms=2558.8 returned=10 top_k=10
+2026-06-16 22:18:27 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:32 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:35 [debug    ] sparse search complete         elapsed_ms=7.3 query_terms=10 returned=30 top_k=30
+2026-06-16 22:18:35 [debug    ] dense search complete          elapsed_ms=117.4 returned=30 top_k=30
+2026-06-16 22:18:35 [debug    ] hybrid search complete         dense=30 elapsed_ms=118.4 fused=10 sparse=30
+2026-06-16 22:18:35 [debug    ] hyde search complete           elapsed_ms=2690.9 returned=10 top_k=10
+2026-06-16 22:18:35 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:40 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:42 [debug    ] sparse search complete         elapsed_ms=7.9 query_terms=8 returned=30 top_k=30
+2026-06-16 22:18:42 [debug    ] dense search complete          elapsed_ms=76.3 returned=30 top_k=30
+2026-06-16 22:18:42 [debug    ] hybrid search complete         dense=30 elapsed_ms=77.3 fused=10 sparse=30
+2026-06-16 22:18:42 [debug    ] hyde search complete           elapsed_ms=1577.9 returned=10 top_k=10
+2026-06-16 22:18:42 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:47 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:48 [debug    ] sparse search complete         elapsed_ms=7.1 query_terms=10 returned=30 top_k=30
+2026-06-16 22:18:49 [debug    ] dense search complete          elapsed_ms=89.7 returned=30 top_k=30
+2026-06-16 22:18:49 [debug    ] hybrid search complete         dense=30 elapsed_ms=90.8 fused=10 sparse=30
+2026-06-16 22:18:49 [debug    ] hyde search complete           elapsed_ms=1553.2 returned=10 top_k=10
+2026-06-16 22:18:49 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:54 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:18:55 [debug    ] sparse search complete         elapsed_ms=7.4 query_terms=9 returned=30 top_k=30
+2026-06-16 22:18:55 [debug    ] dense search complete          elapsed_ms=63.0 returned=30 top_k=30
+2026-06-16 22:18:55 [debug    ] hybrid search complete         dense=30 elapsed_ms=64.2 fused=10 sparse=30
+2026-06-16 22:18:55 [debug    ] hyde search complete           elapsed_ms=1685.7 returned=10 top_k=10
+2026-06-16 22:18:55 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:19:02 [debug    ] groq chat.completions.create   model=llama-3.1-8b-instant
+2026-06-16 22:19:03 [debug    ] sparse search complete         elapsed_ms=8.7 query_terms=11 returned=30 top_k=30
+2026-06-16 22:19:03 [debug    ] dense search complete          elapsed_ms=59.2 returned=30 top_k=30
+2026-06-16 22:19:03 [debug    ] hybrid search complete         dense=30 elapsed_ms=60.3 fused=10 sparse=30
+2026-06-16 22:19:03 [debug    ] hyde search complete           elapsed_ms=1501.8 returned=10 top_k=10
+hyde=1 rw=1     | {'hit@1': 0.69, 'hit@5': 0.793, 'hit@10': 0.897, 'mrr': 0.744} | {'hit@1': 0.552, 'hit@5': 0.828, 'hit@10': 0.897, 'mrr': 0.652}
+EXIT=0

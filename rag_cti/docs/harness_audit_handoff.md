@@ -3,6 +3,10 @@
 > 来源：一次**静态代码审查**(只读，未跑测试/eval/live)。你（接手的 agent）**不要盲信本清单**——
 > 每条都附了 `文件:行号` 证据，请独立复核；标了「未验证」的结论，动手前必须自己确认。
 
+> **📍 进度状态（2026-06-22，commit `57fb5b4`）**：§4 第 **1–4 步已完成并经独立审计验证**
+> （全量 unit `975 passed`）；第 **5–6 步部分/未做**；**integration / eval 未跑**。
+> 详见文末 **§6 执行进度**。本节(§1–§5)是原始计划，保持不动作为对照基线。
+
 ## 0. 工作区
 
 - worktree 根：`D:/proj/CTI-RAG/.claude/worktrees/optimization/rag_cti`
@@ -63,6 +67,7 @@
 - **位置**：`agent_tools.py` —— `summarize_*` + `*_summary`(`:56-161`) vs `*_to_ledger`(`:169-233`)
 - **问题**：同 5 个工具各两套适配器，根因同 P0-1（v1 还活着所以养着它的 summary-only 适配器）。
 - **⚠️ 删除时的坑**：`outline_summary`/`query_summary`/`facts_for_evidence_summary` **还被 `facts` CLI 路径和单测用**（见 `agent_tools.py:130` 注释），**不能跟 v1 一起删**。只有 `vector_search_summary`（`:160`）和 `agent_graph.py` 里的 `@tool` 定义是纯 v1，可随 v1 退役清掉。
+  > **[2026-06-22 更正 — 此警告有误]** `facts` CLI 实际走 `run_fact_query`，**不依赖**这些 wrapper。四个 `*_summary` 函数（含 `outline_summary`/`query_summary`/`facts_for_evidence_summary`）已全部删除，全 repo 零引用，975 unit 通过 → 删除安全。原警告基于 `agent_tools.py` 一条注释的字面下结论，没核实真实调用图，是错的。详见 §6。
 
 ### 🟡 P2-1 chat thin-wrapper 逐字重复
 - **位置**：`build_judge`(`agentic_graph.py:73`) 与 `build_composer`(`supervisor_graph.py:63`) 函数体逐字相同（`build_composer` docstring 自承 "Mirrors build_judge"）。
@@ -95,3 +100,89 @@
 - 先补审 §1 列的未覆盖文件，确认那里没有同级问题，再给最终修改计划。
 - 每一步改动都要：跑现有单测 + 关键 integration（`tests/integration/test_agentic_answer.py`、`test_supervised_answer.py`）；行为敏感区（decide_next）先补 golden 测试。
 - 收口类删除（删 v1）务必先确认无反向依赖（grep `agent_graph`、`build_model`、`*_summary`）。
+
+---
+
+## 6. 执行进度（独立审计，2026-06-22）
+
+> 逐条核实了代码与测试，不是执行者自述的转录。证据等级：
+> **verified-code** = 读代码确认 · **verified-test** = 跑测试确认 · **未测** = 没跑。
+> ⚠️ §1–§5 的一处判断已被实践证伪 —— 见 §3 P1-2 的就地更正（`*_summary` "不能删"是错的）。
+
+### Q1 — 3 个 loop 的去留（不是收敛成 1 个，是 3→2）
+- ❌ **v1 `agent_graph`（`create_react_agent`）— 已删。**
+- ✅ **v2 `agentic_graph` — 保留，唯一默认主力。** `ask` 与 `agentic_answer` 现在都走它。
+- ✅ **Model B `supervisor_graph` — 保留**，入口 `supervised_answer` / CLI supervisor 命令；内部复用 v2 的 `build_agentic_graph`，不是独立第三套实现。
+
+### Q2 — 删了什么（verified-code）
+- `knowledge/agent_graph.py` 整文件（135 行）：v1 loop + 旧 `ask` 实现 + `build_model` + `_LimitedChatModel` + 5 个 v1 `@tool`。
+  - 其中 `build_model` + `_LimitedChatModel` **搬到 `model_factory.py`**（内容保留，非丢弃）。
+- `agent_tools.py` 删 4 个 v1 工具适配器：`outline_summary` / `query_summary` / `facts_for_evidence_summary` / `vector_search_summary` + `VectorSearch` 类型 —— **全 repo 现零引用**（grep 仅命中本文档），975 unit 通过 → 删除安全。
+- `__init__.py:340 ask` 改为兼容 wrapper → `agentic_answer(text).answer`（`recursion_limit` 接收但忽略）。
+
+### Q3 — 测试覆盖到多少
+**跑了 / 没跑**
+- ✅ **全量 unit `975 passed`**（2026-06-22，worktree src，44.9s）—— **全部 fake model / fake judge，无真 LLM。**
+- ❌ **integration `0` 跑**：`test_agentic_answer`(v2)、`test_supervised_answer`(Model B) 都挂 `pytest.mark.skipif`（需真 key）；我跑的是 `tests/unit`，**整个 integration 目录没碰到**。
+- ❌ **eval `0` 跑。**
+- **行覆盖率（line-%）拿不到**：pytest-cov 在本 venv 触发 `numpy: cannot load module more than once`（C-tracer 与 `sys.monitoring` 后端均失败）。本节只有定性覆盖，无百分比数字。
+
+**975 绿 = 证明了**（精确范围；之前"验收/verified"措辞说大了）：
+1. 删 v1 无 import/collection 破坏；
+2. 组件层无回归（`decide_next` 规则表、ledger、tool 适配器、parse/synthesize 纯逻辑）；
+3. **fake-model 下** loop 控制流无回归（react_loop / v2 StateGraph / supervisor 的 dispatch·降级·停机·deadline 分支）。
+
+**975 绿 = 没证明**：
+- 任一 loop 在**真实 LLM** 下端到端产出正确答案（→ integration，未测）；
+- 答案质量 / 召回 / 引用正确性（→ eval，未测）。
+
+**模块级专属测试文件**
+| 模块 | 专属 test_* |
+|---|---|
+| agentic_nodes · agentic_graph · supervisor_nodes · supervisor_graph · evidence_ledger · agent_tools · tool_cache · agentic_effort · composer | ✅ 有（均 fake model） |
+| **react_loop · chat_fn · model_factory · graph_limits** | ❌ 无（仅间接覆盖） |
+
+### §4 步骤对照（verified-code，除标注外）
+| §4 步骤 | 实际 | 状态 |
+|---|---|---|
+| 1 退役 v1 | agent_graph 删、无残留引用、工厂搬 `model_factory`（加固保留） | ✅ |
+| 2 统一 ReAct 循环 | react_loop 保留全特性；supervisor 真传 deadline（`supervisor_graph.py:151→218`） | ✅ |
+| 3 chat-fn / 常量 | build_judge/build_composer 都委托 `build_chat_fn`；`graph_limits` 已建 | ✅ |
+| 4 decide_next 规则表 | `_STOP_RULES` 9 条与旧 if 链逐条等价（**静态核验，非测试**）；无 golden | ⚠️ 等价(静态)，缺 golden |
+| 5 拆 `agentic_nodes.py` | 未做（仍 695 行） | ❌ |
+| 6 补审 generation/composer | 仅清 `config.py` 死字段 | ⚠️ 部分 |
+
+### 现状缺口（事实陈述）
+- `react_loop` / `chat_fn` / `model_factory` / `graph_limits`：无专属单测。
+- `decide_next`：无 golden（仅静态核验等价）。
+- `open_cat_stall` 推导仍在 `agentic_graph.py` 的 `sufficiency_gate` 内（P1-1 未完全收口到纯函数）。
+- 两个保留 loop（v2、Model B）的真 LLM 端到端：未测。
+- `agentic_nodes.py` 未拆（695 行）；`generation/*`、`composer.py` 未系统审。
+
+---
+
+## 7. 收口债务全清单（harness 控制平面）— 审计补遗
+
+> 本节补原始审计（§3）的遗漏：§3 只抓了"三套 loop"，**没深挖 v2 与 Model B 之间本就该收口的关系**。
+> 以下是把控制平面通读后的完整"该收口未收口"清单。证据均来自已读代码；未审区域单列。
+
+### 结构性（该合并 / 该收编）
+1. **v2 与 Model B 是两个手动入口，应合并为「单入口 + 确定性体量路由」。**
+   - 两个并列 public 入口：`__init__.py:158 agentic_answer`(v2) / `:201 supervised_answer`(Model B)，CLI 各一命令，**调用方手动选**。
+   - Model B 的 worker 就是 v2（`supervisor_graph.py:102`，`gather_only=True`）→ **v2 逻辑上是 Model B 的单-agent 分支，不该独立**。
+   - **体量判断器 `classify_effort_tier`（simple/comparison/complex）已存在**（`agentic_effort.py:45`），但**只有 v2 用它定 tool budget**（`agentic_graph.py:203`），**没接到入口/supervisor 路由**；supervisor 改用 LLM prompt 判断拆几个 worker（更重、更不确定）。
+   - 目标形态：一个入口 → `classify_effort_tier` 路由 → 简单走单 agent / 复合走 fan-out。
+2. **合成路径分叉**：v2 用自带 `synthesize` 节点；Model B（含单 worker）用 Composer。`gather_only` flag（`supervisor_graph.py:113`）是 v2 为两种调用方分裂的耦合点。合并入口前要先统一"单 worker 由谁合成"。
+3. **入口 wiring 重复**：`__init__.py` 的 `agentic_answer` 与 `supervised_answer` 的依赖构造（settings / pipeline / run_retrieve / fact_store / generator / judge）高度重复，仅差一个 composer。
+
+### 局部（小收口）
+4. `open_cat_stall` 推导仍在 `agentic_graph.py` 的 `sufficiency_gate` 节点内，没进纯函数（P1-1 未 100% 收口）。
+5. `build_judge` / `build_composer` 仍是两个命名薄 wrapper（功能已统一委托 `build_chat_fn`，只剩命名重复）。
+
+### 测试 / 验收缺口
+6. `react_loop` / `chat_fn` / `model_factory` / `graph_limits`：无专属单测。
+7. `decide_next`：无 golden（仅静态核验等价）。
+8. 两个保留 loop 的真 LLM 端到端（integration）未跑；eval 未跑；行覆盖率（line-%）本 venv 拿不到。
+
+### 未审区域（可能还有同类，本次未覆盖）
+- `generation/*`（`client` / `context_builder` / `generator` / `limiter`）、`config.py`、`composer.py` 未系统审。该清单不保证穷尽这三块。

@@ -29,21 +29,19 @@ from typing import Any
 
 from rag_cti.config import Settings
 from rag_cti.knowledge.agent_tools import RunRetrieve
-from rag_cti.knowledge.agentic_graph import build_agentic_graph
 from rag_cti.knowledge.agentic_nodes import GeneratorProto, JudgeFn, build_agentic_answer
 from rag_cti.knowledge.agentic_state import AgenticAnswer, BranchReport, SubQuestion
 from rag_cti.knowledge.chat_fn import build_chat_fn
 from rag_cti.knowledge.composer import ComposeFn, compose
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.knowledge.fact_store import FactStoreProto
-from rag_cti.knowledge.graph_limits import outer_recursion_limit
 from rag_cti.knowledge.supervisor_nodes import (
     extract_techniques,
     merge_branch_ledgers,
     run_supervisor_loop,
 )
 from rag_cti.observability.tracing import add_trace_metadata, traced
-from rag_cti.runtime_harness import ProposedBranch
+from rag_cti.runtime_harness import ProposedBranch, run_agentic_gather_investigation
 from rag_cti.types import GeneratedAnswer
 
 _SUPERVISOR_SYSTEM = """You are a CTI ORCHESTRATOR. You do NOT answer questions yourself and \
@@ -85,14 +83,13 @@ def gather_branch(
     chat_model: Any,
     judge: JudgeFn,
 ) -> tuple[EvidenceLedger, BranchReport]:
-    """Run ONE worker sub-agent (the existing single-agent gather+synth loop) over its OWN
-    ledger and return (ledger, BranchReport). Reuses ``build_agentic_graph`` unchanged. Safe
+    """Run ONE worker sub-agent gather loop over its OWN ledger and return (ledger, BranchReport).
+
+    Uses the runtime-owned gather-only investigation path. Safe
     from a worker thread: ledger/graph are branch-local, shared deps are thread-safe."""
-    ledger = EvidenceLedger()
-    graph = build_agentic_graph(
+    result = run_agentic_gather_investigation(
+        branch.sub_question,
         settings=settings,
-        ledger=ledger,
-        query=branch.sub_question,
         history=history,
         run_retrieve=run_retrieve,
         fact_store=fact_store,
@@ -100,14 +97,9 @@ def gather_branch(
         generator=generator,
         chat_model=chat_model,
         judge=judge,
-        gather_only=True,  # workers GATHER only; the Composer is the sole synthesizer
     )
-    outer_limit = outer_recursion_limit(settings)
-    result = graph.invoke(
-        {"iteration_count": 0, "tokens_used": 0},
-        config={"recursion_limit": outer_limit},
-    )
-    branch_answer: AgenticAnswer = result["answer"]
+    ledger = result.ledger
+    branch_answer: AgenticAnswer = result.answer
     techniques = extract_techniques(ledger.facts.values())
     status = "ok" if ledger.facts or ledger.chunks else "empty"
     report = BranchReport(

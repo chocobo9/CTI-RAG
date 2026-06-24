@@ -1,5 +1,12 @@
 # Agentic RAG with Runtime Guardrails and Eval Harness
 
+Reliability marker: high-trust engineering design. This document is intended as
+a boundary and guardrail reference, not a happy-path implementation checklist.
+When future sessions conflict with looser generated plans, prefer the principle
+here: the runtime harness gives the model context, environment, policy, budgets,
+traceability, and stopping boundaries; it should not become a bag for every
+retrieval, graph, or knowledge-layer implementation detail.
+
 This document records the architectural direction for CTI-RAG after the
 optimization worktree moved the default answer path toward agentic RAG. It is
 not a new term or a product category. It is a project-level framing for an
@@ -235,28 +242,62 @@ complete. The main missing categories are:
 ### Runtime Harness Structure
 
 Current state: the runtime harness has grown real guardrails, but the control
-plane is not yet cleanly consolidated.
+plane is not yet cleanly consolidated. The current architecture decision is
+recorded in `docs/adr/0001-runtime-harness-orchestration.md`.
 
 Pain points:
 
-- **Three live loop implementations coexist.**
-  - `knowledge/agentic_graph.py` is the current mainline agentic harness.
-  - `knowledge/supervisor_graph.py` is the parallel supervisor / Model B path.
-  - `knowledge/agent_graph.py` is the older `create_react_agent` path.
-- **The old ReAct path is still exposed through `ask()`.**
-  - This means users can still enter the known-weaker loop even though the
-    project has moved the default answer path to the newer gather-only hard-rail
-    harness.
-- **Core model admission control is attached to the old file.**
-  - `build_model()` and `_LimitedChatModel` live in `agent_graph.py`, but the
-    newer agentic and supervisor paths import them.
-  - This creates dependency inversion: the file that should be easiest to retire
-    still owns shared runtime infrastructure.
-- **Stop policy is too dense.**
-  - `decide_next()` encodes stop priority through a sequence of `if` statements
-    and many parameters.
-  - The logic is tested, but priority is implicit. For a harness control plane,
-    stopping should be one of the easiest parts to inspect.
+- **Query understanding is still mostly hidden inside retrieval.**
+  - `LLMQueryRewriter` already returns rewritten retrieval queries and entities,
+    and `QueryRewriteRetriever.understand()` turns them into subqueries plus a
+    `PayloadConstraint`.
+  - The production runtime harness should run query understanding as the first
+    system step, before choosing single-agent versus supervisor orchestration.
+  - Its structured output should include the history-resolved task view,
+    retrieval search queries, extracted entities, payload constraints, and an
+    advisory decomposition proposal.
+  - The existing `RewriteOutput` is a retrieval-level result: rewritten queries
+    plus extracted entities. It is useful input, but not the complete runtime
+    harness contract.
+  - The existing `PayloadConstraint` remains a retrieval constraint or boost
+    signal. It should not be overloaded into a supervisor admission rule.
+  - Retrieval subqueries are search hints, not supervisor branches.
+- **Single-agent and supervisor paths are still exposed as parallel mainline
+  surfaces.**
+  - The single-agent path is the right execution shape for simple or dependent
+    questions.
+  - The supervisor path is the right execution shape only for independent
+    branches that can be gathered separately and composed.
+  - Deterministic effort tiering and LLM decomposition proposals are advisory
+    signals, not admission. Supervisor admission requires validated independent
+    branches.
+  - `answer()` should own this orchestration selection; explicit
+    `agentic_answer()` and `supervised_answer()` should remain debug/baseline
+    surfaces, not the production choice forced onto callers.
+- **The supervisor is not yet a full coordinator.**
+  - It should coordinate a validated branch plan, dispatch gather-only workers,
+    monitor branch reports, repair failed/empty branches, and trigger the
+    Composer.
+  - It should not rewrite the query, retrieve directly, write the final answer,
+    or validate citations.
+  - It also should not decide whether a simple question enters the supervisor
+    path; that choice belongs to the runtime harness after query understanding.
+- **Branch reports are too thin for coordination.**
+  - The current report carries the sub-question, focus entity, technique set,
+    citations, counts, stop reason, tokens, and iterations.
+  - A coordinator also needs stable branch identity, facet, status, gaps,
+    suggested follow-up retrievals, suggested graph targets, errors, and richer
+    evidence summaries.
+  - Minimum status values should distinguish `ok`, `partial`, `empty`, and
+    `failed`.
+  - The report should remain a compact coordination and composition contract; the
+    branch ledger remains the evidence authority and is merged separately for
+    citation validation.
+- **Stop policy and stall accounting still need consolidation.**
+  - `decide_next()` is now an ordered stop-rule table, but the behavior still
+    needs golden tests.
+  - `open_cat_stall` is still derived inside graph wiring rather than a pure
+    tested helper.
 - **Policy decisions are not first-class objects yet.**
   - Some guardrails return structured errors, but there is no common
     `PolicyDecision` shape with rail type, reason, severity, and evidence.
@@ -264,13 +305,27 @@ Pain points:
 
 Needed:
 
-- make the current agentic loop the single authoritative default runtime
-  harness;
-- move shared model factory / limiter wrapping out of the old ReAct file;
-- either retire `agent_graph.py` or mark it as legacy/experimental with no public
-  default entry point;
-- refactor stop logic into explicit ordered rules, for example a `StopContext`
-  plus `STOP_RULES`;
+- make `answer()` the authoritative production runtime harness;
+- make query understanding the first runtime harness step, with a structured
+  output that includes a history-resolved task view, retrieval queries, entities,
+  constraints, a decomposition proposal, and parse/fallback status;
+- admit the supervisor path only for validated independent branch plans, with
+  parse failures, unclear branches, dependent reasoning chains, and simple
+  questions falling back to the single-agent path;
+- reject supervisor admission when proposed branches are merely retrieval
+  subqueries, require sequential dependency, exceed the branch cap without safe
+  reduction, or need a shared exploratory ledger;
+- keep the single-agent path as the direct gather/sufficiency/synthesis path for
+  simple or dependent questions;
+- strengthen `BranchReport` so the supervisor can coordinate rather than merely
+  dispatch and wait; the minimum contract includes branch identity, sub-question,
+  focus entity, facet, status, evidence summary, key entities, techniques,
+  cited IDs, gaps, suggested retrieval queries, suggested graph targets, errors,
+  evidence counts, outline counts, stop reason, token usage, and iteration count;
+- keep graph/vector choice inside agent tool use, never as a graph-vs-vector
+  workflow router;
+- add golden tests for stop-rule priority and extract remaining stall accounting
+  into pure logic;
 - introduce a common policy decision shape for tool-use, retrieval, output, and
   memory rails.
 
@@ -405,10 +460,37 @@ Use these principles for future work:
 Recommended next major workstreams:
 
 1. **Runtime harness consolidation**
-   - Make the newer agentic loop the authoritative runtime harness.
-   - Move model factory / limiter wrapping into a neutral module.
-   - Remove or quarantine the old ReAct entry path.
-   - Extract stop policy into explicit ordered rules.
+   - Make `answer()` the authoritative production runtime harness.
+   - Run query understanding as the first system step and carry its structured
+     result through the harness.
+   - Select between the single-agent path and the supervisor path at the harness
+     level; do not expose that choice as a required caller decision.
+   - Centralize runtime dependency construction so agent graph and supervisor
+     graph receive dependencies rather than building provider clients or provider
+     policy.
+   - Keep runtime dependencies separate from run state: dependencies carry
+     reusable services and provider policy; query-understanding results,
+     admission decisions, ledgers, branch reports, and answers are per-run state.
+   - Treat the supervisor as a multi-agent coordinator: dispatch gather-only
+     workers, monitor branch reports, repair failed/empty branches, and trigger
+     the Composer.
+   - Strengthen `BranchReport` so coordination decisions are based on status,
+     gaps, errors, counts, and evidence summaries rather than only technique
+     lists.
+   - Define the Composer input/output contract for general CTI synthesis, not
+     only technique comparison.
+   - Align public API and CLI surfaces so `answer()` is the production entry
+     point and explicit single-agent/supervisor calls are debug or baseline
+     surfaces.
+   - Replace production all-or-nothing supervisor switching with explicit
+     semantics for supervisor allowed, disabled, and forced debug/eval modes.
+   - Normalize budget, timeout, limiter, retry, stop-reason, and trace contracts
+     across query understanding, retrieval rewrite/HyDE, gather, judge,
+     supervisor, Composer, and final synthesis calls.
+   - Add harness-level tests for query-understanding fallback, supervisor
+     admission, simple-query bypass, branch status, compose-once behavior,
+     limiter coverage, and public entrypoint behavior.
+   - Extract the remaining stop/stall policy into explicit tested rules.
    - Add a common policy decision object for guardrail outcomes.
 
 2. **Evaluation harness**
@@ -466,4 +548,3 @@ Acceptable internal shorthand:
 Precise external phrasing:
 
 > agentic RAG with runtime guardrails and an eval harness
-
