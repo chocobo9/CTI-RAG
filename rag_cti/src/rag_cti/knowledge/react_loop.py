@@ -18,6 +18,8 @@ TRIMMED_OBSERVATION_STUB = "[observation trimmed — see GATHERED STATE]"
 DEADLINE_OBSERVATION_STUB = "[observation skipped — wall-clock budget reached]"
 
 ToolDispatch = Callable[[str, dict[str, Any]], Any]
+ToolCallDispatch = Callable[[dict[str, Any]], Any]
+ToolSkipHandler = Callable[[dict[str, Any], str], Any]
 
 
 def mask_stale_observations(messages: list[Any], keep_last: int) -> list[Any]:
@@ -48,6 +50,8 @@ def run_react_tool_loop(
     parallel_dispatch: bool = False,
     max_parallel_tools: int = 1,
     limiter: Any | None = None,
+    dispatch_tool_call: ToolCallDispatch | None = None,
+    on_tool_skipped: ToolSkipHandler | None = None,
 ) -> list[Any]:
     """Drive a chat model's tool-call loop and return the accumulated transcript.
 
@@ -57,17 +61,24 @@ def run_react_tool_loop(
     """
 
     def run_one(call: dict[str, Any]) -> Any:
-        if deadline is not None and time.monotonic() >= deadline:
-            return ToolMessage(
-                content=DEADLINE_OBSERVATION_STUB,
-                tool_call_id=call.get("id", ""),
-            )
         name = call.get("name", "")
         args = call.get("args", {}) or {}
+        if deadline is not None and time.monotonic() >= deadline:
+            content: Any = DEADLINE_OBSERVATION_STUB
+            if on_tool_skipped is not None:
+                content = on_tool_skipped(call, "deadline_exceeded")
+            return ToolMessage(
+                content=str(content),
+                tool_call_id=call.get("id", ""),
+            )
         slot = limiter.slot() if limiter is not None else nullcontext()
         try:
             with slot:
-                result: Any = dispatch(name, args)
+                result: Any = (
+                    dispatch_tool_call(call)
+                    if dispatch_tool_call is not None
+                    else dispatch(name, args)
+                )
         except Exception as exc:  # surface to the model, keep looping
             result = {"error": f"{name} failed: {exc}"}
         return ToolMessage(content=str(result), tool_call_id=call.get("id", ""))
@@ -101,7 +112,5 @@ def run_react_tool_loop(
                 convo.extend(ex.map(run_one, tool_calls))
         else:
             for call in tool_calls:
-                if deadline is not None and time.monotonic() >= deadline:
-                    break
                 convo.append(run_one(call))
     return convo

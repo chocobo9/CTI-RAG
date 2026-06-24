@@ -12,6 +12,7 @@ from rag_cti.retrieval.constraint_extract import ExtractedEntity, RewriteOutput
 from rag_cti.runtime_harness import (
     DecompositionProposal,
     ProposedBranch,
+    RuntimeActionProposal,
     RuntimeEvent,
     RuntimeInvestigationState,
     RuntimeObservation,
@@ -154,9 +155,11 @@ def _turn_adapter(
     ledger: EvidenceLedger,
     *,
     run_retrieve: Any | None = None,
+    settings: Any | None = None,
+    deadline: float | None = None,
 ) -> RuntimeTurnAdapter:
     return RuntimeTurnAdapter(
-        settings=_runtime_settings(),
+        settings=settings or _runtime_settings(),
         query="q",
         history=None,
         run_retrieve=run_retrieve or (lambda q, k: _empty_qr(q)),
@@ -164,7 +167,7 @@ def _turn_adapter(
         ontology_nodes=[],
         chat_model=_FakeChatModel(response),
         ledger=ledger,
-        deadline=None,
+        deadline=deadline,
     )
 
 
@@ -218,6 +221,39 @@ def test_runtime_turn_builds_observation_for_tool_result() -> None:
     assert observation.model_visible_content
     assert observation.ledger_delta["actions_added"] == 1
     assert result.events[0] == RuntimeEvent.from_observation(observation)
+
+
+def test_runtime_turn_maps_tool_call_to_action_proposal(monkeypatch: Any) -> None:
+    seen: list[RuntimeActionProposal] = []
+    original_execute = RuntimeTurnAdapter._execute_action_proposal
+
+    def capture_execute(self: RuntimeTurnAdapter, proposal: RuntimeActionProposal) -> Any:
+        seen.append(proposal)
+        return original_execute(self, proposal)
+
+    monkeypatch.setattr(RuntimeTurnAdapter, "_execute_action_proposal", capture_execute)
+    ledger = EvidenceLedger()
+    result = _turn_adapter(
+        _FakeAI([{"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"}]),
+        ledger,
+    ).run_turn(RuntimeInvestigationState(ledger))
+
+    observation = result.observations[0]
+    event = result.events[0]
+    assert seen == [
+        RuntimeActionProposal(
+            action_id="turn-1-action-1",
+            turn_index=1,
+            tool_call_id="t1",
+            tool_name="retrieve",
+            args={"query": "APT29"},
+            source="langchain_tool_call",
+        )
+    ]
+    assert observation.action_id == "turn-1-action-1"
+    assert event.metadata["action_id"] == observation.action_id
+    assert event.metadata["tool_call_id"] == "t1"
+    assert event.metadata["proposal_source"] == "langchain_tool_call"
 
 
 def test_runtime_turn_renders_model_visible_text_from_observation() -> None:
@@ -275,6 +311,78 @@ def test_runtime_turn_reports_provider_error_event() -> None:
     assert result.observations[0].status == "error"
     assert result.observations[0].error_kind == "provider_error"
     assert any(event.kind == "provider_error" for event in result.events)
+
+
+def test_runtime_turn_records_deadline_skipped_tool_observation(monkeypatch: Any) -> None:
+    from rag_cti.knowledge import react_loop
+
+    first = {"pending": True}
+
+    def fake_monotonic() -> float:
+        if first["pending"]:
+            first["pending"] = False
+            return 0.0
+        return 100.0
+
+    monkeypatch.setattr(react_loop.time, "monotonic", fake_monotonic)
+    ledger = EvidenceLedger()
+    result = _turn_adapter(
+        _FakeAI([{"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"}]),
+        ledger,
+        deadline=5.0,
+    ).run_turn(RuntimeInvestigationState(ledger))
+
+    assert result.observations[0].status == "rejected"
+    assert result.observations[0].error_kind == "deadline_exceeded"
+    assert result.observations[0].tool_name == "retrieve"
+    assert result.events[0].metadata["tool_call_id"] == "t1"
+    assert [event.kind for event in result.events] == ["tool_call_rejected"]
+
+
+def test_runtime_turn_parallel_observation_ids_are_unique(monkeypatch: Any) -> None:
+    import threading
+
+    original_snapshot = RuntimeTurnAdapter._ledger_snapshot
+    barrier = threading.Barrier(2, timeout=5.0)
+    lock = threading.Lock()
+    calls = {"count": 0}
+
+    def synchronized_snapshot(ledger: Any) -> dict[str, Any]:
+        with lock:
+            calls["count"] += 1
+            count = calls["count"]
+        if count > 2:
+            barrier.wait()
+        return original_snapshot(ledger)
+
+    monkeypatch.setattr(RuntimeTurnAdapter, "_ledger_snapshot", staticmethod(synchronized_snapshot))
+    settings = _runtime_settings()
+    settings.agentic_parallel_dispatch_enabled = True
+    settings.agentic_max_parallel_tools = 2
+    ledger = EvidenceLedger()
+    tool_barrier = threading.Barrier(2, timeout=5.0)
+
+    def synchronized_retrieve(query: str, top_k: int) -> QueryResult:
+        tool_barrier.wait()
+        return _empty_qr(query)
+
+    result = _turn_adapter(
+        _FakeAI(
+            [
+                {"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"},
+                {"name": "retrieve", "args": {"query": "Turla"}, "id": "t2"},
+            ]
+        ),
+        ledger,
+        run_retrieve=synchronized_retrieve,
+        settings=settings,
+    ).run_turn(RuntimeInvestigationState(ledger))
+
+    observation_ids = [observation.observation_id for observation in result.observations]
+    action_ids = [observation.action_id for observation in result.observations]
+    assert len(observation_ids) == 2
+    assert len(set(observation_ids)) == 2
+    assert len(set(action_ids)) == 2
 
 
 def test_runtime_loop_records_turn_event_metadata(monkeypatch: Any) -> None:

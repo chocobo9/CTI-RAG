@@ -25,6 +25,18 @@ RuntimeObservationStatus = Literal["ok", "error", "rejected", "invalid", "no_act
 
 
 @dataclass(frozen=True)
+class RuntimeActionProposal:
+    """Runtime-owned next action proposed by an agent turn."""
+
+    action_id: str
+    turn_index: int
+    tool_call_id: str
+    tool_name: str
+    args: dict[str, Any]
+    source: str = "langchain_tool_call"
+
+
+@dataclass(frozen=True)
 class ProposedBranch:
     """One independent supervisor branch proposed by runtime query understanding."""
 
@@ -296,6 +308,8 @@ class RuntimeTurnAdapter:
         self._current_turn_index = 0
         self._turn_observations: list[RuntimeObservation] = []
         self._turn_events: list[RuntimeEvent] = []
+        self._turn_observation_index = 0
+        self._turn_action_index = 0
 
         from rag_cti.knowledge import agentic_effort
 
@@ -343,6 +357,7 @@ class RuntimeTurnAdapter:
         *,
         tool_name: str = "",
         args: dict[str, Any] | None = None,
+        action_id: str = "",
         status: RuntimeObservationStatus,
         result: Any = "",
         error_kind: str = "",
@@ -352,8 +367,9 @@ class RuntimeTurnAdapter:
     ) -> RuntimeObservation:
         from rag_cti.knowledge.tool_cache import canonicalize_args
 
-        index = len(self._turn_observations) + 1
-        action_id = f"turn-{self._current_turn_index}-action-{index}" if tool_name else ""
+        with self._event_lock:
+            self._turn_observation_index += 1
+            index = self._turn_observation_index
         observation_id = f"turn-{self._current_turn_index}-observation-{index}"
         after = self._ledger_snapshot(self._ledger)
         ledger_delta = self._ledger_delta(before or after, after)
@@ -383,10 +399,70 @@ class RuntimeTurnAdapter:
             event_metadata=event_metadata or {},
         )
 
+    def _make_action_proposal(
+        self,
+        *,
+        tool_name: str,
+        args: dict[str, Any],
+        tool_call_id: str = "",
+        source: str = "langchain_tool_call",
+    ) -> RuntimeActionProposal:
+        with self._event_lock:
+            self._turn_action_index += 1
+            index = self._turn_action_index
+        return RuntimeActionProposal(
+            action_id=f"turn-{self._current_turn_index}-action-{index}",
+            turn_index=self._current_turn_index,
+            tool_call_id=tool_call_id,
+            tool_name=tool_name,
+            args=dict(args),
+            source=source,
+        )
+
+    def _proposal_from_tool_call(self, call: dict[str, Any]) -> RuntimeActionProposal:
+        args = call.get("args", {}) or {}
+        if not isinstance(args, dict):
+            args = {"_raw_args": args}
+        return self._make_action_proposal(
+            tool_name=str(call.get("name", "") or ""),
+            args=args,
+            tool_call_id=str(call.get("id", "") or ""),
+        )
+
+    @staticmethod
+    def _proposal_event_metadata(
+        proposal: RuntimeActionProposal, extra: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        metadata = {
+            "tool_call_id": proposal.tool_call_id,
+            "proposal_source": proposal.source,
+        }
+        if extra:
+            metadata.update(extra)
+        return metadata
+
     def _record_observation(self, observation: RuntimeObservation) -> None:
         with self._event_lock:
             self._turn_observations.append(observation)
             self._turn_events.append(RuntimeEvent.from_observation(observation))
+
+    def _record_skipped_tool_call(self, call: dict[str, Any], reason: str) -> str:
+        proposal = self._proposal_from_tool_call(call)
+        before = self._ledger_snapshot(self._ledger)
+        result = {"error": f"tool call skipped: {reason}", "reason": reason}
+        observation = self._make_observation(
+            tool_name=proposal.tool_name,
+            args=proposal.args,
+            action_id=proposal.action_id,
+            status="rejected",
+            result=result,
+            error_kind=reason,
+            error_message=f"tool call skipped: {reason}",
+            before=before,
+            event_metadata=self._proposal_event_metadata(proposal),
+        )
+        self._record_observation(observation)
+        return observation.model_visible_content
 
     @staticmethod
     def _build_tools(
@@ -447,8 +523,21 @@ class RuntimeTurnAdapter:
         return [resolve_entity, graph_outline, graph_query, facts_for_evidence, retrieve]
 
     def _dispatch(self, name: str, args: dict[str, Any]) -> Any:
+        proposal = self._make_action_proposal(
+            tool_name=name,
+            args=args,
+            source="runtime_dispatch",
+        )
+        return self._execute_action_proposal(proposal)
+
+    def _dispatch_tool_call(self, call: dict[str, Any]) -> Any:
+        return self._execute_action_proposal(self._proposal_from_tool_call(call))
+
+    def _execute_action_proposal(self, proposal: RuntimeActionProposal) -> Any:
         from rag_cti.knowledge import agentic_nodes, tool_cache
 
+        name = proposal.tool_name
+        args = proposal.args
         before = self._ledger_snapshot(self._ledger)
         tool = self._tools_by_name.get(name)
         if tool is None:
@@ -456,11 +545,13 @@ class RuntimeTurnAdapter:
             observation = self._make_observation(
                 tool_name=name,
                 args=args,
+                action_id=proposal.action_id,
                 status="invalid",
                 result=result,
                 error_kind="unknown_tool",
                 error_message=f"unknown tool {name}",
                 before=before,
+                event_metadata=self._proposal_event_metadata(proposal),
             )
             self._record_observation(observation)
             return observation.model_visible_content
@@ -481,11 +572,13 @@ class RuntimeTurnAdapter:
                 observation = self._make_observation(
                     tool_name=name,
                     args=args,
+                    action_id=proposal.action_id,
                     status="rejected",
                     result=result,
                     error_kind="tool_budget_exhausted",
                     error_message="tool budget exhausted",
                     before=before,
+                    event_metadata=self._proposal_event_metadata(proposal),
                 )
                 self._record_observation(observation)
                 return observation.model_visible_content
@@ -500,11 +593,13 @@ class RuntimeTurnAdapter:
             observation = self._make_observation(
                 tool_name=name,
                 args=args,
+                action_id=proposal.action_id,
                 status="rejected",
                 result=result,
                 error_kind="retrieve_suppressed_after_graph_coverage",
                 error_message="retrieve suppressed: graph evidence is already sufficient",
                 before=before,
+                event_metadata=self._proposal_event_metadata(proposal),
             )
             self._record_observation(observation)
             return observation.model_visible_content
@@ -514,10 +609,11 @@ class RuntimeTurnAdapter:
             observation = self._make_observation(
                 tool_name=name,
                 args=args,
+                action_id=proposal.action_id,
                 status="ok",
                 result=result,
                 before=before,
-                event_metadata={"duplicate": True},
+                event_metadata=self._proposal_event_metadata(proposal, {"duplicate": True}),
             )
             self._record_observation(observation)
             return observation.model_visible_content
@@ -528,11 +624,13 @@ class RuntimeTurnAdapter:
             observation = self._make_observation(
                 tool_name=name,
                 args=args,
+                action_id=proposal.action_id,
                 status="error",
                 result=result,
                 error_kind=type(exc).__name__,
                 error_message=str(exc),
                 before=before,
+                event_metadata=self._proposal_event_metadata(proposal),
             )
             self._record_observation(observation)
             return observation.model_visible_content
@@ -540,10 +638,11 @@ class RuntimeTurnAdapter:
         observation = self._make_observation(
             tool_name=name,
             args=args,
+            action_id=proposal.action_id,
             status="ok",
             result=result,
             before=before,
-            event_metadata={"duplicate": False},
+            event_metadata=self._proposal_event_metadata(proposal, {"duplicate": False}),
         )
         self._record_observation(observation)
         return observation.model_visible_content
@@ -570,6 +669,8 @@ class RuntimeTurnAdapter:
         self._current_turn_index = state.iteration_count + 1
         self._turn_observations = []
         self._turn_events = []
+        self._turn_observation_index = 0
+        self._turn_action_index = 0
         messages = agentic_nodes.build_turn_messages(
             _RUNTIME_GATHER_SYSTEM,
             self._query,
@@ -593,6 +694,8 @@ class RuntimeTurnAdapter:
                 getattr(self._settings, "agentic_parallel_dispatch_enabled", False)
             ),
             max_parallel_tools=int(getattr(self._settings, "agentic_max_parallel_tools", 1)),
+            dispatch_tool_call=self._dispatch_tool_call,
+            on_tool_skipped=self._record_skipped_tool_call,
         )
         if errors:
             observation = self._make_observation(
