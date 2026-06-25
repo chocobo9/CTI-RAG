@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from typing import Any
@@ -19,6 +19,7 @@ DEADLINE_OBSERVATION_STUB = "[observation skipped — wall-clock budget reached]
 
 ToolDispatch = Callable[[str, dict[str, Any]], Any]
 ToolCallDispatch = Callable[[dict[str, Any]], Any]
+ToolCallBatchHandler = Callable[[list[dict[str, Any]]], Iterable[Any]]
 ToolSkipHandler = Callable[[dict[str, Any], str], Any]
 
 
@@ -50,6 +51,7 @@ def run_react_tool_loop(
     parallel_dispatch: bool = False,
     max_parallel_tools: int = 1,
     limiter: Any | None = None,
+    handle_tool_calls: ToolCallBatchHandler | None = None,
     dispatch_tool_call: ToolCallDispatch | None = None,
     on_tool_skipped: ToolSkipHandler | None = None,
 ) -> list[Any]:
@@ -106,7 +108,9 @@ def run_react_tool_loop(
         tool_calls = getattr(ai, "tool_calls", None) or []
         if not tool_calls:
             break
-        if parallel_dispatch and len(tool_calls) > 1:
+        if handle_tool_calls is not None:
+            convo.extend(handle_tool_calls(tool_calls))
+        elif parallel_dispatch and len(tool_calls) > 1:
             cap = max(1, min(len(tool_calls), max_parallel_tools))
             with ThreadPoolExecutor(max_workers=cap) as ex:
                 convo.extend(ex.map(run_one, tool_calls))

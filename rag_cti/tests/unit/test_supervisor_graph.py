@@ -236,6 +236,100 @@ def test_validated_branch_plan_skips_supervisor_model_and_composes_once(
     assert ans.decomposed is True
 
 
+def test_validated_branch_plan_gathers_each_branch_through_runtime_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    def runtime_gather(query: str, **_kwargs: Any) -> Any:
+        calls.append(query)
+        ledger = EvidenceLedger()
+        return SimpleNamespace(
+            ledger=ledger,
+            answer=AgenticAnswer(
+                query=query,
+                answer="",
+                query_result=_empty_qr(query),
+                stop_reason="gathered",
+                iteration_count=1,
+            ),
+        )
+
+    class NoSupervisorModel:
+        def bind_tools(self, tools: list[Any]) -> Any:
+            raise AssertionError("validated branch plans must not invoke supervisor routing")
+
+    monkeypatch.setattr(supervisor_graph, "run_agentic_gather_investigation", runtime_gather)
+    monkeypatch.setattr(
+        supervisor_graph,
+        "run_supervisor_loop",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("validated branch plans must not run supervisor loop")
+        ),
+    )
+
+    ans = supervisor_graph.run_supervised_answer(
+        "Compare APT29 and Turla",
+        settings=_settings(),
+        run_retrieve=lambda q, k: _empty_qr(q, k),
+        fact_store=None,
+        ontology_nodes=[],
+        generator=object(),
+        chat_model=NoSupervisorModel(),
+        judge=lambda s, u: "{}",
+        composer=lambda _system, _user: "No citations.",
+        branch_plan=(
+            ProposedBranch(
+                branch_id="apt29",
+                sub_question="APT29 branch",
+                focus_entity="APT29",
+                independent_reason="independent entity",
+            ),
+            ProposedBranch(
+                branch_id="turla",
+                sub_question="Turla branch",
+                focus_entity="Turla",
+                independent_reason="independent entity",
+            ),
+        ),
+    )
+
+    assert sorted(calls) == ["APT29 branch", "Turla branch"]
+    assert ans.branch_count == 2
+
+
+def test_autonomous_supervisor_loop_is_marked_debug_eval_compatibility(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata: dict[str, Any] = {}
+
+    def record_metadata(**kwargs: Any) -> None:
+        metadata.update(kwargs)
+
+    def supervisor_loop(*_args: Any, **_kwargs: Any) -> None:
+        return None
+
+    monkeypatch.setattr(supervisor_graph, "add_trace_metadata", record_metadata)
+    monkeypatch.setattr(supervisor_graph, "run_supervisor_loop", supervisor_loop)
+    monkeypatch.setattr(supervisor_graph, "gather_branch", _fake_gather)
+
+    ans = supervisor_graph.run_supervised_answer(
+        "Compare APT29 and Turla",
+        settings=_settings(),
+        run_retrieve=lambda q, k: _empty_qr(q, k),
+        fact_store=None,
+        ontology_nodes=[],
+        generator=object(),
+        chat_model=_FakeChatModel([]),
+        judge=lambda s, u: "{}",
+        composer=_fake_composer,
+        branch_plan=None,
+    )
+
+    assert metadata["supervisor_entrypoint"] == "legacy_autonomous_debug_eval"
+    assert ans.branch_count == 1
+
+
 def test_gather_branch_uses_runtime_gather_investigation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -25,7 +25,13 @@ from rag_cti.runtime_harness import (
     evaluate_supervisor_admission,
     run_agentic_investigation,
 )
-from rag_cti.types import GeneratedAnswer, PayloadConstraint, QueryResult
+from rag_cti.types import (
+    GeneratedAnswer,
+    GraphOutline,
+    OutlineEntry,
+    PayloadConstraint,
+    QueryResult,
+)
 
 
 def _understanding(
@@ -98,7 +104,16 @@ def _deps(
     from rag_cti.runtime_harness import RuntimeDeps
 
     return RuntimeDeps(
-        settings=SimpleNamespace(supervisor_enabled=supervisor_enabled, supervisor_max_branches=4),
+        settings=SimpleNamespace(
+            supervisor_enabled=supervisor_enabled,
+            supervisor_max_branches=4,
+            supervisor_max_steps=4,
+            agentic_synthesis_top_k=5,
+            agentic_max_wall_seconds=0.0,
+            agentic_verifier_provider="deepseek",
+            llm_max_global_concurrency=4,
+            llm_rate_limit_per_sec=0.0,
+        ),
         retrieval_pipeline=object(),
         run_retrieve=lambda q, k: _empty_qr(q),
         fact_store=None,
@@ -107,7 +122,7 @@ def _deps(
         gather_model=object(),
         generator=object(),
         judge=object(),
-        composer=object(),
+        composer=lambda _system, _user: "supervised answer",
     )
 
 
@@ -254,6 +269,107 @@ def test_runtime_turn_maps_tool_call_to_action_proposal(monkeypatch: Any) -> Non
     assert event.metadata["action_id"] == observation.action_id
     assert event.metadata["tool_call_id"] == "t1"
     assert event.metadata["proposal_source"] == "langchain_tool_call"
+
+
+def test_runtime_adapter_extracts_action_proposal_batch() -> None:
+    adapter = _turn_adapter(_FakeAI([]), EvidenceLedger())
+    adapter._current_turn_index = 2
+
+    proposals = adapter.extract_action_proposals(
+        (
+            {"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"},
+            {"name": "graph_outline", "args": "entity--apt29"},
+            {"args": {"query": "missing name"}, "id": "t3"},
+        )
+    )
+
+    assert proposals == (
+        RuntimeActionProposal(
+            action_id="turn-2-action-1",
+            turn_index=2,
+            tool_call_id="t1",
+            tool_name="retrieve",
+            args={"query": "APT29"},
+            source="langchain_tool_call",
+        ),
+        RuntimeActionProposal(
+            action_id="turn-2-action-2",
+            turn_index=2,
+            tool_call_id="",
+            tool_name="graph_outline",
+            args={"_raw_args": "entity--apt29"},
+            source="langchain_tool_call",
+        ),
+        RuntimeActionProposal(
+            action_id="turn-2-action-3",
+            turn_index=2,
+            tool_call_id="t3",
+            tool_name="",
+            args={"query": "missing name"},
+            source="langchain_tool_call",
+        ),
+    )
+
+
+def test_runtime_turn_executes_action_proposal_batch(monkeypatch: Any) -> None:
+    seen_batches: list[tuple[RuntimeActionProposal, ...]] = []
+    original_execute_batch = RuntimeTurnAdapter._execute_action_proposals
+
+    def capture_execute_batch(
+        self: RuntimeTurnAdapter, proposals: tuple[RuntimeActionProposal, ...]
+    ) -> tuple[Any, ...]:
+        seen_batches.append(proposals)
+        return original_execute_batch(self, proposals)
+
+    monkeypatch.setattr(RuntimeTurnAdapter, "_execute_action_proposals", capture_execute_batch)
+    ledger = EvidenceLedger()
+    result = _turn_adapter(
+        _FakeAI(
+            [
+                {"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"},
+                {"name": "retrieve", "args": {"query": "Turla"}, "id": "t2"},
+            ]
+        ),
+        ledger,
+    ).run_turn(RuntimeInvestigationState(ledger))
+
+    assert seen_batches == [
+        (
+            RuntimeActionProposal(
+                action_id="turn-1-action-1",
+                turn_index=1,
+                tool_call_id="t1",
+                tool_name="retrieve",
+                args={"query": "APT29"},
+                source="langchain_tool_call",
+            ),
+            RuntimeActionProposal(
+                action_id="turn-1-action-2",
+                turn_index=1,
+                tool_call_id="t2",
+                tool_name="retrieve",
+                args={"query": "Turla"},
+                source="langchain_tool_call",
+            ),
+        )
+    ]
+    assert len(result.observations) == 2
+
+
+def test_runtime_turn_does_not_use_direct_dispatch_paths(monkeypatch: Any) -> None:
+    def fail_direct_dispatch(self: RuntimeTurnAdapter, *args: Any, **kwargs: Any) -> Any:
+        raise AssertionError("production runtime turn bypassed proposal batch")
+
+    monkeypatch.setattr(RuntimeTurnAdapter, "_dispatch", fail_direct_dispatch)
+    monkeypatch.setattr(RuntimeTurnAdapter, "_dispatch_tool_call", fail_direct_dispatch)
+    ledger = EvidenceLedger()
+    result = _turn_adapter(
+        _FakeAI([{"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"}]),
+        ledger,
+    ).run_turn(RuntimeInvestigationState(ledger))
+
+    assert result.proposals
+    assert result.observations[0].action_id == result.proposals[0].action_id
 
 
 def test_runtime_turn_renders_model_visible_text_from_observation() -> None:
@@ -464,6 +580,143 @@ def test_runtime_loop_records_turn_event_metadata(monkeypatch: Any) -> None:
     assert any(m.get("runtime_observation_count") == 1 for m in metadata)
 
 
+def test_runtime_loop_records_proposal_trace_metadata(monkeypatch: Any) -> None:
+    import rag_cti.runtime_harness as harness
+    from rag_cti.knowledge import agentic_nodes
+
+    proposals = (
+        RuntimeActionProposal(
+            action_id="a1",
+            turn_index=1,
+            tool_call_id="t1",
+            tool_name="retrieve",
+            args={"query": "APT29"},
+        ),
+        RuntimeActionProposal(
+            action_id="a2",
+            turn_index=1,
+            tool_call_id="t2",
+            tool_name="bad",
+            args={},
+        ),
+        RuntimeActionProposal(
+            action_id="a3",
+            turn_index=1,
+            tool_call_id="t3",
+            tool_name="retrieve",
+            args={"query": "Turla"},
+        ),
+    )
+    observations = (
+        RuntimeObservation(
+            observation_id="obs1",
+            turn_index=1,
+            action_id="a1",
+            tool_name="retrieve",
+            args_summary="query=APT29",
+            status="ok",
+            model_visible_content="ok",
+            event_metadata={"tool_call_id": "t1", "proposal_source": "langchain_tool_call"},
+        ),
+        RuntimeObservation(
+            observation_id="obs2",
+            turn_index=1,
+            action_id="a2",
+            tool_name="bad",
+            args_summary="",
+            status="invalid",
+            error_kind="unknown_tool",
+            model_visible_content="invalid",
+            event_metadata={"tool_call_id": "t2", "proposal_source": "langchain_tool_call"},
+        ),
+        RuntimeObservation(
+            observation_id="obs3",
+            turn_index=1,
+            action_id="a3",
+            tool_name="retrieve",
+            args_summary="query=Turla",
+            status="rejected",
+            error_kind="deadline_exceeded",
+            model_visible_content="deadline",
+            event_metadata={"tool_call_id": "t3", "proposal_source": "langchain_tool_call"},
+        ),
+    )
+
+    class FakeAdapter:
+        _hard_tool_budget = 4
+
+        def __init__(self, **_kwargs: Any) -> None:
+            pass
+
+        def run_turn(self, _state: RuntimeInvestigationState) -> RuntimeTurnResult:
+            return RuntimeTurnResult(
+                messages=[],
+                tokens_used=3,
+                new_evidence=1,
+                new_facts=0,
+                observations=observations,
+                events=tuple(RuntimeEvent.from_observation(obs) for obs in observations),
+                proposals=proposals,
+            )
+
+    class FakeGenerator:
+        def generate(
+            self,
+            query: str,
+            query_result: QueryResult,
+            raise_on_failure: bool = False,
+            system_prompt: str | None = None,
+        ) -> GeneratedAnswer:
+            return GeneratedAnswer(
+                query=query,
+                answer="answer",
+                cited_chunk_ids=[],
+                query_result=query_result,
+                generation_ms=0.0,
+                model="fake",
+            )
+
+    metadata: list[dict[str, Any]] = []
+    monkeypatch.setattr(harness, "RuntimeTurnAdapter", FakeAdapter)
+    monkeypatch.setattr(agentic_nodes, "decide_next", lambda *a, **k: ("synthesize", "done"))
+    monkeypatch.setattr(
+        "rag_cti.observability.tracing.add_trace_metadata",
+        lambda **kwargs: metadata.append(kwargs),
+    )
+
+    run_agentic_investigation(
+        "q",
+        settings=SimpleNamespace(
+            agentic_max_wall_seconds=0.0,
+            agentic_max_iterations=3,
+            agentic_token_ceiling=100,
+            agentic_max_retrieve_rounds=2,
+            agentic_open_cat_stall_limit=0,
+            agentic_synthesis_top_k=5,
+            agentic_synthesis_fact_limit=5,
+        ),
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=None,
+        ontology_nodes=[],
+        generator=FakeGenerator(),
+        chat_model=object(),
+        judge=lambda s, u: '{"sufficient": false, "next_action": "retrieve_more"}',
+    )
+
+    assert any(m.get("runtime_turn_proposal_count") == 3 for m in metadata)
+    assert any(
+        m.get("runtime_turn_proposal_status_counts")
+        == {"ok": 1, "invalid": 1, "rejected": 1}
+        for m in metadata
+    )
+    assert any(
+        m.get("runtime_turn_proposal_event_counts")
+        == {"tool_result": 1, "invalid_tool_call": 1, "tool_call_rejected": 1}
+        for m in metadata
+    )
+    assert any(m.get("runtime_turn_deadline_proposal_count") == 1 for m in metadata)
+
+
 def test_apply_observation_to_state_records_observation_and_event() -> None:
     state = RuntimeInvestigationState(EvidenceLedger())
     observation = RuntimeObservation(
@@ -563,6 +816,285 @@ def test_runtime_loop_calls_stop_policy_with_turn_accounting(monkeypatch: Any) -
         "new_evidence": 5,
         "new_facts": 2,
     }
+
+
+def test_runtime_loop_continues_after_resolve_entity_setup_only_turn(monkeypatch: Any) -> None:
+    import rag_cti.runtime_harness as harness
+
+    class FakeAdapter:
+        _hard_tool_budget = 4
+
+        def __init__(self, **_kwargs: Any) -> None:
+            self.turns = 0
+
+        def run_turn(self, state: RuntimeInvestigationState) -> RuntimeTurnResult:
+            self.turns += 1
+            if self.turns == 1:
+                observation = RuntimeObservation(
+                    observation_id="turn-1-observation-1",
+                    turn_index=1,
+                    action_id="turn-1-action-1",
+                    tool_name="resolve_entity",
+                    args_summary='{"name":"APT29"}',
+                    status="ok",
+                    result_summary='[{"name":"APT29","entity_id":"intrusion-set--apt29"}]',
+                    ledger_delta={
+                        "added_chunk_ids": [],
+                        "added_fact_ids": [],
+                        "added_outline_ids": [],
+                        "actions_added": 1,
+                    },
+                    model_visible_content='[{"name":"APT29","entity_id":"intrusion-set--apt29"}]',
+                    event_metadata={"duplicate": False},
+                )
+                return RuntimeTurnResult(
+                    messages=[],
+                    tokens_used=3,
+                    new_evidence=0,
+                    new_facts=0,
+                    observations=(observation,),
+                    events=(RuntimeEvent.from_observation(observation),),
+                    proposals=(
+                        RuntimeActionProposal(
+                            action_id="turn-1-action-1",
+                            turn_index=1,
+                            tool_call_id="call-1",
+                            tool_name="resolve_entity",
+                            args={"name": "APT29"},
+                        ),
+                    ),
+                )
+            return RuntimeTurnResult(
+                messages=[],
+                tokens_used=2,
+                new_evidence=0,
+                new_facts=0,
+                observations=(
+                    RuntimeObservation(
+                        observation_id="turn-2-observation-1",
+                        turn_index=2,
+                        action_id="",
+                        tool_name="",
+                        args_summary="",
+                        status="no_action",
+                    ),
+                ),
+            )
+
+    class FakeGenerator:
+        def generate(
+            self,
+            query: str,
+            query_result: QueryResult,
+            raise_on_failure: bool = False,
+            system_prompt: str | None = None,
+        ) -> GeneratedAnswer:
+            return GeneratedAnswer(
+                query=query,
+                answer="answer",
+                cited_chunk_ids=[],
+                query_result=query_result,
+                generation_ms=0.0,
+                model="fake",
+            )
+
+    monkeypatch.setattr(harness, "RuntimeTurnAdapter", FakeAdapter)
+
+    answer = run_agentic_investigation(
+        "Compare APT29 and Lazarus techniques.",
+        settings=SimpleNamespace(
+            agentic_max_wall_seconds=0.0,
+            agentic_max_iterations=3,
+            agentic_token_ceiling=100,
+            agentic_max_retrieve_rounds=2,
+            agentic_open_cat_stall_limit=0,
+            agentic_synthesis_top_k=5,
+            agentic_synthesis_fact_limit=5,
+        ),
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=None,
+        ontology_nodes=[],
+        generator=FakeGenerator(),
+        chat_model=object(),
+        judge=lambda s, u: '{"sufficient": false, "next_action": "retrieve_more"}',
+    )
+
+    assert answer.iteration_count == 2
+    assert answer.stop_reason == "no_progress"
+
+
+def test_runtime_turn_exposes_resolved_entity_ids_to_next_real_turn(monkeypatch: Any) -> None:
+    from rag_cti.knowledge import agent_tools, agentic_nodes
+
+    class InspectingBoundModel:
+        def __init__(self) -> None:
+            self.inputs: list[list[Any]] = []
+
+        def invoke(self, messages: list[Any]) -> _FakeAI:
+            self.inputs.append(messages)
+            if len(self.inputs) == 1:
+                return _FakeAI(
+                    [
+                        {"name": "resolve_entity", "args": {"name": "APT29"}, "id": "c1"},
+                        {
+                            "name": "resolve_entity",
+                            "args": {"name": "Lazarus Group"},
+                            "id": "c2",
+                        },
+                    ]
+                )
+            rendered = "\n".join(str(message) for message in messages)
+            if "actor_G0016" in rendered and "actor_G0032" in rendered:
+                return _FakeAI(
+                    [
+                        {
+                            "name": "graph_outline",
+                            "args": {"subject_id": "actor_G0016"},
+                            "id": "c3",
+                        },
+                        {
+                            "name": "graph_outline",
+                            "args": {"subject_id": "actor_G0032"},
+                            "id": "c4",
+                        },
+                    ]
+                )
+            return _FakeAI(
+                [
+                    {"name": "resolve_entity", "args": {"name": "APT29"}, "id": "c3"},
+                    {
+                        "name": "resolve_entity",
+                        "args": {"name": "Lazarus Group"},
+                        "id": "c4",
+                    },
+                ]
+            )
+
+    class InspectingChatModel:
+        def __init__(self) -> None:
+            self.bound = InspectingBoundModel()
+
+        def bind_tools(self, _tools: list[Any]) -> InspectingBoundModel:
+            return self.bound
+
+    def resolve_entity(name: str, _ontology_nodes: list[dict[str, Any]]) -> list[dict[str, str]]:
+        return {
+            "APT29": [{"entity_id": "actor_G0016", "matched_type": "actor"}],
+            "Lazarus Group": [{"entity_id": "actor_G0032", "matched_type": "actor"}],
+        }.get(name, [])
+
+    def outline_to_ledger(_fact_store: object, ledger: EvidenceLedger, subject_id: str) -> dict[str, Any]:
+        outline = GraphOutline(
+            entity_id=subject_id,
+            entity_name={"actor_G0016": "APT29", "actor_G0032": "Lazarus Group"}[subject_id],
+            entity_type="actor",
+            outgoing=(OutlineEntry(predicate="uses", other_type="technique", count=1, max_credibility=1.0),),
+        )
+        ledger.add_outline(outline)
+        return {"found": True, "entity_id": subject_id}
+
+    monkeypatch.setattr(agent_tools, "resolve_entity_candidates", resolve_entity)
+    monkeypatch.setattr(agent_tools, "outline_to_ledger", outline_to_ledger)
+
+    ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
+    chat_model = InspectingChatModel()
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="What techniques do both APT29 and Lazarus Group use?",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=object(),
+        ontology_nodes=[],
+        chat_model=chat_model,
+        ledger=ledger,
+        deadline=None,
+    )
+
+    first = adapter.run_turn(state)
+    state.messages = first.messages
+    state.iteration_count += 1
+    state.sufficiency = agentic_nodes.parse_verdict(
+        '{"sufficient": false, "next_action": "retrieve_more", '
+        '"coverage_gaps": ["need shared techniques"]}'
+    )
+    for observation in first.observations:
+        apply_observation_to_state(state, observation)
+
+    second = adapter.run_turn(state)
+
+    assert [proposal.tool_name for proposal in second.proposals] == [
+        "graph_outline",
+        "graph_outline",
+    ]
+
+
+def test_runtime_loop_does_not_count_empty_resolve_as_setup_progress(monkeypatch: Any) -> None:
+    from rag_cti.knowledge import agent_tools
+
+    class SequenceBoundModel:
+        def __init__(self) -> None:
+            self.turns = [
+                _FakeAI([{"name": "resolve_entity", "args": {"name": "Unknown Actor"}, "id": "c1"}]),
+                _FakeAI([]),
+            ]
+
+        def invoke(self, _messages: list[Any]) -> _FakeAI:
+            return self.turns.pop(0)
+
+    class SequenceChatModel:
+        def __init__(self) -> None:
+            self.bound = SequenceBoundModel()
+
+        def bind_tools(self, _tools: list[Any]) -> SequenceBoundModel:
+            return self.bound
+
+    class FakeGenerator:
+        def generate(
+            self,
+            query: str,
+            query_result: QueryResult,
+            raise_on_failure: bool = False,
+            system_prompt: str | None = None,
+        ) -> GeneratedAnswer:
+            return GeneratedAnswer(
+                query=query,
+                answer="answer",
+                cited_chunk_ids=[],
+                query_result=query_result,
+                generation_ms=0.0,
+                model="fake",
+            )
+
+    monkeypatch.setattr(
+        agent_tools,
+        "resolve_entity_candidates",
+        lambda _name, _ontology_nodes: [],
+    )
+
+    answer = run_agentic_investigation(
+        "What techniques does Unknown Actor use?",
+        settings=SimpleNamespace(
+            **_runtime_settings().__dict__,
+            agentic_max_wall_seconds=0.0,
+            agentic_max_iterations=3,
+            agentic_token_ceiling=100,
+            agentic_max_retrieve_rounds=2,
+            agentic_open_cat_stall_limit=0,
+            agentic_synthesis_top_k=5,
+            agentic_synthesis_fact_limit=5,
+        ),
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=object(),
+        ontology_nodes=[],
+        generator=FakeGenerator(),
+        chat_model=SequenceChatModel(),
+        judge=lambda s, u: '{"sufficient": false, "next_action": "retrieve_more"}',
+    )
+
+    assert answer.iteration_count == 1
+    assert answer.tool_call_count == 1
+    assert answer.stop_reason == "no_progress"
 
 
 def test_fallback_understanding_uses_single_agent() -> None:
@@ -819,3 +1351,40 @@ def test_answer_passes_validated_branch_plan_to_supervisor() -> None:
     assert supervised.call_args.kwargs["branch_plan"] == understanding.decomposition.branches
     assert meta.call_args.kwargs["runtime_path"] == "supervisor"
     assert meta.call_args.kwargs["admission_reason"] == "validated_independent_branches"
+
+
+def test_answer_validated_branch_plan_does_not_run_supervisor_loop(monkeypatch: Any) -> None:
+    import rag_cti
+    from rag_cti.knowledge import supervisor_graph
+    from rag_cti.knowledge.agentic_state import BranchReport, SubQuestion
+
+    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
+    gathered: list[str] = []
+
+    def gather(branch: SubQuestion, **_kwargs: Any) -> tuple[EvidenceLedger, BranchReport]:
+        gathered.append(branch.branch_id)
+        return EvidenceLedger(), BranchReport(
+            branch_id=branch.branch_id,
+            sub_question=branch.sub_question,
+            focus_entity=branch.focus_entity,
+            facet=branch.facet,
+            status="empty",
+            stop_reason="empty",
+            iteration_count=1,
+        )
+
+    def fail_supervisor_loop(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("production answer must not enter autonomous supervisor loop")
+
+    monkeypatch.setattr(supervisor_graph, "gather_branch", gather)
+    monkeypatch.setattr(supervisor_graph, "run_supervisor_loop", fail_supervisor_loop)
+
+    with patch.object(
+        rag_cti,
+        "_build_runtime_deps",
+        return_value=_deps(understanding, supervisor_enabled=True),
+    ):
+        ans = rag_cti.answer("q")
+
+    assert ans.model == "supervisor"
+    assert sorted(gathered) == ["b1", "b2"]

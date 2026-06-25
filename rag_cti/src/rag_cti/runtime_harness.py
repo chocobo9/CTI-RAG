@@ -6,12 +6,14 @@ only an explicit validated decomposition can admit the supervisor path.
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import threading
 import time
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
@@ -127,6 +129,7 @@ class RuntimeInvestigationState:
     tokens_used: int = 0
     new_evidence: int = 0
     new_facts: int = 0
+    setup_progress: int = 0
     sufficiency: Any | None = None
     prev_gaps: tuple[str, ...] = ()
     open_categories: int = 0
@@ -166,6 +169,7 @@ class RuntimeTurnResult:
     provider_error: bool = False
     observations: tuple[RuntimeObservation, ...] = ()
     events: tuple[RuntimeEvent, ...] = ()
+    proposals: tuple[RuntimeActionProposal, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -220,6 +224,97 @@ def apply_observation_to_state(
     state.observations.append(observation)
     state.events.append(event)
     return event
+
+
+_SETUP_PROGRESS_TOOLS = frozenset({"resolve_entity", "graph_outline"})
+
+
+def _literal_observation_result(observation: RuntimeObservation) -> Any:
+    try:
+        return ast.literal_eval(observation.result_summary)
+    except (SyntaxError, ValueError):
+        return None
+
+
+def _arg_from_summary(args_summary: str, name: str) -> str:
+    prefix = f"{name}="
+    for part in args_summary.split(", "):
+        if part.startswith(prefix):
+            return part[len(prefix) :]
+    return ""
+
+
+def _resolved_entities_from_observations(
+    observations: Iterable[RuntimeObservation],
+) -> tuple[dict[str, str], ...]:
+    seen: set[str] = set()
+    resolved: list[dict[str, str]] = []
+    for observation in observations:
+        if observation.status != "ok" or observation.tool_name != "resolve_entity":
+            continue
+        raw = _literal_observation_result(observation)
+        if isinstance(raw, dict) and isinstance(raw.get("result"), list):
+            raw = raw["result"]
+        if not isinstance(raw, list):
+            continue
+        requested_name = _arg_from_summary(observation.args_summary, "name")
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            entity_id = str(item.get("entity_id") or "")
+            if not entity_id or entity_id in seen:
+                continue
+            seen.add(entity_id)
+            resolved.append(
+                {
+                    "name": requested_name,
+                    "entity_id": entity_id,
+                    "matched_type": str(item.get("matched_type") or ""),
+                }
+            )
+    return tuple(resolved)
+
+
+def _render_resolved_entity_state(observations: Iterable[RuntimeObservation]) -> str:
+    resolved = _resolved_entities_from_observations(observations)
+    if not resolved:
+        return ""
+    lines = [
+        "RESOLVED ENTITY SETUP STATE (use these ids for graph_outline/graph_query; "
+        "do NOT repeat resolve_entity):"
+    ]
+    for item in resolved:
+        label = item["name"] or item["entity_id"]
+        suffix = f" ({item['matched_type']})" if item["matched_type"] else ""
+        lines.append(f"- {label} -> {item['entity_id']}{suffix}")
+    return "\n".join(lines)
+
+
+def _count_setup_progress(observations: Iterable[RuntimeObservation]) -> int:
+    """Count successful setup-only actions as progress distinct from evidence."""
+    progress = 0
+    for observation in observations:
+        if observation.status != "ok":
+            continue
+        if observation.tool_name not in _SETUP_PROGRESS_TOOLS:
+            continue
+        if observation.event_metadata.get("duplicate") is True:
+            continue
+        if (
+            observation.tool_name == "resolve_entity"
+            and not _resolved_entities_from_observations((observation,))
+        ):
+            continue
+        delta = observation.ledger_delta
+        added_chunks = delta.get("added_chunk_ids") or ()
+        added_facts = delta.get("added_fact_ids") or ()
+        if added_chunks or added_facts:
+            continue
+        actions_added = int(delta.get("actions_added") or 0)
+        added_outlines = delta.get("added_outline_ids") or ()
+        if actions_added > 0 or added_outlines:
+            progress += 1
+    return progress
 
 
 @dataclass(frozen=True)
@@ -308,6 +403,7 @@ class RuntimeTurnAdapter:
         self._current_turn_index = 0
         self._turn_observations: list[RuntimeObservation] = []
         self._turn_events: list[RuntimeEvent] = []
+        self._turn_proposals: list[RuntimeActionProposal] = []
         self._turn_observation_index = 0
         self._turn_action_index = 0
 
@@ -429,6 +525,11 @@ class RuntimeTurnAdapter:
             tool_call_id=str(call.get("id", "") or ""),
         )
 
+    def extract_action_proposals(
+        self, tool_calls: Iterable[dict[str, Any]]
+    ) -> tuple[RuntimeActionProposal, ...]:
+        return tuple(self._proposal_from_tool_call(call) for call in tool_calls)
+
     @staticmethod
     def _proposal_event_metadata(
         proposal: RuntimeActionProposal, extra: dict[str, Any] | None = None
@@ -447,7 +548,12 @@ class RuntimeTurnAdapter:
             self._turn_events.append(RuntimeEvent.from_observation(observation))
 
     def _record_skipped_tool_call(self, call: dict[str, Any], reason: str) -> str:
-        proposal = self._proposal_from_tool_call(call)
+        proposal = self.extract_action_proposals((call,))[0]
+        return self._record_skipped_action_proposal(proposal, reason)
+
+    def _record_skipped_action_proposal(
+        self, proposal: RuntimeActionProposal, reason: str
+    ) -> str:
         before = self._ledger_snapshot(self._ledger)
         result = {"error": f"tool call skipped: {reason}", "reason": reason}
         observation = self._make_observation(
@@ -531,7 +637,39 @@ class RuntimeTurnAdapter:
         return self._execute_action_proposal(proposal)
 
     def _dispatch_tool_call(self, call: dict[str, Any]) -> Any:
-        return self._execute_action_proposal(self._proposal_from_tool_call(call))
+        return self._execute_action_proposal(self.extract_action_proposals((call,))[0])
+
+    def _handle_tool_calls(self, tool_calls: list[dict[str, Any]]) -> tuple[Any, ...]:
+        proposals = self.extract_action_proposals(tool_calls)
+        self._turn_proposals.extend(proposals)
+        return self._execute_action_proposals(proposals)
+
+    def _execute_action_proposals(
+        self, proposals: tuple[RuntimeActionProposal, ...]
+    ) -> tuple[Any, ...]:
+        from langchain_core.messages import ToolMessage
+
+        def run_one(proposal: RuntimeActionProposal) -> Any:
+            if self._deadline is not None and time.monotonic() >= self._deadline:
+                content = self._record_skipped_action_proposal(proposal, "deadline_exceeded")
+            else:
+                content = self._execute_action_proposal(proposal)
+            return ToolMessage(content=str(content), tool_call_id=proposal.tool_call_id)
+
+        if (
+            bool(getattr(self._settings, "agentic_parallel_dispatch_enabled", False))
+            and len(proposals) > 1
+        ):
+            cap = max(
+                1,
+                min(
+                    len(proposals),
+                    int(getattr(self._settings, "agentic_max_parallel_tools", 1)),
+                ),
+            )
+            with ThreadPoolExecutor(max_workers=cap) as ex:
+                return tuple(ex.map(run_one, proposals))
+        return tuple(run_one(proposal) for proposal in proposals)
 
     def _execute_action_proposal(self, proposal: RuntimeActionProposal) -> Any:
         from rag_cti.knowledge import agentic_nodes, tool_cache
@@ -647,11 +785,12 @@ class RuntimeTurnAdapter:
         self._record_observation(observation)
         return observation.model_visible_content
 
-    def _render_context(self) -> str:
+    def _render_context(self, state: RuntimeInvestigationState) -> str:
         from rag_cti.knowledge import agentic_effort, agentic_nodes
 
         blocks: list[str] = []
         blocks.append(agentic_nodes.render_state_view(self._ledger))
+        blocks.append(_render_resolved_entity_state(state.observations))
         blocks.append(agentic_nodes.render_action_log(self._ledger))
         blocks.append(
             agentic_effort.render_budget_line(
@@ -664,11 +803,12 @@ class RuntimeTurnAdapter:
 
     def run_turn(self, state: RuntimeInvestigationState) -> RuntimeTurnResult:
         from rag_cti.knowledge import agentic_nodes
-        from rag_cti.knowledge.react_loop import run_react_tool_loop
+        from rag_cti.knowledge.react_loop import mask_stale_observations
 
         self._current_turn_index = state.iteration_count + 1
         self._turn_observations = []
         self._turn_events = []
+        self._turn_proposals = []
         self._turn_observation_index = 0
         self._turn_action_index = 0
         messages = agentic_nodes.build_turn_messages(
@@ -681,22 +821,25 @@ class RuntimeTurnAdapter:
         before_facts = len(self._ledger.facts)
         before = before_facts + len(self._ledger.chunks)
         errors: list[BaseException] = []
-        out_messages = run_react_tool_loop(
-            self._model_with_tools,
-            self._dispatch,
-            messages,
-            max_steps=1,
-            deadline=self._deadline,
-            on_model_error=errors.append,
-            render_state=self._render_context,
-            keep_last_observations=int(getattr(self._settings, "agentic_keep_last_observations", 0)),
-            parallel_dispatch=bool(
-                getattr(self._settings, "agentic_parallel_dispatch_enabled", False)
-            ),
-            max_parallel_tools=int(getattr(self._settings, "agentic_max_parallel_tools", 1)),
-            dispatch_tool_call=self._dispatch_tool_call,
-            on_tool_skipped=self._record_skipped_tool_call,
-        )
+        out_messages = list(messages)
+        if self._deadline is None or time.monotonic() < self._deadline:
+            base = mask_stale_observations(
+                out_messages,
+                int(getattr(self._settings, "agentic_keep_last_observations", 0)),
+            )
+            turn_input = base
+            rendered_state = self._render_context(state)
+            if rendered_state:
+                turn_input = base + [("user", rendered_state)]
+            try:
+                ai = self._model_with_tools.invoke(turn_input)
+            except Exception as exc:
+                errors.append(exc)
+            else:
+                out_messages.append(ai)
+                tool_calls = getattr(ai, "tool_calls", None) or []
+                if tool_calls:
+                    out_messages.extend(self._handle_tool_calls(tool_calls))
         if errors:
             observation = self._make_observation(
                 status="error",
@@ -716,6 +859,7 @@ class RuntimeTurnAdapter:
             provider_error=bool(errors),
             observations=tuple(self._turn_observations),
             events=tuple(self._turn_events),
+            proposals=tuple(self._turn_proposals),
         )
 
 
@@ -772,15 +916,39 @@ def _run_agentic_investigation_result(
             state.tokens_used += turn.tokens_used
             state.new_evidence = turn.new_evidence
             state.new_facts = turn.new_facts
+            state.setup_progress = _count_setup_progress(turn.observations)
             state.provider_error = turn.provider_error
             for observation in turn.observations:
                 apply_observation_to_state(state, observation)
             turn_event_kinds = [event.kind for event in turn.events]
+            proposal_action_ids = {proposal.action_id for proposal in turn.proposals}
+            proposal_observations = [
+                observation
+                for observation in turn.observations
+                if observation.action_id in proposal_action_ids
+            ]
+            proposal_events = [
+                event
+                for event in turn.events
+                if event.metadata.get("action_id") in proposal_action_ids
+            ]
             event_counts.update(turn_event_kinds)
             add_trace_metadata(
                 runtime_turn_event_kinds=turn_event_kinds,
                 runtime_turn_event_count=len(turn.events),
                 runtime_turn_observation_count=len(turn.observations),
+                runtime_turn_proposal_count=len(turn.proposals),
+                runtime_turn_proposal_status_counts=dict(
+                    Counter(observation.status for observation in proposal_observations)
+                ),
+                runtime_turn_proposal_event_counts=dict(
+                    Counter(event.kind for event in proposal_events)
+                ),
+                runtime_turn_deadline_proposal_count=sum(
+                    1
+                    for observation in proposal_observations
+                    if observation.error_kind == "deadline_exceeded"
+                ),
                 runtime_invalid_tool_call_count=turn_event_kinds.count("invalid_tool_call"),
                 runtime_tool_error_count=turn_event_kinds.count("tool_error"),
                 runtime_provider_error_count=turn_event_kinds.count("provider_error"),
@@ -795,7 +963,7 @@ def _run_agentic_investigation_result(
 
             if agentic_nodes.should_suppress_retrieve_after_graph_coverage(query, ledger):
                 state.sufficiency = None
-                state.stop_reason = "graph_sufficient"
+                state.stop_reason = "sufficient"
                 state.prev_gaps = ()
                 state.open_categories = 0
                 state.open_cat_stall = 0
@@ -815,6 +983,7 @@ def _run_agentic_investigation_result(
                 token_ceiling=int(getattr(settings, "agentic_token_ceiling", 10**9)),
                 max_retrieve_rounds=int(getattr(settings, "agentic_max_retrieve_rounds", 2)),
                 new_facts=state.new_facts,
+                setup_progress=state.setup_progress,
                 prev_gaps=state.prev_gaps,
                 elapsed_seconds=time.monotonic() - started_at,
                 max_wall_seconds=max_wall_seconds,
@@ -831,6 +1000,7 @@ def _run_agentic_investigation_result(
                 next_action=(verdict.next_action if verdict else "parse_fallback"),
                 route=route,
                 iteration_count=state.iteration_count,
+                setup_progress=state.setup_progress,
                 open_categories=current_open,
                 open_cat_stall=open_cat_stall,
             )

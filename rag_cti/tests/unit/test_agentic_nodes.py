@@ -219,6 +219,19 @@ def test_decide_next_no_new_evidence_stops() -> None:
     ) == ("synthesize", "no_progress")
 
 
+def test_decide_next_setup_progress_continues_without_evidence() -> None:
+    # Entity resolution / outline setup can be real progress before chunks or facts grow.
+    assert nodes.decide_next(
+        _verdict("retrieve_more"),
+        1,
+        0,
+        0,
+        max_iterations=15,
+        token_ceiling=100,
+        setup_progress=1,
+    ) == ("agent_turn", "")
+
+
 def test_decide_next_repeated_gap_without_new_facts_stops() -> None:
     # Judge repeats the EXACT same gap and the burst added no new graph facts (only churned
     # prose) -> stuck -> stop, rather than looping to the budget cap. new_evidence>0 so the

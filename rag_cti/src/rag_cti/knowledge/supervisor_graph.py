@@ -4,8 +4,8 @@ The supervisor is itself an LLM agent that routes ITSELF (picks the next tool), 
 like the inner worker loop — consistent with the rest of the ReAct system. Its tools are
 SUB-AGENTS, not retrieval:
 
-  - dispatch_worker(sub_question, focus_entity): runs one full worker sub-agent (the
-    existing single-agent gather+synth loop) on a sub-question; side-effects its
+  - dispatch_worker(sub_question, focus_entity): runs one gather-only worker sub-agent
+    through the runtime-owned gather investigation on a sub-question; side-effects its
     BranchReport into a report side-channel; returns a BOUNDED summary so the supervisor's
     own context stays small. The supervisor may emit several in one turn -> they run in
     PARALLEL (``run_supervisor_loop``).
@@ -140,11 +140,13 @@ def run_supervised_answer(
     composer: ComposeFn,
     branch_plan: Sequence[ProposedBranch] | None = None,
 ) -> AgenticAnswer:
-    """Run the ReAct orchestration loop and assemble the final grounded answer.
+    """Run supervised coordination and assemble the final grounded answer.
 
-    The supervisor LLM decides what to dispatch and when to compose; this function only
-    wires the tools, runs the loop, and does the DETERMINISTIC post-assembly (citation guard
-    over the union of branch evidence). It never produces answer content itself.
+    Production runtime callers pass a validated ``branch_plan`` from query understanding;
+    that path dispatches workers deterministically and skips the supervisor routing loop.
+    ``branch_plan=None`` keeps the legacy autonomous ReAct supervisor available only for
+    debug/eval/manual baselines. This function never produces answer content itself; the
+    Composer writes the final answer and the deterministic citation guard validates it.
     """
     from langchain_core.tools import tool
 
@@ -239,6 +241,14 @@ def run_supervised_answer(
         composed["text"] = compose(composer, query, snapshot, history=history)
         return "composed the final answer from the branch reports"
 
+    add_trace_metadata(
+        supervisor_entrypoint=(
+            "runtime_validated_branch_plan"
+            if branch_plan is not None
+            else "legacy_autonomous_debug_eval"
+        ),
+        supervisor_branch_plan_count=len(branch_plan or ()),
+    )
     if branch_plan is not None:
         _run_validated_plan(branch_plan)
     else:
