@@ -222,6 +222,17 @@ Verification:
 - Live E2E validation passed:
   `python -m pytest --no-cov -q tests/integration/test_agentic_answer.py`.
 
+Known residual risk:
+
+- The current P3-1 repair derives resolved entity setup state from
+  `RuntimeObservation.result_summary`. This is acceptable as a narrow
+  compatibility repair because `resolve_entity` results are small and live E2E
+  now passes, but `result_summary` is display-oriented text and may be truncated
+  or reformatted. It must not become the long-term structured state source.
+- P3-2 / P3-4 should replace this with structured observation payload or
+  reducer-owned state so setup state, replay, and trajectory eval do not depend
+  on parsing summary strings.
+
 ### P3-2: Introduce one reducer-owned ledger update tracer bullet
 
 Status: Ready
@@ -239,6 +250,9 @@ Acceptance:
 
 - One selected tool path returns structured data that can be represented in a
   `RuntimeObservation` without directly mutating `EvidenceLedger`.
+- The selected path does not reconstruct runtime state from
+  `RuntimeObservation.result_summary`; any state needed by future turns is
+  carried as structured data or reducer output.
 - A runtime reducer applies that observation to `EvidenceLedger`.
 - The reducer returns or records the resulting ledger delta.
 - Existing public answer shape and citation guard behavior remain compatible.
@@ -293,6 +307,8 @@ Acceptance:
 - A test records a minimal proposal/observation sequence.
 - Replaying the observations through the reducer reconstructs expected ledger
   facts/chunks/actions for the migrated slice.
+- Replaying setup state does not parse `result_summary` or provider
+  `ToolMessage` content as the source of truth.
 - Provider `ToolMessage` content is not used as the source of truth.
 
 Verification:
