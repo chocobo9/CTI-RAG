@@ -75,7 +75,10 @@ def build_compose_user(
 
 
 def compose(
-    composer: ComposeFn, query: str, reports: Sequence[BranchReport], history: list[str] | None = None
+    composer: ComposeFn,
+    query: str,
+    reports: Sequence[BranchReport],
+    history: list[str] | None = None,
 ) -> str:
     """Combine the branch reports into the final answer text (over an injected LLM)."""
     return composer(AGENTIC_COMPOSE_SYSTEM, build_compose_user(query, reports, history))

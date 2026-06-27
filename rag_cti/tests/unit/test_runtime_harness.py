@@ -113,7 +113,9 @@ def test_simple_query_uses_single_agent() -> None:
 
 
 def test_independent_comparison_admits_supervisor() -> None:
-    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
+    understanding = _understanding(
+        decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla"))
+    )
     assert admit_supervisor(understanding, max_branches=4) == "supervisor"
     admission = evaluate_supervisor_admission(understanding, max_branches=4)
     assert admission.reason == "validated_independent_branches"
@@ -126,7 +128,9 @@ def test_dependent_multihop_rejects_supervisor() -> None:
         suitable_for_supervisor=True,
         dependency_reason="second branch depends on malware found by first branch",
     )
-    assert admit_supervisor(_understanding(decomposition=proposal), max_branches=4) == "single_agent"
+    assert (
+        admit_supervisor(_understanding(decomposition=proposal), max_branches=4) == "single_agent"
+    )
 
 
 def test_retrieval_subqueries_are_not_supervisor_branches() -> None:
@@ -199,7 +203,7 @@ def test_runtime_understanding_parses_explicit_decomposition() -> None:
             '{"branch_id": "turla", "sub_question": "Gather Turla evidence",'
             '"focus_entity": "Turla", "facet": "comparison",'
             '"independent_reason": "independent actor branch"}'
-            ']},'
+            "]},"
             '"confidence": 0.8}'
         ),
     )
@@ -269,7 +273,7 @@ def test_runtime_understanding_normalizes_independent_dependency_reason() -> Non
             '{"branch_id": "turla", "sub_question": "What techniques does Turla use?",'
             '"focus_entity": "Turla", "facet": "techniques",'
             '"independent_reason": "independent actor branch"}'
-            ']},'
+            "]},"
             '"confidence": 0.8}'
         ),
     )
@@ -292,11 +296,19 @@ def test_runtime_understanding_normalizes_independent_dependency_reason() -> Non
 def test_answer_records_supervisor_disabled_reason_and_uses_agentic() -> None:
     import rag_cti
 
-    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
+    understanding = _understanding(
+        decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla"))
+    )
     with (
-        patch.object(rag_cti, "_build_runtime_deps", return_value=_deps(understanding, supervisor_enabled=False)),
+        patch.object(
+            rag_cti,
+            "_build_runtime_deps",
+            return_value=_deps(understanding, supervisor_enabled=False),
+        ),
         patch("rag_cti.observability.tracing.add_trace_metadata") as meta,
-        patch("rag_cti.knowledge.agentic_graph.run_agentic_answer", return_value=_agentic_answer("q")) as agentic,
+        patch(
+            "rag_cti.knowledge.agentic_graph.run_agentic_answer", return_value=_agentic_answer("q")
+        ) as agentic,
         patch("rag_cti.knowledge.supervisor_graph.run_supervised_answer") as supervised,
     ):
         ans = rag_cti.answer("q")
@@ -311,13 +323,24 @@ def test_answer_records_supervisor_disabled_reason_and_uses_agentic() -> None:
 def test_answer_passes_validated_branch_plan_to_supervisor() -> None:
     import rag_cti
 
-    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
-    supervised_answer = _agentic_answer("q").model_copy(update={"branch_count": 2, "decomposed": True})
+    understanding = _understanding(
+        decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla"))
+    )
+    supervised_answer = _agentic_answer("q").model_copy(
+        update={"branch_count": 2, "decomposed": True}
+    )
     with (
-        patch.object(rag_cti, "_build_runtime_deps", return_value=_deps(understanding, supervisor_enabled=True)),
+        patch.object(
+            rag_cti,
+            "_build_runtime_deps",
+            return_value=_deps(understanding, supervisor_enabled=True),
+        ),
         patch("rag_cti.observability.tracing.add_trace_metadata") as meta,
         patch("rag_cti.knowledge.agentic_graph.run_agentic_answer") as agentic,
-        patch("rag_cti.knowledge.supervisor_graph.run_supervised_answer", return_value=supervised_answer) as supervised,
+        patch(
+            "rag_cti.knowledge.supervisor_graph.run_supervised_answer",
+            return_value=supervised_answer,
+        ) as supervised,
     ):
         ans = rag_cti.answer("q")
 

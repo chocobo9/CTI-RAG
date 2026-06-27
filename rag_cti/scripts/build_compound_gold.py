@@ -40,22 +40,54 @@ _TID_RE = re.compile(r"^T\d{4}(\.\d{3})?$", re.IGNORECASE)
 # corpus actually holds their techniques — a fair retrieval target). union = compare /
 # profile; intersection = "shared between".
 SPECS = [
-    {"id": "C001", "op": "union", "actors": ["APT29", "Turla"],
-     "query": "Compare the TTPs used by APT29 and Turla."},
-    {"id": "C002", "op": "union", "actors": ["Lazarus", "Kimsuky"],
-     "query": "Compare the techniques used by the Lazarus Group and Kimsuky."},
-    {"id": "C003", "op": "union", "actors": ["APT1", "OilRig"],
-     "query": "Compare the TTPs of APT1 and OilRig."},
-    {"id": "C004", "op": "union", "actors": ["APT29", "Turla", "OilRig"],
-     "query": "Profile and compare the techniques of APT29, Turla, and OilRig."},
-    {"id": "C005", "op": "union", "actors": ["Kimsuky", "OilRig"],
-     "query": "Compare the techniques of Kimsuky and OilRig."},
-    {"id": "C006", "op": "intersection", "actors": ["Lazarus", "APT38"],
-     "query": "Which techniques are shared between the Lazarus Group and APT38?"},
-    {"id": "C007", "op": "intersection", "actors": ["APT29", "Turla"],
-     "query": "Which techniques do both APT29 and Turla use?"},
-    {"id": "C008", "op": "intersection", "actors": ["Kimsuky", "Lazarus"],
-     "query": "What techniques are common to both Kimsuky and the Lazarus Group?"},
+    {
+        "id": "C001",
+        "op": "union",
+        "actors": ["APT29", "Turla"],
+        "query": "Compare the TTPs used by APT29 and Turla.",
+    },
+    {
+        "id": "C002",
+        "op": "union",
+        "actors": ["Lazarus", "Kimsuky"],
+        "query": "Compare the techniques used by the Lazarus Group and Kimsuky.",
+    },
+    {
+        "id": "C003",
+        "op": "union",
+        "actors": ["APT1", "OilRig"],
+        "query": "Compare the TTPs of APT1 and OilRig.",
+    },
+    {
+        "id": "C004",
+        "op": "union",
+        "actors": ["APT29", "Turla", "OilRig"],
+        "query": "Profile and compare the techniques of APT29, Turla, and OilRig.",
+    },
+    {
+        "id": "C005",
+        "op": "union",
+        "actors": ["Kimsuky", "OilRig"],
+        "query": "Compare the techniques of Kimsuky and OilRig.",
+    },
+    {
+        "id": "C006",
+        "op": "intersection",
+        "actors": ["Lazarus", "APT38"],
+        "query": "Which techniques are shared between the Lazarus Group and APT38?",
+    },
+    {
+        "id": "C007",
+        "op": "intersection",
+        "actors": ["APT29", "Turla"],
+        "query": "Which techniques do both APT29 and Turla use?",
+    },
+    {
+        "id": "C008",
+        "op": "intersection",
+        "actors": ["Kimsuky", "Lazarus"],
+        "query": "What techniques are common to both Kimsuky and the Lazarus Group?",
+    },
 ]
 
 

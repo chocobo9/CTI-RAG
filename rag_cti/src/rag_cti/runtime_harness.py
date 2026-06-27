@@ -10,10 +10,16 @@ import json
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from rag_cti.retrieval.constraint_extract import ExtractedEntity, build_constraint
 from rag_cti.types import PayloadConstraint, QueryResult
+
+if TYPE_CHECKING:
+    from rag_cti.config import Settings
+    from rag_cti.knowledge.agentic_nodes import JudgeFn
+    from rag_cti.knowledge.composer import ComposeFn
+    from rag_cti.knowledge.fact_store import FactStoreProto
 
 AdmissionDecision = Literal["single_agent", "supervisor"]
 UnderstandingStatus = Literal["ok", "fallback", "parse_error"]
@@ -84,16 +90,16 @@ class RuntimeDeps:
     branch reports, and answers intentionally does not live here.
     """
 
-    settings: object
+    settings: Settings
     retrieval_pipeline: object
     run_retrieve: Callable[[str, int], QueryResult]
-    fact_store: object | None
+    fact_store: FactStoreProto | None
     ontology_nodes: list[dict[str, object]]
     query_understanding: Callable[[str, list[str] | None], RuntimeQueryUnderstanding]
-    gather_model: object
+    gather_model: Any
     generator: object
-    judge: object
-    composer: object
+    judge: JudgeFn
+    composer: ComposeFn
 
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
@@ -203,12 +209,14 @@ def _retrieval_understanding(
     try:
         retriever = getattr(pipeline, "_retriever", None)
         rewriter = getattr(retriever, "_rewriter", None)
-        if hasattr(rewriter, "rewrite_with_entities"):
-            out = rewriter.rewrite_with_entities(query, history)
+        rewrite_with_entities = getattr(rewriter, "rewrite_with_entities", None)
+        rewrite = getattr(rewriter, "rewrite", None)
+        if callable(rewrite_with_entities):
+            out = rewrite_with_entities(query, history)
             retrieval_queries = out.queries
             entities = out.entities
-        elif hasattr(rewriter, "rewrite"):
-            retrieval_queries = tuple(rewriter.rewrite(query, history))
+        elif callable(rewrite):
+            retrieval_queries = tuple(rewrite(query, history))
             entities = ()
         else:
             retrieval_queries = (query,)
@@ -237,13 +245,17 @@ def _generate_runtime_understanding(
         return None
     max_tokens = max(1200, int(getattr(settings, "query_rewrite_max_tokens", 300)) * 4)
     try:
-        return generate(
+        generated = generate(
             _RUNTIME_UNDERSTANDING_SYSTEM,
             _runtime_understanding_user_prompt(query, history),
             max_tokens=max_tokens,
         )
+        return generated if isinstance(generated, str) else None
     except TypeError:
-        return generate(_RUNTIME_UNDERSTANDING_SYSTEM, _runtime_understanding_user_prompt(query, history))
+        generated = generate(
+            _RUNTIME_UNDERSTANDING_SYSTEM, _runtime_understanding_user_prompt(query, history)
+        )
+        return generated if isinstance(generated, str) else None
 
 
 def _runtime_understanding_user_prompt(query: str, history: list[str] | None) -> str:
@@ -330,6 +342,8 @@ def _parse_optional_string(raw: object) -> str | None:
 
 
 def _parse_confidence(raw: object) -> float:
+    if isinstance(raw, bool) or not isinstance(raw, (int, float, str)):
+        return 0.0
     try:
         value = float(raw)
     except (TypeError, ValueError):
@@ -372,9 +386,7 @@ def evaluate_supervisor_admission(
     branches = tuple(
         b
         for b in proposal.branches
-        if b.sub_question.strip()
-        and b.independent_reason.strip()
-        and (b.focus_entity or b.facet)
+        if b.sub_question.strip() and b.independent_reason.strip() and (b.focus_entity or b.facet)
     )
     if len(branches) < 2:
         return AdmissionResult("single_agent", "fewer_than_two_valid_branches", branches)

@@ -91,8 +91,6 @@ class CrossEncoderReranker:
         t0 = time.perf_counter()
         model = self._load()
         t_load = time.perf_counter()
-        # Each [query, content] list is a valid PairInput at runtime; only list
-        # invariance keeps mypy from accepting list[list[str]] directly.
         pairs = cast("list[PairInput]", [[query, r.document.content] for r in results])
         if self._serialize_predict:
             with _PREDICT_LOCK:  # one forward pass at a time on the shared GPU (B2)

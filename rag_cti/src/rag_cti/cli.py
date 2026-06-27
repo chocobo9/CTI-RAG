@@ -13,6 +13,7 @@ from rag_cti._logging import configure_logging
 app = typer.Typer(name="rag-cti", help="RAG-powered Cyber Threat Intelligence CLI")
 console = Console()
 
+
 # The v1-schema query set this CLI's retrieval/ragas suites consume
 # (precise/semantic/fuzzy + expected_chunk_ids). v2/v3 sets use the
 # identifier-gold schema consumed by scripts/eval_attribution.py instead.
