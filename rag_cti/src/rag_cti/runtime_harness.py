@@ -14,7 +14,7 @@ import time
 from collections import Counter
 from collections.abc import Callable, Iterable
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Literal
 
 from rag_cti.retrieval.constraint_extract import ExtractedEntity, build_constraint
@@ -154,6 +154,7 @@ class RuntimeObservation:
     error_message: str = ""
     result_summary: str = ""
     ledger_delta: dict[str, Any] = field(default_factory=dict)
+    structured_payload: dict[str, Any] = field(default_factory=dict)
     model_visible_content: str = ""
     event_metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -211,17 +212,110 @@ class RuntimeEvent:
         return cls(kind=kind, metadata=metadata)
 
 
+def _ledger_snapshot(ledger: Any) -> dict[str, set[str] | int]:
+    return {
+        "chunks": set(ledger.chunks),
+        "facts": set(ledger.facts),
+        "outlines": set(ledger.outlines),
+        "actions": len(ledger.actions),
+    }
+
+
+def _ledger_delta(
+    before: dict[str, set[str] | int], after: dict[str, set[str] | int]
+) -> dict[str, Any]:
+    before_chunks = before["chunks"] if isinstance(before["chunks"], set) else set()
+    after_chunks = after["chunks"] if isinstance(after["chunks"], set) else set()
+    before_facts = before["facts"] if isinstance(before["facts"], set) else set()
+    after_facts = after["facts"] if isinstance(after["facts"], set) else set()
+    before_outlines = before["outlines"] if isinstance(before["outlines"], set) else set()
+    after_outlines = after["outlines"] if isinstance(after["outlines"], set) else set()
+    before_actions = before["actions"] if isinstance(before["actions"], int) else 0
+    after_actions = after["actions"] if isinstance(after["actions"], int) else 0
+    return {
+        "added_chunk_ids": sorted(after_chunks - before_chunks),
+        "added_fact_ids": sorted(after_facts - before_facts),
+        "added_outline_ids": sorted(after_outlines - before_outlines),
+        "actions_added": max(0, after_actions - before_actions),
+    }
+
+
+def _merge_ledger_deltas(*deltas: dict[str, Any]) -> dict[str, Any]:
+    added_chunk_ids: set[str] = set()
+    added_fact_ids: set[str] = set()
+    added_outline_ids: set[str] = set()
+    actions_added = 0
+    for delta in deltas:
+        added_chunk_ids.update(str(item) for item in delta.get("added_chunk_ids") or ())
+        added_fact_ids.update(str(item) for item in delta.get("added_fact_ids") or ())
+        added_outline_ids.update(str(item) for item in delta.get("added_outline_ids") or ())
+        actions_added = max(actions_added, int(delta.get("actions_added") or 0))
+    return {
+        "added_chunk_ids": sorted(added_chunk_ids),
+        "added_fact_ids": sorted(added_fact_ids),
+        "added_outline_ids": sorted(added_outline_ids),
+        "actions_added": actions_added,
+    }
+
+
+def _apply_observation_payload_to_ledger(
+    state: RuntimeInvestigationState, observation: RuntimeObservation
+) -> RuntimeObservation:
+    if observation.status != "ok" or not observation.structured_payload:
+        return observation
+
+    from rag_cti.knowledge.tool_cache import canonicalize_args
+    from rag_cti.types import FactRow, GraphOutline, QueryResult
+
+    before = _ledger_snapshot(state.ledger)
+    action_data = observation.structured_payload.get("action")
+    if isinstance(action_data, dict):
+        action_name = str(action_data.get("tool_name") or "")
+        action_args = action_data.get("args")
+        if action_name and isinstance(action_args, dict):
+            action_args_summary = canonicalize_args(action_args)
+            action_exists = any(
+                action.name == action_name and action.args == action_args_summary
+                for action in state.ledger.actions
+            )
+            if not action_exists:
+                state.ledger.add_action(action_name, action_args)
+    outline_data = observation.structured_payload.get("graph_outline")
+    if isinstance(outline_data, dict):
+        state.ledger.add_outline(GraphOutline.model_validate(outline_data))
+    retrieve_data = observation.structured_payload.get("retrieve")
+    if isinstance(retrieve_data, dict):
+        query_result_data = retrieve_data.get("query_result")
+        if isinstance(query_result_data, dict):
+            state.ledger.add_query_result(QueryResult.model_validate(query_result_data))
+    graph_query_data = observation.structured_payload.get("graph_query")
+    if isinstance(graph_query_data, dict):
+        facts_data = graph_query_data.get("facts")
+        if isinstance(facts_data, list):
+            state.ledger.add_facts(tuple(FactRow.model_validate(row) for row in facts_data))
+    facts_for_evidence_data = observation.structured_payload.get("facts_for_evidence")
+    if isinstance(facts_for_evidence_data, dict):
+        facts_data = facts_for_evidence_data.get("facts")
+        if isinstance(facts_data, list):
+            state.ledger.add_facts(tuple(FactRow.model_validate(row) for row in facts_data))
+    reducer_delta = _ledger_delta(before, _ledger_snapshot(state.ledger))
+    return replace(
+        observation,
+        ledger_delta=_merge_ledger_deltas(observation.ledger_delta, reducer_delta),
+    )
+
+
 def apply_observation_to_state(
     state: RuntimeInvestigationState, observation: RuntimeObservation
 ) -> RuntimeEvent:
     """Record a runtime-owned observation on investigation state.
 
-    Phase 3 keeps legacy tool side effects for ledger mutation, but makes the
-    state-update seam explicit so a later reducer can move the actual ledger writes
-    behind this function.
+    Phase 3 keeps legacy tool side effects for most ledger mutations, but migrated
+    observation payloads replay their structured ledger changes here.
     """
-    event = RuntimeEvent.from_observation(observation)
-    state.observations.append(observation)
+    applied_observation = _apply_observation_payload_to_ledger(state, observation)
+    event = RuntimeEvent.from_observation(applied_observation)
+    state.observations.append(applied_observation)
     state.events.append(event)
     return event
 
@@ -252,12 +346,18 @@ def _resolved_entities_from_observations(
     for observation in observations:
         if observation.status != "ok" or observation.tool_name != "resolve_entity":
             continue
-        raw = _literal_observation_result(observation)
-        if isinstance(raw, dict) and isinstance(raw.get("result"), list):
-            raw = raw["result"]
+        payload = observation.structured_payload.get("resolve_entity")
+        requested_name = ""
+        if isinstance(payload, dict):
+            raw = payload.get("candidates")
+            requested_name = str(payload.get("name") or "")
+        else:
+            raw = _literal_observation_result(observation)
+            if isinstance(raw, dict) and isinstance(raw.get("result"), list):
+                raw = raw["result"]
+            requested_name = _arg_from_summary(observation.args_summary, "name")
         if not isinstance(raw, list):
             continue
-        requested_name = _arg_from_summary(observation.args_summary, "name")
         for item in raw:
             if not isinstance(item, dict):
                 continue
@@ -369,6 +469,64 @@ def _normalize_runtime_tool_args(
     return {**args, "query": compact_query}
 
 
+def _is_string(value: Any) -> bool:
+    return isinstance(value, str)
+
+
+def _is_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _validate_runtime_tool_args(name: str, args: dict[str, Any]) -> str:
+    allowed: dict[str, tuple[set[str], set[str], dict[str, Callable[[Any], bool]]]] = {
+        "resolve_entity": (
+            {"name"},
+            {"name"},
+            {"name": _is_string},
+        ),
+        "graph_outline": (
+            {"subject_id"},
+            {"subject_id"},
+            {"subject_id": _is_string},
+        ),
+        "graph_query": (
+            {"subject_id"},
+            {"subject_id", "predicate", "object_type", "min_credibility"},
+            {
+                "subject_id": _is_string,
+                "predicate": lambda value: value is None or _is_string(value),
+                "object_type": lambda value: value is None or _is_string(value),
+                "min_credibility": _is_number,
+            },
+        ),
+        "facts_for_evidence": (
+            {"chunk_id"},
+            {"chunk_id"},
+            {"chunk_id": _is_string},
+        ),
+        "retrieve": (
+            {"query"},
+            {"query", "top_k"},
+            {"query": _is_string, "top_k": _is_int},
+        ),
+    }
+    required, allowed_keys, validators = allowed[name]
+    missing = sorted(key for key in required if key not in args)
+    if missing:
+        return f"missing required arg(s): {', '.join(missing)}"
+    unknown = sorted(set(args) - allowed_keys)
+    if unknown:
+        return f"unknown arg(s): {', '.join(unknown)}"
+    for key, validator in validators.items():
+        if key in args and not validator(args[key]):
+            return f"invalid arg type for {key}"
+    return ""
+
+
 class RuntimeTurnAdapter:
     """Adapter for one runtime gather turn over the legacy tool stack.
 
@@ -394,8 +552,10 @@ class RuntimeTurnAdapter:
         self._query = query
         self._history = history
         self._ledger = ledger
+        self._fact_store = fact_store
+        self._run_retrieve = run_retrieve
         self._deadline = deadline
-        self._tools = self._build_tools(fact_store, ontology_nodes, run_retrieve, ledger)
+        self._tools = self._build_tools(fact_store, ontology_nodes, run_retrieve)
         self._model_with_tools = chat_model.bind_tools(self._tools)
         self._tools_by_name = {tool.name: tool for tool in self._tools}
         self._dispatch_lock = threading.Lock()
@@ -419,29 +579,11 @@ class RuntimeTurnAdapter:
 
     @staticmethod
     def _ledger_snapshot(ledger: Any) -> dict[str, set[str] | int]:
-        return {
-            "chunks": set(ledger.chunks),
-            "facts": set(ledger.facts),
-            "outlines": set(ledger.outlines),
-            "actions": len(ledger.actions),
-        }
+        return _ledger_snapshot(ledger)
 
     @staticmethod
     def _ledger_delta(before: dict[str, set[str] | int], after: dict[str, set[str] | int]) -> dict[str, Any]:
-        before_chunks = before["chunks"] if isinstance(before["chunks"], set) else set()
-        after_chunks = after["chunks"] if isinstance(after["chunks"], set) else set()
-        before_facts = before["facts"] if isinstance(before["facts"], set) else set()
-        after_facts = after["facts"] if isinstance(after["facts"], set) else set()
-        before_outlines = before["outlines"] if isinstance(before["outlines"], set) else set()
-        after_outlines = after["outlines"] if isinstance(after["outlines"], set) else set()
-        before_actions = before["actions"] if isinstance(before["actions"], int) else 0
-        after_actions = after["actions"] if isinstance(after["actions"], int) else 0
-        return {
-            "added_chunk_ids": sorted(after_chunks - before_chunks),
-            "added_fact_ids": sorted(after_facts - before_facts),
-            "added_outline_ids": sorted(after_outlines - before_outlines),
-            "actions_added": max(0, after_actions - before_actions),
-        }
+        return _ledger_delta(before, after)
 
     @staticmethod
     def _summarize_result(result: Any, limit: int = 800) -> str:
@@ -459,6 +601,8 @@ class RuntimeTurnAdapter:
         error_kind: str = "",
         error_message: str = "",
         before: dict[str, set[str] | int] | None = None,
+        ledger_delta: dict[str, Any] | None = None,
+        structured_payload: dict[str, Any] | None = None,
         event_metadata: dict[str, Any] | None = None,
     ) -> RuntimeObservation:
         from rag_cti.knowledge.tool_cache import canonicalize_args
@@ -468,7 +612,9 @@ class RuntimeTurnAdapter:
             index = self._turn_observation_index
         observation_id = f"turn-{self._current_turn_index}-observation-{index}"
         after = self._ledger_snapshot(self._ledger)
-        ledger_delta = self._ledger_delta(before or after, after)
+        observation_delta = (
+            ledger_delta if ledger_delta is not None else self._ledger_delta(before or after, after)
+        )
         result_summary = self._summarize_result(result)
         if status == "no_action":
             model_visible_content = "No tool call proposed."
@@ -490,7 +636,8 @@ class RuntimeTurnAdapter:
             error_kind=error_kind,
             error_message=error_message,
             result_summary=result_summary,
-            ledger_delta=ledger_delta,
+            ledger_delta=observation_delta,
+            structured_payload=structured_payload or {},
             model_visible_content=model_visible_content,
             event_metadata=event_metadata or {},
         )
@@ -570,12 +717,83 @@ class RuntimeTurnAdapter:
         self._record_observation(observation)
         return observation.model_visible_content
 
+    def _invoke_graph_outline(
+        self, subject_id: str
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        from rag_cti.knowledge import agent_tools
+
+        if self._fact_store is None:
+            return {"found": False, "entity_id": subject_id}, {}
+        outline = self._fact_store.graph_outline(subject_id)
+        result = agent_tools.summarize_outline(outline, subject_id)
+        structured_payload = {
+            "graph_outline": outline.model_dump(mode="python") if outline is not None else None
+        }
+        return result, structured_payload
+
+    def _invoke_graph_query(
+        self,
+        *,
+        subject_id: str,
+        predicate: str | None = None,
+        object_type: str | None = None,
+        min_credibility: float = 0.0,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        from rag_cti.knowledge import agent_tools
+
+        if self._fact_store is None:
+            rows = ()
+        else:
+            rows = self._fact_store.graph_query(
+                subject_id=subject_id,
+                predicate=predicate,
+                object_type=object_type,
+                min_credibility=min_credibility,
+            )
+        summary = agent_tools.summarize_rows(rows)
+        total = summary["total"]
+        return {
+            "total": total,
+            "shown": summary["shown"],
+            "objects": summary["objects"],
+            "complete": True,
+            "note": (
+                f"All {total} facts for this query are recorded and available when "
+                "composing the answer - this is the complete set; do not query this "
+                "category again."
+            ),
+        }, {
+            "graph_query": {"facts": [row.model_dump(mode="python") for row in rows]}
+        }
+
+    def _invoke_facts_for_evidence(
+        self, chunk_id: str
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        from rag_cti.knowledge import agent_tools
+
+        if self._fact_store is None:
+            rows = ()
+        else:
+            rows = self._fact_store.facts_for_evidence(chunk_id)
+        return agent_tools.summarize_facts_for_evidence(rows), {
+            "facts_for_evidence": {
+                "facts": [row.model_dump(mode="python") for row in rows]
+            }
+        }
+
+    def _invoke_retrieve(self, query: str, top_k: int) -> tuple[dict[str, Any], dict[str, Any]]:
+        from rag_cti.knowledge import agent_tools
+
+        query_result = self._run_retrieve(query, top_k)
+        return agent_tools.summarize_chunks(query_result.results), {
+            "retrieve": {"query_result": query_result.model_dump(mode="python")}
+        }
+
     @staticmethod
     def _build_tools(
         fact_store: object | None,
         ontology_nodes: list[dict[str, Any]],
         run_retrieve: Callable[[str, int], QueryResult],
-        ledger: Any,
     ) -> list[Any]:
         from langchain_core.tools import tool
 
@@ -593,7 +811,8 @@ class RuntimeTurnAdapter:
             """Coverage map for a subject_id: which relation categories exist and how many."""
             if fact_store is None:
                 return {"found": False, "entity_id": subject_id}
-            return agent_tools.outline_to_ledger(fact_store, ledger, subject_id)  # type: ignore[arg-type]
+            outline = fact_store.graph_outline(subject_id)  # type: ignore[attr-defined]
+            return agent_tools.summarize_outline(outline, subject_id)
 
         @tool
         def graph_query(
@@ -605,26 +824,38 @@ class RuntimeTurnAdapter:
             """Enumerate the exact facts for (subject_id[, predicate, object_type])."""
             if fact_store is None:
                 return {"total": 0, "shown": 0, "truncated": False, "objects": []}
-            return agent_tools.graph_query_to_ledger(  # type: ignore[arg-type]
-                fact_store,
-                ledger,
+            rows = fact_store.graph_query(  # type: ignore[attr-defined]
                 subject_id=subject_id,
                 predicate=predicate,
                 object_type=object_type,
                 min_credibility=min_credibility,
             )
+            summary = agent_tools.summarize_rows(rows)
+            total = summary["total"]
+            return {
+                "total": total,
+                "shown": summary["shown"],
+                "objects": summary["objects"],
+                "complete": True,
+                "note": (
+                    f"All {total} facts for this query are recorded and available when "
+                    "composing the answer - this is the complete set; do not query this "
+                    "category again."
+                ),
+            }
 
         @tool
         def facts_for_evidence(chunk_id: str) -> dict[str, Any]:
             """Which facts a given evidence chunk_id supports (reverse provenance bridge)."""
             if fact_store is None:
                 return {"count": 0, "facts": []}
-            return agent_tools.facts_for_evidence_to_ledger(fact_store, ledger, chunk_id)  # type: ignore[arg-type]
+            rows = fact_store.facts_for_evidence(chunk_id)  # type: ignore[attr-defined]
+            return agent_tools.summarize_facts_for_evidence(rows)
 
         @tool
         def retrieve(query: str, top_k: int = 10) -> dict[str, Any]:
             """Semantic search over source prose; returns chunk snippets."""
-            return agent_tools.retrieve_to_ledger(run_retrieve, ledger, query, top_k)
+            return agent_tools.summarize_chunks(run_retrieve(query, top_k).results)
 
         return [resolve_entity, graph_outline, graph_query, facts_for_evidence, retrieve]
 
@@ -677,6 +908,7 @@ class RuntimeTurnAdapter:
         name = proposal.tool_name
         args = proposal.args
         before = self._ledger_snapshot(self._ledger)
+        ledger_delta: dict[str, Any] | None = None
         tool = self._tools_by_name.get(name)
         if tool is None:
             result = {"error": f"unknown tool {name}"}
@@ -700,6 +932,25 @@ class RuntimeTurnAdapter:
                 getattr(self._settings, "agentic_retrieve_query_max_chars", 360)
             ),
         )
+        validation_error = _validate_runtime_tool_args(name, args)
+        if validation_error:
+            result = {
+                "error": f"invalid tool args for {name}: {validation_error}",
+                "reason": validation_error,
+            }
+            observation = self._make_observation(
+                tool_name=name,
+                args=args,
+                action_id=proposal.action_id,
+                status="invalid",
+                result=result,
+                error_kind="invalid_tool_args",
+                error_message=validation_error,
+                before=before,
+                event_metadata=self._proposal_event_metadata(proposal),
+            )
+            self._record_observation(observation)
+            return observation.model_visible_content
         with self._dispatch_lock:
             if self._hard_tool_budget > 0 and len(self._ledger.actions) >= self._hard_tool_budget:
                 result = {
@@ -720,7 +971,6 @@ class RuntimeTurnAdapter:
                 )
                 self._record_observation(observation)
                 return observation.model_visible_content
-            self._ledger.add_action(name, args)
         if name == "retrieve" and agentic_nodes.should_suppress_retrieve_after_graph_coverage(
             self._query, self._ledger
         ):
@@ -744,6 +994,18 @@ class RuntimeTurnAdapter:
         hit = self._ledger.cache_get(name, args)
         if hit is not None:
             result = tool_cache.as_duplicate(hit)
+            structured_payload = None
+            if name == "resolve_entity" and isinstance(hit, list):
+                structured_payload = {
+                    "action": {
+                        "tool_name": name,
+                        "args": dict(args),
+                    },
+                    "resolve_entity": {
+                        "name": str(args.get("name") or ""),
+                        "candidates": hit,
+                    }
+                }
             observation = self._make_observation(
                 tool_name=name,
                 args=args,
@@ -751,12 +1013,63 @@ class RuntimeTurnAdapter:
                 status="ok",
                 result=result,
                 before=before,
+                ledger_delta=ledger_delta,
+                structured_payload=structured_payload,
                 event_metadata=self._proposal_event_metadata(proposal, {"duplicate": True}),
             )
             self._record_observation(observation)
             return observation.model_visible_content
         try:
-            result = tool.invoke(args)
+            structured_payload: dict[str, Any] | None = None
+            if name == "graph_outline":
+                result, structured_payload = self._invoke_graph_outline(
+                    str(args.get("subject_id", "") or "")
+                )
+                structured_payload["action"] = {
+                    "tool_name": name,
+                    "args": dict(args),
+                }
+            elif name == "graph_query":
+                result, structured_payload = self._invoke_graph_query(
+                    subject_id=str(args.get("subject_id", "") or ""),
+                    predicate=args.get("predicate"),
+                    object_type=args.get("object_type"),
+                    min_credibility=float(args.get("min_credibility", 0.0)),
+                )
+                structured_payload["action"] = {
+                    "tool_name": name,
+                    "args": dict(args),
+                }
+            elif name == "facts_for_evidence":
+                result, structured_payload = self._invoke_facts_for_evidence(
+                    str(args.get("chunk_id", "") or "")
+                )
+                structured_payload["action"] = {
+                    "tool_name": name,
+                    "args": dict(args),
+                }
+            elif name == "retrieve":
+                result, structured_payload = self._invoke_retrieve(
+                    str(args.get("query", "") or ""),
+                    int(args.get("top_k", 10)),
+                )
+                structured_payload["action"] = {
+                    "tool_name": name,
+                    "args": dict(args),
+                }
+            else:
+                result = tool.invoke(args)
+                if name == "resolve_entity" and isinstance(result, list):
+                    structured_payload = {
+                        "action": {
+                            "tool_name": name,
+                            "args": dict(args),
+                        },
+                        "resolve_entity": {
+                            "name": str(args.get("name") or ""),
+                            "candidates": result,
+                        }
+                    }
         except Exception as exc:
             result = {"error": f"{name} failed: {exc}"}
             observation = self._make_observation(
@@ -768,6 +1081,7 @@ class RuntimeTurnAdapter:
                 error_kind=type(exc).__name__,
                 error_message=str(exc),
                 before=before,
+                ledger_delta=ledger_delta,
                 event_metadata=self._proposal_event_metadata(proposal),
             )
             self._record_observation(observation)
@@ -780,6 +1094,8 @@ class RuntimeTurnAdapter:
             status="ok",
             result=result,
             before=before,
+            ledger_delta=ledger_delta,
+            structured_payload=structured_payload,
             event_metadata=self._proposal_event_metadata(proposal, {"duplicate": False}),
         )
         self._record_observation(observation)
@@ -914,29 +1230,42 @@ def _run_agentic_investigation_result(
             state.messages = turn.messages
             state.iteration_count += 1
             state.tokens_used += turn.tokens_used
-            state.new_evidence = turn.new_evidence
-            state.new_facts = turn.new_facts
-            state.setup_progress = _count_setup_progress(turn.observations)
             state.provider_error = turn.provider_error
+            applied_observations: list[RuntimeObservation] = []
+            applied_events: list[RuntimeEvent] = []
             for observation in turn.observations:
-                apply_observation_to_state(state, observation)
-            turn_event_kinds = [event.kind for event in turn.events]
+                applied_events.append(apply_observation_to_state(state, observation))
+                applied_observations.append(state.observations[-1])
+            if applied_observations:
+                applied_delta = _merge_ledger_deltas(
+                    *(observation.ledger_delta for observation in applied_observations)
+                )
+                state.new_evidence = len(applied_delta["added_chunk_ids"]) + len(
+                    applied_delta["added_fact_ids"]
+                )
+                state.new_facts = len(applied_delta["added_fact_ids"])
+                state.setup_progress = _count_setup_progress(applied_observations)
+            else:
+                state.new_evidence = turn.new_evidence
+                state.new_facts = turn.new_facts
+                state.setup_progress = 0
+            turn_event_kinds = [event.kind for event in applied_events]
             proposal_action_ids = {proposal.action_id for proposal in turn.proposals}
             proposal_observations = [
                 observation
-                for observation in turn.observations
+                for observation in applied_observations
                 if observation.action_id in proposal_action_ids
             ]
             proposal_events = [
                 event
-                for event in turn.events
+                for event in applied_events
                 if event.metadata.get("action_id") in proposal_action_ids
             ]
             event_counts.update(turn_event_kinds)
             add_trace_metadata(
                 runtime_turn_event_kinds=turn_event_kinds,
-                runtime_turn_event_count=len(turn.events),
-                runtime_turn_observation_count=len(turn.observations),
+                runtime_turn_event_count=len(applied_events),
+                runtime_turn_observation_count=len(applied_observations),
                 runtime_turn_proposal_count=len(turn.proposals),
                 runtime_turn_proposal_status_counts=dict(
                     Counter(observation.status for observation in proposal_observations)

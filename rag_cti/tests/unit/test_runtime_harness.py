@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import patch
@@ -26,11 +27,14 @@ from rag_cti.runtime_harness import (
     run_agentic_investigation,
 )
 from rag_cti.types import (
+    Chunk,
+    FactRow,
     GeneratedAnswer,
     GraphOutline,
     OutlineEntry,
     PayloadConstraint,
     QueryResult,
+    RetrievalResult,
 )
 
 
@@ -68,6 +72,42 @@ def _branch(branch_id: str, entity: str) -> ProposedBranch:
 
 def _empty_qr(query: str = "q") -> QueryResult:
     return QueryResult(query=query, results=[], total_retrieved=0, retrieval_ms=0.0)
+
+
+def _qr_with_chunk(query: str, chunk_id: str = "chunk-1") -> QueryResult:
+    return QueryResult(
+        query=query,
+        results=[
+            RetrievalResult(
+                document=Chunk(
+                    id=chunk_id,
+                    parent_doc_id="doc-1",
+                    source="report.md",
+                    content="APT29 uses spearphishing attachments.",
+                    chunk_index=0,
+                ),
+                score=0.91,
+                rank=0,
+                retriever_source="fake",
+            )
+        ],
+        total_retrieved=1,
+        retrieval_ms=1.5,
+    )
+
+
+def _fact_row(fact_id: str = "fact-1") -> FactRow:
+    return FactRow(
+        fact_id=fact_id,
+        subject_id="actor_G0016",
+        subject_name="APT29",
+        predicate="uses",
+        object_id="technique_T1566",
+        object_name="Phishing",
+        object_type="technique",
+        aggregate_credibility=0.97,
+        conflict=False,
+    )
 
 
 class _FakeRewriter:
@@ -211,21 +251,25 @@ def test_runtime_turn_reports_invalid_tool_call_event() -> None:
 
 def test_runtime_turn_reports_tool_result_event() -> None:
     ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
     result = _turn_adapter(
         _FakeAI([{"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"}]),
         ledger,
-    ).run_turn(RuntimeInvestigationState(ledger))
+    ).run_turn(state)
 
     assert any(event.kind == "tool_result" for event in result.events)
+    assert ledger.actions == []
+    apply_observation_to_state(state, result.observations[0])
     assert [action.name for action in ledger.actions] == ["retrieve"]
 
 
 def test_runtime_turn_builds_observation_for_tool_result() -> None:
     ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
     result = _turn_adapter(
         _FakeAI([{"name": "retrieve", "args": {"query": "APT29"}, "id": "t1"}]),
         ledger,
-    ).run_turn(RuntimeInvestigationState(ledger))
+    ).run_turn(state)
 
     observation = result.observations[0]
     assert isinstance(observation, RuntimeObservation)
@@ -234,8 +278,139 @@ def test_runtime_turn_builds_observation_for_tool_result() -> None:
     assert observation.status == "ok"
     assert "APT29" in observation.args_summary
     assert observation.model_visible_content
-    assert observation.ledger_delta["actions_added"] == 1
+    assert observation.ledger_delta["actions_added"] == 0
     assert result.events[0] == RuntimeEvent.from_observation(observation)
+
+    apply_observation_to_state(state, observation)
+
+    assert state.observations[0].ledger_delta["actions_added"] == 1
+
+
+def test_runtime_turn_rejects_malformed_tool_args_before_execution(
+    monkeypatch: Any,
+) -> None:
+    from rag_cti.knowledge import agent_tools
+
+    def fail_resolve(_name: str, _ontology_nodes: list[dict[str, Any]]) -> list[dict[str, str]]:
+        raise AssertionError("resolve_entity executed despite invalid args")
+
+    def fail_retrieve(_query: str, _top_k: int) -> QueryResult:
+        raise AssertionError("retrieve executed despite invalid args")
+
+    class FailingFactStore:
+        def graph_outline(self, _entity_id: str) -> GraphOutline | None:
+            raise AssertionError("graph_outline executed despite invalid args")
+
+        def graph_query(self, **_kwargs: Any) -> tuple[Any, ...]:
+            raise AssertionError("graph_query executed despite invalid args")
+
+    monkeypatch.setattr(agent_tools, "resolve_entity_candidates", fail_resolve)
+    cases = [
+        ("resolve_entity", {}),
+        ("graph_outline", {"subject_id": 123}),
+        ("retrieve", {"query": "APT29", "unexpected": True}),
+        ("graph_query", {"subject_id": "actor_G0016", "min_credibility": "high"}),
+    ]
+
+    for tool_name, args in cases:
+        ledger = EvidenceLedger()
+        adapter = RuntimeTurnAdapter(
+            settings=_runtime_settings(),
+            query="q",
+            history=None,
+            run_retrieve=fail_retrieve,
+            fact_store=FailingFactStore(),
+            ontology_nodes=[],
+            chat_model=_FakeChatModel(
+                _FakeAI([{"name": tool_name, "args": args, "id": f"{tool_name}-call"}])
+            ),
+            ledger=ledger,
+            deadline=None,
+        )
+
+        result = adapter.run_turn(RuntimeInvestigationState(ledger))
+
+        assert result.observations[0].status == "invalid"
+        assert result.observations[0].error_kind == "invalid_tool_args"
+        assert result.events[0].kind == "invalid_tool_call"
+        assert ledger.actions == []
+
+
+def test_runtime_turn_accepts_valid_tool_args(monkeypatch: Any) -> None:
+    from rag_cti.knowledge import agent_tools
+
+    outline = GraphOutline(entity_id="actor_G0016", entity_name="APT29", entity_type="actor")
+
+    class FakeFactStore:
+        def graph_outline(self, entity_id: str) -> GraphOutline | None:
+            assert entity_id == "actor_G0016"
+            return outline
+
+        def graph_query(
+            self,
+            *,
+            subject_id: str,
+            predicate: str | None = None,
+            object_type: str | None = None,
+            min_credibility: float = 0.0,
+        ) -> tuple[Any, ...]:
+            assert subject_id == "actor_G0016"
+            assert predicate == "uses"
+            assert object_type == "technique"
+            assert min_credibility == 0.5
+            return ()
+
+    monkeypatch.setattr(
+        agent_tools,
+        "resolve_entity_candidates",
+        lambda name, _ontology_nodes: [
+            {"entity_id": "actor_G0016", "matched_type": "actor"}
+        ]
+        if name == "APT29"
+        else [],
+    )
+    calls = [
+        {"name": "resolve_entity", "args": {"name": "APT29"}, "id": "c1"},
+        {"name": "graph_outline", "args": {"subject_id": "actor_G0016"}, "id": "c2"},
+        {
+            "name": "graph_query",
+            "args": {
+                "subject_id": "actor_G0016",
+                "predicate": "uses",
+                "object_type": "technique",
+                "min_credibility": 0.5,
+            },
+            "id": "c3",
+        },
+        {"name": "retrieve", "args": {"query": "APT29", "top_k": 3}, "id": "c4"},
+    ]
+    ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="q",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(_FakeAI(calls)),
+        ledger=ledger,
+        deadline=None,
+    )
+
+    result = adapter.run_turn(state)
+
+    assert [observation.status for observation in result.observations] == ["ok"] * 4
+    assert [event.kind for event in result.events] == ["tool_result"] * 4
+    assert ledger.actions == []
+    for observation in result.observations:
+        apply_observation_to_state(state, observation)
+    assert [action.name for action in ledger.actions] == [
+        "resolve_entity",
+        "graph_outline",
+        "graph_query",
+        "retrieve",
+    ]
 
 
 def test_runtime_turn_maps_tool_call_to_action_proposal(monkeypatch: Any) -> None:
@@ -737,6 +912,748 @@ def test_apply_observation_to_state_records_observation_and_event() -> None:
     assert state.events == [RuntimeEvent.from_observation(observation)]
 
 
+def test_graph_outline_replays_ledger_update_from_runtime_observation() -> None:
+    outline = GraphOutline(
+        entity_id="actor_G0016",
+        entity_name="APT29",
+        entity_type="actor",
+        outgoing=(
+            OutlineEntry(
+                predicate="uses",
+                other_type="technique",
+                count=2,
+                max_credibility=1.0,
+            ),
+        ),
+    )
+
+    class FakeFactStore:
+        def graph_outline(self, entity_id: str) -> GraphOutline | None:
+            assert entity_id == "actor_G0016"
+            return outline
+
+    ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="What techniques does APT29 use?",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "graph_outline",
+                        "args": {"subject_id": "actor_G0016"},
+                        "id": "call-1",
+                    }
+                ]
+            )
+        ),
+        ledger=ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(state)
+
+    assert turn.observations[0].tool_name == "graph_outline"
+    assert turn.observations[0].status == "ok"
+    assert ledger.outlines == {}
+    assert turn.observations[0].structured_payload["graph_outline"]["entity_id"] == "actor_G0016"
+
+    apply_observation_to_state(state, turn.observations[0])
+
+    assert ledger.outlines == {"actor_G0016": outline}
+    assert state.observations[0].ledger_delta["added_outline_ids"] == ["actor_G0016"]
+    assert state.events[0].metadata["ledger_delta"]["added_outline_ids"] == ["actor_G0016"]
+
+
+def test_retrieve_replays_ledger_update_from_runtime_observation() -> None:
+    query_result = _qr_with_chunk("APT29")
+    ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="What does APT29 use?",
+        history=None,
+        run_retrieve=lambda q, k: query_result,
+        fact_store=None,
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "retrieve",
+                        "args": {"query": "APT29", "top_k": 3},
+                        "id": "call-1",
+                    }
+                ]
+            )
+        ),
+        ledger=ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(state)
+
+    assert turn.observations[0].tool_name == "retrieve"
+    assert turn.observations[0].status == "ok"
+    assert ledger.chunks == {}
+    assert turn.observations[0].structured_payload["retrieve"]["query_result"]["results"][0][
+        "document"
+    ]["id"] == "chunk-1"
+
+    apply_observation_to_state(state, turn.observations[0])
+
+    assert set(ledger.chunks) == {"chunk-1"}
+    assert state.observations[0].ledger_delta["added_chunk_ids"] == ["chunk-1"]
+    assert state.events[0].metadata["ledger_delta"]["added_chunk_ids"] == ["chunk-1"]
+
+
+def test_graph_query_replays_ledger_update_from_runtime_observation() -> None:
+    row = _fact_row("fact-1")
+
+    class FakeFactStore:
+        def graph_query(
+            self,
+            *,
+            subject_id: str,
+            predicate: str | None = None,
+            object_type: str | None = None,
+            min_credibility: float = 0.0,
+        ) -> tuple[FactRow, ...]:
+            assert subject_id == "actor_G0016"
+            assert predicate == "uses"
+            assert object_type == "technique"
+            assert min_credibility == 0.0
+            return (row,)
+
+    ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="What techniques does APT29 use?",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "graph_query",
+                        "args": {
+                            "subject_id": "actor_G0016",
+                            "predicate": "uses",
+                            "object_type": "technique",
+                        },
+                        "id": "call-1",
+                    }
+                ]
+            )
+        ),
+        ledger=ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(state)
+
+    assert turn.observations[0].tool_name == "graph_query"
+    assert turn.observations[0].status == "ok"
+    assert ledger.facts == {}
+    assert turn.observations[0].structured_payload["graph_query"]["facts"][0]["fact_id"] == "fact-1"
+
+    apply_observation_to_state(state, turn.observations[0])
+
+    assert set(ledger.facts) == {"fact-1"}
+    assert state.observations[0].ledger_delta["added_fact_ids"] == ["fact-1"]
+    assert state.events[0].metadata["ledger_delta"]["added_fact_ids"] == ["fact-1"]
+
+
+def test_facts_for_evidence_replays_ledger_update_from_runtime_observation() -> None:
+    row = _fact_row("fact-from-chunk")
+
+    class FakeFactStore:
+        def facts_for_evidence(self, evidence_id: str) -> tuple[FactRow, ...]:
+            assert evidence_id == "chunk-1"
+            return (row,)
+
+    ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="Which facts does this evidence support?",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "facts_for_evidence",
+                        "args": {"chunk_id": "chunk-1"},
+                        "id": "call-1",
+                    }
+                ]
+            )
+        ),
+        ledger=ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(state)
+
+    assert turn.observations[0].tool_name == "facts_for_evidence"
+    assert turn.observations[0].status == "ok"
+    assert ledger.facts == {}
+    assert (
+        turn.observations[0].structured_payload["facts_for_evidence"]["facts"][0]["fact_id"]
+        == "fact-from-chunk"
+    )
+
+    apply_observation_to_state(state, turn.observations[0])
+
+    assert set(ledger.facts) == {"fact-from-chunk"}
+    assert state.observations[0].ledger_delta["added_fact_ids"] == ["fact-from-chunk"]
+    assert state.events[0].metadata["ledger_delta"]["added_fact_ids"] == ["fact-from-chunk"]
+
+
+def test_recorded_evidence_observations_replay_without_text_fields_and_citation_guard() -> None:
+    from rag_cti.knowledge import agentic_nodes
+
+    outline = GraphOutline(
+        entity_id="actor_G0016",
+        entity_name="APT29",
+        entity_type="actor",
+        outgoing=(
+            OutlineEntry(
+                predicate="uses",
+                other_type="technique",
+                count=1,
+                max_credibility=1.0,
+            ),
+        ),
+    )
+    row = _fact_row("fact-1")
+    query_result = _qr_with_chunk("APT29", "chunk-1")
+
+    class FakeFactStore:
+        def graph_outline(self, entity_id: str) -> GraphOutline | None:
+            assert entity_id == "actor_G0016"
+            return outline
+
+        def graph_query(
+            self,
+            *,
+            subject_id: str,
+            predicate: str | None = None,
+            object_type: str | None = None,
+            min_credibility: float = 0.0,
+        ) -> tuple[FactRow, ...]:
+            assert subject_id == "actor_G0016"
+            assert predicate == "uses"
+            assert object_type == "technique"
+            assert min_credibility == 0.0
+            return (row,)
+
+    production_ledger = EvidenceLedger()
+    production_state = RuntimeInvestigationState(production_ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="What techniques does APT29 use?",
+        history=None,
+        run_retrieve=lambda q, k: query_result,
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "graph_outline",
+                        "args": {"subject_id": "actor_G0016"},
+                        "id": "call-1",
+                    },
+                    {
+                        "name": "graph_query",
+                        "args": {
+                            "subject_id": "actor_G0016",
+                            "predicate": "uses",
+                            "object_type": "technique",
+                        },
+                        "id": "call-2",
+                    },
+                    {
+                        "name": "retrieve",
+                        "args": {"query": "APT29", "top_k": 3},
+                        "id": "call-3",
+                    },
+                ]
+            )
+        ),
+        ledger=production_ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(production_state)
+    recorded = [
+        replace(
+            observation,
+            args_summary="wrong=replay must not read this",
+            result_summary="truncated display text",
+            model_visible_content="provider protocol text is not replay state",
+        )
+        for observation in turn.observations
+    ]
+    replay_state = RuntimeInvestigationState(EvidenceLedger())
+
+    for observation in recorded:
+        apply_observation_to_state(replay_state, observation)
+
+    assert replay_state.ledger.outlines == {"actor_G0016": outline}
+    assert set(replay_state.ledger.facts) == {"fact-1"}
+    assert set(replay_state.ledger.chunks) == {"chunk-1"}
+    assert [(action.name, action.args) for action in replay_state.ledger.actions] == [
+        ("graph_outline", "subject_id=actor_G0016"),
+        ("graph_query", "object_type=technique, predicate=uses, subject_id=actor_G0016"),
+        ("retrieve", "query=APT29, top_k=3"),
+    ]
+    assert agentic_nodes.assemble_citations(
+        "APT29 uses phishing [fact-1] with prose support [chunk-1] [bogus].",
+        replay_state.ledger,
+    ) == (("fact-1", "chunk-1"), 1)
+    assert "retrieve(query=APT29, top_k=3)" in agentic_nodes.render_action_log(
+        replay_state.ledger
+    )
+
+
+def test_duplicate_migrated_observation_replay_is_idempotent() -> None:
+    observation = RuntimeObservation(
+        observation_id="obs1",
+        turn_index=1,
+        action_id="a1",
+        tool_name="retrieve",
+        args_summary="query=wrong",
+        status="ok",
+        result_summary="display text",
+        model_visible_content="protocol text",
+        structured_payload={
+            "action": {"tool_name": "retrieve", "args": {"query": "APT29", "top_k": 3}},
+            "retrieve": {
+                "query_result": _qr_with_chunk("APT29", "chunk-1").model_dump(mode="python")
+            },
+        },
+    )
+    state = RuntimeInvestigationState(EvidenceLedger())
+
+    apply_observation_to_state(state, observation)
+    apply_observation_to_state(state, observation)
+
+    assert set(state.ledger.chunks) == {"chunk-1"}
+    assert [(action.name, action.args) for action in state.ledger.actions] == [
+        ("retrieve", "query=APT29, top_k=3")
+    ]
+    assert state.observations[1].ledger_delta == {
+        "added_chunk_ids": [],
+        "added_fact_ids": [],
+        "added_outline_ids": [],
+        "actions_added": 0,
+    }
+
+
+def test_graph_outline_reducer_preserves_answer_shape_and_citation_guard(
+    monkeypatch: Any,
+) -> None:
+    from rag_cti.knowledge import agentic_nodes
+
+    outline = GraphOutline(
+        entity_id="actor_G0016",
+        entity_name="APT29",
+        entity_type="actor",
+        outgoing=(
+            OutlineEntry(
+                predicate="uses",
+                other_type="technique",
+                count=2,
+                max_credibility=1.0,
+            ),
+        ),
+    )
+
+    class FakeFactStore:
+        def graph_outline(self, entity_id: str) -> GraphOutline | None:
+            assert entity_id == "actor_G0016"
+            return outline
+
+    class FakeGenerator:
+        seen_total_retrieved = -1
+
+        def generate(
+            self,
+            query: str,
+            query_result: QueryResult,
+            raise_on_failure: bool = False,
+            system_prompt: str | None = None,
+        ) -> GeneratedAnswer:
+            self.seen_total_retrieved = query_result.total_retrieved
+            return GeneratedAnswer(
+                query=query,
+                answer="APT29 has graph coverage [actor_G0016].",
+                cited_chunk_ids=["actor_G0016"],
+                query_result=query_result,
+                generation_ms=0.0,
+                model="fake",
+            )
+
+    generator = FakeGenerator()
+    monkeypatch.setattr(agentic_nodes, "decide_next", lambda *a, **k: ("synthesize", "sufficient"))
+
+    answer = run_agentic_investigation(
+        "What techniques does APT29 use?",
+        settings=SimpleNamespace(
+            **_runtime_settings().__dict__,
+            agentic_max_wall_seconds=0.0,
+            agentic_max_iterations=3,
+            agentic_token_ceiling=100,
+            agentic_max_retrieve_rounds=2,
+            agentic_open_cat_stall_limit=0,
+            agentic_synthesis_top_k=5,
+            agentic_synthesis_fact_limit=5,
+        ),
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        generator=generator,
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "graph_outline",
+                        "args": {"subject_id": "actor_G0016"},
+                        "id": "call-1",
+                    }
+                ]
+            )
+        ),
+        judge=lambda s, u: '{"sufficient": false, "next_action": "retrieve_more"}',
+    )
+
+    assert answer.query_result.total_retrieved == 0
+    assert answer.collected_facts == ()
+    assert answer.cited_ids == ()
+    assert answer.dropped_citation_count == 1
+    assert answer.tool_call_count == 1
+    assert answer.stop_reason == "sufficient"
+    assert generator.seen_total_retrieved == 0
+
+
+def test_recorded_graph_outline_observation_replays_without_text_fields() -> None:
+    outline = GraphOutline(
+        entity_id="actor_G0016",
+        entity_name="APT29",
+        entity_type="actor",
+        outgoing=(
+            OutlineEntry(
+                predicate="uses",
+                other_type="technique",
+                count=2,
+                max_credibility=1.0,
+            ),
+        ),
+    )
+
+    class FakeFactStore:
+        def graph_outline(self, entity_id: str) -> GraphOutline | None:
+            assert entity_id == "actor_G0016"
+            return outline
+
+    production_ledger = EvidenceLedger()
+    production_state = RuntimeInvestigationState(production_ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="What techniques does APT29 use?",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "graph_outline",
+                        "args": {"subject_id": "actor_G0016"},
+                        "id": "call-1",
+                    }
+                ]
+            )
+        ),
+        ledger=production_ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(production_state)
+    recorded = replace(
+        turn.observations[0],
+        args_summary="subject_id=wrong",
+        result_summary="truncated display text",
+        model_visible_content="provider protocol text is not replay state",
+    )
+    replay_state = RuntimeInvestigationState(EvidenceLedger())
+
+    apply_observation_to_state(replay_state, recorded)
+
+    assert replay_state.ledger.outlines == {"actor_G0016": outline}
+    assert [(action.name, action.args) for action in replay_state.ledger.actions] == [
+        ("graph_outline", "subject_id=actor_G0016")
+    ]
+    assert replay_state.observations[0].ledger_delta == {
+        "added_chunk_ids": [],
+        "added_fact_ids": [],
+        "added_outline_ids": ["actor_G0016"],
+        "actions_added": 1,
+    }
+
+
+def test_parallel_graph_outline_replay_keeps_per_observation_deltas_atomic() -> None:
+    import threading
+
+    outlines = {
+        "actor_G0016": GraphOutline(
+            entity_id="actor_G0016",
+            entity_name="APT29",
+            entity_type="actor",
+            outgoing=(
+                OutlineEntry(
+                    predicate="uses",
+                    other_type="technique",
+                    count=2,
+                    max_credibility=1.0,
+                ),
+            ),
+        ),
+        "actor_G0032": GraphOutline(
+            entity_id="actor_G0032",
+            entity_name="Lazarus Group",
+            entity_type="actor",
+            outgoing=(
+                OutlineEntry(
+                    predicate="uses",
+                    other_type="technique",
+                    count=3,
+                    max_credibility=1.0,
+                ),
+            ),
+        ),
+    }
+    barrier = threading.Barrier(2, timeout=5.0)
+
+    class FakeFactStore:
+        def graph_outline(self, entity_id: str) -> GraphOutline | None:
+            barrier.wait()
+            return outlines[entity_id]
+
+    settings = _runtime_settings()
+    settings.agentic_parallel_dispatch_enabled = True
+    settings.agentic_max_parallel_tools = 2
+    production_ledger = EvidenceLedger()
+    production_state = RuntimeInvestigationState(production_ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=settings,
+        query="Compare APT29 and Lazarus Group techniques.",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=FakeFactStore(),
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "graph_outline",
+                        "args": {"subject_id": "actor_G0016"},
+                        "id": "call-1",
+                    },
+                    {
+                        "name": "graph_outline",
+                        "args": {"subject_id": "actor_G0032"},
+                        "id": "call-2",
+                    },
+                ]
+            )
+        ),
+        ledger=production_ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(production_state)
+    raw_deltas_by_entity = {
+        observation.structured_payload["graph_outline"]["entity_id"]: observation.ledger_delta
+        for observation in turn.observations
+    }
+    assert raw_deltas_by_entity == {
+        "actor_G0016": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 0,
+        },
+        "actor_G0032": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 0,
+        },
+    }
+    assert {
+        event.metadata["args_summary"]: event.metadata["ledger_delta"]
+        for event in turn.events
+    } == {
+        "subject_id=actor_G0016": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 0,
+        },
+        "subject_id=actor_G0032": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 0,
+        },
+    }
+    replay_state = RuntimeInvestigationState(EvidenceLedger())
+    applied_events = [
+        apply_observation_to_state(replay_state, observation)
+        for observation in turn.observations
+    ]
+
+    assert set(replay_state.ledger.outlines) == {"actor_G0016", "actor_G0032"}
+    assert len(replay_state.ledger.actions) == 2
+    deltas_by_entity = {
+        observation.structured_payload["graph_outline"]["entity_id"]: observation.ledger_delta
+        for observation in replay_state.observations
+    }
+    assert deltas_by_entity == {
+        "actor_G0016": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": ["actor_G0016"],
+            "actions_added": 1,
+        },
+        "actor_G0032": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": ["actor_G0032"],
+            "actions_added": 1,
+        },
+    }
+    assert {
+        event.metadata["args_summary"]: event.metadata["ledger_delta"]
+        for event in applied_events
+    } == {
+        "subject_id=actor_G0016": deltas_by_entity["actor_G0016"],
+        "subject_id=actor_G0032": deltas_by_entity["actor_G0032"],
+    }
+
+
+def test_parallel_retrieve_replay_keeps_per_observation_deltas_atomic() -> None:
+    import threading
+
+    chunk_ids = {"APT29": "chunk-apt29", "Turla": "chunk-turla"}
+    barrier = threading.Barrier(2, timeout=5.0)
+
+    def synchronized_retrieve(query: str, top_k: int) -> QueryResult:
+        assert top_k == 3
+        barrier.wait()
+        return _qr_with_chunk(query, chunk_ids[query])
+
+    settings = _runtime_settings()
+    settings.agentic_parallel_dispatch_enabled = True
+    settings.agentic_max_parallel_tools = 2
+    production_ledger = EvidenceLedger()
+    production_state = RuntimeInvestigationState(production_ledger)
+    adapter = RuntimeTurnAdapter(
+        settings=settings,
+        query="Compare APT29 and Turla.",
+        history=None,
+        run_retrieve=synchronized_retrieve,
+        fact_store=None,
+        ontology_nodes=[],
+        chat_model=_FakeChatModel(
+            _FakeAI(
+                [
+                    {
+                        "name": "retrieve",
+                        "args": {"query": "APT29", "top_k": 3},
+                        "id": "call-1",
+                    },
+                    {
+                        "name": "retrieve",
+                        "args": {"query": "Turla", "top_k": 3},
+                        "id": "call-2",
+                    },
+                ]
+            )
+        ),
+        ledger=production_ledger,
+        deadline=None,
+    )
+
+    turn = adapter.run_turn(production_state)
+    raw_deltas_by_query = {
+        observation.structured_payload["action"]["args"]["query"]: observation.ledger_delta
+        for observation in turn.observations
+    }
+    assert raw_deltas_by_query == {
+        "APT29": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 0,
+        },
+        "Turla": {
+            "added_chunk_ids": [],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 0,
+        },
+    }
+
+    replay_state = RuntimeInvestigationState(EvidenceLedger())
+    applied_events = [
+        apply_observation_to_state(replay_state, observation)
+        for observation in turn.observations
+    ]
+
+    assert set(replay_state.ledger.chunks) == {"chunk-apt29", "chunk-turla"}
+    deltas_by_query = {
+        observation.structured_payload["action"]["args"]["query"]: observation.ledger_delta
+        for observation in replay_state.observations
+    }
+    assert deltas_by_query == {
+        "APT29": {
+            "added_chunk_ids": ["chunk-apt29"],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 1,
+        },
+        "Turla": {
+            "added_chunk_ids": ["chunk-turla"],
+            "added_fact_ids": [],
+            "added_outline_ids": [],
+            "actions_added": 1,
+        },
+    }
+    assert {
+        event.metadata["args_summary"]: event.metadata["ledger_delta"]
+        for event in applied_events
+    } == {
+        "query=APT29, top_k=3": deltas_by_query["APT29"],
+        "query=Turla, top_k=3": deltas_by_query["Turla"],
+    }
+
+
 def test_runtime_loop_calls_stop_policy_with_turn_accounting(monkeypatch: Any) -> None:
     import rag_cti.runtime_harness as harness
     from rag_cti.knowledge import agentic_nodes
@@ -1027,6 +1944,75 @@ def test_runtime_turn_exposes_resolved_entity_ids_to_next_real_turn(monkeypatch:
         "graph_outline",
         "graph_outline",
     ]
+
+
+def test_resolved_entity_setup_state_uses_structured_payload_not_result_text(
+    monkeypatch: Any,
+) -> None:
+    from rag_cti.knowledge import agent_tools, agentic_nodes
+
+    class InspectingBoundModel:
+        def __init__(self) -> None:
+            self.inputs: list[list[Any]] = []
+
+        def invoke(self, messages: list[Any]) -> _FakeAI:
+            self.inputs.append(messages)
+            if len(self.inputs) == 1:
+                return _FakeAI(
+                    [{"name": "resolve_entity", "args": {"name": "APT29"}, "id": "c1"}]
+                )
+            return _FakeAI([])
+
+    class InspectingChatModel:
+        def __init__(self) -> None:
+            self.bound = InspectingBoundModel()
+
+        def bind_tools(self, _tools: list[Any]) -> InspectingBoundModel:
+            return self.bound
+
+    monkeypatch.setattr(
+        agent_tools,
+        "resolve_entity_candidates",
+        lambda name, _ontology_nodes: [
+            {"entity_id": "actor_G0016", "matched_type": "actor"}
+        ]
+        if name == "APT29"
+        else [],
+    )
+
+    ledger = EvidenceLedger()
+    state = RuntimeInvestigationState(ledger)
+    chat_model = InspectingChatModel()
+    adapter = RuntimeTurnAdapter(
+        settings=_runtime_settings(),
+        query="What techniques does APT29 use?",
+        history=None,
+        run_retrieve=lambda q, k: _empty_qr(q),
+        fact_store=object(),
+        ontology_nodes=[],
+        chat_model=chat_model,
+        ledger=ledger,
+        deadline=None,
+    )
+
+    first = adapter.run_turn(state)
+    state.messages = first.messages
+    state.iteration_count += 1
+    state.sufficiency = agentic_nodes.parse_verdict(
+        '{"sufficient": false, "next_action": "retrieve_more"}'
+    )
+    recorded = replace(
+        first.observations[0],
+        args_summary="name=Wrong",
+        result_summary="display text is unavailable",
+        model_visible_content="provider protocol text is unavailable",
+    )
+    apply_observation_to_state(state, recorded)
+
+    adapter.run_turn(state)
+
+    rendered = "\n".join(str(message) for message in chat_model.bound.inputs[-1])
+    assert "APT29 -> actor_G0016 (actor)" in rendered
 
 
 def test_runtime_loop_does_not_count_empty_resolve_as_setup_progress(monkeypatch: Any) -> None:

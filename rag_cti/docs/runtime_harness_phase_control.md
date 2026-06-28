@@ -81,9 +81,9 @@ message objects are protocol artifacts, not the source of runtime truth.
 | Phase | Name | Status | Current truth |
 |---|---|---|---|
 | 1 | Loop ownership cleanup | Done | Public single-agent paths call `run_agentic_investigation()` rather than legacy graph ownership. |
-| 2 | Runtime boundary hardening | Done | Runtime validates tool calls, records boundary events, and handles provider/tool rejection/error accounting. |
-| 3 | State / observation normalization | Partial | Compatibility layer is done: boundary outcomes are normalized into `RuntimeObservation` / `RuntimeEvent`; deadline-skipped tool calls, parallel observation ids, and setup-progress stop-policy accounting are covered. Reducer-owned ledger mutation and replayable state transitions are still open. |
-| 4 | Agent next-action contract | Done | `RuntimeTurnAdapter.run_turn()` now owns the model turn, extracts provider tool calls into a `RuntimeActionProposal` batch, executes that batch, and renders provider protocol messages from observations. |
+| 2 | Runtime boundary hardening | Done | Runtime validates tool names and production tool argument shape, records boundary events, and handles provider/tool rejection/error accounting. Malformed production tool args become runtime `invalid` observations before tool execution. |
+| 3 | State / observation normalization | Done | Production gather state-carrying tools now emit replayable `RuntimeObservation.structured_payload`; `apply_observation_to_state()` owns `EvidenceLedger` mutations for `resolve_entity` action replay, `graph_outline`, `retrieve`, `graph_query`, `facts_for_evidence`, and accepted action logs. Replay, parallel evidence delta, citation guard, and live agentic answer validation are covered. |
+| 4 | Agent next-action contract | Mostly Complete | `RuntimeTurnAdapter.run_turn()` owns the model turn, extracts provider tool calls into a `RuntimeActionProposal` batch, validates production proposal args before execution, executes that batch, and renders provider protocol messages from observations. Proposal identity is owned by runtime; broader provider-schema abstraction can still be deepened later if needed. |
 | 5 | Supervisor boundary correction | Done | Production `answer()` admits supervisor only through validated runtime branch plans; validated plans skip autonomous supervisor routing; `branch_plan=None` autonomous supervisor remains explicitly marked debug/eval/manual compatibility. |
 
 ## Next Session Handoff
@@ -93,7 +93,8 @@ separate handoff document unless the user explicitly asks for one.
 
 Next-session focus:
 
-1. Continue Phase 3 reducer/state ownership work, starting with `P3-2`.
+1. Pick the next Ready audit issue after Phase 3 closure, currently
+   `AUDIT-P2A` unless priorities change.
 2. Keep Phase 5 as closed unless new production supervisor routing evidence appears.
 3. Keep all progress, status changes, verification evidence, and residual risks
    in this file.
@@ -122,7 +123,7 @@ Get-Content -LiteralPath docs\runtime_harness_phase_control.md
 python -m pytest tests\unit\test_runtime_harness.py -q -o addopts=""
 ```
 
-Then implement `P3-2` with TDD.
+Then implement the next Ready issue with TDD.
 
 ## Phase 3 Control Addendum
 
@@ -131,22 +132,36 @@ Current Phase 3 truth:
 - `RuntimeObservation`, `RuntimeEvent`, and runtime turn observation/event
   accounting exist.
 - `apply_observation_to_state(...)` appends observations/events to runtime
-  state, but it does not apply observations to `EvidenceLedger`.
-- Tool execution still mutates `EvidenceLedger` through legacy
-  `agent_tools.*_to_ledger(...)` helpers and `ledger.add_action(...)`.
-- `ledger_delta` is inferred from before/after snapshots around legacy side
-  effects; it is not produced by a reducer.
-- Real-LLM validation exposed a stop-policy risk: successful setup actions such
-  as `resolve_entity` can produce `tool_result` observations without new
-  evidence, causing `no_progress` to stop the investigation too early.
+  state and applies migrated structured observation payloads to
+  `EvidenceLedger`.
+- Production state-carrying gather tools now return model-visible summaries plus
+  structured `RuntimeObservation.structured_payload`; the reducer replays
+  `resolve_entity` action logs, `graph_outline` outlines, `retrieve` chunks,
+  `graph_query` facts, `facts_for_evidence` facts, and accepted action logs from
+  structured payload, not display text.
+- Parallel migrated observations carry no pre-reducer ledger mutation deltas and
+  receive atomic per-observation action/evidence/outline deltas after reducer
+  application.
+- `resolve_entity` setup state is carried in structured observation payload and
+  rendered from that payload for future turns; `result_summary` is fallback
+  compatibility only.
+- Legacy `agent_tools.*_to_ledger(...)` helpers still exist for
+  legacy/debug/baseline surfaces, but the production `RuntimeTurnAdapter`
+  gather path bypasses their ledger side effects for migrated state-carrying
+  tools.
+- Runtime loop stop-policy accounting now derives `new_evidence`, `new_facts`,
+  setup progress, and trace event metadata from reducer-applied observations.
+- Real-LLM validation previously exposed a stop-policy risk around setup-only
+  actions; the P3-1/AUDIT-P1/P3-5 repairs and the 2026-06-25 live integration
+  validation now pass.
 
 Completion wording:
 
 - Phase 3 compatibility layer: Done.
-- Phase 3 reducer/state ownership: Not done.
-- Phase 3 should not be declared fully complete until observations can drive
-  ledger/state updates through a runtime reducer, or the remaining work is
-  explicitly moved to a later named phase.
+- Phase 3 reducer/state ownership: Done.
+- Phase 3 is complete for the production runtime gather path. Remaining direct
+  ledger mutation surfaces are legacy/debug/baseline or helper APIs and are not
+  the public `answer()` gather path.
 
 ## Phase 3 Carry-Forward Issues
 
@@ -154,7 +169,7 @@ Completion wording:
 
 Status: Done
 
-Blocked by: None - can start immediately
+Blocked by: None
 
 Goal: Prevent the runtime loop from treating successful setup-only actions as
 global `no_progress`.
@@ -229,15 +244,15 @@ Known residual risk:
   compatibility repair because `resolve_entity` results are small and live E2E
   now passes, but `result_summary` is display-oriented text and may be truncated
   or reformatted. It must not become the long-term structured state source.
-- P3-2 / P3-4 should replace this with structured observation payload or
-  reducer-owned state so setup state, replay, and trajectory eval do not depend
-  on parsing summary strings.
+- `AUDIT-P1` replaced the production `resolve_entity` setup-state source with
+  structured observation payload. `result_summary` parsing remains fallback
+  compatibility only.
 
 ### P3-2: Introduce one reducer-owned ledger update tracer bullet
 
-Status: Ready
+Status: Done
 
-Blocked by: P3-1
+Blocked by: None
 
 Goal: Migrate one narrow tool path from legacy ledger side effect to
 observation-driven ledger update without changing the whole tool system.
@@ -261,15 +276,41 @@ Acceptance:
 
 Verification:
 
-- A unit test proves observation replay reconstructs the expected ledger change
-  for the migrated path.
-- Existing runtime harness focused tests pass.
+- Selected path: `graph_outline`.
+- `RuntimeTurnAdapter.run_turn()` no longer mutates `EvidenceLedger.outlines`
+  during `graph_outline` tool execution; it records structured
+  `RuntimeObservation.structured_payload` instead.
+- `apply_observation_to_state(...)` replays the structured graph outline payload
+  into `EvidenceLedger` and records the resulting `added_outline_ids`
+  `ledger_delta`.
+- `tests/unit/test_runtime_harness.py::test_graph_outline_replays_ledger_update_from_runtime_observation`
+  proves the selected path does not mutate the ledger before reducer
+  application, then reconstructs the outline by replaying the observation.
+- `tests/unit/test_runtime_harness.py::test_graph_outline_reducer_preserves_answer_shape_and_citation_guard`
+  proves the migrated outline path remains non-citable and public answer
+  citation shape remains compatible.
+- Focused verification:
+  `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  -> `126 passed`.
+- Live validation:
+  `RAG_CTI_E2E=1 python -m pytest --no-cov -q tests\integration\test_agentic_answer.py`
+  -> `1 passed`.
+- Ruff:
+  `python -m ruff check src tests` -> `All checks passed!`.
+
+Residual risk:
+
+- Superseded by `P3-5`: `retrieve`, `graph_query`, `facts_for_evidence`,
+  `graph_outline`, `resolve_entity` action replay, and accepted action log
+  entries are now reducer-owned in the production runtime gather path.
+- `resolve_entity` setup-state rendering is now structured under `AUDIT-P1`;
+  legacy `result_summary` parsing remains fallback compatibility only.
 
 ### P3-3: Make ledger deltas atomic for parallel proposal execution
 
-Status: Blocked
+Status: Done
 
-Blocked by: P3-2
+Blocked by: None
 
 Goal: Ensure each observation's ledger delta belongs only to that observation,
 even when runtime executes proposals in parallel.
@@ -287,14 +328,31 @@ Acceptance:
 
 Verification:
 
-- Parallel runtime harness regression tests pass.
-- No test relies on cross-action snapshot leakage.
+- `tests/unit/test_runtime_harness.py::test_parallel_graph_outline_replay_keeps_per_observation_deltas_atomic`
+  first reproduced shared-snapshot contamination under parallel
+  `graph_outline` proposals: one raw observation could report
+  `actions_added=2`.
+- The migrated `graph_outline` path now records its action delta atomically at
+  action append time, before tool result observation creation.
+- The test forces real parallel execution with a barrier in the fake fact store,
+  then asserts raw `RuntimeObservation` deltas, raw `RuntimeEvent` deltas, and
+  replayed reducer deltas are all per-action and uncontaminated.
+- Focused verification:
+  `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  -> `131 passed`.
+- Ruff:
+  `python -m ruff check src tests` -> `All checks passed!`.
+
+Residual risk:
+
+- Superseded by `P3-5`: atomic parallel deltas are now also proven for a
+  migrated evidence-producing `retrieve` path.
 
 ### P3-4: Add replay-oriented trajectory test
 
-Status: Blocked
+Status: Done
 
-Blocked by: P3-2
+Blocked by: None
 
 Goal: Prove that stored runtime observations can reconstruct the relevant
 runtime state for at least one completed investigation slice.
@@ -306,14 +364,114 @@ Acceptance:
 
 - A test records a minimal proposal/observation sequence.
 - Replaying the observations through the reducer reconstructs expected ledger
-  facts/chunks/actions for the migrated slice.
+  state for the migrated slice. For the selected `graph_outline` path this means
+  the coverage outline plus the action log entry; the path does not produce
+  citable facts/chunks.
 - Replaying setup state does not parse `result_summary` or provider
   `ToolMessage` content as the source of truth.
 - Provider `ToolMessage` content is not used as the source of truth.
 
 Verification:
 
-- Replay test passes alongside runtime harness focused tests.
+- `tests/unit/test_runtime_harness.py::test_recorded_graph_outline_observation_replays_without_text_fields`
+  records a real `RuntimeTurnAdapter.run_turn()` observation for
+  `graph_outline`, corrupts `args_summary`, `result_summary`, and
+  `model_visible_content`, then replays the observation into a fresh
+  `RuntimeInvestigationState`.
+- Replay reconstructs `EvidenceLedger.outlines["actor_G0016"]` and one
+  `graph_outline(subject_id=actor_G0016)` action from structured observation
+  payload.
+- The replayed observation records `ledger_delta` with
+  `added_outline_ids=["actor_G0016"]` and `actions_added=1`.
+- Focused verification:
+  `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  -> `127 passed`.
+- Ruff:
+  `python -m ruff check src tests` -> `All checks passed!`.
+
+Residual risk:
+
+- Superseded by `P3-5`: replay now covers evidence-producing migrated paths and
+  duplicate identical observation replay is idempotent for the production
+  reducer contract.
+
+### P3-5: Migrate production evidence/action ledger mutation to reducer
+
+Status: Done
+
+Blocked by: None
+
+Goal: Close the broad Phase 3 reducer/state ownership gap for production
+runtime gather state-carrying tools.
+
+User story covered: Production investigations can be recorded and replayed from
+runtime observations without relying on hidden tool-side ledger mutation or
+display/protocol text as the state source.
+
+Acceptance:
+
+- `retrieve`, `graph_query`, `facts_for_evidence`, and `graph_outline` runtime
+  outcomes carry replayable structured payloads.
+- `apply_observation_to_state(...)` owns production `EvidenceLedger` mutations
+  for chunks, facts, outlines, and accepted action log entries.
+- `resolve_entity` setup-state payload remains structured, and its accepted
+  action log entry is reducer-applied.
+- Invalid, rejected, provider-error, and no-action observations do not add
+  action log entries.
+- Runtime loop stop-policy accounting reads reducer-applied deltas for
+  `new_evidence`, `new_facts`, setup progress, and trace event metadata.
+- Replay reconstructs evidence and action state without reading
+  `args_summary`, `result_summary`, `model_visible_content`, or
+  `ToolMessage.content`.
+- Parallel successful state-carrying observations have uncontaminated
+  per-observation deltas after reducer application.
+
+Verification:
+
+- `tests/unit/test_runtime_harness.py::test_retrieve_replays_ledger_update_from_runtime_observation`
+  proves `retrieve` does not mutate `EvidenceLedger.chunks` during
+  `run_turn()` and reducer replay adds `added_chunk_ids`.
+- `tests/unit/test_runtime_harness.py::test_graph_query_replays_ledger_update_from_runtime_observation`
+  proves `graph_query` does not mutate `EvidenceLedger.facts` during
+  `run_turn()` and reducer replay adds `added_fact_ids`.
+- `tests/unit/test_runtime_harness.py::test_facts_for_evidence_replays_ledger_update_from_runtime_observation`
+  proves the reverse provenance bridge remains compatible while fact mutation
+  is reducer-owned.
+- `tests/unit/test_runtime_harness.py::test_recorded_evidence_observations_replay_without_text_fields_and_citation_guard`
+  records `graph_outline`, `graph_query`, and `retrieve` observations, corrupts
+  display/protocol text fields, replays into a fresh state, and validates
+  action log, outline, chunk, fact, and citation guard reconstruction.
+- `tests/unit/test_runtime_harness.py::test_duplicate_migrated_observation_replay_is_idempotent`
+  proves duplicate identical observation replay does not duplicate actions or
+  evidence.
+- `tests/unit/test_runtime_harness.py::test_parallel_retrieve_replay_keeps_per_observation_deltas_atomic`
+  proves atomic per-observation deltas for a migrated evidence-producing path,
+  not only `graph_outline`.
+- Current-session focused verification:
+  `python -m pytest --no-cov -q tests/unit/test_runtime_harness.py`
+  -> `49 passed`.
+- Current-session adjacent verification:
+  `python -m pytest --no-cov -q tests/unit/test_agentic_nodes.py tests/unit/test_agent_tools.py tests/unit/test_agent_tools_ledger.py`
+  -> `88 passed`.
+- Current-session live validation:
+  `RAG_CTI_E2E=1 python -m pytest --no-cov -q tests/integration/test_agentic_answer.py`
+  -> `1 passed` after final runtime cleanup; Neo4j destructor shutdown noise
+  remains tracked under `AUDIT-P4`.
+- Current-session ruff:
+  `python -m ruff check src/rag_cti/runtime_harness.py src/rag_cti/knowledge/agent_tools.py tests/unit/test_runtime_harness.py`
+  -> `All checks passed!`.
+
+Residual risk / legacy exceptions:
+
+- `agent_tools.retrieve_to_ledger(...)`, `graph_query_to_ledger(...)`,
+  `facts_for_evidence_to_ledger(...)`, and `outline_to_ledger(...)` remain as
+  legacy/helper APIs for non-production runtime surfaces such as legacy graph,
+  debug, baseline, and unit helper coverage.
+- `ToolMessage.content`, `result_summary`, `model_visible_content`, and
+  `args_summary` remain display/protocol/fallback fields, not production state
+  sources.
+- Broader trajectory-store contracts beyond idempotent duplicate observation
+  replay remain future work, not required for Phase 3 production gather closure.
 
 ## Phase 5 Starting Point
 
@@ -584,6 +742,212 @@ Verification:
 - `knowledge/supervisor_nodes.py` and `knowledge/supervisor_graph.py` direct
   dispatch are supervisor debug/eval/manual compatibility paths after Phase 5.
 
+## Phase 1-5 Acceptance Audit Issues
+
+These issues came from the 2026-06-25 architecture acceptance audit against the
+north-star shape. They are ordered by severity and should be handled after the
+now-complete `P3-2` reducer tracer bullet unless a production regression makes
+one urgent.
+
+### AUDIT-P1: Add structured observation payload for setup state
+
+Severity: P1
+
+Status: Done
+
+Blocked by: None
+
+Finding: P3-1 previously carried resolved entity setup state by parsing
+`RuntimeObservation.result_summary`. This passed the live P3-1 regression, but
+`result_summary` is display-oriented text and may be truncated or reformatted.
+
+Acceptance:
+
+- Runtime setup state needed by later turns is carried as structured observation
+  payload or reducer-owned state, not by parsing `result_summary`.
+- `resolve_entity` state carry continues to work through real
+  `RuntimeTurnAdapter.run_turn()` prompt rebuild.
+- Provider `ToolMessage.content` remains a protocol artifact, not the source of
+  runtime truth.
+
+Verification:
+
+- `resolve_entity` observations now carry
+  `structured_payload["resolve_entity"] = {"name": ..., "candidates": ...}`.
+- `_resolved_entities_from_observations(...)` reads structured payload first;
+  `result_summary` parsing remains fallback compatibility for older/manual
+  observations.
+- `tests/unit/test_runtime_harness.py::test_resolved_entity_setup_state_uses_structured_payload_not_result_text`
+  records a real `RuntimeTurnAdapter.run_turn()` `resolve_entity` observation,
+  corrupts `args_summary`, `result_summary`, and `model_visible_content`, then
+  proves the next real `RuntimeTurnAdapter.run_turn()` prompt rebuild still
+  renders `APT29 -> actor_G0016 (actor)`.
+- Focused verification:
+  `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  -> `131 passed`.
+- Live validation:
+  `RAG_CTI_E2E=1 python -m pytest --no-cov -q tests\integration\test_agentic_answer.py`
+  -> `1 passed`.
+- Ruff:
+  `python -m ruff check src tests` -> `All checks passed!`.
+
+Residual risk:
+
+- Structured setup-state payload is implemented for `resolve_entity`; other
+  future setup-only tools must add explicit structured payloads rather than
+  relying on display text.
+
+### AUDIT-P2A: Add production supervisor live/recorded admission guardrail
+
+Severity: P2
+
+Status: Ready
+
+Blocked by: None
+
+Finding: Current live supervisor E2E covers the forced `supervised_answer(...)`
+debug/baseline surface. Unit tests prove production `answer()` passes a validated
+`branch_plan` and does not call `run_supervisor_loop()`, and the 2026-06-25 audit
+confirmed this with a real `answer()` probe. There is still no checked-in
+integration or recorded-trajectory test for production `answer()` with
+`supervisor_enabled=true`.
+
+Acceptance:
+
+- A real or recorded production `answer()` test enables supervisor admission for
+  an independent comparison query.
+- The test fails if `run_supervisor_loop()` is called on the production path.
+- The test asserts `model="supervisor"` and that branch workers use the runtime
+  gather path.
+- The test records whether gathered evidence is non-empty, or explicitly
+  explains why an empty-evidence supervisor answer is acceptable for the fixture.
+
+Verification:
+
+- Focused production supervisor admission test passes.
+- Existing forced `supervised_answer(...)` E2E remains classified as
+  debug/baseline coverage, not production admission coverage.
+
+### AUDIT-P2B: Validate action proposal arguments before tool execution
+
+Severity: P2
+
+Status: Done
+
+Blocked by: None - can start immediately
+
+Finding: Production `RuntimeActionProposal` objects are explicit, and unknown
+tools are rejected before execution. Before this issue, tool argument validation
+was still mostly delegated to LangChain tool invocation; malformed args could
+surface as tool errors rather than runtime-invalid actions.
+
+Acceptance:
+
+- Runtime validates required/allowed argument shape for each production tool
+  before `tool.invoke(...)`.
+- Malformed action proposals become `RuntimeObservation(status="invalid")` or a
+  clearly classified rejection, not generic tool execution errors.
+- Existing successful proposal execution behavior remains unchanged.
+
+Verification:
+
+- `_validate_runtime_tool_args(...)` validates required keys, unknown keys, and
+  basic argument types for `resolve_entity`, `graph_outline`, `graph_query`,
+  `facts_for_evidence`, and `retrieve` before action logging and before
+  `tool.invoke(...)`.
+- Malformed production proposals now become
+  `RuntimeObservation(status="invalid", error_kind="invalid_tool_args")` and
+  `RuntimeEvent(kind="invalid_tool_call")`.
+- `tests/unit/test_runtime_harness.py::test_runtime_turn_rejects_malformed_tool_args_before_execution`
+  covers missing required args, wrong arg type, unknown arg, and confirms the
+  underlying tool/retriever/fact-store methods are not called.
+- `tests/unit/test_runtime_harness.py::test_runtime_turn_accepts_valid_tool_args`
+  covers valid args for `resolve_entity`, `graph_outline`, `graph_query`, and
+  `retrieve`.
+- Focused verification:
+  `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  -> `131 passed`.
+- Ruff:
+  `python -m ruff check src tests` -> `All checks passed!`.
+
+Residual risk:
+
+- Validation is intentionally shallow runtime boundary validation, not full
+  semantic validation against the graph/retriever backend. Domain-level
+  existence checks still belong to the tools.
+
+### AUDIT-P3A: Label forced supervisor CLI/API surfaces as debug/baseline
+
+Severity: P3
+
+Status: Ready
+
+Blocked by: None - can start immediately
+
+Finding: `rag_cti.supervised_answer(...)` is documented as a debug/baseline
+forced supervisor surface, but the CLI `supervised` command presents it as a
+general multi-agent supervisor answer. That command is manual/debug-compatible,
+yet it can enter `branch_plan=None` autonomous supervisor routing.
+
+Acceptance:
+
+- CLI/help text for forced supervisor surfaces clearly says debug/baseline/manual
+  and not production admission.
+- Production docs continue to point ordinary callers to `answer(...)`.
+- Tests or snapshots cover the help text if the project already snapshots CLI
+  help.
+
+Verification:
+
+- CLI help test or documented grep confirms the distinction.
+
+### AUDIT-P3B: Strengthen public trunk guardrail against legacy graph invoke
+
+Severity: P3
+
+Status: Ready
+
+Blocked by: None - can start immediately
+
+Finding: Existing public path tests patch
+`knowledge.agentic_graph.run_agentic_answer()` and assert it is not called.
+There is no direct guardrail that would fail if a future edit reintroduced
+`build_agentic_graph(...).invoke(...)` on `answer()` / `agentic_answer()` /
+`ask()`.
+
+Acceptance:
+
+- Public path tests fail if `build_agentic_graph()` or a graph object's
+  `.invoke(...)` is reached from `answer()`, `agentic_answer()`, or `ask()`.
+- Legacy graph tests remain explicitly scoped to legacy/debug/baseline behavior.
+
+Verification:
+
+- Focused runtime harness public-path tests pass.
+
+### AUDIT-P4: Normalize live Neo4j driver shutdown warnings
+
+Severity: P4
+
+Status: Ready
+
+Blocked by: None - can start immediately
+
+Finding: Live integration commands pass, but Python shutdown emits Neo4j driver
+destructor warnings/import errors. This is not a runtime ownership violation, but
+it makes live acceptance output noisy and can hide real teardown failures.
+
+Acceptance:
+
+- Live tests close Neo4j/fact-store resources explicitly or suppress only the
+  known benign teardown warning.
+- Test output remains clean enough for future acceptance audits.
+
+Verification:
+
+- Live `test_agentic_answer.py` and `test_supervised_answer.py` still pass with
+  cleaner teardown output.
+
 ## Current Implementation Snapshot
 
 Current code facts:
@@ -606,10 +970,10 @@ Current code facts:
 
 Residual risks / later-phase facts:
 
-- Ledger mutation still happens inside legacy tool adapters and dispatch
-  compatibility. This is acceptable after Phase 4 only because it is surfaced
-  through observation/event/state accounting; reducer-owned ledger mutation is a
-  later phase.
+- Production runtime gather ledger mutation for state-carrying tools is now
+  reducer-owned through structured observations. Legacy `agent_tools.*_to_ledger`
+  helpers and shared ReAct dispatch paths still exist for legacy/debug/baseline
+  surfaces, not as the public `answer()` gather state source.
 - Supervisor and legacy graph action paths still use shared ReAct dispatch
   shapes. Supervisor production boundaries are now closed; any future migration
   from supervisor debug/eval/manual compatibility to runtime proposal contracts
@@ -650,6 +1014,101 @@ Latest known local verification:
   - 2026-06-24 result: `1 passed, 596 warnings in 53.16s`.
 - `python -m ruff check src\rag_cti\runtime_harness.py tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py`
   - 2026-06-24 result: `All checks passed!`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_supervisor_graph.py tests\unit\test_supervisor_nodes.py tests\unit\test_agentic_graph_degradation.py`
+  - 2026-06-25 result: `138 passed, 90 warnings in 1.19s`.
+- `python -m ruff check src\rag_cti\runtime_harness.py src\rag_cti\__init__.py src\rag_cti\knowledge\agentic_nodes.py src\rag_cti\knowledge\supervisor_graph.py src\rag_cti\knowledge\supervisor_nodes.py tests\unit\test_runtime_harness.py tests\unit\test_supervisor_graph.py`
+  - 2026-06-25 result: `All checks passed!`.
+- `python -m pytest --no-cov -q tests\integration\test_agentic_answer.py`
+  - 2026-06-25 result: `1 passed, 596 warnings in 150.37s`.
+- `python -m pytest --no-cov -q tests\integration\test_supervised_answer.py`
+  - 2026-06-25 result: `2 passed, 377 warnings in 107.93s`; this covers the
+    forced `supervised_answer(...)` debug/baseline surface, not production
+    `answer()` admission.
+- Real production supervisor admission probe:
+  `SUPERVISOR_ENABLED=true python -c "... rag_cti.answer('Compare the TTPs of APT29 and APT28.') ..."`
+  - 2026-06-25 result: returned `model="supervisor"`, `answer_len=11451`,
+    `cited_count=94`, `result_count=10`.
+- Real production supervisor isolation probe:
+  `SUPERVISOR_ENABLED=true` with `supervisor_graph.run_supervisor_loop`
+  monkeypatched to raise, then `rag_cti.answer('Compare the TTPs of APT29 and APT28.')`.
+  - 2026-06-25 result: completed with `model="supervisor"`, proving this
+    production-admitted path did not enter `run_supervisor_loop()` in that run.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_graph_outline_replays_ledger_update_from_runtime_observation`
+  - 2026-06-25 RED result before fix: failed because `ledger.outlines` was
+    mutated during `RuntimeTurnAdapter.run_turn()` before reducer replay.
+  - 2026-06-25 GREEN result after fix: `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_graph_outline_reducer_preserves_answer_shape_and_citation_guard`
+  - 2026-06-25 result: `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  - 2026-06-25 result: `126 passed, 82 warnings in 1.04s`.
+- `RAG_CTI_E2E=1 python -m pytest --no-cov -q tests\integration\test_agentic_answer.py`
+  - 2026-06-25 result: `1 passed, 596 warnings in 53.59s`.
+- `python -m ruff check src tests`
+  - 2026-06-25 result: `All checks passed!`.
+- Completion-audit rerun:
+  `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  - 2026-06-25 result: `126 passed, 82 warnings in 1.07s`.
+- Completion-audit rerun:
+  `RAG_CTI_E2E=1 python -m pytest --no-cov -q tests\integration\test_agentic_answer.py`
+  - 2026-06-25 result: `1 passed, 596 warnings in 61.51s`; Neo4j
+    destructor shutdown noise remains tracked under `AUDIT-P4`.
+- Completion-audit rerun:
+  `python -m ruff check src tests`
+  - 2026-06-25 result: `All checks passed!`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_recorded_graph_outline_observation_replays_without_text_fields`
+  - 2026-06-25 RED result before fix: failed because replay reconstructed the
+    outline but not the migrated `graph_outline` action log entry.
+  - 2026-06-25 GREEN result after fix: `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  - 2026-06-25 result: `127 passed, 82 warnings in 1.24s`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_recorded_graph_outline_observation_replays_without_text_fields tests\unit\test_runtime_harness.py::test_graph_outline_replays_ledger_update_from_runtime_observation`
+  - 2026-06-25 result after ruff import-order fix: `2 passed`.
+- `python -m ruff check src tests`
+  - 2026-06-25 result: `All checks passed!`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_parallel_graph_outline_replay_keeps_per_observation_deltas_atomic`
+  - 2026-06-25 RED result after adding forced parallel barrier: failed because
+    one raw `graph_outline` observation reported `actions_added=2`.
+  - 2026-06-25 GREEN result after atomic migrated action delta fix:
+    `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_runtime_turn_parallel_observation_ids_are_unique`
+  - 2026-06-25 result after removing extra migrated-path snapshots:
+    `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_resolved_entity_setup_state_uses_structured_payload_not_result_text`
+  - 2026-06-25 RED result before fix: failed because corrupting
+    `result_summary` prevented the next real turn from seeing `actor_G0016`.
+  - 2026-06-25 GREEN result after structured `resolve_entity` payload:
+    `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_runtime_turn_rejects_malformed_tool_args_before_execution`
+  - 2026-06-25 RED result before fix: malformed args surfaced as tool
+    `error` rather than runtime `invalid`.
+  - 2026-06-25 GREEN result after runtime proposal arg validation:
+    `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py::test_runtime_turn_accepts_valid_tool_args`
+  - 2026-06-25 result: `1 passed`.
+- `python -m pytest --no-cov -q tests\unit\test_runtime_harness.py tests\unit\test_agentic_nodes.py tests\unit\test_agent_tools.py tests\unit\test_agent_tools_ledger.py`
+  - 2026-06-25 result: `131 passed, 82 warnings in 1.04s`.
+- `python -m ruff check src tests`
+  - 2026-06-25 result: `All checks passed!`.
+- `RAG_CTI_E2E=1 python -m pytest --no-cov -q tests\integration\test_agentic_answer.py`
+  - 2026-06-25 result: `1 passed, 596 warnings in 49.76s`; Neo4j
+    destructor shutdown noise remains tracked under `AUDIT-P4`.
+- Phase 3 reducer closure:
+  `python -m pytest --no-cov -q tests/unit/test_runtime_harness.py`
+  - 2026-06-25 result: `49 passed, 35 warnings in 1.35s`; run with
+    `PYTHONPATH=src` in this worktree because the active Python environment did
+    not have the editable package installed.
+- Phase 3 adjacent consumer/helper verification:
+  `python -m pytest --no-cov -q tests/unit/test_agentic_nodes.py tests/unit/test_agent_tools.py tests/unit/test_agent_tools_ledger.py`
+  - 2026-06-25 result: `88 passed, 82 warnings in 0.69s`; run with
+    `PYTHONPATH=src`.
+- Phase 3 live validation:
+  `RAG_CTI_E2E=1 python -m pytest --no-cov -q tests/integration/test_agentic_answer.py`
+  - 2026-06-25 result after final runtime cleanup: `1 passed, 596 warnings in
+    102.35s`; Neo4j destructor shutdown noise remains tracked under
+    `AUDIT-P4`.
+- Phase 3 ruff:
+  `python -m ruff check src/rag_cti/runtime_harness.py src/rag_cti/knowledge/agent_tools.py tests/unit/test_runtime_harness.py`
+  - 2026-06-25 result: `All checks passed!`.
 
 Agents must append their own current-session verification results here after
 running the commands relevant to their issue.
