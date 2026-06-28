@@ -7,7 +7,7 @@ from typing import Any
 from rag_cti.generation.prompts import ANSWER_SYNTHESIS_SYSTEM
 from rag_cti.types import RetrievalResult
 
-_CITED_ID_RE = re.compile(r"\[([a-zA-Z0-9_\-]+)\]")
+_CITED_ID_RE = re.compile(r"\[`?([a-zA-Z0-9_\-]+)`?\]")
 
 
 def build_context_messages(

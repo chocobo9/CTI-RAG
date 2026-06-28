@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from rag_cti._logging import get_logger
@@ -223,8 +224,8 @@ class LLMQueryRewriter:
         return out
 
     @traced("retrieval.query_rewrite.generate", run_type="llm")
-    def _generate_raw(self, system: str, user: str) -> str | None:
-        max_tokens = getattr(self._settings, "query_rewrite_max_tokens", 300)
+    def _generate_raw(self, system: str, user: str, max_tokens: int | None = None) -> str | None:
+        output_tokens = max_tokens or getattr(self._settings, "query_rewrite_max_tokens", 300)
         try:
             if self._llm_provider in ("groq", "ollama"):
                 model = (
@@ -234,7 +235,7 @@ class LLMQueryRewriter:
                 )
                 resp = self._llm.chat.completions.create(
                     model=model,
-                    max_tokens=max_tokens,
+                    max_tokens=output_tokens,
                     temperature=_TEMPERATURE,
                     messages=[
                         {"role": "system", "content": system},
@@ -245,7 +246,7 @@ class LLMQueryRewriter:
                 return text or None
             response = self._llm.messages.create(
                 model=self._settings.llm_routing_model,
-                max_tokens=max_tokens,
+                max_tokens=output_tokens,
                 temperature=_TEMPERATURE,
                 system=system,
                 messages=[{"role": "user", "content": user}],
@@ -349,11 +350,52 @@ class QueryRewriteRetriever:
             return self._base.search(
                 subqueries[0], top_k=top_k, source_filter=source_filter, constraint=constraint
             )
-        result_lists = [
-            self._base.search(sq, top_k=top_k, source_filter=source_filter, constraint=constraint)
-            for sq in subqueries
-        ]
+        result_lists = self._search_subqueries(subqueries, top_k, source_filter, constraint)
         return reciprocal_rank_fusion(result_lists, k=self._rrf_k)[:top_k]
+
+    def _search_subqueries(
+        self,
+        subqueries: tuple[str, ...],
+        top_k: int,
+        source_filter: str | list[str] | None,
+        constraint: PayloadConstraint | None,
+    ) -> list[list[RetrievalResult]]:
+        """One base search per sub-query, kept in submission order so RRF input is identical to
+        the serial path. Serial by default; concurrent when
+        ``query_rewrite_parallel_fanout_enabled`` — each sub-query is an INDEPENDENT HyDE+hybrid
+        retrieval (the cross-encoder reranker runs at the Pipeline level, OUTSIDE this fan-out,
+        so there is no shared-GPU contention here), so latency becomes max() not sum(). Each
+        per-sub-query HyDE call hits the provider, so concurrency is capped and each search goes
+        through the Groq admission limiter to stay under the 429 ceiling."""
+
+        def _one(sq: str) -> list[RetrievalResult]:
+            return self._base.search(
+                sq, top_k=top_k, source_filter=source_filter, constraint=constraint
+            )
+
+        if self._settings is None:
+            return [_one(sq) for sq in subqueries]
+
+        from typing import cast
+
+        from rag_cti.config import Settings
+        from rag_cti.generation.limiter import get_limiter
+
+        limiter = get_limiter("groq", cast(Settings, self._settings))
+        cap = max(
+            1,
+            min(
+                len(subqueries),
+                int(getattr(self._settings, "query_rewrite_max_parallel_subqueries", 4)),
+            ),
+        )
+
+        def _one_limited(sq: str) -> list[RetrievalResult]:
+            with limiter.slot():
+                return _one(sq)
+
+        with ThreadPoolExecutor(max_workers=cap) as ex:
+            return list(ex.map(_one_limited, subqueries))
 
     def _maybe_boost(
         self, results: list[RetrievalResult], boost_constraint: PayloadConstraint | None

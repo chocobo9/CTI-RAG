@@ -11,19 +11,24 @@ from __future__ import annotations
 
 import json
 import re
-import time
 from collections import Counter
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any, Protocol
 
-from rag_cti._logging import get_logger
 from rag_cti.generation.context_builder import extract_cited_ids
 from rag_cti.generation.prompts import AGENTIC_SYNTHESIS_SYSTEM
 from rag_cti.knowledge.agentic_state import AgenticAnswer, SufficiencyVerdict
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
+from rag_cti.knowledge.react_loop import (
+    DEADLINE_OBSERVATION_STUB,
+    TRIMMED_OBSERVATION_STUB,
+    mask_stale_observations,  # noqa: F401 - re-exported for tests/debug callers
+    run_react_tool_loop,
+)
 from rag_cti.types import Chunk, GeneratedAnswer, QueryResult, RetrievalResult
 
-logger = get_logger(__name__)
+_BARE_FACT_ID_RE = re.compile(r"\bfact_[a-zA-Z0-9_\-]+\b")
 
 # (system_prompt, user_prompt) -> raw model text. Injected so the gate unit-tests
 # with a canned-JSON fake instead of a real LLM.
@@ -73,6 +78,78 @@ class GeneratorProto(Protocol):
 # inner gather loop — GATHER-only ReAct burst (no answer; the ledger is the output)
 # ---------------------------------------------------------------------------
 
+_TRIMMED_STUB = TRIMMED_OBSERVATION_STUB
+_DEADLINE_STUB = DEADLINE_OBSERVATION_STUB
+_GRAPH_ENUMERATION_TERMS = (
+    "compare",
+    "shared",
+    "unique",
+    "both",
+    "common",
+    "overlap",
+    "enumerate",
+    "list",
+    "which techniques",
+    "attack techniques",
+    "att&ck techniques",
+)
+
+
+def render_history_context(history: list[str] | None, limit: int = 6) -> str:
+    """Render recent user turns for agentic prompts. Empty history returns ``""``."""
+    if not history:
+        return ""
+    recent = [h.strip() for h in history[-limit:] if h.strip()]
+    if not recent:
+        return ""
+    lines = ["Conversation so far (most recent last):"]
+    lines.extend(f"- {turn}" for turn in recent)
+    return "\n".join(lines)
+
+
+def query_with_history(query: str, history: list[str] | None) -> str:
+    """Prompt-facing latest query with conversation context prepended when present."""
+    context = render_history_context(history)
+    if not context:
+        return query
+    return f"{context}\n\nLatest query: {query}"
+
+
+def should_suppress_retrieve_after_graph_coverage(query: str, ledger: EvidenceLedger) -> bool:
+    """Return True when graph facts already cover an ATT&CK technique enumeration.
+
+    This is intentionally conservative: it only suppresses prose retrieval for graph-heavy
+    compare/enumerate questions when at least two named outlined entities have their complete
+    ``uses -> technique`` category represented in the fact ledger. Explanation/how/why queries
+    still fall through to retrieve because prose context is useful there.
+    """
+    q = query.lower()
+    if not any(term in q for term in _GRAPH_ENUMERATION_TERMS):
+        return False
+    covered_entities = 0
+    for outline in ledger.outlines.values():
+        if outline.entity_name.lower() not in q:
+            continue
+        expected = sum(
+            entry.count
+            for entry in outline.outgoing
+            if entry.predicate == "uses" and entry.other_type == "technique"
+        )
+        if expected <= 0:
+            continue
+        actual = sum(
+            1
+            for fact in ledger.facts.values()
+            if (
+                fact.subject_id == outline.entity_id
+                and fact.predicate == "uses"
+                and fact.object_type == "technique"
+            )
+        )
+        if actual >= expected:
+            covered_entities += 1
+    return covered_entities >= 2
+
 
 def run_gather_loop(
     model: Any,
@@ -82,6 +159,10 @@ def run_gather_loop(
     max_steps: int,
     deadline: float | None = None,
     on_model_error: Callable[[BaseException], None] | None = None,
+    render_state: Callable[[], str] | None = None,
+    keep_last_observations: int = 0,
+    parallel_dispatch: bool = False,
+    max_parallel_tools: int = 1,
 ) -> list[Any]:
     """Drive a GATHER-only tool loop and return the accumulated message transcript.
 
@@ -101,34 +182,18 @@ def run_gather_loop(
     propagating and crashing the whole answer — the gather-side analogue of the tool-error
     guard below and of ``Generator``'s failure sentinel. ``None`` keeps the prior behaviour
     except that the error is now caught and logged."""
-    from langchain_core.messages import ToolMessage
-
-    convo = list(messages)
-    for _ in range(max_steps):
-        if deadline is not None and time.monotonic() >= deadline:
-            break  # wall-clock budget spent mid-burst -> stop with what we have
-        try:
-            ai = model.invoke(convo)
-        except Exception as exc:  # provider failure: end the burst, keep the partial ledger
-            logger.warning("gather model call failed, ending burst", error=str(exc))
-            if on_model_error is not None:
-                on_model_error(exc)
-            break
-        convo.append(ai)
-        tool_calls = getattr(ai, "tool_calls", None) or []
-        if not tool_calls:
-            break  # model emitted no tool call -> it has gathered enough
-        for call in tool_calls:
-            if deadline is not None and time.monotonic() >= deadline:
-                break  # budget spent between tool calls -> stop
-            name = call.get("name", "")
-            args = call.get("args", {}) or {}
-            try:
-                result: Any = dispatch(name, args)
-            except Exception as exc:  # surface the error to the model, keep gathering
-                result = {"error": f"{name} failed: {exc}"}
-            convo.append(ToolMessage(content=str(result), tool_call_id=call.get("id", "")))
-    return convo
+    return run_react_tool_loop(
+        model,
+        dispatch,
+        messages,
+        max_steps=max_steps,
+        deadline=deadline,
+        on_model_error=on_model_error,
+        render_state=render_state,
+        keep_last_observations=keep_last_observations,
+        parallel_dispatch=parallel_dispatch,
+        max_parallel_tools=max_parallel_tools,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -136,7 +201,9 @@ def run_gather_loop(
 # ---------------------------------------------------------------------------
 
 
-def build_judge_user(query: str, last_draft: str, ledger: EvidenceLedger) -> str:
+def build_judge_user(
+    query: str, last_draft: str, ledger: EvidenceLedger, history: list[str] | None = None
+) -> str:
     """Render a bounded JSON view of (question, draft, evidence) for the judge."""
     top_chunks = sorted(ledger.chunks.values(), key=lambda r: r.score, reverse=True)
     chunks = [
@@ -168,6 +235,7 @@ def build_judge_user(query: str, last_draft: str, ledger: EvidenceLedger) -> str
     ]
     payload: dict[str, Any] = {
         "question": query,
+        "conversation_history": tuple(history or ()),
         "draft": last_draft,
         "evidence": {"chunks": chunks, "facts": facts, "coverage_outlines": outlines},
     }
@@ -230,16 +298,97 @@ def parse_verdict(raw: str) -> SufficiencyVerdict | None:
 
 
 def assess_sufficiency(
-    judge: JudgeFn, query: str, last_draft: str, ledger: EvidenceLedger
+    judge: JudgeFn,
+    query: str,
+    last_draft: str,
+    ledger: EvidenceLedger,
+    history: list[str] | None = None,
 ) -> SufficiencyVerdict | None:
     """Call the judge over the bounded evidence view; parse to a verdict (or None)."""
-    raw = judge(AGENTIC_SUFFICIENCY_SYSTEM, build_judge_user(query, last_draft, ledger))
+    raw = judge(AGENTIC_SUFFICIENCY_SYSTEM, build_judge_user(query, last_draft, ledger, history))
     return parse_verdict(raw)
 
 
 # ---------------------------------------------------------------------------
 # router — the structural stop decision (budget is the only HARD stop)
 # ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class _StopContext:
+    verdict: SufficiencyVerdict | None
+    iteration_count: int
+    tokens_used: int
+    new_evidence: int
+    max_iterations: int
+    token_ceiling: int
+    max_retrieve_rounds: int
+    new_facts: int
+    prev_gaps: tuple[str, ...]
+    elapsed_seconds: float
+    max_wall_seconds: float
+    open_cat_stall: int
+    max_open_cat_stall: int
+    tool_calls_used: int
+    max_tool_calls: int
+
+
+def _over_budget(ctx: _StopContext) -> bool:
+    return ctx.iteration_count >= ctx.max_iterations or ctx.tokens_used >= ctx.token_ceiling
+
+
+def _timed_out(ctx: _StopContext) -> bool:
+    return ctx.max_wall_seconds > 0 and ctx.elapsed_seconds >= ctx.max_wall_seconds
+
+
+def _sufficient(ctx: _StopContext) -> bool:
+    return ctx.verdict is not None and ctx.verdict.next_action == "stop"
+
+
+def _no_progress(ctx: _StopContext) -> bool:
+    return ctx.new_evidence == 0
+
+
+def _repeated_gap_without_new_facts(ctx: _StopContext) -> bool:
+    return (
+        ctx.verdict is not None
+        and ctx.new_facts == 0
+        and bool(ctx.prev_gaps)
+        and tuple(ctx.verdict.coverage_gaps) == ctx.prev_gaps
+    )
+
+
+def _open_category_stalled(ctx: _StopContext) -> bool:
+    return (
+        ctx.max_open_cat_stall > 0
+        and ctx.new_facts == 0
+        and ctx.open_cat_stall >= ctx.max_open_cat_stall
+    )
+
+
+def _tool_budget_spent(ctx: _StopContext) -> bool:
+    return ctx.max_tool_calls > 0 and ctx.tool_calls_used >= ctx.max_tool_calls
+
+
+def _retrieve_rounds_spent(ctx: _StopContext) -> bool:
+    return ctx.iteration_count - 1 >= ctx.max_retrieve_rounds
+
+
+def _parse_failed(ctx: _StopContext) -> bool:
+    return ctx.verdict is None
+
+
+_STOP_RULES: tuple[tuple[str, Callable[[_StopContext], bool]], ...] = (
+    ("budget", _over_budget),
+    ("timeout", _timed_out),
+    ("sufficient", _sufficient),
+    ("no_progress", _no_progress),
+    ("no_progress", _repeated_gap_without_new_facts),
+    ("open_cat_stall", _open_category_stalled),
+    ("tool_budget", _tool_budget_spent),
+    ("max_rounds", _retrieve_rounds_spent),
+    ("parse_fallback", _parse_failed),
+)
 
 
 def decide_next(
@@ -255,40 +404,36 @@ def decide_next(
     prev_gaps: tuple[str, ...] = (),
     elapsed_seconds: float = 0.0,
     max_wall_seconds: float = 0.0,
+    open_cat_stall: int = 0,
+    max_open_cat_stall: int = 0,
+    tool_calls_used: int = 0,
+    max_tool_calls: int = 0,
 ) -> tuple[str, str]:
     """Return (next_node, stop_reason). next_node is "agent_turn" or "synthesize".
 
     Convergence is task-driven: stop when the judge says sufficient, OR the last burst
     gathered nothing new (``new_evidence == 0`` — retrying is futile). max_iterations /
     token_ceiling are generous runaway backstops, not the primary stop."""
-    if iteration_count >= max_iterations or tokens_used >= token_ceiling:
-        return "synthesize", "budget"
-    # Wall-clock tail-latency guardrail (checked between iterations): bound total latency
-    # even if an API hangs, regardless of iteration/token count. 0 disables it.
-    if max_wall_seconds > 0 and elapsed_seconds >= max_wall_seconds:
-        return "synthesize", "timeout"
-    if verdict is not None and verdict.next_action == "stop":
-        return "synthesize", "sufficient"
-    if new_evidence == 0:
-        return "synthesize", "no_progress"
-    # Stuck guard: the judge is repeating the EXACT same coverage gaps AND this burst added
-    # no new graph facts — further looping just churns (e.g. fetching prose that doesn't
-    # advance an enumeration). Stop instead of running to the budget cap.
-    if (
-        verdict is not None
-        and new_facts == 0
-        and prev_gaps
-        and tuple(verdict.coverage_gaps) == prev_gaps
-    ):
-        return "synthesize", "no_progress"
-    # PRIMARY convergence bound: the judge still wants more, but we've already done our
-    # allotted retrieve_more rounds (iteration 1 is the initial gather, so completed
-    # re-entries = iteration_count - 1). Synthesize with what we have — this is the
-    # deterministic stop that keeps latency bounded; "budget" should stay a rare runaway.
-    if iteration_count - 1 >= max_retrieve_rounds:
-        return "synthesize", "max_rounds"
-    if verdict is None:
-        return "synthesize", "parse_fallback"
+    ctx = _StopContext(
+        verdict=verdict,
+        iteration_count=iteration_count,
+        tokens_used=tokens_used,
+        new_evidence=new_evidence,
+        max_iterations=max_iterations,
+        token_ceiling=token_ceiling,
+        max_retrieve_rounds=max_retrieve_rounds,
+        new_facts=new_facts,
+        prev_gaps=prev_gaps,
+        elapsed_seconds=elapsed_seconds,
+        max_wall_seconds=max_wall_seconds,
+        open_cat_stall=open_cat_stall,
+        max_open_cat_stall=max_open_cat_stall,
+        tool_calls_used=tool_calls_used,
+        max_tool_calls=max_tool_calls,
+    )
+    for reason, predicate in _STOP_RULES:
+        if predicate(ctx):
+            return "synthesize", reason
     return "agent_turn", ""
 
 
@@ -342,16 +487,91 @@ def build_turn_messages(
     query: str,
     verdict: SufficiencyVerdict | None,
     ledger: EvidenceLedger,
+    history: list[str] | None = None,
 ) -> list[Any]:
     """Build the STARTING messages for one gather burst (working-set pattern): a clean
     ``[system, query]`` EVERY iteration — never the prior burst's transcript, which is
     redundant with the ledger and made context (and cost) grow super-linearly across
     iterations. On a retrieve_more re-entry, append the directive (ledger summary + gaps)
     so the fresh burst knows what is done and what is missing."""
-    messages: list[Any] = [("system", system_prompt), ("user", query)]
+    messages: list[Any] = [("system", system_prompt), ("user", query_with_history(query, history))]
     if verdict is not None and verdict.next_action == "retrieve_more":
         messages.append(("user", build_directives(verdict, ledger)))
     return messages
+
+
+def render_state_view(ledger: EvidenceLedger) -> str:
+    """Deterministic 'what you already have' coverage view, rebuilt from the ledger and
+    injected fresh each gather turn so the model can SEE its accumulated state — which
+    entities are resolved, which graph categories are already COMPLETE vs still open (with
+    gathered/total counts from the outlines), and how much prose it holds — instead of
+    re-deriving it from scattered bounded tool summaries. The ledger holds the truth the
+    summaries never showed the model; this surfaces a faithful index of it. The outline's
+    per-category ``count`` is the graph TOTAL; a category whose gathered facts reach that
+    total is COMPLETE (re-querying it adds nothing). Empty ledger -> '' (nothing yet)."""
+    if not ledger.facts and not ledger.outlines and not ledger.chunks:
+        return ""
+    entities: dict[str, str] = {o.entity_id: o.entity_name for o in ledger.outlines.values()}
+    for f in ledger.facts.values():
+        entities.setdefault(f.subject_id, f.subject_name)
+    gathered: Counter[tuple[str, str, str]] = Counter(
+        (f.subject_id, f.predicate, f.object_type) for f in ledger.facts.values()
+    )
+    lines: list[str] = [
+        "GATHERED STATE (refreshed each turn — do NOT re-collect what is marked COMPLETE):"
+    ]
+    for entity_id, name in sorted(entities.items(), key=lambda kv: kv[1]):
+        lines.append(f"- {name} ({entity_id}): resolved.")
+        outline = ledger.outlines.get(entity_id)
+        if outline is None:
+            continue
+        complete: list[str] = []
+        open_cats: list[str] = []
+        for e in outline.outgoing:
+            g = gathered.get((entity_id, e.predicate, e.other_type), 0)
+            label = f"{e.predicate}->{e.other_type} {g}/{e.count}"
+            (complete if e.count > 0 and g >= e.count else open_cats).append(label)
+        if complete:
+            lines.append("    COMPLETE (do NOT graph_query again): " + ", ".join(complete))
+        if open_cats:
+            lines.append("    open categories (query only if relevant): " + ", ".join(open_cats))
+    if ledger.chunks:
+        sources = sorted({r.document.source for r in ledger.chunks.values()})
+        lines.append(f"- prose: {len(ledger.chunks)} chunks from {', '.join(sources)}.")
+    return "\n".join(lines)
+
+
+def count_open_categories(ledger: EvidenceLedger) -> int:
+    """Count the (entity, predicate, object_type) outline categories whose gathered facts
+    have NOT reached the graph total — the SAME COMPLETE test ``render_state_view`` uses (an
+    outline ``count`` is the graph total; a category is COMPLETE once gathered >= count). The
+    count is monotonic non-increasing as the loop enumerates, so a stall (no shrink) across
+    gather turns with no new facts means the loop is churning prose instead of closing the
+    graph enumeration — the signal the open-category stall guard in ``decide_next`` reads.
+    Only categories with a known total (``count > 0``) are counted. Empty graph -> 0."""
+    gathered: Counter[tuple[str, str, str]] = Counter(
+        (f.subject_id, f.predicate, f.object_type) for f in ledger.facts.values()
+    )
+    open_count = 0
+    for outline in ledger.outlines.values():
+        for e in outline.outgoing:
+            held = gathered.get((outline.entity_id, e.predicate, e.other_type), 0)
+            if e.count > 0 and held < e.count:
+                open_count += 1
+    return open_count
+
+
+def render_action_log(ledger: EvidenceLedger, limit: int = 30) -> str:
+    """The model-facing 'what I already did' view: one line per dispatched tool call (name
+    + compact args), most-recent last, bounded to the last ``limit`` so the block stays
+    small. Lets the model see it already called e.g. resolve_entity(name=APT29) and skip an
+    identical repeat — the amnesia / duplicate-work mitigation. Empty log -> ''."""
+    if not ledger.actions:
+        return ""
+    recent = ledger.actions[-limit:]
+    lines = ["ACTIONS ALREADY TAKEN (do NOT repeat an identical call):"]
+    lines += [f"- {a.name}({a.args})" for a in recent]
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -371,7 +591,8 @@ def assemble_citations(answer_text: str, ledger: EvidenceLedger) -> tuple[tuple[
     real = ledger.real_id_set
     kept: list[str] = []
     dropped = 0
-    for cid in extract_cited_ids(answer_text):
+    candidate_ids = [*extract_cited_ids(answer_text), *_BARE_FACT_ID_RE.findall(answer_text)]
+    for cid in candidate_ids:
         if cid in real:
             kept.append(cid)
         elif cid.startswith("chunk_") and cid[len("chunk_") :] in real:
@@ -426,13 +647,15 @@ def synthesize_answer(
     *,
     top_k: int | None = None,
     fact_limit: int | None = None,
+    history: list[str] | None = None,
 ) -> GeneratedAnswer:
-    """Generate the final answer over the gathered evidence: the top-``top_k`` prose
-    chunks PLUS the graph facts (as citable pseudo-chunks). ``fact_limit=None`` feeds ALL
-    gathered facts: the gold an answer can cite is bounded by what reaches synthesis, so an
-    arbitrary fact cap suppresses recall; the real bound is the model's context window, which
-    a few hundred triples sit comfortably inside. ``top_k``/``fact_limit`` are generous
-    window-safety bounds, not task quotas."""
+    """Generate the final answer over gathered evidence with bounded context.
+
+    The gather ledger can hold hundreds of graph facts for compound comparisons. Feeding all
+    of them to a reasoning model can consume the output budget and produce empty content, so
+    synthesis receives a high-credibility fact slice plus top prose chunks. The full ledger is
+    still retained on the public AgenticAnswer for inspection/eval.
+    """
     chunk_results = list(ledger.union_query_result(query, limit=top_k).results)
     fact_results = _facts_as_results(ledger, fact_limit)
     # Facts FIRST: graph facts are the exact enumeration the answer must cite; putting
@@ -440,7 +663,7 @@ def synthesize_answer(
     # gathered [fact_id]s actually reach the answer instead of only the prose chunks.
     merged = [r.model_copy(update={"rank": i}) for i, r in enumerate(fact_results + chunk_results)]
     return generator.generate(
-        query,
+        query_with_history(query, history),
         QueryResult(query=query, results=merged, total_retrieved=len(merged), retrieval_ms=0.0),
         system_prompt=AGENTIC_SYNTHESIS_SYSTEM,
     )
@@ -468,4 +691,5 @@ def build_agentic_answer(
         tokens_used=tokens_used,
         stop_reason=stop_reason,
         dropped_citation_count=dropped,
+        tool_call_count=len(ledger.actions),
     )

@@ -8,10 +8,16 @@ Public interface:
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from rag_cti.config import get_settings
+from rag_cti.observability.tracing import traced
 from rag_cti.retrieval import Pipeline, build_pipeline
+from rag_cti.runtime_harness import (
+    RuntimeDeps,
+    build_runtime_query_understanding,
+    evaluate_supervisor_admission,
+)
 from rag_cti.types import FactQueryResult, GeneratedAnswer, QueryResult
 
 if TYPE_CHECKING:
@@ -23,6 +29,7 @@ __all__ = [
     "answer_single_shot",
     "agentic_answer",
     "supervised_answer",
+    "close_cached_resources",
     "facts",
     "ask",
     "QueryResult",
@@ -105,19 +112,65 @@ def _default_generator() -> object:
     return Generator(client=client, router=FixedRouter(models[0]), settings=settings)
 
 
+@traced("runtime.answer", run_type="chain")
 def answer(text: str, k: int = 10, history: list[str] | None = None) -> GeneratedAnswer:
     """Generate a grounded answer with cited chunk IDs.
 
-    Routes by config (both flags default OFF until eval proves the win): when
-    ``supervisor_enabled``, delegates to the multi-agent supervisor
-    (:func:`supervised_answer`); else when ``agentic_enabled``, the single-agent agentic
-    loop (:func:`agentic_answer`); else the single-shot path
-    (:func:`answer_single_shot`). The agentic/supervisor paths compose their own
-    retrieval, so ``k`` / ``history`` are ignored there.
+    Agentic RAG is the mainline answer path. Runtime query understanding may admit
+    a validated independent decomposition to the supervisor path when supervisor support
+    is enabled. ``answer_single_shot`` remains available as an explicit baseline/fallback
+    API. ``k`` is kept for API compatibility and still applies to single-shot callers,
+    but the agentic path sizes its own retrieval tools.
     """
-    settings = get_settings()
-    if settings.supervisor_enabled:
-        supervised = supervised_answer(text)
+    from typing import cast
+
+    from rag_cti.knowledge.agentic_graph import run_agentic_answer
+    from rag_cti.knowledge.agentic_nodes import GeneratorProto
+    from rag_cti.knowledge.supervisor_graph import run_supervised_answer
+    from rag_cti.observability.tracing import add_trace_metadata
+
+    deps = _build_runtime_deps(history)
+    understanding = deps.query_understanding(text, history)
+    max_branches = int(getattr(deps.settings, "supervisor_max_branches", 4))
+    supervisor_allowed = bool(getattr(deps.settings, "supervisor_enabled", False))
+    admission = evaluate_supervisor_admission(understanding, max_branches=max_branches)
+    if not supervisor_allowed and admission.admitted:
+        admission = admission.__class__(
+            "single_agent",
+            "supervisor_disabled",
+            admission.branches,
+        )
+    add_trace_metadata(
+        runtime_path=admission.decision,
+        supervisor_enabled=supervisor_allowed,
+        admission_reason=admission.reason,
+        understanding_status=understanding.status,
+        understanding_fallback_reason=understanding.fallback_reason,
+        standalone_query=understanding.standalone_query,
+        retrieval_query_count=len(understanding.retrieval_queries),
+        entity_count=len(understanding.entities),
+        proposed_branch_count=(
+            len(understanding.decomposition.branches)
+            if understanding.decomposition is not None
+            else 0
+        ),
+        admitted_branch_count=len(admission.branches),
+        admitted_branch_ids=[b.branch_id for b in admission.branches],
+    )
+    if admission.admitted:
+        supervised = run_supervised_answer(
+            understanding.standalone_query,
+            settings=deps.settings,
+            history=history,
+            run_retrieve=deps.run_retrieve,
+            fact_store=deps.fact_store,
+            ontology_nodes=deps.ontology_nodes,
+            generator=cast(GeneratorProto, deps.generator),
+            chat_model=deps.gather_model,
+            judge=deps.judge,
+            composer=deps.composer,
+            branch_plan=admission.branches,
+        )
         return GeneratedAnswer(
             query=supervised.query,
             answer=supervised.answer,
@@ -126,17 +179,25 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
             generation_ms=0.0,
             model="supervisor",
         )
-    if settings.agentic_enabled:
-        agentic = agentic_answer(text)
-        return GeneratedAnswer(
-            query=agentic.query,
-            answer=agentic.answer,
-            cited_chunk_ids=list(agentic.cited_ids),
-            query_result=agentic.query_result,
-            generation_ms=0.0,
-            model="agentic",
-        )
-    return answer_single_shot(text, k=k, history=history)
+    agentic = run_agentic_answer(
+        understanding.standalone_query,
+        settings=deps.settings,
+        history=history,
+        run_retrieve=deps.run_retrieve,
+        fact_store=deps.fact_store,
+        ontology_nodes=deps.ontology_nodes,
+        generator=cast(GeneratorProto, deps.generator),
+        chat_model=deps.gather_model,
+        judge=deps.judge,
+    )
+    return GeneratedAnswer(
+        query=agentic.query,
+        answer=agentic.answer,
+        cited_chunk_ids=list(agentic.cited_ids),
+        query_result=agentic.query_result,
+        generation_ms=0.0,
+        model="agentic",
+    )
 
 
 def answer_single_shot(text: str, k: int = 10, history: list[str] | None = None) -> GeneratedAnswer:
@@ -158,8 +219,10 @@ def answer_single_shot(text: str, k: int = 10, history: list[str] | None = None)
     return gen.generate(text, query_result)
 
 
-def agentic_answer(text: str) -> AgenticAnswer:
-    """Answer a CTI question via the agentic loop (workflow->agentic): adaptive
+def agentic_answer(text: str, history: list[str] | None = None) -> AgenticAnswer:
+    """Debug/baseline forced single-agent surface.
+
+    Answer a CTI question via the agentic loop (workflow->agentic): adaptive
     retrieve -> assess sufficiency -> retrieve more -> synthesize. Reuses the
     single-shot retrieval pipeline as the agent's `retrieve` tool and the knowledge
     graph as graph tools; citations are validated against the gathered evidence and
@@ -167,61 +230,79 @@ def agentic_answer(text: str) -> AgenticAnswer:
     (empty NEO4J_PASSWORD) so the loop still runs vector-only."""
     from typing import cast
 
-    from rag_cti.bootstrap import load_ontology_nodes
-    from rag_cti.knowledge.agent_graph import build_model
-    from rag_cti.knowledge.agentic_graph import build_judge, run_agentic_answer
+    from rag_cti.knowledge.agentic_graph import run_agentic_answer
     from rag_cti.knowledge.agentic_nodes import GeneratorProto
-    from rag_cti.knowledge.fact_store import FactStoreProto
 
-    settings = get_settings()
-    pipeline = _default_pipeline()
-
-    def run_retrieve(query_text: str, top_k: int) -> QueryResult:
-        return pipeline.run(query_text, top_k=top_k)
-
-    fact_store = (
-        cast(FactStoreProto, _default_fact_store())
-        if settings.neo4j_password.get_secret_value()
-        else None
-    )
+    deps = _build_runtime_deps(history)
     return run_agentic_answer(
         text,
-        settings=settings,
-        run_retrieve=run_retrieve,
-        fact_store=fact_store,
-        ontology_nodes=load_ontology_nodes(),
-        generator=cast(GeneratorProto, _default_generator()),
-        chat_model=build_model(settings),
-        judge=build_judge(
-            _build_verifier_client(settings),
-            settings.agentic_verifier_model,
-            max_tokens=settings.agentic_verifier_max_tokens,
-        ),
+        settings=deps.settings,
+        history=history,
+        run_retrieve=deps.run_retrieve,
+        fact_store=deps.fact_store,
+        ontology_nodes=deps.ontology_nodes,
+        generator=cast(GeneratorProto, deps.generator),
+        chat_model=deps.gather_model,
+        judge=deps.judge,
     )
 
 
-def supervised_answer(text: str) -> AgenticAnswer:
-    """Answer a CTI question via the multi-agent supervisor (Model B): a ReAct ORCHESTRATION
+def supervised_answer(text: str, history: list[str] | None = None) -> AgenticAnswer:
+    """Debug/baseline forced supervisor surface.
+
+    Answer a CTI question via the multi-agent supervisor (Model B): a ReAct ORCHESTRATION
     agent dispatches worker sub-agents (one per independent entity/facet, in parallel),
-    each gathering + synthesizing its own grounded sub-answer, then a distinct Composer LLM
+    each gathering evidence into a branch-local ledger, then a distinct Composer LLM
     combines the reports into the final answer. The supervisor never gathers or synthesizes;
     a deterministic citation guard validates the answer against the union of branch evidence.
     Simple / dependent questions degrade to a single worker (no regression). Builds the same
     deps as the agentic loop plus a composer (which reuses the verifier client)."""
     from typing import cast
 
+    from rag_cti.knowledge.agentic_nodes import GeneratorProto
+    from rag_cti.knowledge.supervisor_graph import run_supervised_answer
+
+    deps = _build_runtime_deps(history)
+    return run_supervised_answer(
+        text,
+        settings=deps.settings,
+        history=history,
+        run_retrieve=deps.run_retrieve,
+        fact_store=deps.fact_store,
+        ontology_nodes=deps.ontology_nodes,
+        generator=cast(GeneratorProto, deps.generator),
+        chat_model=deps.gather_model,
+        judge=deps.judge,
+        composer=deps.composer,
+    )
+
+
+def _build_runtime_deps(history: list[str] | None = None) -> RuntimeDeps:
+    """Build reusable runtime dependencies; no per-run state belongs here."""
+    from typing import cast
+
     from rag_cti.bootstrap import load_ontology_nodes
-    from rag_cti.knowledge.agent_graph import build_model
     from rag_cti.knowledge.agentic_graph import build_judge
     from rag_cti.knowledge.agentic_nodes import GeneratorProto
     from rag_cti.knowledge.fact_store import FactStoreProto
-    from rag_cti.knowledge.supervisor_graph import build_composer, run_supervised_answer
+    from rag_cti.knowledge.model_factory import build_model
+    from rag_cti.knowledge.supervisor_graph import build_composer
 
     settings = get_settings()
     pipeline = _default_pipeline()
+    ontology_nodes = load_ontology_nodes()
 
     def run_retrieve(query_text: str, top_k: int) -> QueryResult:
-        return pipeline.run(query_text, top_k=top_k)
+        return pipeline.run(query_text, top_k=top_k, history=history)
+
+    def query_understanding(query_text: str, query_history: list[str] | None = None) -> Any:
+        return build_runtime_query_understanding(
+            query_text,
+            query_history,
+            pipeline=pipeline,
+            settings=settings,
+            ontology_nodes=ontology_nodes,
+        )
 
     fact_store = (
         cast(FactStoreProto, _default_fact_store())
@@ -229,14 +310,15 @@ def supervised_answer(text: str) -> AgenticAnswer:
         else None
     )
     verifier_client = _build_verifier_client(settings)
-    return run_supervised_answer(
-        text,
+    return RuntimeDeps(
         settings=settings,
+        retrieval_pipeline=pipeline,
         run_retrieve=run_retrieve,
         fact_store=fact_store,
-        ontology_nodes=load_ontology_nodes(),
+        ontology_nodes=ontology_nodes,
+        query_understanding=query_understanding,
+        gather_model=build_model(settings),
         generator=cast(GeneratorProto, _default_generator()),
-        chat_model=build_model(settings),
         judge=build_judge(
             verifier_client,
             settings.agentic_verifier_model,
@@ -290,6 +372,25 @@ def _default_chunk_store() -> object:
     )
 
 
+def _close_cached_factory(factory: Any) -> None:
+    cache_info = factory.cache_info()
+    if cache_info.currsize <= 0:
+        return
+    resource = factory()
+    close = getattr(resource, "close", None)
+    try:
+        if callable(close):
+            close()
+    finally:
+        factory.cache_clear()
+
+
+def close_cached_resources() -> None:
+    """Close cached external resources without creating caches that do not exist."""
+    _close_cached_factory(_default_fact_store)
+    _close_cached_factory(_default_chunk_store)
+
+
 def facts(
     subject_id: str,
     predicate: str | None = None,
@@ -320,10 +421,10 @@ def facts(
 
 
 def ask(text: str, *, recursion_limit: int = 16) -> str:
-    """Answer an NL question via the v1 agentic loop (M4 §9): an LLM orchestrates
-    the graph tools (resolve/outline/query) and vector search, comparing coverage
-    against the graph's counts, and returns a cited prose answer. `recursion_limit`
-    is the hard step ceiling."""
-    from rag_cti.knowledge.agent_graph import ask as _ask
+    """Compatibility wrapper for the retired v1 ``ask`` API.
 
-    return _ask(text, recursion_limit=recursion_limit)
+    The ``recursion_limit`` argument is accepted for old callers but ignored; the
+    supported implementation is the hard-railed ``agentic_answer`` path.
+    """
+    _ = recursion_limit
+    return agentic_answer(text).answer

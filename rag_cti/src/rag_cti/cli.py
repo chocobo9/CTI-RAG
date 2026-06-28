@@ -13,6 +13,7 @@ from rag_cti._logging import configure_logging
 app = typer.Typer(name="rag-cti", help="RAG-powered Cyber Threat Intelligence CLI")
 console = Console()
 
+
 # The v1-schema query set this CLI's retrieval/ragas suites consume
 # (precise/semantic/fuzzy + expected_chunk_ids). v2/v3 sets use the
 # identifier-gold schema consumed by scripts/eval_attribution.py instead.
@@ -106,10 +107,11 @@ def facts(
 @app.command()
 def ask(
     question: str = typer.Argument(..., help="Natural-language CTI question"),
-    steps: int = typer.Option(16, "--steps", help="Hard recursion/step ceiling"),
+    steps: int = typer.Option(
+        16, "--steps", help="Accepted for compatibility; ignored by the agentic path"
+    ),
 ) -> None:
-    """Agentic answer: an LLM orchestrates graph tools + vector search and returns a
-    cited answer (M4 v1). Bypasses vector for who/what enumerate, uses it for why/how."""
+    """Compatibility alias for the hard-railed agentic answer path."""
     import rag_cti
 
     console.print(rag_cti.ask(question, recursion_limit=steps))

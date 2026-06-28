@@ -39,6 +39,7 @@ class SubQuestion(BaseModel, frozen=True):
     a single entity is split by aspect (e.g. "ttps" | "infrastructure" | "targets")."""
 
     sub_question: str
+    branch_id: str = ""
     focus_entity: str | None = None
     facet: str | None = None
 
@@ -51,13 +52,23 @@ class BranchReport(BaseModel, frozen=True):
     validates against their union). The branch's full EvidenceLedger is kept separately
     for that union — NOT stored on this frozen record."""
 
+    branch_id: str = ""
     sub_question: str
     focus_entity: str | None = None
+    facet: str | None = None
+    status: str = "ok"  # ok | partial | empty | failed
+    evidence_summary: str = ""
+    key_entities: tuple[str, ...] = ()
     sub_answer: str = ""
     techniques: tuple[tuple[str, str, str], ...] = ()  # (attack_id, name, fact_id)
     cited_ids: tuple[str, ...] = ()
+    gaps: tuple[str, ...] = ()
+    suggested_queries: tuple[str, ...] = ()
+    suggested_graph_targets: tuple[tuple[str, str | None, str | None], ...] = ()
+    errors: tuple[str, ...] = ()
     n_facts: int = 0
     n_chunks: int = 0
+    n_outlines: int = 0
     stop_reason: str = ""
     tokens_used: int = 0
     iteration_count: int = 0
@@ -77,9 +88,14 @@ class AgenticAnswer(BaseModel, frozen=True):
     iteration_count: int = 0
     tokens_used: int = 0
     stop_reason: str = (
-        ""  # sufficient | max_rounds | no_progress | timeout | budget | parse_fallback
+        # sufficient | graph_sufficient | max_rounds | no_progress | open_cat_stall |
+        # timeout | budget | tool_budget | parse_fallback | provider_error
+        ""
     )
     dropped_citation_count: int = 0
+    # Total tool calls the gather loop dispatched (len of the ledger action log) — the
+    # exact over-calling metric the eval gate reads; 0 when the action log is unused.
+    tool_call_count: int = 0
     # Multi-agent supervisor telemetry (0 / False on the single-agent path).
     branch_count: int = 0
     decomposed: bool = False

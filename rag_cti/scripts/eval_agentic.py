@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -148,6 +149,7 @@ def main() -> None:
     per_query: list[dict[str, object]] = []
     single_answers: list[GeneratedAnswer] = []
     agentic_answers: list[AgenticAnswer] = []
+    agentic_latencies: list[float] = []
     supervised_answers: list[AgenticAnswer] = []
     # Per-category gold/pred so a mixed run (e.g. compound + relationship_direct for the
     # no-regression check) is reported side by side, never averaged across categories.
@@ -162,9 +164,12 @@ def main() -> None:
     for i, rec in enumerate(chosen):
         print(f"[{i + 1}/{len(chosen)}] {rec.category}: {rec.query[:60]}", flush=True)
         single = rag_cti.answer(rec.query)
+        _t0 = time.perf_counter()
         agentic = rag_cti.agentic_answer(rec.query)
+        agentic_latency_ms = round((time.perf_counter() - _t0) * 1000, 1)
         single_answers.append(single)
         agentic_answers.append(agentic)
+        agentic_latencies.append(agentic_latency_ms)
         supervised = rag_cti.supervised_answer(rec.query) if args.supervised else None
         if supervised is not None:
             supervised_answers.append(supervised)
@@ -181,6 +186,8 @@ def main() -> None:
                 "answer_len": len(agentic.answer),
                 "iterations": agentic.iteration_count,
                 "tokens": agentic.tokens_used,
+                "tool_calls": agentic.tool_call_count,
+                "latency_ms": agentic_latency_ms,
                 "stop": agentic.stop_reason,
                 "n_facts": len(agentic.collected_facts),
                 "dropped_citations": agentic.dropped_citation_count,
@@ -260,6 +267,14 @@ def main() -> None:
             round(sum(a.tokens_used for a in agentic_answers) / len(agentic_answers))
             if agentic_answers
             else 0
+        ),
+        "tool_calls_mean": (
+            round(sum(a.tool_call_count for a in agentic_answers) / len(agentic_answers), 1)
+            if agentic_answers
+            else 0
+        ),
+        "latency_ms_mean": (
+            round(sum(agentic_latencies) / len(agentic_latencies)) if agentic_latencies else 0
         ),
     }
     if supervised_answers:

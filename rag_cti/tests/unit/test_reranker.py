@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import threading
+import time
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
@@ -178,3 +180,42 @@ def test_noop_reranker_preserves_input_unchanged() -> None:
         assert out.score == orig.score
         assert out.rank == orig.rank
         assert out.retriever_source == orig.retriever_source
+
+
+# ---------------------------------------------------------------------------
+# Test 7 (B2): serialize_predict guards the GPU forward pass across threads
+# ---------------------------------------------------------------------------
+
+
+def test_serialize_predict_defaults_off() -> None:
+    assert CrossEncoderReranker(model_name="m")._serialize_predict is False
+
+
+def test_rerank_serialize_predict_serializes_forward_pass() -> None:
+    # With serialize_predict ON, concurrent rerank calls must NOT overlap model.predict (one 8GB
+    # GPU forward pass at a time) — the lock keeps peak concurrency at 1.
+    reranker = CrossEncoderReranker(model_name="test-model", serialize_predict=True)
+    lock = threading.Lock()
+    state = {"cur": 0, "peak": 0}
+
+    def predict(pairs: list, **_: object) -> list[float]:
+        with lock:
+            state["cur"] += 1
+            state["peak"] = max(state["peak"], state["cur"])
+        time.sleep(0.02)
+        with lock:
+            state["cur"] -= 1
+        return [0.5] * len(pairs)
+
+    model = MagicMock()
+    model.predict.side_effect = predict
+    results = [_make_result("c0", CTI_CONTENT_T1566, 0.9, 0)]
+
+    with patch.object(reranker, "_load", return_value=model):
+        threads = [threading.Thread(target=reranker.rerank, args=("q", results)) for _ in range(4)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+    assert state["peak"] == 1  # the predict lock serialized every forward pass

@@ -143,7 +143,9 @@ def build_eval_pipeline(
     )
 
 
-def build_deepseek_client(settings: Any, max_retries: int = 1, timeout: float | None = None) -> Any:
+def build_deepseek_client(
+    settings: Any, max_retries: int | None = None, timeout: float | None = None
+) -> Any:
     """OpenAI-compatible DeepSeek client. Raises when DEEPSEEK_API_KEY is unset.
 
     ``max_retries=1`` keeps this a fast-fail client: generation wraps it in
@@ -158,12 +160,15 @@ def build_deepseek_client(settings: Any, max_retries: int = 1, timeout: float | 
     request_timeout = (
         timeout if timeout is not None else getattr(settings, "deepseek_request_timeout", 60.0)
     )
+    retries = max_retries if max_retries is not None else getattr(settings, "llm_max_retries", 1)
     return OpenAI(
-        base_url=DEEPSEEK_BASE_URL, api_key=key, max_retries=max_retries, timeout=request_timeout
+        base_url=DEEPSEEK_BASE_URL, api_key=key, max_retries=retries, timeout=request_timeout
     )
 
 
-def build_qwen_client(settings: Any, max_retries: int = 1, timeout: float | None = None) -> Any:
+def build_qwen_client(
+    settings: Any, max_retries: int | None = None, timeout: float | None = None
+) -> Any:
     """OpenAI-compatible Qwen (Alibaba DashScope) client. Raises when QWEN_API_KEY is unset.
 
     Used for the independent sufficiency judge (a different model family from the DeepSeek
@@ -178,9 +183,10 @@ def build_qwen_client(settings: Any, max_retries: int = 1, timeout: float | None
     request_timeout = (
         timeout if timeout is not None else getattr(settings, "deepseek_request_timeout", 60.0)
     )
+    retries = max_retries if max_retries is not None else getattr(settings, "llm_max_retries", 1)
     return OpenAI(
         base_url=settings.qwen_base_url,
         api_key=key,
-        max_retries=max_retries,
+        max_retries=retries,
         timeout=request_timeout,
     )

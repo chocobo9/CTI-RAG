@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+from contextlib import contextmanager
 from typing import Any
 
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
@@ -118,6 +120,15 @@ class _LoopingModel:
         return _FakeAI([{"name": "dispatch_worker", "args": {}, "id": "x"}])
 
 
+class _RaisingModel:
+    def __init__(self) -> None:
+        self.invocations = 0
+
+    def invoke(self, convo: list[Any]) -> _FakeAI:
+        self.invocations += 1
+        raise RuntimeError("provider down")
+
+
 def test_supervisor_loop_dispatches_in_parallel_then_composes_then_stops() -> None:
     calls: list[str] = []
 
@@ -161,3 +172,74 @@ def test_supervisor_loop_surfaces_tool_error_without_crashing() -> None:
     )
     convo = run_supervisor_loop(model, dispatch, [("user", "q")], max_steps=6, max_workers=2)
     assert any("boom" in str(getattr(m, "content", "")) for m in convo)
+
+
+def test_supervisor_loop_routes_dispatch_through_limiter() -> None:
+    # B4 wiring: every worker dispatch must pass through limiter.slot() so the B3 admission cap
+    # applies (the limiter's own concurrency bounding is covered in test_limiter). Assert one slot
+    # was acquired per dispatched worker call.
+    acquired: list[str] = []
+
+    class _SpyLimiter:
+        @contextmanager
+        def slot(self) -> Any:
+            acquired.append("slot")
+            yield
+
+    calls: list[str] = []
+
+    def dispatch(name: str, args: dict[str, Any]) -> Any:
+        calls.append(name)
+        return {"ok": name}
+
+    model = _ScriptedModel(
+        [
+            _FakeAI(
+                [
+                    {"name": "dispatch_worker", "args": {"sub_question": "APT29"}, "id": "c1"},
+                    {"name": "dispatch_worker", "args": {"sub_question": "Turla"}, "id": "c2"},
+                ]
+            ),
+            _FakeAI([]),
+        ]
+    )
+    run_supervisor_loop(
+        model, dispatch, [("user", "compare")], max_steps=6, max_workers=4, limiter=_SpyLimiter()
+    )
+    assert len(acquired) == 2  # one slot per worker dispatch
+    assert sorted(calls) == ["dispatch_worker", "dispatch_worker"]
+
+
+def test_supervisor_loop_stops_immediately_when_deadline_passed() -> None:
+    model = _LoopingModel()
+
+    run_supervisor_loop(
+        model,
+        lambda name, args: {"ok": True},
+        [("user", "q")],
+        max_steps=6,
+        max_workers=2,
+        deadline=time.monotonic() - 1,
+    )
+
+    assert model.invocations == 0
+
+
+def test_supervisor_loop_catches_model_error_and_reports_callback() -> None:
+    errors: list[BaseException] = []
+    model = _RaisingModel()
+
+    convo = run_supervisor_loop(
+        model,
+        lambda name, args: {"ok": True},
+        [("user", "q")],
+        max_steps=6,
+        max_workers=2,
+        on_model_error=errors.append,
+    )
+
+    assert model.invocations == 1
+    assert len(errors) == 1
+    assert any(
+        "supervisor model failed: provider down" in str(getattr(m, "content", "")) for m in convo
+    )

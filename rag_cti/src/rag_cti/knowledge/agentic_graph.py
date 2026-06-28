@@ -16,20 +16,25 @@ unit-tested logic lives in ``agentic_nodes.py`` / ``evidence_ledger.py`` /
 
 from __future__ import annotations
 
+import threading
 import time
-from typing import Any, TypedDict
+from collections.abc import Callable
+from typing import Any, TypedDict, TypeVar, cast
 
 from rag_cti.config import Settings
-from rag_cti.knowledge import agent_tools, agentic_nodes
+from rag_cti.knowledge import agent_tools, agentic_effort, agentic_nodes, tool_cache
 from rag_cti.knowledge.agentic_nodes import GeneratorProto, JudgeFn
 from rag_cti.knowledge.agentic_state import AgenticAnswer
+from rag_cti.knowledge.chat_fn import build_chat_fn
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.knowledge.fact_store import FactStoreProto
+from rag_cti.knowledge.graph_limits import outer_recursion_limit
 from rag_cti.observability.tracing import add_trace_metadata, traced
 from rag_cti.types import GeneratedAnswer
 
 # (query, top_k) -> QueryResult. Injected so this file never imports rag_cti.__init__.
 RunRetrieve = agent_tools.RunRetrieve
+F = TypeVar("F", bound=Callable[..., Any])
 
 _GATHER_SYSTEM = """You are a CTI analyst GATHERING evidence for a question. Your ONLY job is to call \
 tools to collect the facts and prose needed to answer it. Another step writes the final answer, so do \
@@ -61,6 +66,8 @@ class _AgentState(TypedDict, total=False):
     last_draft: str
     sufficiency: Any  # SufficiencyVerdict | None
     prev_gaps: tuple[str, ...]  # previous verdict's coverage_gaps (repeat => stuck)
+    open_categories: int  # last gate's count of still-open graph enumeration categories
+    open_cat_stall: int  # consecutive gate turns the open-category count did NOT shrink
     stop_reason: str
     route: str
     answer: Any  # AgenticAnswer
@@ -71,20 +78,7 @@ def build_judge(client: Any, model: str, max_tokens: int = 1024) -> JudgeFn:
     """A JudgeFn (system, user) -> raw text over ANY OpenAI-compatible chat endpoint
     (DeepSeek, or — for an independent cross-family verifier — Qwen/DashScope). ``max_tokens``
     is sized so a thinking-style model has room to reason before emitting the JSON verdict."""
-
-    def judge(system: str, user: str) -> str:
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            max_tokens=max_tokens,
-        )
-        content: str = response.choices[0].message.content or ""
-        return content
-
-    return judge
+    return build_chat_fn(client, model, max_tokens)
 
 
 def _sum_tokens(messages: list[Any]) -> int:
@@ -94,6 +88,20 @@ def _sum_tokens(messages: list[Any]) -> int:
         if isinstance(usage, dict):
             total += int(usage.get("total_tokens", 0) or 0)
     return total
+
+
+def _normalize_tool_args(
+    name: str, args: dict[str, Any], *, retrieve_query_max_chars: int
+) -> dict[str, Any]:
+    if name != "retrieve":
+        return args
+    query = str(args.get("query", "") or "")
+    compact_query = " ".join(query.split())
+    if retrieve_query_max_chars > 0 and len(compact_query) > retrieve_query_max_chars:
+        compact_query = compact_query[:retrieve_query_max_chars].rsplit(" ", 1)[0].strip()
+    if compact_query == query:
+        return args
+    return {**args, "query": compact_query}
 
 
 def _build_tools(
@@ -109,21 +117,23 @@ def _build_tools(
     """
     from langchain_core.tools import tool
 
-    @tool
+    typed_tool = cast(Callable[[F], F], tool)
+
+    @typed_tool
     def resolve_entity(name: str) -> list[dict[str, str]]:
         """Resolve a threat-intel name (e.g. 'APT29') to entity_id candidates."""
         if fact_store is None:
             return []
         return agent_tools.resolve_entity_candidates(name, ontology_nodes)
 
-    @tool
+    @typed_tool
     def graph_outline(subject_id: str) -> dict[str, Any]:
         """Coverage map for a subject_id: which relation categories exist and how many."""
         if fact_store is None:
             return {"found": False, "entity_id": subject_id}
         return agent_tools.outline_to_ledger(fact_store, ledger, subject_id)
 
-    @tool
+    @typed_tool
     def graph_query(
         subject_id: str,
         predicate: str | None = None,
@@ -142,14 +152,14 @@ def _build_tools(
             min_credibility=min_credibility,
         )
 
-    @tool
+    @typed_tool
     def facts_for_evidence(chunk_id: str) -> dict[str, Any]:
         """Which facts a given evidence chunk_id supports (reverse provenance bridge)."""
         if fact_store is None:
             return {"count": 0, "facts": []}
         return agent_tools.facts_for_evidence_to_ledger(fact_store, ledger, chunk_id)
 
-    @tool
+    @typed_tool
     def retrieve(query: str, top_k: int = 10) -> dict[str, Any]:
         """Semantic search over source prose; returns chunk snippets."""
         return agent_tools.retrieve_to_ledger(run_retrieve, ledger, query, top_k)
@@ -162,6 +172,7 @@ def build_agentic_graph(
     settings: Settings,
     ledger: EvidenceLedger,
     query: str,
+    history: list[str] | None = None,
     run_retrieve: RunRetrieve,
     fact_store: FactStoreProto | None,
     ontology_nodes: list[dict[str, Any]],
@@ -191,13 +202,55 @@ def build_agentic_graph(
     tools = _build_tools(fact_store, ontology_nodes, run_retrieve, ledger)
     model_with_tools = chat_model.bind_tools(tools)
     tools_by_name = {t.name: t for t in tools}
+    # Effort tier is a deterministic function of the (fixed) query, so classify once here and
+    # close over it — the per-turn budget line just re-reads len(ledger.actions).
+    effort_tier = agentic_effort.classify_effort_tier(query)
+    hard_tool_budgets = getattr(
+        settings,
+        "agentic_hard_tool_budgets",
+        {"simple": 10, "comparison": 20, "complex": 32},
+    )
+    hard_tool_budget = hard_tool_budgets.get(effort_tier, 0)
+    dispatch_lock = threading.Lock()
 
     def dispatch(name: str, args: dict[str, Any]) -> Any:
-        """Run a tool by name (tools side-effect the ledger); used by the gather loop."""
+        """Run a tool by name (tools side-effect the ledger); used by the gather loop.
+
+        Records every valid dispatch on the ledger action log — the model-facing 'what I
+        already did' view (when shown) AND the exact tool-call count on the answer. The count
+        is taken BEFORE the cache check so it stays the exact over-calling metric (attempts).
+        When the tool cache is enabled, an identical re-dispatch returns the cached result
+        flagged as a duplicate instead of re-executing — the tools are idempotent within a
+        run, so this skips only wasted work and tells the model it already gathered this."""
         tool = tools_by_name.get(name)
         if tool is None:
             return {"error": f"unknown tool {name}"}
-        return tool.invoke(args)
+        args = _normalize_tool_args(
+            name,
+            args,
+            retrieve_query_max_chars=getattr(settings, "agentic_retrieve_query_max_chars", 360),
+        )
+        with dispatch_lock:
+            if hard_tool_budget > 0 and len(ledger.actions) >= hard_tool_budget:
+                return {
+                    "error": "tool budget exhausted",
+                    "max_tool_calls": hard_tool_budget,
+                    "executed_tool_calls": len(ledger.actions),
+                }
+            ledger.add_action(name, args)
+        if name == "retrieve" and agentic_nodes.should_suppress_retrieve_after_graph_coverage(
+            query, ledger
+        ):
+            return {
+                "error": "retrieve suppressed: graph evidence is already sufficient",
+                "reason": "complete graph uses->technique facts cover the comparison",
+            }
+        hit = ledger.cache_get(name, args)
+        if hit is not None:
+            return tool_cache.as_duplicate(hit)
+        result = tool.invoke(args)
+        ledger.cache_put(name, args, result)
+        return result
 
     def agent_turn(state: _AgentState) -> dict[str, Any]:
         # Working-set pattern: start each burst from a CLEAN [system, query(, directive)] —
@@ -205,10 +258,27 @@ def build_agentic_graph(
         # made context + cost grow super-linearly across iterations). The ledger is the
         # cross-iteration memory; the directive carries a summary of it + the gaps.
         verdict = state.get("sufficiency")
-        messages = agentic_nodes.build_turn_messages(_GATHER_SYSTEM, query, verdict, ledger)
+        messages = agentic_nodes.build_turn_messages(
+            _GATHER_SYSTEM, query, verdict, ledger, history=history
+        )
         before_facts = len(ledger.facts)
         before = before_facts + len(ledger.chunks)
         errors: list[BaseException] = []
+
+        def _render_context() -> str:
+            # One end-of-turn block: gathered state, action log, effort budget (non-empty
+            # sections only). Budget line goes LAST for highest-attention placement.
+            blocks: list[str] = []
+            blocks.append(agentic_nodes.render_state_view(ledger))
+            blocks.append(agentic_nodes.render_action_log(ledger))
+            blocks.append(
+                agentic_effort.render_budget_line(
+                    effort_tier, len(ledger.actions), settings.agentic_effort_budgets
+                )
+            )
+            return "\n\n".join(b for b in blocks if b)
+
+        render_state = _render_context
         out_messages = agentic_nodes.run_gather_loop(
             model_with_tools,
             dispatch,
@@ -216,6 +286,10 @@ def build_agentic_graph(
             max_steps=settings.agentic_max_inner_steps,
             deadline=deadline,
             on_model_error=errors.append,
+            render_state=render_state,
+            keep_last_observations=settings.agentic_keep_last_observations,
+            parallel_dispatch=settings.agentic_parallel_dispatch_enabled,
+            max_parallel_tools=settings.agentic_max_parallel_tools,
         )
         # GATHER-only: synthesize produces the answer over the ledger, so no draft to carry.
         # out_messages is just THIS burst now (not carried), so _sum_tokens(out_messages) is
@@ -242,9 +316,27 @@ def build_agentic_graph(
                 "stop_reason": "provider_error",
                 "prev_gaps": (),
             }
+        if agentic_nodes.should_suppress_retrieve_after_graph_coverage(query, ledger):
+            add_trace_metadata(route="synthesize", stop_reason="graph_sufficient")
+            return {
+                "sufficiency": None,
+                "route": "synthesize",
+                "stop_reason": "graph_sufficient",
+                "prev_gaps": (),
+                "open_categories": 0,
+                "open_cat_stall": 0,
+            }
         verdict = agentic_nodes.assess_sufficiency(
-            judge, query, state.get("last_draft", ""), ledger
+            judge, query, state.get("last_draft", ""), ledger, history=history
         )
+        # Deterministic open-category stall signal (additive convergence guard): how many
+        # graph enumeration categories are still open, and for how many consecutive gate
+        # turns that count has failed to shrink. The first gate never stalls (prev defaults
+        # to current+1). Disabled => max_open_cat_stall=0 keeps decide_next behaviour exact.
+        current_open = agentic_nodes.count_open_categories(ledger)
+        prev_open = state.get("open_categories", current_open + 1)
+        open_cat_stall = state.get("open_cat_stall", 0) + 1 if current_open >= prev_open else 0
+        max_open_cat_stall = settings.agentic_open_cat_stall_limit
         route, reason = agentic_nodes.decide_next(
             verdict,
             state.get("iteration_count", 0),
@@ -257,6 +349,10 @@ def build_agentic_graph(
             prev_gaps=state.get("prev_gaps", ()),
             elapsed_seconds=time.monotonic() - started_at,
             max_wall_seconds=settings.agentic_max_wall_seconds,
+            open_cat_stall=open_cat_stall,
+            max_open_cat_stall=max_open_cat_stall,
+            tool_calls_used=len(ledger.actions),
+            max_tool_calls=hard_tool_budget,
         )
         add_trace_metadata(
             sufficient=bool(verdict and verdict.sufficient),
@@ -266,6 +362,8 @@ def build_agentic_graph(
             next_action=(verdict.next_action if verdict else "parse_fallback"),
             route=route,
             iteration_count=state.get("iteration_count", 0),
+            open_categories=current_open,
+            open_cat_stall=open_cat_stall,
         )
         # Stash this verdict's gaps so the next gate can detect the judge repeating itself.
         return {
@@ -273,6 +371,8 @@ def build_agentic_graph(
             "route": route,
             "stop_reason": reason,
             "prev_gaps": tuple(verdict.coverage_gaps) if verdict else (),
+            "open_categories": current_open,
+            "open_cat_stall": open_cat_stall,
         }
 
     def synthesize(state: _AgentState) -> dict[str, Any]:
@@ -291,7 +391,12 @@ def build_agentic_graph(
             )
         else:
             gen_answer = agentic_nodes.synthesize_answer(
-                generator, query, ledger, top_k=settings.agentic_synthesis_top_k
+                generator,
+                query,
+                ledger,
+                top_k=settings.agentic_synthesis_top_k,
+                fact_limit=getattr(settings, "agentic_synthesis_fact_limit", 120),
+                history=history,
             )
         answer = agentic_nodes.build_agentic_answer(
             query,
@@ -335,6 +440,7 @@ def run_agentic_answer(
     query: str,
     *,
     settings: Settings,
+    history: list[str] | None = None,
     run_retrieve: RunRetrieve,
     fact_store: FactStoreProto | None,
     ontology_nodes: list[dict[str, Any]],
@@ -348,6 +454,7 @@ def run_agentic_answer(
         settings=settings,
         ledger=ledger,
         query=query,
+        history=history,
         run_retrieve=run_retrieve,
         fact_store=fact_store,
         ontology_nodes=ontology_nodes,
@@ -357,7 +464,7 @@ def run_agentic_answer(
     )
     # Outer recursion guard: agent_turn<->sufficiency_gate cycles, ended structurally
     # by decide_next at agentic_max_iterations. This is just the runaway backstop.
-    outer_limit = max(25, settings.agentic_max_iterations * 4)
+    outer_limit = outer_recursion_limit(settings)
     result = graph.invoke(
         {
             "messages": [("system", _GATHER_SYSTEM), ("user", query)],

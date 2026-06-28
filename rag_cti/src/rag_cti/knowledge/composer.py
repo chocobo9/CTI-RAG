@@ -32,30 +32,53 @@ AGENTIC_COMPOSE_SYSTEM = (
     "state which attack_ids are common and which are distinct per actor.\n"
     "When you mention a technique, CITE it as [fact_id] using the 3rd element of its triple "
     "(its fact_id). Use ONLY fact_ids that appear in the reports; never invent one. Surface "
-    "disagreements rather than hiding them. Be specific and grounded."
+    "disagreements rather than hiding them. If a branch status is partial, empty, or failed, "
+    "state the evidence gap instead of treating missing evidence as negative evidence. Be "
+    "specific and grounded."
 )
 
 
 def _render_report(report: BranchReport) -> dict[str, object]:
     return {
+        "branch_id": report.branch_id,
         "focus_entity": report.focus_entity,
+        "facet": report.facet,
         "sub_question": report.sub_question,
+        "status": report.status,
+        "evidence_summary": report.evidence_summary,
+        "key_entities": list(report.key_entities),
         "sub_answer": report.sub_answer,
         "techniques": [list(pair) for pair in report.techniques],
         "cited_ids": list(report.cited_ids),
+        "gaps": list(report.gaps),
+        "suggested_queries": list(report.suggested_queries),
+        "suggested_graph_targets": [list(target) for target in report.suggested_graph_targets],
+        "errors": list(report.errors),
+        "n_facts": report.n_facts,
+        "n_chunks": report.n_chunks,
+        "n_outlines": report.n_outlines,
+        "stop_reason": report.stop_reason,
     }
 
 
-def build_compose_user(query: str, reports: Sequence[BranchReport]) -> str:
+def build_compose_user(
+    query: str, reports: Sequence[BranchReport], history: list[str] | None = None
+) -> str:
     """Render the original compound question + each branch's report as JSON for the
     Composer (structured, so it can do exact set operations over the technique ids)."""
     payload = {
         "question": query,
+        "conversation_history": tuple(history or ()),
         "branch_reports": [_render_report(r) for r in reports],
     }
     return json.dumps(payload, default=str)
 
 
-def compose(composer: ComposeFn, query: str, reports: Sequence[BranchReport]) -> str:
+def compose(
+    composer: ComposeFn,
+    query: str,
+    reports: Sequence[BranchReport],
+    history: list[str] | None = None,
+) -> str:
     """Combine the branch reports into the final answer text (over an injected LLM)."""
-    return composer(AGENTIC_COMPOSE_SYSTEM, build_compose_user(query, reports))
+    return composer(AGENTIC_COMPOSE_SYSTEM, build_compose_user(query, reports, history))

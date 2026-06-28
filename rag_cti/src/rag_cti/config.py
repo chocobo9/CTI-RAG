@@ -94,6 +94,11 @@ class Settings(BaseSettings):
     deepseek_request_timeout: float = 60.0
     llm_max_retries: int = 2
     retry_after_ceiling_seconds: float = 60.0
+    # Concurrency/rate admission control is a core runtime invariant for agentic RAG:
+    # every LLM path can be fanned out by query rewrite, supervisor workers, or tool
+    # dispatch. Tune concurrency/rate; set both to 0 for passthrough (tests only).
+    llm_max_global_concurrency: int = 4
+    llm_rate_limit_per_sec: float = 0.0
 
     # Model for the Anthropic provider: HyDE's Anthropic branch (hyde.py) and
     # LLMRouter when provider == "anthropic". Groq/Ollama use their own fields.
@@ -110,6 +115,10 @@ class Settings(BaseSettings):
     # 0.653-0.670 band to 0.564 — the truncated tails hurt CrossEncoder
     # ranking more than they help. Keep 512 unless re-certifying.
     reranker_max_length: int = 512
+    # Serialize the cross-encoder forward pass across threads. This is not an
+    # experiment flag: any agentic or parallel retrieval path can share one GPU, so
+    # predict must be guarded by default.
+    reranker_serialize_predict: bool = True
 
     # Feature flags
     hyde_enabled: bool = True
@@ -124,6 +133,11 @@ class Settings(BaseSettings):
     query_rewrite_enabled: bool = True
     query_rewrite_max_subqueries: int = 4
     query_rewrite_max_tokens: int = 300
+    # Parallelize sub-query fan-out. This is the mainline behavior for decomposed
+    # agentic retrieval: cap it with query_rewrite_max_parallel_subqueries and the
+    # provider limiter instead of leaving it hidden behind an off switch.
+    query_rewrite_parallel_fanout_enabled: bool = True
+    query_rewrite_max_parallel_subqueries: int = 4
 
     # Constraint routing (soft boost). Reuses the query-rewrite LLM call to extract
     # named entities, plus deterministic technique-id / source-type signals, into a
@@ -133,15 +147,15 @@ class Settings(BaseSettings):
     constraint_boost_weight: float = 0.5
     constraint_boost_fetch_multiplier: int = 1
 
-    # Agentic answer loop (workflow->agentic). The answer() path becomes an adaptive
-    # retrieve->assess-sufficiency->retrieve-more->synthesize loop. Opt-in until eval
-    # proves it beats single-shot, then answer() flips to it.
+    # Agentic answer loop (workflow->agentic). This is the mainline answer path:
+    # retrieve -> assess sufficiency -> retrieve more -> synthesize. Single-shot
+    # remains available only through answer_single_shot() for baselines/fallbacks.
     #
     # Design principle: these are GENEROUS safety backstops against real limits (the
     # model's context window; runaway cost/latency) — NOT task quotas. The loop converges
     # on the judge's sufficiency call + a no-progress stop (a burst that gathers nothing
     # new); the numbers below only catch pathology and should rarely bind.
-    agentic_enabled: bool = False
+    agentic_enabled: bool = True
     # PRIMARY convergence bound: how many retrieve_more re-entries the loop allows before it
     # synthesizes with what it has (stop_reason="max_rounds"). This makes latency BOUNDED by
     # design (<= max_retrieve_rounds + 1 bursts) instead of relying on an LLM judge that may
@@ -161,10 +175,6 @@ class Settings(BaseSettings):
     # call (it judged it has enough), so this only caps pathology. ~8 rounds cover
     # resolve+outline+query plus a couple of retrieves comfortably.
     agentic_max_inner_steps: int = 8
-    # DEPRECATED (pre-gather-loop): was the recursion_limit of the inner create_react_agent,
-    # which over-explored and never drafted (15 == ~7 tool rounds, always hit). Superseded
-    # by agentic_max_inner_steps + the hand-rolled gather loop; no longer read by the loop.
-    agentic_inner_recursion_limit: int = 15
     # The sufficiency judge. ``agentic_verifier_provider`` picks WHICH client builds it:
     # "deepseek" (default) reuses the DeepSeek client — same family as the gatherer, so
     # NOT an independent verifier; "qwen" uses the DashScope client for a cross-family,
@@ -179,13 +189,35 @@ class Settings(BaseSettings):
     # The answer can only cite what reaches synthesis, so this is sized to fit the context
     # window, not an arbitrary small number. Facts are fed in full (no cap).
     agentic_synthesis_top_k: int = 50
+    # Window-safety bound for graph facts injected as pseudo-chunks during synthesis.
+    # The ledger may gather hundreds of facts for comparison questions; synthesis gets
+    # the highest-credibility slice plus structured summaries elsewhere in the prompt.
+    agentic_synthesis_fact_limit: int = 120
+    # Within-burst context trimming: when > 0, mask all but the most-recent N ToolMessage
+    # contents in the model input each turn (their essence is in the state view), cutting
+    # the growing-context latency. 0 = disabled (full transcript, current behavior). This
+    # is a REMOVAL of context the model used to see, so it stays 0 until eval PROVES the
+    # win: recall/F1 unchanged-or-better AND tokens/latency/tool_calls down (else revert).
+    agentic_keep_last_observations: int = 0
+    # Deterministic convergence guard: stop when open graph categories do not shrink
+    # and no new facts arrive. 0 disables the stall rule (always-on when > 0).
+    agentic_open_cat_stall_limit: int = 2
+    agentic_effort_budgets: dict[str, int] = {"simple": 3, "comparison": 8, "complex": 12}
+    # Hard runaway ceilings. These are deliberately much higher than the user-visible
+    # guidance budgets; they stop pathological loops without blocking normal multi-round
+    # comparison/compound questions.
+    agentic_hard_tool_budgets: dict[str, int] = {"simple": 10, "comparison": 20, "complex": 32}
+    # Keep semantic-search tool calls query-shaped. ReAct models sometimes paste ledger
+    # summaries or gap lists into retrieve(); that bloats rewrite/HyDE latency without adding
+    # signal. The graph facts remain full-fidelity in the ledger.
+    agentic_retrieve_query_max_chars: int = 360
+    # Dispatch independent tool calls in one model turn concurrently. Safety comes
+    # from the provider limiter, ledger RLock, and serialized reranker predict.
+    agentic_parallel_dispatch_enabled: bool = True
+    agentic_max_parallel_tools: int = 2
 
-    # Multi-agent supervisor (compound / parallelizable queries). Opt-in layer ABOVE the
-    # single-agent agentic loop: a decompose step splits a genuinely parallel question into
-    # independent branches, each gathered by the existing single-agent loop in its OWN
-    # ledger, then merged into ONE grounded synthesis. Dependent/sequential queries degrade
-    # to the untouched single-agent path (no regression). Off until eval proves a
-    # compound-class win.
+    # Multi-agent supervisor for compound/parallelizable queries. Kept as an explicit
+    # product mode while the single-agent agentic loop remains the default answer path.
     supervisor_enabled: bool = False
     # Max worker sub-agents (Anthropic's 3-5 subagent guidance). Hard cap on total
     # dispatch_worker calls (over-decomposition backstop) AND the ThreadPoolExecutor

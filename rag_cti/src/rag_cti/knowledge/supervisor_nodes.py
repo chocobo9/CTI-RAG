@@ -11,11 +11,14 @@ wiring (dispatch_worker / compose_answer / build_composer) lives in ``supervisor
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
+from rag_cti.knowledge.react_loop import run_react_tool_loop
 from rag_cti.types import FactRow
+
+if TYPE_CHECKING:
+    from rag_cti.generation.limiter import ConcurrencyLimiter
 
 # (tool_name, args) -> tool result. Injected so run_supervisor_loop unit-tests with a fake
 # model + fake dispatch — no real LLM, no langgraph.
@@ -55,6 +58,9 @@ def run_supervisor_loop(
     *,
     max_steps: int,
     max_workers: int,
+    limiter: ConcurrencyLimiter | None = None,
+    deadline: float | None = None,
+    on_model_error: Callable[[BaseException], None] | None = None,
 ) -> list[Any]:
     """ReAct ORCHESTRATION loop for the supervisor. Like the worker's gather loop, but the
     tool calls of EACH turn run in PARALLEL — so multiple ``dispatch_worker`` calls fan out
@@ -62,28 +68,22 @@ def run_supervisor_loop(
     (side-effecting the report / composed-answer side-channels) and its result is fed back
     as a ToolMessage. Stops when the model emits no tool call, or after ``max_steps`` turns.
     The supervisor never writes the answer (that is ``compose_answer``'s job); only the side
-    effects matter. A tool error is reported back to the model instead of aborting."""
-    from langchain_core.messages import ToolMessage
+    effects matter. A tool error is reported back to the model instead of aborting.
 
-    def run_one(call: dict[str, Any]) -> Any:
-        name = call.get("name", "")
-        args = call.get("args", {}) or {}
-        try:
-            result: Any = dispatch(name, args)
-        except Exception as exc:  # surface to the model, keep orchestrating
-            result = {"error": f"{name} failed: {exc}"}
-        return ToolMessage(content=str(result), tool_call_id=call.get("id", ""))
-
-    convo = list(messages)
-    for _ in range(max_steps):
-        ai = model.invoke(convo)
-        convo.append(ai)
-        tool_calls = getattr(ai, "tool_calls", None) or []
-        if not tool_calls:
-            break  # supervisor emitted no tool call -> done orchestrating
-        if len(tool_calls) == 1:
-            convo.append(run_one(tool_calls[0]))
-        else:  # parallel fan-out of this turn's tool calls (the multi-worker dispatch)
-            with ThreadPoolExecutor(max_workers=max(1, min(len(tool_calls), max_workers))) as ex:
-                convo.extend(ex.map(run_one, tool_calls))
-    return convo
+    ``limiter`` (B3) admission-controls each dispatch: 4 parallel branches each running a
+    full inner loop would otherwise stampede the provider's 429 ceiling, so the slot bounds
+    the in-flight branch count to the global concurrency cap. ``None`` => no limiting.
+    ``deadline`` mirrors the worker gather loop's wall-clock guardrail at the orchestration
+    layer; once reached, no further model/tool turn starts."""
+    return run_react_tool_loop(
+        model,
+        dispatch,
+        messages,
+        max_steps=max_steps,
+        deadline=deadline,
+        on_model_error=on_model_error,
+        model_error_observation=lambda exc: f"supervisor model failed: {exc}",
+        parallel_dispatch=True,
+        max_parallel_tools=max_workers,
+        limiter=limiter,
+    )

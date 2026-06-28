@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import threading
+
 from rag_cti.knowledge.evidence_ledger import EvidenceLedger
 from rag_cti.types import Chunk, FactRow, GraphOutline, QueryResult, RetrievalResult
 
@@ -129,3 +131,67 @@ def test_merge_fact_collision_dedups_by_fact_id() -> None:
     branch.add_facts((_row("f1"),))
     master.merge(branch)
     assert set(master.facts) == {"f1"}
+
+
+def test_add_action_records_name_and_compact_sorted_args() -> None:
+    led = EvidenceLedger()
+    led.add_action(
+        "graph_query",
+        {"subject_id": "actor_G0016", "predicate": "uses", "object_type": "technique"},
+    )
+    led.add_action("resolve_entity", {"name": "APT29"})
+    assert len(led.actions) == 2
+    assert led.actions[0].name == "graph_query"
+    assert led.actions[0].args == "object_type=technique, predicate=uses, subject_id=actor_G0016"
+    assert led.actions[1].args == "name=APT29"
+
+
+def test_add_action_truncates_long_values() -> None:
+    led = EvidenceLedger()
+    led.add_action("retrieve", {"query": "x" * 100, "top_k": 10})
+    assert "…" in led.actions[0].args
+    assert led.actions[0].args.startswith("query=" + "x" * 60)
+
+
+def test_merge_carries_actions_across_branches() -> None:
+    master, branch = EvidenceLedger(), EvidenceLedger()
+    master.add_action("graph_query", {"subject_id": "s1"})
+    branch.add_action("retrieve", {"query": "q"})
+    master.merge(branch)
+    assert [r.name for r in master.actions] == ["graph_query", "retrieve"]
+
+
+# --- thread safety (Phase 4 RLock for parallel dispatch / supervisor workers) ---
+
+
+def test_concurrent_add_facts_no_lost_updates() -> None:
+    # Many threads union disjoint facts into ONE ledger (the B2 parallel-dispatch scenario);
+    # without the lock the dict updates would race and lose appends. With it, every id lands.
+    led = EvidenceLedger()
+    n_threads, per_thread = 4, 50
+
+    def worker(base: int) -> None:
+        for i in range(per_thread):
+            led.add_facts((_row(f"f{base}_{i}"),))
+
+    threads = [threading.Thread(target=worker, args=(t,)) for t in range(n_threads)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(led.facts) == n_threads * per_thread
+
+
+def test_merge_reenters_lock_without_deadlock() -> None:
+    # merge() holds the RLock and calls add_query_result / add_facts / add_outline, which each
+    # re-acquire it — a non-reentrant Lock would deadlock here. Completing proves RLock re-entry.
+    master, branch = EvidenceLedger(), EvidenceLedger()
+    branch.add_query_result(_qr(_result("c1", 0.9)))
+    branch.add_facts((_row("f1"),))
+    branch.add_outline(
+        GraphOutline(entity_id="actor_G0016", entity_name="APT29", entity_type="actor")
+    )
+    master.merge(branch)
+    assert set(master.chunks) == {"c1"}
+    assert set(master.facts) == {"f1"}
+    assert "actor_G0016" in master.outlines

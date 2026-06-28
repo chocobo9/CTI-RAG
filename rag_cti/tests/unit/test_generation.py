@@ -246,6 +246,10 @@ def test_extract_cited_ids_handles_hyphens_and_underscores() -> None:
     assert extract_cited_ids("[chunk-1] and [chunk_2]") == ["chunk-1", "chunk_2"]
 
 
+def test_extract_cited_ids_handles_markdown_code_links() -> None:
+    assert extract_cited_ids("[`fact_abc123`] and [`chunk-1`]") == ["fact_abc123", "chunk-1"]
+
+
 # ---------------------------------------------------------------------------
 # Generator
 # ---------------------------------------------------------------------------
@@ -323,6 +327,17 @@ def test_generator_query_result_preserved() -> None:
 def test_generator_llm_failure_returns_error_message() -> None:
     gen = Generator(
         client=_FakeClient(response_content=None),
+        router=LLMRouter(_FakeSettings()),
+        settings=_FakeSettings(),
+    )
+    result = gen.generate("query", _make_query_result())
+    assert "Unable to generate answer" in result.answer
+    assert result.cited_chunk_ids == []
+
+
+def test_generator_empty_llm_content_returns_error_message() -> None:
+    gen = Generator(
+        client=_FakeClient(response_content=""),
         router=LLMRouter(_FakeSettings()),
         settings=_FakeSettings(),
     )
