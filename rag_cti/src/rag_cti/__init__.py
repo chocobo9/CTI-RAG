@@ -17,6 +17,7 @@ from rag_cti.runtime_harness import (
     RuntimeDeps,
     build_runtime_query_understanding,
     evaluate_supervisor_admission,
+    run_agentic_investigation,
 )
 from rag_cti.types import FactQueryResult, GeneratedAnswer, QueryResult
 
@@ -124,7 +125,6 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
     """
     from typing import cast
 
-    from rag_cti.knowledge.agentic_graph import run_agentic_answer
     from rag_cti.knowledge.agentic_nodes import GeneratorProto
     from rag_cti.knowledge.supervisor_graph import run_supervised_answer
     from rag_cti.observability.tracing import add_trace_metadata
@@ -179,7 +179,7 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
             generation_ms=0.0,
             model="supervisor",
         )
-    agentic = run_agentic_answer(
+    agentic = run_agentic_investigation(
         understanding.standalone_query,
         settings=deps.settings,
         history=history,
@@ -230,11 +230,10 @@ def agentic_answer(text: str, history: list[str] | None = None) -> AgenticAnswer
     (empty NEO4J_PASSWORD) so the loop still runs vector-only."""
     from typing import cast
 
-    from rag_cti.knowledge.agentic_graph import run_agentic_answer
     from rag_cti.knowledge.agentic_nodes import GeneratorProto
 
     deps = _build_runtime_deps(history)
-    return run_agentic_answer(
+    return run_agentic_investigation(
         text,
         settings=deps.settings,
         history=history,
