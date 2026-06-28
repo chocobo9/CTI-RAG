@@ -363,11 +363,9 @@ def test_runtime_turn_accepts_valid_tool_args(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         agent_tools,
         "resolve_entity_candidates",
-        lambda name, _ontology_nodes: [
-            {"entity_id": "actor_G0016", "matched_type": "actor"}
-        ]
-        if name == "APT29"
-        else [],
+        lambda name, _ontology_nodes: (
+            [{"entity_id": "actor_G0016", "matched_type": "actor"}] if name == "APT29" else []
+        ),
     )
     calls = [
         {"name": "resolve_entity", "args": {"name": "APT29"}, "id": "c1"},
@@ -880,8 +878,7 @@ def test_runtime_loop_records_proposal_trace_metadata(monkeypatch: Any) -> None:
 
     assert any(m.get("runtime_turn_proposal_count") == 3 for m in metadata)
     assert any(
-        m.get("runtime_turn_proposal_status_counts")
-        == {"ok": 1, "invalid": 1, "rejected": 1}
+        m.get("runtime_turn_proposal_status_counts") == {"ok": 1, "invalid": 1, "rejected": 1}
         for m in metadata
     )
     assert any(
@@ -1001,9 +998,12 @@ def test_retrieve_replays_ledger_update_from_runtime_observation() -> None:
     assert turn.observations[0].tool_name == "retrieve"
     assert turn.observations[0].status == "ok"
     assert ledger.chunks == {}
-    assert turn.observations[0].structured_payload["retrieve"]["query_result"]["results"][0][
-        "document"
-    ]["id"] == "chunk-1"
+    assert (
+        turn.observations[0].structured_payload["retrieve"]["query_result"]["results"][0][
+            "document"
+        ]["id"]
+        == "chunk-1"
+    )
 
     apply_observation_to_state(state, turn.observations[0])
 
@@ -1224,9 +1224,7 @@ def test_recorded_evidence_observations_replay_without_text_fields_and_citation_
         "APT29 uses phishing [fact-1] with prose support [chunk-1] [bogus].",
         replay_state.ledger,
     ) == (("fact-1", "chunk-1"), 1)
-    assert "retrieve(query=APT29, top_k=3)" in agentic_nodes.render_action_log(
-        replay_state.ledger
-    )
+    assert "retrieve(query=APT29, top_k=3)" in agentic_nodes.render_action_log(replay_state.ledger)
 
 
 def test_duplicate_migrated_observation_replay_is_idempotent() -> None:
@@ -1506,8 +1504,7 @@ def test_parallel_graph_outline_replay_keeps_per_observation_deltas_atomic() -> 
         },
     }
     assert {
-        event.metadata["args_summary"]: event.metadata["ledger_delta"]
-        for event in turn.events
+        event.metadata["args_summary"]: event.metadata["ledger_delta"] for event in turn.events
     } == {
         "subject_id=actor_G0016": {
             "added_chunk_ids": [],
@@ -1524,8 +1521,7 @@ def test_parallel_graph_outline_replay_keeps_per_observation_deltas_atomic() -> 
     }
     replay_state = RuntimeInvestigationState(EvidenceLedger())
     applied_events = [
-        apply_observation_to_state(replay_state, observation)
-        for observation in turn.observations
+        apply_observation_to_state(replay_state, observation) for observation in turn.observations
     ]
 
     assert set(replay_state.ledger.outlines) == {"actor_G0016", "actor_G0032"}
@@ -1549,8 +1545,7 @@ def test_parallel_graph_outline_replay_keeps_per_observation_deltas_atomic() -> 
         },
     }
     assert {
-        event.metadata["args_summary"]: event.metadata["ledger_delta"]
-        for event in applied_events
+        event.metadata["args_summary"]: event.metadata["ledger_delta"] for event in applied_events
     } == {
         "subject_id=actor_G0016": deltas_by_entity["actor_G0016"],
         "subject_id=actor_G0032": deltas_by_entity["actor_G0032"],
@@ -1622,8 +1617,7 @@ def test_parallel_retrieve_replay_keeps_per_observation_deltas_atomic() -> None:
 
     replay_state = RuntimeInvestigationState(EvidenceLedger())
     applied_events = [
-        apply_observation_to_state(replay_state, observation)
-        for observation in turn.observations
+        apply_observation_to_state(replay_state, observation) for observation in turn.observations
     ]
 
     assert set(replay_state.ledger.chunks) == {"chunk-apt29", "chunk-turla"}
@@ -1646,8 +1640,7 @@ def test_parallel_retrieve_replay_keeps_per_observation_deltas_atomic() -> None:
         },
     }
     assert {
-        event.metadata["args_summary"]: event.metadata["ledger_delta"]
-        for event in applied_events
+        event.metadata["args_summary"]: event.metadata["ledger_delta"] for event in applied_events
     } == {
         "query=APT29, top_k=3": deltas_by_query["APT29"],
         "query=Turla, top_k=3": deltas_by_query["Turla"],
@@ -1900,12 +1893,18 @@ def test_runtime_turn_exposes_resolved_entity_ids_to_next_real_turn(monkeypatch:
             "Lazarus Group": [{"entity_id": "actor_G0032", "matched_type": "actor"}],
         }.get(name, [])
 
-    def outline_to_ledger(_fact_store: object, ledger: EvidenceLedger, subject_id: str) -> dict[str, Any]:
+    def outline_to_ledger(
+        _fact_store: object, ledger: EvidenceLedger, subject_id: str
+    ) -> dict[str, Any]:
         outline = GraphOutline(
             entity_id=subject_id,
             entity_name={"actor_G0016": "APT29", "actor_G0032": "Lazarus Group"}[subject_id],
             entity_type="actor",
-            outgoing=(OutlineEntry(predicate="uses", other_type="technique", count=1, max_credibility=1.0),),
+            outgoing=(
+                OutlineEntry(
+                    predicate="uses", other_type="technique", count=1, max_credibility=1.0
+                ),
+            ),
         )
         ledger.add_outline(outline)
         return {"found": True, "entity_id": subject_id}
@@ -1958,9 +1957,7 @@ def test_resolved_entity_setup_state_uses_structured_payload_not_result_text(
         def invoke(self, messages: list[Any]) -> _FakeAI:
             self.inputs.append(messages)
             if len(self.inputs) == 1:
-                return _FakeAI(
-                    [{"name": "resolve_entity", "args": {"name": "APT29"}, "id": "c1"}]
-                )
+                return _FakeAI([{"name": "resolve_entity", "args": {"name": "APT29"}, "id": "c1"}])
             return _FakeAI([])
 
     class InspectingChatModel:
@@ -1973,11 +1970,9 @@ def test_resolved_entity_setup_state_uses_structured_payload_not_result_text(
     monkeypatch.setattr(
         agent_tools,
         "resolve_entity_candidates",
-        lambda name, _ontology_nodes: [
-            {"entity_id": "actor_G0016", "matched_type": "actor"}
-        ]
-        if name == "APT29"
-        else [],
+        lambda name, _ontology_nodes: (
+            [{"entity_id": "actor_G0016", "matched_type": "actor"}] if name == "APT29" else []
+        ),
     )
 
     ledger = EvidenceLedger()
@@ -2021,7 +2016,9 @@ def test_runtime_loop_does_not_count_empty_resolve_as_setup_progress(monkeypatch
     class SequenceBoundModel:
         def __init__(self) -> None:
             self.turns = [
-                _FakeAI([{"name": "resolve_entity", "args": {"name": "Unknown Actor"}, "id": "c1"}]),
+                _FakeAI(
+                    [{"name": "resolve_entity", "args": {"name": "Unknown Actor"}, "id": "c1"}]
+                ),
                 _FakeAI([]),
             ]
 
@@ -2092,7 +2089,9 @@ def test_simple_query_uses_single_agent() -> None:
 
 
 def test_independent_comparison_admits_supervisor() -> None:
-    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
+    understanding = _understanding(
+        decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla"))
+    )
     assert admit_supervisor(understanding, max_branches=4) == "supervisor"
     admission = evaluate_supervisor_admission(understanding, max_branches=4)
     assert admission.reason == "validated_independent_branches"
@@ -2105,7 +2104,9 @@ def test_dependent_multihop_rejects_supervisor() -> None:
         suitable_for_supervisor=True,
         dependency_reason="second branch depends on malware found by first branch",
     )
-    assert admit_supervisor(_understanding(decomposition=proposal), max_branches=4) == "single_agent"
+    assert (
+        admit_supervisor(_understanding(decomposition=proposal), max_branches=4) == "single_agent"
+    )
 
 
 def test_retrieval_subqueries_are_not_supervisor_branches() -> None:
@@ -2178,7 +2179,7 @@ def test_runtime_understanding_parses_explicit_decomposition() -> None:
             '{"branch_id": "turla", "sub_question": "Gather Turla evidence",'
             '"focus_entity": "Turla", "facet": "comparison",'
             '"independent_reason": "independent actor branch"}'
-            ']},'
+            "]},"
             '"confidence": 0.8}'
         ),
     )
@@ -2248,7 +2249,7 @@ def test_runtime_understanding_normalizes_independent_dependency_reason() -> Non
             '{"branch_id": "turla", "sub_question": "What techniques does Turla use?",'
             '"focus_entity": "Turla", "facet": "techniques",'
             '"independent_reason": "independent actor branch"}'
-            ']},'
+            "]},"
             '"confidence": 0.8}'
         ),
     )
@@ -2271,11 +2272,19 @@ def test_runtime_understanding_normalizes_independent_dependency_reason() -> Non
 def test_answer_records_supervisor_disabled_reason_and_uses_agentic() -> None:
     import rag_cti
 
-    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
+    understanding = _understanding(
+        decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla"))
+    )
     with (
-        patch.object(rag_cti, "_build_runtime_deps", return_value=_deps(understanding, supervisor_enabled=False)),
+        patch.object(
+            rag_cti,
+            "_build_runtime_deps",
+            return_value=_deps(understanding, supervisor_enabled=False),
+        ),
         patch("rag_cti.observability.tracing.add_trace_metadata") as meta,
-        patch.object(rag_cti, "run_agentic_investigation", return_value=_agentic_answer("q")) as agentic,
+        patch.object(
+            rag_cti, "run_agentic_investigation", return_value=_agentic_answer("q")
+        ) as agentic,
         patch("rag_cti.knowledge.agentic_graph.run_agentic_answer") as legacy_agentic,
         patch("rag_cti.knowledge.supervisor_graph.run_supervised_answer") as supervised,
     ):
@@ -2293,8 +2302,14 @@ def test_agentic_answer_uses_runtime_investigation() -> None:
     import rag_cti
 
     with (
-        patch.object(rag_cti, "_build_runtime_deps", return_value=_deps(_understanding(), supervisor_enabled=False)),
-        patch.object(rag_cti, "run_agentic_investigation", return_value=_agentic_answer("q")) as agentic,
+        patch.object(
+            rag_cti,
+            "_build_runtime_deps",
+            return_value=_deps(_understanding(), supervisor_enabled=False),
+        ),
+        patch.object(
+            rag_cti, "run_agentic_investigation", return_value=_agentic_answer("q")
+        ) as agentic,
         patch("rag_cti.knowledge.agentic_graph.run_agentic_answer") as legacy_agentic,
     ):
         ans = rag_cti.agentic_answer("q")
@@ -2308,8 +2323,14 @@ def test_ask_reaches_runtime_investigation_through_agentic_answer() -> None:
     import rag_cti
 
     with (
-        patch.object(rag_cti, "_build_runtime_deps", return_value=_deps(_understanding(), supervisor_enabled=False)),
-        patch.object(rag_cti, "run_agentic_investigation", return_value=_agentic_answer("q")) as agentic,
+        patch.object(
+            rag_cti,
+            "_build_runtime_deps",
+            return_value=_deps(_understanding(), supervisor_enabled=False),
+        ),
+        patch.object(
+            rag_cti, "run_agentic_investigation", return_value=_agentic_answer("q")
+        ) as agentic,
         patch("rag_cti.knowledge.agentic_graph.run_agentic_answer") as legacy_agentic,
     ):
         text = rag_cti.ask("q")
@@ -2322,13 +2343,24 @@ def test_ask_reaches_runtime_investigation_through_agentic_answer() -> None:
 def test_answer_passes_validated_branch_plan_to_supervisor() -> None:
     import rag_cti
 
-    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
-    supervised_answer = _agentic_answer("q").model_copy(update={"branch_count": 2, "decomposed": True})
+    understanding = _understanding(
+        decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla"))
+    )
+    supervised_answer = _agentic_answer("q").model_copy(
+        update={"branch_count": 2, "decomposed": True}
+    )
     with (
-        patch.object(rag_cti, "_build_runtime_deps", return_value=_deps(understanding, supervisor_enabled=True)),
+        patch.object(
+            rag_cti,
+            "_build_runtime_deps",
+            return_value=_deps(understanding, supervisor_enabled=True),
+        ),
         patch("rag_cti.observability.tracing.add_trace_metadata") as meta,
         patch.object(rag_cti, "run_agentic_investigation") as agentic,
-        patch("rag_cti.knowledge.supervisor_graph.run_supervised_answer", return_value=supervised_answer) as supervised,
+        patch(
+            "rag_cti.knowledge.supervisor_graph.run_supervised_answer",
+            return_value=supervised_answer,
+        ) as supervised,
     ):
         ans = rag_cti.answer("q")
 
@@ -2344,7 +2376,9 @@ def test_answer_validated_branch_plan_does_not_run_supervisor_loop(monkeypatch: 
     from rag_cti.knowledge import supervisor_graph
     from rag_cti.knowledge.agentic_state import BranchReport, SubQuestion
 
-    understanding = _understanding(decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla")))
+    understanding = _understanding(
+        decomposition=_proposal(_branch("b1", "APT29"), _branch("b2", "Turla"))
+    )
     gathered: list[str] = []
 
     def gather(branch: SubQuestion, **_kwargs: Any) -> tuple[EvidenceLedger, BranchReport]:
