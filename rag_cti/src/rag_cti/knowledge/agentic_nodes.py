@@ -324,6 +324,7 @@ class _StopContext:
     token_ceiling: int
     max_retrieve_rounds: int
     new_facts: int
+    setup_progress: int
     prev_gaps: tuple[str, ...]
     elapsed_seconds: float
     max_wall_seconds: float
@@ -346,7 +347,7 @@ def _sufficient(ctx: _StopContext) -> bool:
 
 
 def _no_progress(ctx: _StopContext) -> bool:
-    return ctx.new_evidence == 0
+    return ctx.new_evidence == 0 and ctx.setup_progress == 0
 
 
 def _repeated_gap_without_new_facts(ctx: _StopContext) -> bool:
@@ -401,6 +402,7 @@ def decide_next(
     token_ceiling: int,
     max_retrieve_rounds: int = 2,
     new_facts: int = 0,
+    setup_progress: int = 0,
     prev_gaps: tuple[str, ...] = (),
     elapsed_seconds: float = 0.0,
     max_wall_seconds: float = 0.0,
@@ -423,6 +425,7 @@ def decide_next(
         token_ceiling=token_ceiling,
         max_retrieve_rounds=max_retrieve_rounds,
         new_facts=new_facts,
+        setup_progress=setup_progress,
         prev_gaps=prev_gaps,
         elapsed_seconds=elapsed_seconds,
         max_wall_seconds=max_wall_seconds,
