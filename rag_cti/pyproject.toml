@@ -49,6 +49,11 @@ pdf = [
     "unstructured[pdf]>=0.13.0",
 ]
 
+# Source-corpus collection and local text extraction.
+collection = [
+    "pymupdf>=1.24.0",
+]
+
 # ── Connectors: OTX / VT API connectors + STIX parsing ────────────
 # pip install -e ".[connectors]"  →  +~30MB
 connectors = [
@@ -91,6 +96,7 @@ all = [
     "rag-cti[eval]",
     "rag-cti[cli]",
     "rag-cti[tracing]",
+    "rag-cti[collection]",
 ]
 
 # ── Dev: all + testing + linting ──────────────────────────────────
