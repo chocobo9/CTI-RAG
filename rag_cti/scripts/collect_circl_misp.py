@@ -14,7 +14,7 @@ from rag_cti.connectors.circl_misp_collection import CirclMispCollector
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("inspect", "collect", "rebuild", "validate", "report", "finalize"))
-    parser.add_argument("--root", type=Path, default=Path("data/circl_misp"))
+    parser.add_argument("--root", type=Path, default=Path("data/raw/circl_misp"))
     parser.add_argument("--limit", type=int)
     parser.add_argument("--rate-delay", type=float, default=0.08)
     args = parser.parse_args()
