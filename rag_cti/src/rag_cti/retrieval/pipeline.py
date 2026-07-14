@@ -160,7 +160,7 @@ def build_pipeline(
     embedder: QueryEmbedder,
     encoder: SparseQueryEncoder,
     llm_client: object | None = None,
-    llm_provider: str = "anthropic",
+    llm_provider: str = "groq",
     hybrid_alpha_override: float | None = None,
     ontology_nodes: list[dict[str, Any]] | None = None,
     ontology_edges: list[dict[str, Any]] | None = None,

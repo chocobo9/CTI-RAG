@@ -1,0 +1,65 @@
+### Archived Content
+
+In an effort to keep CISA.gov current, the archive contains outdated information that may not reflect current policy or programs.
+
+Cybersecurity Advisory
+
+# Microsoft Ending Support for Windows 7 and Windows Server 2008 R2
+
+Last Revised
+
+October 18, 2019
+
+Alert Code
+
+AA19-290A
+
+### Summary
+
+Note: This alert does not apply to federally certified voting systems running Windows 7. Microsoft will continue to provide free security updates to those systems through the 2020 election. See Microsoft’s article, Extending free Windows 7 security updates to voting systems(link is external), for more information.
+
+On January 14, 2020, Microsoft will end extended support for their Windows 7 and Windows Server 2008 R2 operating systems.[1](link is external) After this date, these products will no longer receive free technical support, or software and security updates.
+
+Organizations that have regulatory obligations may find that they are unable to satisfy compliance requirements while running Windows 7 and Windows Server 2008 R2.
+
+### Technical Details
+
+All software products have a lifecycle. “End of support” refers to the date when the software vendor will no longer provide automatic fixes, updates, or online technical assistance. [2](link is external)
+
+For more information on end of support for Microsoft products see the Microsoft End of Support FAQ(link is external).
+
+Systems running Windows 7 and Windows Server 2008 R2 will continue to work at their current capacity even after support ends on January 14, 2020. However, using unsupported software may increase the likelihood of malware and other security threats. Mission and business functions supported by systems running Windows 7 and Windows Server 2008 R2 could experience negative consequences resulting from unpatched vulnerabilities and software bugs. These negative consequences could include the loss of confidentiality, integrity, and availability of data, system resources, and business assets.
+
+### Mitigations
+
+The Cybersecurity and Infrastructure Security Agency (CISA) encourages users and organizations to:
+
+Upgrade to a newer operating system.
+
+Identify affected devices to determine breadth of the problem and assess risk of not upgrading.
+
+Establish and execute a plan to systematically migrate to currently supported operating systems or employ a cloud-based service.
+
+Contact the operating system vendor to explore opportunities for fee-for-service maintenance, if unable to upgrade.
+
+### References
+
+[1] Microsoft End of Support FAQ(link is external)
+
+[2] Microsoft Windows Lifecyle Fact Sheet(link is external)
+
+[3] Microsoft Windows Upgrade and Migration Considerations(link is external)
+
+[4] ComputerWorld: Leaving Windows 7? Here are Some non-Windows Options(link is external)
+
+[5] CISA Analysis Report AR19-133A: Microsoft Office 365 Security Observations
+
+### Revisions
+
+October 17, 2019: Initial version|October 18, 2019: Added note
+
+This product is provided subject to this Notification and this Privacy & Use policy.
+
+## Please share your thoughts
+
+We recently updated our anonymous product survey; we welcome your feedback.

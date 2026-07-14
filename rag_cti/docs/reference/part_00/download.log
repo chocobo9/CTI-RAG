@@ -1,0 +1,29 @@
+2026-07-03 00:02:16,936 [INFO] Part 00 starting: 148 queries, since=2018-01-01 until=2023-01-01
+2026-07-03 00:02:16,948 [INFO] Query: ACTINIUM
+2026-07-03 00:08:08,414 [INFO] Query: admin@338
+2026-07-03 00:09:33,106 [INFO] Query: Agonizing Serpens
+2026-07-03 00:10:53,685 [INFO] Query: Agrius
+2026-07-03 00:14:14,496 [INFO] Query: AguilaCiega
+2026-07-03 00:14:46,546 [INFO] Query: Ajax Security Team
+2026-07-03 00:23:01,046 [INFO] Query: AjaxTM
+2026-07-03 00:23:51,530 [INFO] Query: Akira
+2026-07-03 00:36:00,246 [INFO] Part 00 starting: 148 queries, since=2018-01-01 until=2023-01-01
+2026-07-03 00:36:00,256 [INFO] Query: Akira
+2026-07-03 00:47:32,550 [INFO] Query: AMERICIUM
+2026-07-03 00:49:12,801 [INFO] Query: Andariel
+2026-07-03 00:52:02,962 [WARNING] Transport error for https://otx.alienvault.com/api/v1/pulses/63236145f80856ef407004fc/indicators: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='otx.alienvault.com', port=443): Read timed out. (read timeout=60)")); sleeping 10.0s
+2026-07-03 00:54:17,226 [WARNING] Transport error for https://otx.alienvault.com/api/v1/search/pulses: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='otx.alienvault.com', port=443): Read timed out. (read timeout=60)")); sleeping 10.0s
+2026-07-03 00:58:41,020 [INFO] Query: Anunak
+2026-07-03 01:00:53,424 [INFO] Query: Aoqin Dragon
+2026-07-03 01:02:59,004 [INFO] Query: AppleJeus
+2026-07-03 01:07:14,892 [INFO] Query: APT-C-00
+2026-07-03 01:09:08,654 [INFO] Query: APT-C-23
+2026-07-03 01:12:30,246 [WARNING] Transport error for https://otx.alienvault.com/api/v1/pulses/5f806ef59f87785512e18170: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='otx.alienvault.com', port=443): Read timed out. (read timeout=60)")); sleeping 10.0s
+2026-07-03 01:13:45,441 [WARNING] Transport error for https://otx.alienvault.com/api/v1/search/pulses: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='otx.alienvault.com', port=443): Read timed out. (read timeout=60)")); sleeping 10.0s
+2026-07-03 01:15:49,182 [INFO] Query: APT-C-36
+2026-07-03 01:18:14,432 [INFO] Query: APT-C-43
+2026-07-03 01:19:51,774 [INFO] Query: APT-Q-98
+2026-07-03 01:21:37,835 [INFO] Query: APT1
+2026-07-03 01:27:46,474 [WARNING] Transport error for https://otx.alienvault.com/api/v1/search/pulses: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='otx.alienvault.com', port=443): Read timed out. (read timeout=60)")); sleeping 10.0s
+2026-07-03 01:37:24,074 [WARNING] HTTP 502 for https://otx.alienvault.com/api/v1/pulses/6063546189f95cd5b697e899; sleeping 10.0s
+2026-07-03 01:44:37,013 [INFO] Query: APT10

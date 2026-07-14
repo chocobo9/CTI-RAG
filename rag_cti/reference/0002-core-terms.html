@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agentic RAG 核心术语表</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Core Terms</p>
+    <h1>核心术语表</h1>
+    <p class="lead">这份术语表是读 CTI-RAG Agentic RAG 代码时的速查页。每个术语都服务于一个边界判断：它属于控制、状态、工具、证据、可信度、supervisor、eval，还是架构评价。</p>
+  </header>
+
+  <section>
+    <h2>第一组：控制平面</h2>
+    <div class="grid">
+      <article class="term"><h3>Runtime harness</h3><p>模型外部的运行时控制层：理解输入、选择路径、验证工具、更新 state、执行 stop policy、记录 trace、组装最终答案。</p></article>
+      <article class="term"><h3>Control plane</h3><p>决定下一步能不能发生的代码：routing、validation、budgets、deadline、stop reason、fallback、trace events。</p></article>
+      <article class="term"><h3>Runtime query understanding</h3><p>把用户问题变成 standalone task、retrieval queries、entities、constraints 和可选 decomposition proposal。</p></article>
+      <article class="term"><h3>Supervisor admission</h3><p>runtime harness 对 branch plan 的保守裁决：只有独立、可并行、需要合成的分支才进入 supervisor。</p></article>
+      <article class="term"><h3>Stop policy</h3><p>决定继续 gather 还是 synthesize 的规则集合，依赖 sufficiency、进展、预算、时间、工具次数和 provider/tool failures。</p></article>
+      <article class="term"><h3>RuntimeDeps</h3><p>可复用服务和 provider policy，例如 settings、retriever、fact store、models、judge、composer。不要放 per-run reasoning state。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>第二组：状态与工具边界</h2>
+    <div class="grid">
+      <article class="term"><h3>Runtime state</h3><p>一次运行里的控制变量，例如 iteration、tokens、new evidence、sufficiency、stop reason、observations、events。</p></article>
+      <article class="term"><h3>Action proposal</h3><p>模型提出的工具调用意图。它还不是执行事实，必须经过 runtime validation 和 admission。</p></article>
+      <article class="term"><h3>Tool boundary</h3><p>把 probabilistic model proposal 变成 deterministic runtime observation 的信任边界。</p></article>
+      <article class="term"><h3>Tool validation</h3><p>代码级检查工具名、必填参数、未知参数、类型、长度、预算、deadline、重复调用和路径 policy。</p></article>
+      <article class="term"><h3>Observation</h3><p>工具边界返回的结构化结果，包括 status、error、summary、structured payload、ledger delta 和 model-visible content。</p></article>
+      <article class="term"><h3>Observation status</h3><p><code>ok</code> 成功执行；<code>invalid</code> proposal 不合法；<code>rejected</code> policy 拒绝；<code>error</code> 执行层失败；<code>no_action</code> 模型没有动作。</p></article>
+      <article class="term"><h3>RuntimeEvent</h3><p>从 observation 派生的观测事件，用于 trace、计数、debug 和 eval 分析，不是完整证据仓库。</p></article>
+      <article class="term"><h3>Reducer</h3><p>把 observation 确定性合并进 state 和 ledger 的逻辑。它让状态更新可回放、可测试、可审计。</p></article>
+      <article class="term"><h3>Working-set context</h3><p>每轮从 state/ledger 重新渲染给模型看的工作视图，不是 durable state 本身。</p></article>
+      <article class="term"><h3>Setup progress</h3><p>不新增 citable evidence、但为后续 gather 做准备的进展，例如 entity resolution 或 graph outline。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>第三组：证据与可信度</h2>
+    <div class="grid">
+      <article class="term"><h3>Evidence ledger</h3><p>本次运行的证据权威：chunks、facts、outlines、actions、conflicts 和真实可引用 ID 集合。</p></article>
+      <article class="term"><h3>Per-run evidence authority</h3><p>答案能引用什么，以本次 run 收集进 ledger 的证据为准，不以全局知识库或模型记忆为准。</p></article>
+      <article class="term"><h3>Provenance</h3><p>证据来源：source、chunk ID、fact ID、document metadata、support edge 和可信度信号。</p></article>
+      <article class="term"><h3>Citation</h3><p>答案中显式出现的 chunk/fact ID 引用。它是证据指针，不自动等于 claim 被支持。</p></article>
+      <article class="term"><h3>Citation validation</h3><p>把模型写出的 citation IDs 与 ledger 的真实 ID 集合求交；这是确定性 guard。</p></article>
+      <article class="term"><h3>Grounding</h3><p>答案 claim 是否能落回收集到的 evidence，而不是来自模型自由记忆。</p></article>
+      <article class="term"><h3>Faithfulness</h3><p>答案是否忠实表达证据，没有夸大、改写、拼接出证据不支持的结论。</p></article>
+      <article class="term"><h3>Sufficiency</h3><p>已有证据是否足够覆盖用户问题的关键 facet。它是 gather stop 的核心输入之一。</p></article>
+      <article class="term"><h3>Deterministic guard</h3><p>用代码执行的确定性检查，例如 citation ID 是否存在、工具参数是否合法。</p></article>
+      <article class="term"><h3>LLM-as-judge</h3><p>用模型评估语义质量或 coverage 的概率性判断，适合 claim support、faithfulness、sufficiency 等较难形式化的问题。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>第四组：Supervisor</h2>
+    <div class="grid">
+      <article class="term"><h3>Branch plan</h3><p>一组经过 admission 的独立 sub-questions，适合并行 gather，并在最后统一 composition。</p></article>
+      <article class="term"><h3>Supervisor</h3><p>已放行多分支任务的协调者：调度 gather-only workers，汇总 branch reports，触发 Composer。</p></article>
+      <article class="term"><h3>Worker</h3><p>围绕一个 branch 收集证据的分支 agent，产出 branch-local ledger 和 compact branch report。</p></article>
+      <article class="term"><h3>Branch report</h3><p>分支协调摘要：status、sub-question、evidence summary、cited ids、gaps、errors、counts、stop reason。</p></article>
+      <article class="term"><h3>Branch-local ledger</h3><p>每个 worker 独立收集的证据账本，最后合并成 master ledger。</p></article>
+      <article class="term"><h3>Ledger merge</h3><p>把分支 ledger 确定性合并成 master ledger，供最终 citation validation 使用。</p></article>
+      <article class="term"><h3>Composer</h3><p>无工具的最终合成角色，只从 branch reports 和 accepted evidence context 写一个答案。</p></article>
+      <article class="term"><h3>Validated plan path</h3><p>生产路径：runtime admission 已经验证 branch plan，supervisor 只负责协调执行。</p></article>
+      <article class="term"><h3>Legacy autonomous supervisor</h3><p>用于 debug/eval/manual baseline 的自主 supervisor 路径，不应误读为生产默认。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>第五组：Evaluation 与架构评价</h2>
+    <div class="grid">
+      <article class="term"><h3>Retrieval eval</h3><p>测 retriever 是否返回 expected chunks、sources 或 ATT&amp;CK IDs，常见指标包括 hit@k、MRR、NDCG。</p></article>
+      <article class="term"><h3>Gathered evidence eval</h3><p>测 agent 实际收集到了什么证据，而不是 retriever 理论上能搜到什么。</p></article>
+      <article class="term"><h3>Answer eval</h3><p>测最终答案的正确性、完整性、相关性、可读性和任务满足程度。</p></article>
+      <article class="term"><h3>Faithfulness eval</h3><p>测答案是否被 retrieved/ledger evidence 支持。它不等同于外部世界事实正确性。</p></article>
+      <article class="term"><h3>Citation eval</h3><p>测 citations 是否存在、是否为有效 ledger IDs、是否与 claim 支撑关系匹配。</p></article>
+      <article class="term"><h3>Regression test</h3><p>防止 runtime、tool、ledger、citation 或 eval 行为在重构中悄悄漂移的可重复测试。</p></article>
+      <article class="term"><h3>Golden set</h3><p>一组固定问题和 expected evidence/answers，用于比较模型、代码、prompt、retriever 改动前后的表现。</p></article>
+      <article class="term"><h3>Runtime contract</h3><p>系统对调用方和维护者承诺的行为：入口、输出 shape、trace、fallback reason、stop reason、citation behavior。</p></article>
+      <article class="term"><h3>Architecture review</h3><p>把 design intent、runtime contract、code evidence、tests/eval evidence 和 residual risks 分开评价。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>横切边界</h2>
+    <table>
+      <thead>
+        <tr><th>边界</th><th>一句话</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>State vs Memory</td><td>state 是当前 run 的控制变量；memory 是被选择进 context 的信息来源。</td></tr>
+        <tr><td>Context vs Prompt</td><td>context 是选入模型调用的材料；prompt 是最终序列化输入。</td></tr>
+        <tr><td>Action vs Observation</td><td>action 是系统尝试或模型 proposal；observation 是边界返回的结构化事实。</td></tr>
+        <tr><td>Plan vs Trace</td><td>plan 是预期路线；trace 是实际执行记录。</td></tr>
+        <tr><td>Ledger vs Trace</td><td>ledger 是证据权威；trace 是运行解释和观测记录。</td></tr>
+        <tr><td>Control Plane vs Data Plane</td><td>control plane 决定能不能做；data plane 提供证据内容。</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

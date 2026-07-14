@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supervisor：Admission 之后的协调层</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 06 · Supervisor</p>
+    <h1>Supervisor：Admission 之后的协调层</h1>
+    <p class="lead">第六课专门拆 supervisor。我们不把它讲成“一个更厉害的 agent”，而是讲成多分支 Agentic RAG 里的协调层：什么时候进入、它协调谁、它不能做什么、CTI-RAG 生产路径和 legacy debug 路径有什么区别。</p>
+  </header>
+
+  <section>
+    <h2>先看全局：本课在地图哪里</h2>
+    <p>前五课已经覆盖 single-agent gather loop：入口、state、工具边界、ledger、grounding。supervisor 出现的原因不是“所有问题都应该多 agent”，而是有些用户问题天然可以拆成独立 gather 分支，最后再统一 composition。</p>
+    <div class="grid">
+      <article class="card">
+        <h3>Multi-Agent/Supervisor</h3>
+        <p>Supervisor、branch plan、worker、branch-local ledger、ledger merge、single composition 都在这一块。</p>
+      </article>
+      <article class="card">
+        <h3>Runtime/Harness</h3>
+        <p>生产路径中，是否进入 supervisor 由 runtime admission 决定。supervisor 不应该自己决定简单问题是否要多分支。</p>
+      </article>
+      <article class="card">
+        <h3>Evidence Ledger</h3>
+        <p>每个 worker 收集自己的 branch ledger，最终 merge 成 master ledger，供 citation guard 验证。</p>
+      </article>
+      <article class="card">
+        <h3>Grounding</h3>
+        <p>Composer 负责最终文字，但不应该越过 merged ledger 编新证据。最终 citation 仍由 guard 处理。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课核心胜利：</strong>你能把 supervisor 定位成“admission 之后、worker 之上、composer 之前的协调层”。它不负责判断所有问题是否该多分支，不直接检索，不直接写最终答案，也不替代 citation guard。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：先把角色边界立住</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能解释 supervisor 为什么只适合 independent gatherable branches，而不适合所有复杂问题。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能区分生产路径的 validated branch plan 和 legacy autonomous supervisor debug/eval 路径。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能评价 supervisor 设计是否保持边界：dispatch worker、收 report、merge ledgers、call composer；不亲自检索、不亲自写最终答案、不验证 citations。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>你之前问过 supervisor 的定位，这里我们把问题拆到最小：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>概念答案</th><th>在 CTI-RAG 里的实际含义</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>supervisor 是入口路由器吗？</td>
+          <td>不是。入口 admission 决定是否走 supervisor。</td>
+          <td><code>answer()</code> 拥有 supervisor admission；生产路径传入 validated branch plan。</td>
+        </tr>
+        <tr>
+          <td>supervisor 是检索器吗？</td>
+          <td>不是。它 dispatch worker，worker 执行 gather。</td>
+          <td><code>dispatch_worker</code> 是子 agent 工具，不是直接 retrieval 工具。</td>
+        </tr>
+        <tr>
+          <td>supervisor 写最终答案吗？</td>
+          <td>不应该。它把 branch reports 交给 Composer。</td>
+          <td>项目 ADR 明确 Composer 是 no-tool synthesis role。</td>
+        </tr>
+        <tr>
+          <td>supervisor 验证 citations 吗？</td>
+          <td>不应该替代 citation guard。</td>
+          <td>最终答案仍通过 merged ledger 的 deterministic citation guard。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一张图：生产路径里的 supervisor</h2>
+    <p>这张图的重点是顺序和边界：runtime 先判断是否适合 supervisor，并生成或验证 branch plan；supervisor 只协调 worker；worker 只 gather；Composer 只写答案；citation guard 最后验证引用。</p>
+    <div class="flow">
+      <div>Runtime Admission<br>是否多分支</div>
+      <div>Validated Branch Plan<br>分支计划</div>
+      <div>Supervisor<br>协调 worker</div>
+      <div>Composer<br>统一写答案</div>
+      <div>Citation Guard<br>merged ledger</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>层</th><th>应该做什么</th><th>不应该做什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Runtime admission</td>
+          <td>判断问题是否适合 independent branch gather；决定 fallback 理由。</td>
+          <td>不把所有复杂问题都扔给 supervisor。</td>
+        </tr>
+        <tr>
+          <td>Branch plan</td>
+          <td>描述每个 branch 的 sub-question、focus entity、facet。</td>
+          <td>不把依赖链伪装成并行分支。</td>
+        </tr>
+        <tr>
+          <td>Supervisor</td>
+          <td>dispatch gather-only workers，收 branch reports，处理 partial/empty/failed。</td>
+          <td>不直接检索、不直接写最终答案、不自己验证 citations。</td>
+        </tr>
+        <tr>
+          <td>Worker</td>
+          <td>在 branch-local ledger 中收集证据并生成 compact report。</td>
+          <td>不负责最终跨分支 composition。</td>
+        </tr>
+        <tr>
+          <td>Composer</td>
+          <td>基于 reports 和 merged ledger 写单一最终答案。</td>
+          <td>不再调用工具、不引入新证据。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心概念一：supervisor 不是“多 agent 魔法”</h2>
+    <p>supervisor 适合的问题有一个共同特征：可以拆成若干相对独立的 gather 分支，并且最后需要统一 composition。比如：</p>
+    <table>
+      <thead>
+        <tr><th>问题类型</th><th>是否适合 supervisor</th><th>原因</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>比较两个 actor 的 technique overlap。</td>
+          <td>适合</td>
+          <td>APT29 分支和 Lazarus 分支可独立 gather，最后比较。</td>
+        </tr>
+        <tr>
+          <td>分别总结三个 malware family 的 capabilities。</td>
+          <td>适合</td>
+          <td>每个 family 可以独立收证据，最终汇总。</td>
+        </tr>
+        <tr>
+          <td>先识别实体，再根据实体结果决定下一步查什么。</td>
+          <td>不一定适合</td>
+          <td>这是 dependent chain，不是独立分支。single-agent loop 更自然。</td>
+        </tr>
+        <tr>
+          <td>一个简单 fact lookup。</td>
+          <td>不适合</td>
+          <td>多分支会增加成本和延迟，没有协调收益。</td>
+        </tr>
+        <tr>
+          <td>问题边界不清，需要探索性检索。</td>
+          <td>通常不适合直接 supervisor</td>
+          <td>没有清晰独立分支时，先走 single path 更安全。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>判断句：</strong>supervisor 不是复杂度奖励机制；它是“多个独立证据采集任务需要统一合成”时的协调机制。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>核心概念二：validated plan path vs legacy autonomous path</h2>
+    <p>CTI-RAG 里尤其要分清两个路径：</p>
+    <table>
+      <thead>
+        <tr><th>路径</th><th>定位</th><th>谁决定分支</th><th>什么时候用</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Validated branch plan path</td>
+          <td>生产主路径。</td>
+          <td>runtime admission 先判断并传入 validated branch plan。</td>
+          <td><code>answer()</code> 认为问题适合多分支时。</td>
+        </tr>
+        <tr>
+          <td>Legacy autonomous supervisor</td>
+          <td>debug/eval/manual baseline。</td>
+          <td>supervisor 自己规划和循环。</td>
+          <td>用于对比、调试、评估，不应误读成生产默认。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>这个区分能解释很多项目内看似矛盾的代码：你可能会看到 supervisor loop 里有自主规划逻辑，但 ADR 和生产路径已经把它限定为 legacy debug/eval。评价架构时，要问的是生产 API 走哪条路，而不是看到某段旧能力就认为它是主设计。</p>
+  </section>
+
+  <section>
+    <h2>核心概念三：branch report 是摘要，branch ledger 才是证据</h2>
+    <p>worker 完成后会交出 branch report。report 很重要，但它不是完整证据权威。完整证据在 branch-local ledger 中，最后 merge 成 master ledger。</p>
+    <table>
+      <thead>
+        <tr><th>对象</th><th>保存什么</th><th>用途</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Branch report</td>
+          <td>branch_id、sub_question、status、evidence_summary、key_entities、cited_ids、gaps、errors、stop_reason 等。</td>
+          <td>给 supervisor 和 Composer 一个 compact coordination view。</td>
+        </tr>
+        <tr>
+          <td>Branch-local ledger</td>
+          <td>worker 实际收集到的 chunks/facts/outlines/actions。</td>
+          <td>保留完整证据，等待 merge 后供最终 citation guard 使用。</td>
+        </tr>
+        <tr>
+          <td>Merged master ledger</td>
+          <td>所有分支证据的去重合并结果。</td>
+          <td>最终答案的 evidence authority。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>这个边界非常关键：如果 Composer 只凭 report 写答案、citation guard 又找不到 branch evidence，就会出现“报告里说有证据，但最终引用验证失败”的断裂。正确设计是 report 负责沟通，ledger 负责证据权威。</p>
+  </section>
+
+  <section>
+    <h2>CTI-RAG 里的代码映射</h2>
+    <table>
+      <thead>
+        <tr><th>代码/文档位置</th><th>概念职责</th><th>读的时候重点问什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>docs/adr/0001-runtime-harness-orchestration.md</code></td>
+          <td>定义生产 API、admission、supervisor 和 composer 边界。</td>
+          <td>哪些事情明确属于 answer/runtime？哪些事情 supervisor 不该做？</td>
+        </tr>
+        <tr>
+          <td><code>supervisor_graph.py</code></td>
+          <td>实现 supervised answer flow。</td>
+          <td><code>branch_plan</code> 为 None 与非 None 时，entrypoint metadata 如何不同？</td>
+        </tr>
+        <tr>
+          <td><code>run_supervised_answer</code></td>
+          <td>根据 validated plan 或 legacy path 运行 supervisor。</td>
+          <td>函数是否自己写答案，还是调用 Composer？</td>
+        </tr>
+        <tr>
+          <td><code>_run_validated_plan</code></td>
+          <td>生产多分支路径：按 plan dispatch workers。</td>
+          <td>分支是否来自 runtime 已验证计划？失败/empty branch 如何报告？</td>
+        </tr>
+        <tr>
+          <td><code>_run_worker</code></td>
+          <td>运行 gather-only branch investigation。</td>
+          <td>worker 的结果是否包含 branch ledger 和 BranchReport？</td>
+        </tr>
+        <tr>
+          <td><code>supervisor_nodes.py::merge_branch_ledgers</code></td>
+          <td>合并 branch-local ledgers。</td>
+          <td>最终 citation guard 是否看 merged ledger？</td>
+        </tr>
+        <tr>
+          <td><code>tests/unit/test_supervisor_graph.py</code></td>
+          <td>验证边界行为。</td>
+          <td>测试是否覆盖 validated plan、legacy metadata、composer citation 被丢弃、failed/empty branch surfaced？</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>具体场景：什么时候不该进 supervisor</h2>
+    <p>假设用户问：“FIN7 使用了哪些 persistence technique？”这看起来是 CTI 问题，但不一定需要 supervisor。single-agent loop 可以先 resolve entity，再 graph outline，再 facts_for_evidence 或 retrieve。它是顺序 gather，不是多个独立实体/分面同时收证。</p>
+    <table>
+      <thead>
+        <tr><th>判断点</th><th>如果走 supervisor 的风险</th><th>更合适的路径</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>只有一个 focus entity。</td>
+          <td>拆分会制造虚假分支，增加协调成本。</td>
+          <td>single-agent gather。</td>
+        </tr>
+        <tr>
+          <td>下一步依赖上一轮 entity resolution。</td>
+          <td>并行 worker 可能缺少共同 setup state。</td>
+          <td>顺序 action loop。</td>
+        </tr>
+        <tr>
+          <td>问题问一个 facet。</td>
+          <td>branch report 没有明显合成收益。</td>
+          <td>runtime 直接 gather 并 synthesize。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>这能帮你理解 ADR 里为什么强调 fallback：parse 失败、low confidence、边界不清、dependent chains、simple questions、shared exploratory ledger 都应该避免盲目进入 supervisor。</p>
+  </section>
+
+  <section>
+    <h2>具体场景：什么时候应该进 supervisor</h2>
+    <p>再看一个适合的例子：“Compare APT29 and Lazarus Group in terms of credential access and lateral movement techniques.” 这个问题有两个实体、两个 facet，分支相对独立，最后需要比较。</p>
+    <table>
+      <thead>
+        <tr><th>Branch</th><th>Sub-question</th><th>Worker 做什么</th><th>Composer 做什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A</td>
+          <td>APT29 credential access techniques</td>
+          <td>收集 APT29 + credential access 证据。</td>
+          <td>不用亲自查证据，只读 report 和 merged evidence context。</td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td>APT29 lateral movement techniques</td>
+          <td>收集 APT29 + lateral movement 证据。</td>
+          <td>比较 APT29 内两个 facet。</td>
+        </tr>
+        <tr>
+          <td>C</td>
+          <td>Lazarus credential access techniques</td>
+          <td>收集 Lazarus + credential access 证据。</td>
+          <td>比较两个 actor。</td>
+        </tr>
+        <tr>
+          <td>D</td>
+          <td>Lazarus lateral movement techniques</td>
+          <td>收集 Lazarus + lateral movement 证据。</td>
+          <td>指出 shared/unique techniques 和 gaps。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>supervisor 的价值在这里很清楚：它让每个 worker 聚焦独立证据采集，最后统一合成。它不是让多个 agent 各写一个答案再拼起来，而是让多个分支产出证据和报告，再由单一 Composer 写最终答案。</p>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>为什么不对</th><th>更好的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“supervisor 越智能越好，最好自己规划、检索、写答案。”</td>
+          <td>这样会把 admission、gather、composition、citation guard 混成一个大黑盒。</td>
+          <td>supervisor 应该窄：协调 worker，保持边界清晰。</td>
+        </tr>
+        <tr>
+          <td>“复杂问题都走 supervisor。”</td>
+          <td>复杂问题可能是依赖链或探索型任务，不一定能并行分支。</td>
+          <td>只有 independent gatherable branches 才适合。</td>
+        </tr>
+        <tr>
+          <td>“branch report 就是证据。”</td>
+          <td>report 是摘要，可能省略细节和 provenance。</td>
+          <td>branch ledger 才保存完整证据，最终要 merge。</td>
+        </tr>
+        <tr>
+          <td>“Composer 可以顺手补证据。”</td>
+          <td>Composer 如果再调用工具或引入新事实，会绕过 branch ledger 和 citation guard 设计。</td>
+          <td>Composer 是 no-tool synthesis role。</td>
+        </tr>
+        <tr>
+          <td>“legacy autonomous supervisor 就是当前生产设计。”</td>
+          <td>项目保留 legacy path 用于 debug/eval/manual baseline。</td>
+          <td>评价生产架构要看 validated branch plan path。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>读代码时问什么</h2>
+    <table>
+      <thead>
+        <tr><th>审计问题</th><th>你在找什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>谁做 supervisor admission？</td>
+          <td>是否由 runtime/answer 入口判断，而不是 supervisor 自己吞掉所有问题。</td>
+        </tr>
+        <tr>
+          <td>branch plan 是否 validated？</td>
+          <td>是否有 branch count、focus、facet、独立性、fallback reason。</td>
+        </tr>
+        <tr>
+          <td>worker 是 gather-only 吗？</td>
+          <td>worker 是否只收证据和 report，不写最终答案。</td>
+        </tr>
+        <tr>
+          <td>branch failures 如何 surfaced？</td>
+          <td>partial/empty/failed 是否进入 report 和 trace，而不是被静默忽略。</td>
+        </tr>
+        <tr>
+          <td>ledger merge 在哪里发生？</td>
+          <td>最终 answer 的 citations 是否以 merged master ledger 验证。</td>
+        </tr>
+        <tr>
+          <td>legacy path 是否被标识？</td>
+          <td>trace metadata 是否区分 <code>runtime_validated_branch_plan</code> 和 <code>legacy_autonomous_debug_eval</code>。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：把 supervisor 的位置钉住</h2>
+    <div class="quiz-grid">
+      <div class="quiz quiz-question">
+        <p><strong>1. supervisor 在生产路径中最准确的定位是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。生产路径先由 runtime admission 判断适不适合多分支，并提供 validated branch plan。supervisor 的职责是协调 worker，不是入口路由器。">admission 之后的多分支协调层。</button>
+        <button data-correct="false" data-feedback="这会把入口路由和协调层混在一起。CTI-RAG 的 ADR 明确 answer/runtime 拥有 supervisor admission。">所有问题的入口路由器。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>2. 哪类问题最适合 supervisor？</strong></p>
+        <button data-correct="false" data-feedback="复杂不等于可并行。dependent chain 和 exploratory query 可能更适合 single-agent loop。">所有复杂问题。</button>
+        <button data-correct="true" data-feedback="对。supervisor 的收益来自多个相对独立的 gather 分支，最后需要统一 composition。">有多个 independent gatherable branches 的问题。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>3. production validated plan path 和 legacy autonomous path 的区别是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。validated plan path 由 runtime 先验证分支计划，是生产主路径；legacy autonomous path 保留给 debug/eval/manual baseline。">前者由 runtime 传入验证计划，后者是 debug/eval 用的自主路径。</button>
+        <button data-correct="false" data-feedback="这会误读代码。项目里 legacy path 不是生产默认，trace metadata 也会区分 entrypoint。">没有区别，只是名字不同。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>4. worker 的主要职责是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。worker 是 gather-only：围绕 branch 收集证据，产出 branch-local ledger 和 compact report。最终答案由 Composer 统一写。">围绕 branch gather evidence 并产出 report/ledger。</button>
+        <button data-correct="false" data-feedback="如果每个 worker 都写最终答案，再拼接，会破坏 single composition 和 citation guard 边界。">各自写一段最终答案。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>5. branch report 和 branch ledger 的区别是什么？</strong></p>
+        <button data-correct="false" data-feedback="report 不是完整证据源。它是给 supervisor/Composer 的 compact view。完整证据在 branch ledger。">它们是同一个东西。</button>
+        <button data-correct="true" data-feedback="对。report 是协调摘要，ledger 是完整结构化证据权威。最终 citation guard 需要 merged ledger。">report 是摘要，ledger 是完整证据。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>6. Composer 在这个架构里不应该做什么？</strong></p>
+        <button data-correct="true" data-feedback="对。Composer 是 no-tool synthesis role。它不应该再检索、改分支或引入新证据，否则 evidence ledger 和 citation guard 会断裂。">调用工具补证据。</button>
+        <button data-correct="false" data-feedback="统一写最终答案正是 Composer 的职责，但它必须基于 reports 和 merged ledger。">基于 reports 写统一答案。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>7. failed/empty branch 应该怎么处理？</strong></p>
+        <button data-correct="false" data-feedback="静默忽略会让最终答案看起来完整，但实际漏掉分支证据。supervisor 的价值之一就是把 partial/empty/failed surfaced 给 Composer 和 trace。">从报告里删掉。</button>
+        <button data-correct="true" data-feedback="对。failed、empty、partial 都应该 surfaced 给 Composer 和 trace，这样答案可以说明 gaps，eval 也能诊断。">进入 report/trace，并影响最终 gaps 表达。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>8. supervisor 是否应该直接验证最终 citation？</strong></p>
+        <button data-correct="true" data-feedback="对。supervisor 不应替代 citation guard。最终 citation validation 由 deterministic guard 对 merged ledger 的 real_id_set 执行。">不应该，最终 citation guard 应看 merged ledger。</button>
+        <button data-correct="false" data-feedback="这会把协调层和证据验证层混起来。supervisor 可以传递 cited_ids，但不应成为最终验证权威。">应该，由 supervisor 自己决定引用真假。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>9. dependent chain 为什么通常不适合 supervisor？</strong></p>
+        <button data-correct="true" data-feedback="对。后一步依赖前一步结果时，强行并行分支会缺少共同 state 或 setup progress。single-agent loop 更自然。">因为后续 action 依赖前面结果，不能清晰并行 gather。</button>
+        <button data-correct="false" data-feedback="恰恰相反，supervisor 引入多分支协调成本。只有独立分支时这个成本才值得。">因为 supervisor 太便宜，没必要用。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>10. 评价 CTI-RAG supervisor 时最关键的边界问题是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。这句话覆盖本课核心：admission、branch planning、worker gather、ledger merge、composer、citation guard 各自有边界。">它是否只协调 validated branches，并保持 gather、composition、citation guard 分离？</button>
+        <button data-correct="false" data-feedback="agent 数量不是质量指标。更多 agent 可能只是更多成本和更差可控性。">它是不是用了尽可能多的 agent？</button>
+        <div class="feedback"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>本课小结</h2>
+    <p>Supervisor 的概念定位是多分支协调层，不是更大的万能 agent。生产路径应该由 runtime admission 决定是否进入 supervisor，并提供 validated branch plan；supervisor dispatch gather-only workers，收 compact reports，合并 branch ledgers，再调用 no-tool Composer 写最终答案。最终 citation 仍由 merged ledger 的 deterministic guard 验证。下一课我们进入 eval：如何分层评价检索、证据、答案、faithfulness、citation、成本和回归。</p>
+  </section>
+
+  <section>
+    <h2>继续学习</h2>
+    <p><a href="0005-citation-grounding-faithfulness.html">上一课：Citation / Grounding / Faithfulness</a> · <a href="../reference/0001-learning-route.html">学习路线</a> · <a href="0007-eval-harness-measures-layers.html">下一课：Eval Harness</a></p>
+  </section>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

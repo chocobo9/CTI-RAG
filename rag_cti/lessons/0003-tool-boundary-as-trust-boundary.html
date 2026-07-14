@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tool Calling Boundary：把模型建议变成可审计行动</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 03 · Tool Boundary</p>
+    <h1>Tool Calling Boundary：把模型建议变成可审计行动</h1>
+    <p class="lead">第三课解决一个最容易被跳过的问题：LLM 说“我要调用工具”，并不等于系统已经安全、正确、可复现地执行了工具。Agentic RAG 的工具边界，就是把概率性的 action proposal 变成工程上可验证 observation 的地方。</p>
+  </header>
+
+  <section>
+    <h2>先看全局：本课在地图哪里</h2>
+    <p>前两课我们把入口和运行记录分开了：runtime harness 决定走哪条路，state/observation 记录一次 run 发生了什么。现在进入最关键的边界：模型可以提出动作，但 runtime 必须决定这个动作能不能被执行、怎么执行、执行结果如何进入 state 和 ledger。</p>
+    <div class="grid">
+      <article class="card">
+        <h3>Runtime/Harness</h3>
+        <p>Tool validation、tool execution、budget、deadline、cache、parallel dispatch 都属于 runtime 控制面。它们不应该靠 prompt 的自觉完成。</p>
+      </article>
+      <article class="card">
+        <h3>LLM Call Points</h3>
+        <p>Tool-calling LLM 只负责提出下一步 action。它可以建议 <code>retrieve</code> 或 <code>graph_query</code>，但它不是工具执行权威。</p>
+      </article>
+      <article class="card">
+        <h3>Evidence/Trust</h3>
+        <p>工具结果能否成为证据，取决于 runtime 是否承认这次调用、ledger 是否记录了结构化结果和 provenance。</p>
+      </article>
+      <article class="card">
+        <h3>Cross-cutting</h3>
+        <p>本课会反复用到三组边界：Action vs Observation、Trust Boundary、Deterministic vs Probabilistic。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课核心胜利：</strong>你能看到一段 tool-calling 代码时，不会只问“模型能调哪些工具”，而会问“谁验证工具名和参数？谁拒绝越界调用？谁记录失败类型？谁保证重复调用、预算耗尽、deadline 到期时不会污染证据？”</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：概念先于代码</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能解释为什么 tool call 是模型的 action proposal，而不是已经发生的系统事实。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能区分 <code>invalid</code>、<code>rejected</code>、<code>error</code>、<code>ok</code>、<code>no_action</code> 这些 observation status 的工程含义。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能评价一个工具边界是否足够硬：schema validation、normalization、budget、deadline、cache、event、ledger delta 是否都在 runtime 侧完成。</p></article>
+    </div>
+    <p>代码在这里是辅助证据。你不需要先背 CTI-RAG 的函数名；你要先拿到一个判断框架：<strong>工具边界是 Agentic RAG 的信任边界，不是聊天协议的附属功能。</strong></p>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>如果现在还没有系统概念，我不会从“LangChain/OpenAI tool calling 怎么写”开始。我会先把动作链拆成三个问题：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>概念答案</th><th>为什么重要</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>模型输出的 tool call 是什么？</td>
+          <td>它是 <strong>action proposal</strong>：模型建议系统去做某件事。</td>
+          <td>proposal 还没有经过系统授权。把它当事实，会让模型越过 runtime 边界。</td>
+        </tr>
+        <tr>
+          <td>runtime 在边界上做什么？</td>
+          <td>验证工具名、参数、预算、deadline、重复调用和路径策略，然后执行或拒绝。</td>
+          <td>这些检查是确定性的工程约束，不能依赖模型自己遵守。</td>
+        </tr>
+        <tr>
+          <td>工具结果进入系统时是什么形态？</td>
+          <td>应该是结构化 <code>RuntimeObservation</code>，再由 reducer 更新 state/ledger。</td>
+          <td>只有结构化 observation 才能审计、回放、测试和生成可靠 trace。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一张图：从 proposal 到 observation</h2>
+    <p>这张图不是在背函数调用顺序，而是在建立责任链：概率模型只能提出动作，确定性 runtime 才能承认动作，ledger 只接受被承认后的证据。</p>
+    <div class="flow">
+      <div>LLM Proposal<br>我要调工具</div>
+      <div>Validate<br>能不能调</div>
+      <div>Execute/Reject<br>实际发生</div>
+      <div>Observation<br>结构化收据</div>
+      <div>Reducer<br>进入 state/ledger</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>应该由谁负责</th><th>典型问题</th><th>失败时怎么表达</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Proposal</td>
+          <td>LLM</td>
+          <td>模型想调用 <code>graph_query</code>，并给出参数。</td>
+          <td>如果没有动作，是 <code>no_action</code>，不是工具失败。</td>
+        </tr>
+        <tr>
+          <td>Validation</td>
+          <td>Runtime</td>
+          <td>工具名是否存在？必填参数是否缺失？是否有未知参数？类型和长度是否合理？</td>
+          <td>参数坏了是 <code>invalid</code>，工具不应执行。</td>
+        </tr>
+        <tr>
+          <td>Admission</td>
+          <td>Runtime</td>
+          <td>预算是否用尽？deadline 是否到了？当前路径是否允许这个工具？</td>
+          <td>被策略挡住是 <code>rejected</code>，不是工具内部错误。</td>
+        </tr>
+        <tr>
+          <td>Execution</td>
+          <td>Tool Adapter</td>
+          <td>真正调用 retriever、graph、fact store 等服务。</td>
+          <td>工具抛异常是 <code>error</code>，需要记录 error kind。</td>
+        </tr>
+        <tr>
+          <td>Observation</td>
+          <td>Runtime</td>
+          <td>把状态、摘要、结构化 payload、ledger delta、model-visible content 统一封装。</td>
+          <td>后续 state 和 trace 都从 observation 派生。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心概念一：proposal 不等于 execution</h2>
+    <p>Agentic RAG 里最危险的偷懒，是把模型输出的 tool call 当成系统已经完成的动作。模型说“调用 <code>retrieve(query='APT29')</code>”，只说明模型希望这样做；系统还需要回答：</p>
+    <table>
+      <thead>
+        <tr><th>runtime 问题</th><th>如果不问，会发生什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>这个工具在 allowlist 里吗？</td>
+          <td>模型可能调用不存在或不该暴露的工具。</td>
+        </tr>
+        <tr>
+          <td>参数是否符合 schema？</td>
+          <td>坏参数会进入工具层，把 validation bug 伪装成 tool error。</td>
+        </tr>
+        <tr>
+          <td>参数是否需要 normalization？</td>
+          <td>超长 query、空字符串、大小写差异会导致不可控行为。</td>
+        </tr>
+        <tr>
+          <td>是否超出 tool budget 或 deadline？</td>
+          <td>agent 可能无限探索，成本和延迟失控。</td>
+        </tr>
+        <tr>
+          <td>这个调用是否重复？</td>
+          <td>同一工具和参数被反复执行，浪费预算，也会污染 trace。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>读代码时的概念锚点：</strong>看到 <code>tool_call</code> 不要立刻理解成“工具结果”。先问它是否已经穿过 validation/admission/execution 三道门。没穿过之前，它只是模型 proposal。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>核心概念二：五种 status 背后的工程含义</h2>
+    <p>只用 success/failure 会把很多不同问题揉在一起。Agentic RAG 需要更细的状态，因为不同失败类型对应不同修复策略、重试策略和评估解释。</p>
+    <table>
+      <thead>
+        <tr><th>Status</th><th>含义</th><th>例子</th><th>工程解释</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ok</code></td>
+          <td>工具被 runtime 承认并成功执行。</td>
+          <td><code>facts_for_evidence</code> 返回若干 fact。</td>
+          <td>可能产生 ledger delta，后续可以影响 sufficiency 和 synthesis。</td>
+        </tr>
+        <tr>
+          <td><code>invalid</code></td>
+          <td>proposal 本身不合法。</td>
+          <td>缺少必填参数、未知参数、类型错误、未知工具。</td>
+          <td>工具不应该执行；这是边界 validation 的结果。</td>
+        </tr>
+        <tr>
+          <td><code>rejected</code></td>
+          <td>proposal 可能合法，但 runtime policy 不允许执行。</td>
+          <td>工具预算耗尽、deadline 已到、graph coverage 后禁止 retrieve。</td>
+          <td>这是 admission/policy 拒绝，不应记成工具异常。</td>
+        </tr>
+        <tr>
+          <td><code>error</code></td>
+          <td>工具被允许执行，但执行层失败。</td>
+          <td>retriever 或 graph store 抛异常。</td>
+          <td>需要 error kind 和 event，方便重试与诊断。</td>
+        </tr>
+        <tr>
+          <td><code>no_action</code></td>
+          <td>模型这一轮没有提出工具动作。</td>
+          <td>模型直接输出文本或空动作。</td>
+          <td>这可能触发 stop policy 或 forced finish，但不是工具调用失败。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CTI-RAG 里的代码映射</h2>
+    <p>现在再看项目代码。你读这些函数时，把它们当作概念边界的实现，而不是孤立函数。</p>
+    <table>
+      <thead>
+        <tr><th>代码位置</th><th>它在概念上做什么</th><th>读的时候重点问什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>runtime_harness.py::_validate_runtime_tool_args</code></td>
+          <td>工具 schema 和 allowlist 边界。</td>
+          <td>哪些工具可调？每个工具需要哪些参数？未知参数、缺失参数、坏类型如何被挡住？</td>
+        </tr>
+        <tr>
+          <td><code>runtime_harness.py::_normalize_runtime_tool_args</code></td>
+          <td>把模型参数收束到 runtime 可接受形态。</td>
+          <td>是否裁剪过长 query？是否让同一语义的参数更可缓存、可审计？</td>
+        </tr>
+        <tr>
+          <td><code>RuntimeTurnAdapter</code></td>
+          <td>把 CTI-RAG 的 retriever、graph、fact store 暴露成 runtime 工具集合。</td>
+          <td>工具描述是否只是给模型看的 affordance？真正执行是否仍经过 runtime？</td>
+        </tr>
+        <tr>
+          <td><code>_execute_action_proposal</code></td>
+          <td>proposal 到 observation 的核心边界。</td>
+          <td>未知工具、坏参数、预算、deadline、重复调用、工具异常分别如何生成 observation？</td>
+        </tr>
+        <tr>
+          <td><code>_handle_tool_calls</code></td>
+          <td>把一轮可能多个工具调用 dispatch 成 observations。</td>
+          <td>并行执行时 observation id 是否唯一？state 更新是否仍可解释？</td>
+        </tr>
+        <tr>
+          <td><code>tests/unit/test_runtime_harness.py</code></td>
+          <td>把边界行为写成回归测试。</td>
+          <td>测试覆盖的是“模型输出了什么”，还是“runtime 如何承认、拒绝和记录”？</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>CTI-RAG 当前暴露的主要工具包括 <code>resolve_entity</code>、<code>graph_outline</code>、<code>graph_query</code>、<code>facts_for_evidence</code>、<code>retrieve</code>。注意：这些名字是项目事实；更重要的概念是，工具集合必须由 runtime 明确列出，并且每个工具都有参数、预算、结果和 ledger 影响的边界。</p>
+  </section>
+
+  <section>
+    <h2>具体场景：模型想 retrieve，但 runtime 拒绝了</h2>
+    <p>假设前几轮 graph 工具已经覆盖了问题需要的实体和关系，runtime policy 决定“graph coverage 足够后不要再走 prose retrieval”。这时模型又提出 <code>retrieve</code>。好的工具边界不会默默执行，也不会只在 prompt 里希望模型听话，而是产生一个明确 observation：</p>
+    <table>
+      <thead>
+        <tr><th>字段</th><th>可能的值</th><th>概念解释</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Status</td>
+          <td><code>rejected</code></td>
+          <td>工具名和参数可能没错，但 runtime policy 不允许当前路径继续 retrieve。</td>
+        </tr>
+        <tr>
+          <td>Error kind</td>
+          <td><code>retrieve_suppressed_after_graph_coverage</code></td>
+          <td>这不是 retriever 坏了，而是控制策略做了拒绝。</td>
+        </tr>
+        <tr>
+          <td>Ledger delta</td>
+          <td>无新增 chunk/fact</td>
+          <td>没有执行工具，就不应该凭空生成证据。</td>
+        </tr>
+        <tr>
+          <td>Event</td>
+          <td>rejected tool action</td>
+          <td>trace 能解释为什么模型提议没有变成证据。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>这个例子能帮你分清 <strong>“工具不可用”</strong>、<strong>“工具参数坏”</strong>、<strong>“工具执行失败”</strong> 和 <strong>“runtime 策略拒绝”</strong>。它们在用户体验上可能都表现为“没有拿到新证据”，但工程诊断完全不同。</p>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>为什么不对</th><th>更好的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“有 tool schema 就足够安全。”</td>
+          <td>provider 侧 schema 只能约束模型输出形状，不能替代 runtime 的预算、deadline、cache、policy 和 ledger 管控。</td>
+          <td>schema 是输入门槛，runtime boundary 是执行权威。</td>
+        </tr>
+        <tr>
+          <td>“模型知道工具说明，所以会正确使用。”</td>
+          <td>工具说明只是给模型的 affordance。模型仍可能 hallucinate 工具名、给错参数、重复调用、过度探索。</td>
+          <td>prompt 指导概率行为，runtime 执行确定性约束。</td>
+        </tr>
+        <tr>
+          <td>“工具错误和参数错误都叫失败就行。”</td>
+          <td>参数错误要修 validation 或 prompt；工具错误要修服务、依赖或重试策略；budget 拒绝要调 policy。</td>
+          <td>failure taxonomy 是可诊断系统的基础。</td>
+        </tr>
+        <tr>
+          <td>“ToolMessage 就是 observation。”</td>
+          <td>ToolMessage 是给模型看的协议文本，可能被截断或格式化。</td>
+          <td>observation 是系统内部结构化收据，ToolMessage 只是它的投影。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>读代码时问什么</h2>
+    <p>这不是口诀，而是一组审计问题。你每看到一个 tool-calling agent，都可以拿它检查边界是否足够硬。</p>
+    <table>
+      <thead>
+        <tr><th>审计问题</th><th>你在找什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>工具集合在哪里声明？</td>
+          <td>有没有明确 allowlist，而不是模型想调什么都能调。</td>
+        </tr>
+        <tr>
+          <td>参数在哪里验证？</td>
+          <td>缺失、未知、类型、长度、枚举值是否在执行前被挡住。</td>
+        </tr>
+        <tr>
+          <td>runtime policy 在哪里生效？</td>
+          <td>预算、deadline、路径策略、重复调用、并发限制是否由代码强制。</td>
+        </tr>
+        <tr>
+          <td>工具结果如何变成 observation？</td>
+          <td>是否保留 status、error_kind、summary、structured payload、ledger delta。</td>
+        </tr>
+        <tr>
+          <td>证据如何进入 ledger？</td>
+          <td>是否只让被承认的工具结果进入 ledger，拒绝/无效调用不会生成证据。</td>
+        </tr>
+        <tr>
+          <td>测试覆盖什么？</td>
+          <td>有没有测未知工具、坏参数、预算耗尽、deadline、工具异常、并行 id、replay。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：至少先把边界看硬</h2>
+    <div class="quiz-grid">
+      <div class="quiz quiz-question">
+        <p><strong>1. 模型输出一个 tool call 后，最准确的说法是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。tool call 首先是 action proposal。它表达模型想做什么，但还没经过 runtime 的 allowlist、参数验证、预算、deadline 和 policy。只有边界承认并执行后，才会产生 observation。">它是 action proposal，需要 runtime 承认后才是执行事实。</button>
+        <button data-correct="false" data-feedback="这里跳过了信任边界。模型输出不是系统执行事实；如果直接执行，模型就绕过了 deterministic runtime policy。">它已经等于工具执行事实。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>2. 缺少必填参数的工具调用应该是什么 status？</strong></p>
+        <button data-correct="false" data-feedback="error 更适合工具已经被允许执行、但执行层失败。缺参应该在执行前被挡住。">error</button>
+        <button data-correct="true" data-feedback="对。缺参、未知参数、坏类型都属于 proposal 不合法，应该记录为 invalid。这样工具不会被错误执行，trace 也能说明失败发生在 validation 阶段。">invalid</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>3. tool budget 用完后，模型又提出合法工具调用，应该如何理解？</strong></p>
+        <button data-correct="true" data-feedback="对。调用可能语法合法，但 runtime admission policy 不允许继续执行，所以是 rejected。这个 distinction 能告诉你问题在预算策略，不在工具实现。">rejected，因为 policy 不允许继续执行。</button>
+        <button data-correct="false" data-feedback="不应记为工具成功或工具错误。工具根本不该被执行；这是 runtime 控制面的拒绝。">error，因为工具没有返回结果。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>4. 为什么不能把 <code>ToolMessage.content</code> 当作唯一状态源？</strong></p>
+        <button data-correct="true" data-feedback="对。ToolMessage 是给模型看的文本投影，可能截断、改写或受 provider 协议影响。系统状态应该来自结构化 observation 和 reducer。">它是模型可见文本，不是可回放的结构化事实。</button>
+        <button data-correct="false" data-feedback="ToolMessage 当然有用，但它的用途是让模型看到摘要，不是让系统从文本里反推出 truth。">因为 ToolMessage 完全没有信息。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>5. normalization 的价值是什么？</strong></p>
+        <button data-correct="false" data-feedback="normalization 不应该偷偷改问题语义。它的目标是把参数收束到 runtime 可处理、可审计、可缓存的形态。">让 runtime 可以随便改写用户问题。</button>
+        <button data-correct="true" data-feedback="对。比如裁剪超长 query、整理空白、统一参数形态。这样 validation、cache、日志和测试都更稳定。">把模型参数收束成稳定、可执行、可审计的形态。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>6. 重复工具调用为什么属于 runtime 要处理的问题？</strong></p>
+        <button data-correct="true" data-feedback="对。模型可能反复提出同一 action。runtime 用 action log/cache 识别重复，既节省预算，也让 observation 能说明结果来自缓存或重复调用处理。">因为模型可能重复 proposal，runtime 要通过 action log/cache 控制成本和 trace。</button>
+        <button data-correct="false" data-feedback="只靠模型自觉并不稳。Agentic RAG 的核心就是把可控性放在 runtime，而不是放在模型承诺里。">因为只要 prompt 写清楚，模型就绝不会重复。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>7. 工具抛异常和参数 invalid 的区别是什么？</strong></p>
+        <button data-correct="false" data-feedback="这会混淆诊断。参数 invalid 是执行前被挡；工具异常是执行后失败。两者的修复位置不同。">没有区别，都是失败。</button>
+        <button data-correct="true" data-feedback="对。invalid 指 proposal 没通过边界验证；tool error 指调用被允许后，工具实现或依赖失败。分开记录才能定位修复点。">invalid 发生在执行前，tool error 发生在执行层。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>8. 一个被 rejected 的调用应该产生 ledger 证据吗？</strong></p>
+        <button data-correct="true" data-feedback="对。rejected 意味着工具没有执行，不能凭空产生 chunk/fact。它可以产生 event 和 observation，但不应该污染 evidence ledger。">不应该，它可以进入 trace，但不应新增证据。</button>
+        <button data-correct="false" data-feedback="这会污染证据权威。ledger 应该保存被实际收集到的证据，而不是保存模型想做但 runtime 没让做的事情。">应该，因为模型提出过这个调用。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>9. 并行工具 dispatch 最需要守住什么？</strong></p>
+        <button data-correct="false" data-feedback="速度不是唯一目标。并行会带来顺序、id、delta 合并和 trace 可解释性问题。">只要速度更快就行。</button>
+        <button data-correct="true" data-feedback="对。并行不是放弃审计。每个 observation 仍要有稳定身份、status、error、payload 和 ledger delta，合并后 state 仍可解释。">每个 observation 仍然唯一、结构化、可合并、可审计。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>10. 评价工具边界时，最关键的追问是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。这句话把本课串起来了。工具边界的核心不是模型会不会说对，而是 runtime 如何把 proposal 变成可验证、可拒绝、可回放的 observation。">proposal 如何被验证、承认、执行、拒绝、记录和回放？</button>
+        <button data-correct="false" data-feedback="工具名字当然要知道，但只背工具列表会错过架构重点。真正要评价的是边界机制。">这个项目一共有几个工具？</button>
+        <div class="feedback"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>本课小结</h2>
+    <p>工具边界是 Agentic RAG 从“会聊天的模型”走向“可运行系统”的关键位置。模型提出 action proposal；runtime 验证、归一化、执行或拒绝；observation 记录边界事实；reducer 决定 state 和 ledger 如何变化。后面我们看 EvidenceLedger 时，要记住：ledger 不应该相信模型想做什么，只应该接收 runtime 承认后的证据结果。</p>
+    <p class="small">下一课进入 EvidenceLedger：如果工具边界回答“什么动作真的发生了”，ledger 回答“哪些证据真的可被答案引用”。</p>
+  </section>
+
+  <section>
+    <h2>继续学习</h2>
+    <p><a href="0002-state-and-observation.html">上一课：State 与 Observation</a> · <a href="../reference/0001-learning-route.html">学习路线</a> · <a href="0004-evidence-ledger-as-evidence-authority.html">下一课：Evidence Ledger</a></p>
+  </section>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

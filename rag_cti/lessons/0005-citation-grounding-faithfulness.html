@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Citation / Grounding / Faithfulness：把“有引用”拆成多个质量问题</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 05 · Grounding</p>
+    <h1>Citation / Grounding / Faithfulness：把“有引用”拆成多个质量问题</h1>
+    <p class="lead">第五课讲证据到答案之间的质量边界。一个答案可以带 citation，但仍然不 faithful；可以 grounded，但 evidence coverage 不充分；可以语言流畅，但关键 claim 没有证据支持。我们要把这些概念拆清楚。</p>
+  </header>
+
+  <section>
+    <h2>先看全局：本课在地图哪里</h2>
+    <p>第四课建立了 EvidenceLedger：本次 run 的证据权威。现在我们进入 Evidence and Trust 区域，问一个更靠近最终答案的问题：答案文本如何被证据约束？哪些检查是确定性的，哪些判断仍然需要 LLM-as-judge 或 eval？</p>
+    <div class="grid">
+      <article class="card">
+        <h3>Citation</h3>
+        <p>答案中显式引用证据 ID。citation guard 至少要检查引用 ID 是否真实存在于本次 ledger。</p>
+      </article>
+      <article class="card">
+        <h3>Grounding</h3>
+        <p>答案中的 claim 是否能追溯到 ledger evidence。它关心 claim 与证据之间的支撑关系。</p>
+      </article>
+      <article class="card">
+        <h3>Faithfulness</h3>
+        <p>答案是否忠实于证据，没有夸大、改写、拼接出证据不支持的结论。</p>
+      </article>
+      <article class="card">
+        <h3>Sufficiency</h3>
+        <p>已有证据是否足够覆盖用户问题需要的关键 facet。它决定是否继续 gather 或 stop。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课核心胜利：</strong>你能看到“答案有引用”时立刻追问：引用 ID 是否真实？claim 是否由引用支持？答案有没有超出证据？证据是否覆盖了问题所需范围？这四个问题不是同一个。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：四个概念不能混</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能区分 citation validation、grounding、faithfulness、sufficiency，各自回答的问题不同。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能解释 deterministic guard 和 LLM-as-judge 的边界：前者能查 ID，后者更适合评估 claim 支撑和覆盖。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能读懂 CTI-RAG 中 answer synthesis、citation guard、sufficiency verdict、conflict surfacing 的责任分工。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>如果没有系统概念，citation 很容易被理解成“答案后面有括号就行”。我会先问这张表里的问题：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>短答案</th><th>它防止什么误解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>citation validation 能证明答案正确吗？</td>
+          <td>不能。它只能证明引用 ID 是本次 ledger 里的真实 ID。</td>
+          <td>防止把“引用存在”误认为“claim 被支持”。</td>
+        </tr>
+        <tr>
+          <td>grounding 问什么？</td>
+          <td>答案 claim 是否能从证据中找到支撑。</td>
+          <td>防止答案引用真实 ID，但 claim 与证据无关。</td>
+        </tr>
+        <tr>
+          <td>faithfulness 问什么？</td>
+          <td>答案是否忠实表达证据，没有添加证据外内容。</td>
+          <td>防止模型把弱证据写成强结论。</td>
+        </tr>
+        <tr>
+          <td>sufficiency 问什么？</td>
+          <td>证据是否足够覆盖用户问题。</td>
+          <td>防止答案局部 grounded，但整体漏掉关键 facet。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一张图：四道质量门</h2>
+    <p>这张图的重点是：从 ledger 到最终答案，不是一道“引用检查”就结束，而是有多层质量问题。每一层失败，修复方向不同。</p>
+    <div class="flow">
+      <div>Ledger Evidence<br>证据集合</div>
+      <div>Sufficiency<br>够不够</div>
+      <div>Synthesis<br>写答案</div>
+      <div>Citation Guard<br>ID 真假</div>
+      <div>Faithfulness Eval<br>是否忠实</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>质量门</th><th>回答的问题</th><th>典型失败</th><th>修复方向</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sufficiency</td>
+          <td>证据是否覆盖用户问题需要的关键面？</td>
+          <td>只查了 APT29，没查 Lazarus，却回答比较问题。</td>
+          <td>继续 gather 或重新分支。</td>
+        </tr>
+        <tr>
+          <td>Synthesis</td>
+          <td>答案是否只基于 ledger evidence 生成？</td>
+          <td>模型引入训练记忆里的额外 CTI claim。</td>
+          <td>收紧 prompt、working-set context、guardrails。</td>
+        </tr>
+        <tr>
+          <td>Citation Guard</td>
+          <td>答案引用的 ID 是否存在于本次 ledger？</td>
+          <td>答案写了 <code>[chunk_fake]</code> 或旧 run 的 fact id。</td>
+          <td>丢弃 hallucinated citations，暴露 dropped count。</td>
+        </tr>
+        <tr>
+          <td>Grounding</td>
+          <td>每个 claim 是否被所引证据支持？</td>
+          <td>引用真实 chunk，但 chunk 只提到 actor，没提 technique。</td>
+          <td>claim-level 检查、证据选择、rerank。</td>
+        </tr>
+        <tr>
+          <td>Faithfulness</td>
+          <td>答案是否忠实于证据强度和范围？</td>
+          <td>证据说“reported by one source”，答案写成“confirmed”。</td>
+          <td>答案约束、judge、人工样本回归。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心概念一：citation guard 是必要但不充分</h2>
+    <p>Citation guard 最适合做确定性检查：答案里出现的 citation id 是否属于本次 ledger 的 <code>real_id_set</code>。如果不属于，就可以确定它是 hallucinated citation、旧证据引用或格式错误引用。</p>
+    <p>但它不能证明 claim 正确。举个简单例子：ledger 里确实有 <code>chunk_apt29_1</code>，答案引用它说“APT29 使用 T1059”。如果这个 chunk 只说了 APT29 的别名，没有提 T1059，那么 citation ID 真实，但 claim 仍然 ungrounded。</p>
+    <div class="callout">
+      <p><strong>概念判断：</strong>citation validation 证明“引用对象存在”；grounding 才问“引用对象是否支持这句话”。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>核心概念二：grounding 与 faithfulness 的差别</h2>
+    <p>这两个词经常一起出现，但工程上可以这样区分：</p>
+    <table>
+      <thead>
+        <tr><th>概念</th><th>核心问题</th><th>例子</th><th>常用检查</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Grounding</td>
+          <td>claim 是否能落回证据。</td>
+          <td>答案说 technique X，被引用 fact 明确支持。</td>
+          <td>claim-evidence matching、citation coverage、judge。</td>
+        </tr>
+        <tr>
+          <td>Faithfulness</td>
+          <td>答案是否忠实表达证据，没有额外扩张。</td>
+          <td>证据说“可能使用”，答案没有写成“确定使用”。</td>
+          <td>LLM-as-judge、人工 golden set、反例回归。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>grounding 更像“有没有证据支撑”，faithfulness 更像“有没有背叛证据”。一个答案可能引用了相关证据，但仍然把证据强度写过头；这就是 faithfulness 问题。</p>
+  </section>
+
+  <section>
+    <h2>核心概念三：sufficiency 决定继续还是停止</h2>
+    <p>Sufficiency 不是答案质量的全部，它更像 gather loop 的 stop gate。它问：现有 ledger 是否足够回答用户问题？如果问题是“比较两个 actor 的 technique overlap”，只找到一个 actor 的证据，局部 claim 可以 grounded，但整体 evidence 仍不 sufficient。</p>
+    <table>
+      <thead>
+        <tr><th>情况</th><th>Grounded?</th><th>Sufficient?</th><th>为什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>证据支持 APT29 使用 T1059，但问题要求比较 APT29 与 Lazarus。</td>
+          <td>局部 yes</td>
+          <td>no</td>
+          <td>缺 Lazarus 侧证据和 overlap 判断。</td>
+        </tr>
+        <tr>
+          <td>证据覆盖两者 technique，并有 shared technique fact。</td>
+          <td>yes</td>
+          <td>可能 yes</td>
+          <td>关键 facet 都有支持。</td>
+        </tr>
+        <tr>
+          <td>证据很多，但都是背景介绍，没有回答 technique 使用。</td>
+          <td>no</td>
+          <td>no</td>
+          <td>数量多不等于 coverage 足。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>CTI-RAG 里的代码映射</h2>
+    <table>
+      <thead>
+        <tr><th>代码位置</th><th>概念职责</th><th>读的时候重点问什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>agentic_nodes.py::assess_sufficiency</code></td>
+          <td>让 judge 判断当前 ledger 是否足够，以及是否存在 coverage gaps。</td>
+          <td>judge 看的是 ledger 渲染出的 bounded evidence view，还是任意外部知识？</td>
+        </tr>
+        <tr>
+          <td><code>SufficiencyVerdict</code></td>
+          <td>表达 sufficient、coverage_gaps、grounded、faithfulness_estimate、next_action。</td>
+          <td>这些字段有没有被混成一个“质量分”？</td>
+        </tr>
+        <tr>
+          <td><code>decide_next</code></td>
+          <td>把 sufficiency、no progress、max rounds、timeout、budget 等转成 stop policy。</td>
+          <td>停止原因是否可解释？LLM 建议是否只是 advisory？</td>
+        </tr>
+        <tr>
+          <td><code>synthesize_answer</code></td>
+          <td>从 ledger union 和 facts 生成答案上下文。</td>
+          <td>模型是否只能看到 ledger-derived context？top-k 和 fact limit 怎么控制？</td>
+        </tr>
+        <tr>
+          <td><code>assemble_citations</code></td>
+          <td>确定性检查答案引用 ID 是否在 ledger 的真实 ID 集合中。</td>
+          <td>hallucinated id 如何被 dropped？bare fact id 和 chunk prefix 如何处理？</td>
+        </tr>
+        <tr>
+          <td><code>build_agentic_answer</code></td>
+          <td>组装最终答案，暴露 dropped citation count、conflicts、tool_call_count、telemetry。</td>
+          <td>最终输出是否把 guard 结果和 unresolved conflicts 带给调用方？</td>
+        </tr>
+        <tr>
+          <td><code>tests/unit/test_agentic_nodes.py</code></td>
+          <td>把 citation guard、synthesis context、conflict surfacing 写成可回归行为。</td>
+          <td>测试证明的是 ID guard，还是 claim-level faithfulness？边界要说清楚。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>具体场景：真实 citation，错误 claim</h2>
+    <p>假设 ledger 里有一个真实 chunk：</p>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>内容摘要</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>chunk_1</code></td>
+          <td>APT29 has been associated with credential phishing campaigns.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>模型输出：“APT29 is confirmed to use T1059 Command and Scripting Interpreter. [chunk_1]” citation guard 会保留 <code>chunk_1</code>，因为它是真实 ID。但这个 claim 并没有被该 chunk 支持。这个例子说明：</p>
+    <table>
+      <thead>
+        <tr><th>检查</th><th>结果</th><th>解释</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Citation validation</td>
+          <td>通过</td>
+          <td><code>chunk_1</code> 确实在 ledger 中。</td>
+        </tr>
+        <tr>
+          <td>Grounding</td>
+          <td>失败</td>
+          <td>chunk 没有支持 T1059 claim。</td>
+        </tr>
+        <tr>
+          <td>Faithfulness</td>
+          <td>失败</td>
+          <td>答案把 credential phishing 背景扩张成特定 technique 使用。</td>
+        </tr>
+        <tr>
+          <td>Sufficiency</td>
+          <td>不足</td>
+          <td>要回答 T1059 使用，需要更具体的 technique evidence。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>为什么不对</th><th>更好的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“有 citation 就是 grounded。”</td>
+          <td>citation ID 真实，不代表引用内容支持 claim。</td>
+          <td>citation validation 是 ID 层；grounding 是 claim-evidence 层。</td>
+        </tr>
+        <tr>
+          <td>“faithfulness 和 factual correctness 一样。”</td>
+          <td>faithfulness 只相对于给定证据。答案可能忠实于错误证据，也可能事实正确但不由本次证据支持。</td>
+          <td>评估时要说明参照物：evidence、world truth、gold answer。</td>
+        </tr>
+        <tr>
+          <td>“sufficiency judge 说够了，答案就一定好。”</td>
+          <td>sufficiency 是 gather stop 的判断，不替代 synthesis 和 citation/faithfulness 检查。</td>
+          <td>stop gate 和 answer quality gate 要分开。</td>
+        </tr>
+        <tr>
+          <td>“LLM-as-judge 可以替代 deterministic guard。”</td>
+          <td>ID 是否存在是确定性问题，用代码查更可靠。</td>
+          <td>确定性 guard 查可形式化规则，judge 处理语义支持和覆盖。</td>
+        </tr>
+        <tr>
+          <td>“dropped citation count 越低，答案越可信。”</td>
+          <td>它只说明 hallucinated citation 少，不说明 claim-level support 强。</td>
+          <td>把 dropped count 当一个诊断信号，而不是总质量分。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>读代码时问什么</h2>
+    <table>
+      <thead>
+        <tr><th>审计问题</th><th>你在找什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>答案的 evidence context 从哪里来？</td>
+          <td>是否来自 ledger union/facts，而不是模型自由回忆。</td>
+        </tr>
+        <tr>
+          <td>citation ID 如何解析和验证？</td>
+          <td>是否和 ledger <code>real_id_set</code> 相交；不存在的引用是否被丢弃并计数。</td>
+        </tr>
+        <tr>
+          <td>sufficiency 的输入是什么？</td>
+          <td>judge 是否看到 evidence view、last draft、coverage gaps，而不是凭空判断。</td>
+        </tr>
+        <tr>
+          <td>stop reason 如何暴露？</td>
+          <td>停止是 sufficient、no_progress、budget、timeout 还是 parse fallback。</td>
+        </tr>
+        <tr>
+          <td>冲突证据如何进入答案？</td>
+          <td>系统是否 surfaced conflicts，而不是自动消解或隐藏。</td>
+        </tr>
+        <tr>
+          <td>eval 测的到底是哪一层？</td>
+          <td>citation guard 测 ID，faithfulness eval 测语义忠实，retrieval eval 测候选证据，不要混成一个分数。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：不要把四个门混成一个词</h2>
+    <div class="quiz-grid">
+      <div class="quiz quiz-question">
+        <p><strong>1. Citation validation 最能确定性证明什么？</strong></p>
+        <button data-correct="true" data-feedback="对。它能确定引用 ID 是否属于本次 ledger 的真实 ID 集合。它不能直接证明 claim 被支持。">引用 ID 是否存在于本次 ledger。</button>
+        <button data-correct="false" data-feedback="claim 是否被支持属于 grounding/faithfulness 问题，不是简单 ID guard 能完全证明的。">答案中的每个 claim 都正确。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>2. 答案引用真实 chunk，但该 chunk 不支持 claim，这是哪类问题？</strong></p>
+        <button data-correct="false" data-feedback="citation validation 已经通过，因为 ID 真实。失败发生在 claim 与 evidence 的语义支撑关系上。">citation ID 不存在。</button>
+        <button data-correct="true" data-feedback="对。这是 grounding 失败，也可能伴随 faithfulness 失败。引用存在不等于引用支持。">grounding 失败。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>3. 证据说“可能使用”，答案写成“确定使用”，主要是什么问题？</strong></p>
+        <button data-correct="true" data-feedback="对。答案夸大了证据强度，背离 evidence 的限定语。这是典型 faithfulness 问题。">faithfulness 问题。</button>
+        <button data-correct="false" data-feedback="如果引用 ID 真实，citation validation 可能通过；问题在答案没有忠实表达证据强度。">citation ID 问题。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>4. 只查到一个 actor，却回答两个 actor 的比较题，主要缺什么？</strong></p>
+        <button data-correct="true" data-feedback="对。局部证据可能 grounded，但整体问题的 coverage 不够，所以 sufficiency 不足。">sufficiency / coverage。</button>
+        <button data-correct="false" data-feedback="语言风格不是关键。问题是 evidence 没覆盖比较题所需的两个对象和关系。">答案措辞更漂亮。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>5. 为什么 deterministic guard 适合查 citation ID？</strong></p>
+        <button data-correct="false" data-feedback="ID 是否存在不是语义模糊问题，没必要让 judge 猜。用代码查集合更可靠。">因为 LLM judge 更有创造力。</button>
+        <button data-correct="true" data-feedback="对。ID 是否在 ledger real_id_set 里是形式化集合检查，确定性代码比模型判断更稳。">因为这是集合成员关系检查。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>6. LLM-as-judge 更适合处理哪类问题？</strong></p>
+        <button data-correct="true" data-feedback="对。claim 是否被 evidence 支持、答案是否忠实、coverage gaps 是语义判断，更适合 judge 或人工 golden set。">claim 支撑、faithfulness、coverage 这类语义判断。</button>
+        <button data-correct="false" data-feedback="工具名是否在 allowlist、ID 是否在集合里，都是确定性规则，应优先用代码。">工具名是否在 allowlist。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>7. <code>dropped_citation_count</code> 表示什么？</strong></p>
+        <button data-correct="true" data-feedback="对。它说明答案里有多少引用 ID 没通过 ledger validation 被丢弃。它是 citation hallucination 的信号，不是整体质量分。">被 citation guard 丢弃的无效引用数量。</button>
+        <button data-correct="false" data-feedback="它不表示错误 claim 的数量。一个真实 citation 也可能支撑不了 claim。">答案中不正确 claim 的数量。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>8. Sufficiency judge 的 next_action 应该怎么理解？</strong></p>
+        <button data-correct="false" data-feedback="judge 的建议很有用，但 stop policy 仍由 runtime 执行。预算、timeout、max rounds 等确定性条件也会影响最终路径。">它直接强制 runtime 停止或继续。</button>
+        <button data-correct="true" data-feedback="对。它是一个语义建议，runtime 会结合预算、进度、轮数、timeout 等条件做最终 stop decision。">它是 runtime stop policy 的语义输入之一。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>9. 冲突 evidence 最好的处理方式是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。冲突不应该被系统悄悄抹平。answer assembly 应 surfaced unresolved conflicts，让用户知道证据存在分歧。">保留并 surfaced，必要时在答案中说明。</button>
+        <button data-correct="false" data-feedback="自动选择一方会隐藏不确定性，尤其在 CTI 场景里很危险。冲突 evidence 应该被 surfaced，让答案表达不确定性或说明来源分歧。">随机选择一个来源作为真相。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>10. 最准确的总结是哪一句？</strong></p>
+        <button data-correct="true" data-feedback="对。这是本课的核心：ID、claim 支撑、忠实程度、coverage 是不同层。好的系统要分别设计、分别验证。">citation、grounding、faithfulness、sufficiency 是四个不同质量问题。</button>
+        <button data-correct="false" data-feedback="这正是要避免的混淆。有 citation 只是通过了最基础的 ID 存在检查。">有 citation 就代表答案可信。</button>
+        <div class="feedback"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>本课小结</h2>
+    <p>Citation validation、grounding、faithfulness、sufficiency 是四个不同问题。citation guard 可以确定性地过滤 ledger 外引用；grounding 检查 claim 是否被 evidence 支持；faithfulness 检查答案有没有背离证据；sufficiency 判断证据是否覆盖用户问题。下一课进入 supervisor：当一个问题需要多分支 gather 时，谁来协调 worker、谁来合并 ledger、谁来写最终答案。</p>
+  </section>
+
+  <section>
+    <h2>继续学习</h2>
+    <p><a href="0004-evidence-ledger-as-evidence-authority.html">上一课：Evidence Ledger</a> · <a href="../reference/0001-learning-route.html">学习路线</a> · <a href="0006-supervisor-as-coordination-layer.html">下一课：Supervisor</a></p>
+  </section>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

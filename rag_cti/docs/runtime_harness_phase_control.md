@@ -19,7 +19,7 @@ Use documents in this order when they disagree:
 3. Current code and tests: implementation truth for what actually exists.
 4. Temporary handoff files: useful context only, never authoritative after this
    control document exists.
-5. `docs/agentic_rag_guardrails.md`: historical/north-star guardrail framing
+5. `docs/archive/runtime/HISTORICAL_agentic_rag_guardrails.md`: historical/north-star guardrail framing
    only. Do not use it as the current phase status, implementation map, or
    completion checklist for Phase 4.
 

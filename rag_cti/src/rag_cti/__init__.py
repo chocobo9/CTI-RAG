@@ -60,7 +60,7 @@ def _default_pipeline() -> Pipeline:
     encoder = load_sparse_encoder(vocab_path_for(settings.qdrant_collection))
 
     llm_client = None
-    llm_provider = "anthropic"
+    llm_provider = "groq"
     if settings.hyde_enabled or settings.query_rewrite_enabled:
         from rag_cti.generation.client import build_llm_client
 

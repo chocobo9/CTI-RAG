@@ -1,4 +1,4 @@
-# CTI-RAG Source & Ingestion Design
+﻿# CTI-RAG Source & Ingestion Design
 
 Spec for the layer *beneath* retrieval and knowledge: **connector → raw record →
 normalized objects**. Companion to `docs/retrieval_layer_design.md` and
@@ -47,16 +47,22 @@ registrar/iana_id/created/expires/registrant_email/name_servers, etc.). Anything
 not literally listed is dropped. With no raw kept, the whitelist is destructive.
 
 **(d) Render-and-discard — *partial* raw store, not unified.** Correction to an
-earlier draft of this doc: a raw store **does exist** —
-`scripts/refetch_otx_raw.py` saves each pulse's full JSON to
-`data/raw/otx/{pulse_id}.json`, and `data/raw/mitre/enterprise-attack.json` is
-the MITRE bundle; `scripts/rebuild_otx_jsonl.py` rebuilds processed OTX from
-raw. The real problems are narrower and worse-hidden: (i) raw exists only for
-OTX and MITRE — **VT / WHOIS / pDNS have none**; (ii) the OTX raw is written with
-`write_text` (overwrite), **not append-only/versioned** — a re-fetched modified
-pulse destroys its prior state (Rule 0); (iii) it is a side script, **not wired
-through the connector pipeline**; (iv) the processed corpus was rebuilt by an
-**older** connector, so processed and current code have drifted (see table).
+earlier draft of this doc: a raw store **does exist**. The canonical OTX
+collector stores raw `/search/pulses`, `/pulses/{pulse_id}`, and
+`/pulses/{pulse_id}/indicators` responses through RawStore, versioned by
+`(source_id, fetched_at)`, and records collection audit artifacts under
+`data/raw/otx_collection_runs/<run_id>/`. `data/raw/mitre/enterprise-attack.json`
+is the MITRE bundle; `scripts/rebuild_otx_jsonl.py` rebuilds processed OTX from
+raw. The remaining problems are narrower: (i) raw exists only for OTX and MITRE
+— **VT / WHOIS / pDNS have none**; (ii) OTX raw collection is a side script,
+**not wired through the connector pipeline**; (iii) the processed corpus may
+still be rebuilt by older connector assumptions, so processed and current code
+can drift (see table). The current actor-centric OTX collection is recorded in
+`docs/otx_raw_collection_status.md`: actor/name/alias discovery and
+actor-evidenced Pulse-detail gathering are phase-complete, with query-only
+candidates preserved and explicitly deferred from detail expansion. Indicator
+endpoint backfill is a separate optional downstream scope, not an open raw
+gathering requirement for this phase.
 
 ### Full hardcode / drop-risk inventory
 
@@ -101,15 +107,62 @@ Every source produces **two separate things**, and they must not be conflated:
    - candidate `Entity` / `Fact` / `relations[]` — see knowledge doc
 
 If a projection is wrong or the schema changes, re-run projection over the raw.
-Today this works only partially: OTX and MITRE have a raw store
-(`scripts/refetch_otx_raw.py`, `data/raw/`), but it is overwrite (not
-versioned), VT/WHOIS/pDNS have none, and it is not wired through the connector
-pipeline. **[change]** — make raw append-only/versioned, extend to all sources,
-and route projection through it.
+Today this works only partially: OTX and MITRE have raw records
+(`scripts/fetch_otx_mitre_actor_raw.py`, `data/raw/`), and OTX collection now
+uses RawStore append-only/versioned writes plus run-level audit artifacts. See
+`docs/otx_raw_collection_status.md` for its final scoped population and
+coverage.
+VT/WHOIS/pDNS still have no equivalent raw store, and raw collection is not yet
+wired through a unified connector pipeline. **[change]** — extend raw collection
+to all sources and route projection through it.
 
 ---
 
-## 4. Per-source ingestion contract **[change]**
+## 4. Collection control loop across sources **[change]**
+
+Raw preservation does not require indiscriminately expanding every search hit.
+Every seeded or linked collection should declare four populations:
+
+1. **seed inputs** — the actor, indicator, report, domain, hash, or other known
+   identities used to search or pivot;
+2. **discovery candidates** — deduplicated source-record identities returned by
+   the source, retaining every discovery path;
+3. **source-evidenced acquisition set** — candidates whose own structured
+   source fields satisfy a declared relevance rule for the task;
+4. **deferred candidates** — candidates retained with provenance but not yet
+   authorized for expensive detail or enrichment.
+
+The acquisition rule is source-specific but must be deterministic, auditable,
+and based on source structure. It is not confidence scoring and never promotes
+the seed that found a record into a source claim.
+
+| Source class | Seed/discovery example | Evidence that may authorize detail | What must not authorize detail alone |
+|---|---|---|---|
+| weakly labelled Event source (OTX) | MITRE actor names/aliases → Pulse IDs | source `adversary`; taxonomy-resolved actor tags when actually supplied | query actor, title/description substring, references, ATT&CK technique ids |
+| narrative reports | known actor/report index → document IDs | document metadata, publisher labels, or an explicit in-document claim preserved as evidence | search-engine query match or generated summary |
+| infrastructure (pDNS/WHOIS) | selected domain/IP → resolution or registration records | an explicit Event-IOC support gap and a joinable typed indicator | expanding every IOC merely because it exists |
+| file intelligence (VT) | selected hash → file report | typed hash from an in-scope Event and an explicit support-evidence need | unrelated similar files or graph-neighbour expansion without a bound |
+
+For each source, record candidate identity, discovery provenance, routing
+decision/reason, raw reference, terminal status, retryability, and declared
+coverage. Multi-valued or ambiguous source claims are preserved; ambiguity is
+not a reason to delete raw evidence.
+
+Collection completion is scoped:
+
+- **query coverage** — every seed query has a terminal state;
+- **selected-detail coverage** — every routed acquisition has valid raw detail
+  or a classified terminal failure;
+- **support-enrichment coverage** — separate and optional, evaluated only when
+  that workflow is explicitly opened.
+
+This prevents two opposite failures: dropping ambiguous evidence before it can
+be studied, and spending unbounded time/storage expanding query-only or
+unrelated records.
+
+---
+
+## 5. Per-source ingestion contract **[change]**
 
 Replace the hand-rolled `to_document` with a per-source **declared**
 normalization. Each connector declares:
@@ -127,7 +180,7 @@ normalization. Each connector declares:
   (`uses` / `attributed-to`); OTX adversary×attack_id co-occurrence. Narrative
   sources defer to NLP extraction. The predicate must survive — it is the field
   whose loss caused the 36% miswiring.
-- **indicator typing** — see §5.
+- **indicator typing** — see §6.
 - **provenance** — `source_type`, `source_id`, `url`, `fetched_at`, and source
   version (e.g. ATT&CK `attack_version`). This is what lets a downstream
   `supports` edge record real provenance instead of just `origin: "otx"`.
@@ -137,7 +190,7 @@ Structured sources (MITRE, OTX) carry their structure into typed objects with
 
 ---
 
-## 5. Indicator typing — the highest-value fix
+## 6. Indicator typing — the highest-value fix
 
 Indicators must be ingested as `{value, type}`, never as a bare value. Type is
 preserved from the source (OTX already provides it; it is currently discarded).
@@ -152,7 +205,7 @@ re-enables the entire indicator-mesh half of the system.
 
 ---
 
-## 6. Caps, idempotency, incremental
+## 7. Caps, idempotency, incremental
 
 - **Caps** are permitted in exactly one place: the *sample of indicators
   rendered into embedded `content`* (prose doesn't need all 500). They are
@@ -179,11 +232,11 @@ re-enables the entire indicator-mesh half of the system.
   threshold — currently none), so this too is latent. If content ever exceeds
   the embedding model's max it must be re-chunked from raw, not silently cut, and
   any unavoidable truncation emits a flag. (See
-  `docs/eval/chunk_truncation_audit.md`.) **[change]** (Rule 0.)
+  `docs/archive/eval/SNAPSHOT_cti_chunks_v2_chunk_truncation_audit.md`.) **[change]** (Rule 0.)
 
 ---
 
-## 7. Invariants
+## 8. Invariants
 
 1. Raw is preserved verbatim and **append-only/versioned** before any projection
    runs; a re-fetch of a modified source appends, never overwrites. Loss at this

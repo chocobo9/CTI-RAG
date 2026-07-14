@@ -1,0 +1,1814 @@
+<html lang="en" dir="ltr" prefix="og: https://ogp.me/ns#" class="no-js js"><head>
+    <meta charset="utf-8">
+<meta name="description" content="CISA urges software vendors, downstream customers, and end users to immediately implement the Mitigations listed in this advisory based on confirmed compromise">
+<link rel="canonical" href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a">
+<meta property="og:site_name" content="Cybersecurity and Infrastructure Security Agency CISA">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a">
+<meta property="og:title" content="Ransomware Actors Exploit Unpatched SimpleHelp Remote Monitoring and Management to Compromise Utility Billing Software Provider | CISA">
+<meta property="og:description" content="CISA urges software vendors, downstream customers, and end users to immediately implement the Mitigations listed in this advisory based on confirmed compromise or risk of compromise.">
+<meta name="Generator" content="Drupal 11 (https://www.drupal.org)">
+<meta name="MobileOptimized" content="width">
+<meta name="HandheldFriendly" content="true">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/profiles/cisad8_gov/themes/custom/gesso/favicon.png" type="image/png">
+
+    <title>Ransomware Actors Exploit Unpatched SimpleHelp Remote Monitoring and Management to Compromise Utility Billing Software Provider | CISA</title>
+    <link rel="stylesheet" media="all" href="/sites/default/files/css/css_ZYgykZWE1pG4SvBnq5aCWOwKdq2orGvySpKc8nCsbHg.css?delta=0&amp;language=en&amp;theme=guswds&amp;include=eJxFi1EOwyAMQy8UwZFQgIyyUoKSsHa3XzW124_l92RHMiMJyqliC7qg1F5CnGbc1au928mQVsrVWAKmxJIrd_9r7iHcjXqGU5DPMgc2h088gA477-vtLoQydc_qS-OIDQYKFsGx6L37Gzf7mLFVXSiDvtVo8xGVwJhbRAmGuqq_CF6VdvXfdBvn2egDxTRYKg">
+<link rel="stylesheet" media="all" href="//fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" media="all" href="/sites/default/files/css/css_jk_CWFYM4WdjrPM5q5Hf9_Omlqm8rWHMdHt5LbS-EMY.css?delta=2&amp;language=en&amp;theme=guswds&amp;include=eJxFi1EOwyAMQy8UwZFQgIyyUoKSsHa3XzW124_l92RHMiMJyqliC7qg1F5CnGbc1au928mQVsrVWAKmxJIrd_9r7iHcjXqGU5DPMgc2h088gA477-vtLoQydc_qS-OIDQYKFsGx6L37Gzf7mLFVXSiDvtVo8xGVwJhbRAmGuqq_CF6VdvXfdBvn2egDxTRYKg">
+
+    <script src="https://www.youtube.com/iframe_api"></script><script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-CSLL4ZEK4L&amp;cx=c&amp;gtm=4e6781"></script><script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-9MDR73GM0K&amp;cx=c&amp;gtm=4e6781"></script><script type="application/json" data-drupal-selector="drupal-settings-json">{"path":{"baseUrl":"\/","pathPrefix":"","currentPath":"node\/23510","currentPathIsAdmin":false,"isFront":false,"currentLanguage":"en"},"pluralDelimiter":"\u0003","suppressDeprecationErrors":true,"gtag":{"tagId":"","consentMode":false,"otherIds":[],"events":[],"additionalConfigInfo":[]},"ajaxPageState":{"libraries":"eJx1jmtuxCAMhC-E4EjIYIfQEBzZJru5fVF306qV-mc03_ihSWRGEpVzhRZ1Bam9xDTMuGtQu9pklzfCaiwRcmbByj18O78Id6OOjp42t7eAMg5o_o2uMJdG0aCEMuUve_iA5-9wd2XoAzUAnlVZrpuTEGCWsac7WWqj25fGCdpNRqAk7gCBInCsevf6Sfzox0it6kro9FKjPaR55Yy5JZBZR7f56UVu6EJY-IzvstChXVazhn8nPmN3Z6WHhi_1O-No9Akls5Ob","theme":"guswds","theme_token":null},"ajaxTrustedUrl":[],"gtm":{"tagId":null,"settings":{"data_layer":"dataLayer","include_classes":false,"allowlist_classes":"","blocklist_classes":"","include_environment":false,"environment_id":"","environment_token":""},"tagIds":["GTM-53QLXSL9"]},"data":{"extlink":{"extTarget":false,"extTargetAppendNewWindowDisplay":false,"extTargetAppendNewWindowLabel":"(opens in a new window)","extTargetNoOverride":false,"extNofollow":false,"extTitleNoOverride":false,"extNoreferrer":false,"extFollowNoOverride":false,"extClass":"ext","extLabel":"(link is external)","extImgClass":false,"extSubdomains":true,"extExclude":"(.\\.gov$)|(.\\.mil$)|(.\\.mil\/)|(.\\.gov\/)","extInclude":"","extCssExclude":".c-menu--social,.c-menu--footer,.c-social-links,.c-text-cta--button,.usa-footer__contact-info","extCssInclude":"","extCssExplicit":"","extAlert":true,"extAlertText":"You are now leaving an official website of the United State Government (USG), the Department of Homeland Security (DHS) and the Cybersecurity and Infrastructure Security Agency (CISA). Links to non-USG, non-DHS and non-CISA sites are provided for the visitor\u0027s convenience and do not represent an endorsement by USG, DHS or CISA of any commercial or private issues, products or services. Note that the privacy policy of the linked site may differ from that of USG, DHS and CISA.","extHideIcons":false,"mailtoClass":"mailto","telClass":"0","mailtoLabel":"(link sends email)","telLabel":"(link is a phone number)","extUseFontAwesome":false,"extIconPlacement":"append","extPreventOrphan":false,"extFaLinkClasses":"fa fa-external-link","extFaMailtoClasses":"fa fa-envelope-o","extAdditionalLinkClasses":"","extAdditionalMailtoClasses":"","extAdditionalTelClasses":"","extFaTelClasses":"fa fa-phone","allowedDomains":[],"extExcludeNoreferrer":""}},"ckeditorAccordion":{"accordionStyle":{"collapseAll":1,"keepRowsOpen":0,"animateAccordionOpenAndClose":1,"openTabsWithHash":1,"allowHtmlInTitles":0}},"user":{"uid":0,"permissionsHash":"0f75d40308887aebba0d5b0d2671305b73c9431902f86e672380a6dc6ab97d07"}}</script>
+<script src="/sites/default/files/js/js_kKZTUKGNMaMbgVFEXVH_lQCflnC8iUTgDL4fmnVnOog.js?scope=header&amp;delta=0&amp;language=en&amp;theme=guswds&amp;include=eJx1jUEOwyAMBD-E4EnIwcaicXBlIE1-3x5CpFbqZbUze9i0EpauFiElNSxaw918Nq2dKjo6upS6BrTxBPEXOlZlodiBA3_ilz084PiWm-PRXtgC4F6a2jl5MQJMNrZlmlyEZmfRBWRSJ2hkbrRMyLrH6wEqyNlLauHv4hPWN_l2Xx0"></script>
+<script src="/modules/contrib/google_tag/js/gtag.js?thx9hh"></script>
+<script src="/modules/contrib/google_tag/js/gtm.js?thx9hh"></script><script async="" src="https://www.googletagmanager.com/gtm.js?id=GTM-53QLXSL9" type="text/javascript"></script>
+<script src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=DHS&amp;subagency=CISA&amp;siteplatform=Drupal&amp;yt=true" id="_fed_an_ua_tag" async=""></script>
+
+  <script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-CSLL4ZEK4L"></script><script src="https://www.google.com/cse/static/element/d4d17fc91fc77275/cse_element__en.js?usqp=CAM%3D" type="text/javascript"></script><link type="text/css" href="https://www.google.com/cse/static/element/d4d17fc91fc77275/default_v6+en.css" rel="stylesheet"><link type="text/css" href="https://www.google.com/cse/static/style/look/v6/default.css" rel="stylesheet"><script src="https://www.google.com/cse/static/element/d4d17fc91fc77275/cse_element__en.js?usqp=CAM%3D" type="text/javascript"></script><link type="text/css" href="https://www.google.com/cse/static/element/d4d17fc91fc77275/default_v6+en.css" rel="stylesheet"><link type="text/css" href="https://www.google.com/cse/static/style/look/v6/default.css" rel="stylesheet"></head>
+  <body class="path-node not-front node-page node-page--node-type-advisory" id="top">
+    
+<div class="c-skiplinks">
+  <a href="#main" class="c-skiplinks__link u-visually-hidden u-focusable">Skip to main content</a>
+</div>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-53QLXSL9"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+      <div class="dialog-off-canvas-main-canvas" data-off-canvas-main-canvas="">
+    
+
+<div class="l-site-container">
+    
+      
+<section class="usa-banner" aria-label="Official government website">
+  <div class="usa-accordion">  <header class="usa-banner__header">
+    <div class="usa-banner__inner">
+      <div class="grid-col-auto">
+        <img class="usa-banner__header-flag" src="/profiles/cisad8_gov/themes/custom/gesso/dist/images/us_flag_small.png" alt="U.S. flag">
+      </div>
+      <div class="grid-col-fill tablet:grid-col-auto">
+        <p class="usa-banner__header-text">An official website of the United States government</p>
+              <p class="usa-banner__header-action" aria-hidden="true">Here’s how you know</p></div>
+        <button class="usa-accordion__button usa-banner__button" aria-expanded="false" aria-controls="gov-banner">
+          <span class="usa-banner__button-text">Here’s how you know</span>
+        </button>
+          </div>
+  </header>
+      <div class="usa-banner__content usa-accordion__content" id="gov-banner" hidden="">
+      <div class="grid-row grid-gap-lg">
+                  <div class="usa-banner__guidance tablet:grid-col-6">
+            <img class="usa-banner__icon usa-media-block__img" src="/profiles/cisad8_gov/themes/custom/gesso/dist/images/icon-dot-gov.svg" alt="Dot gov">
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Official websites use .gov</strong>
+                <br> A <strong>.gov</strong> website belongs to an official government organization in the United States.
+              </p>
+            </div>
+          </div>
+                  <div class="usa-banner__guidance tablet:grid-col-6">
+            <img class="usa-banner__icon usa-media-block__img" src="/profiles/cisad8_gov/themes/custom/gesso/dist/images/icon-https.svg" alt="HTTPS">
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Secure .gov websites use HTTPS</strong>
+                <br> A <strong>lock</strong> (<span class="icon-lock"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="64" viewBox="0 0 52 64" class="usa-banner__lock-image" role="img" aria-labelledby="banner-lock-title banner-lock-description"><title id="banner-lock-title">Lock</title><desc id="banner-lock-description">A locked padlock</desc><path fill="#000000" fill-rule="evenodd" d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"></path></svg></span>) or <strong>https://</strong> means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.
+              </p>
+            </div>
+          </div>
+              </div>
+    </div>
+  </div>
+  </section>
+  
+  
+
+
+
+  <div class="c-block c-global-header-btns c-global-btns">
+
+      <div class="l-constrain l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-globalbuttons" class="c-block c-block--provider-block-content c-block--id-block-content83069f9f-34fc-4d54-86ec-936a204f8088">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p><a class="c-button c-button--basic c-button--gray" href="/staying-secure-large-scale-events">Staying Secure at Events</a><a class="c-button c-button--basic c-button--blue" href="/resources-tools/resources/free-cybersecurity-services-and-tools" title="Free Cyber Services">no-cost Cyber Services</a><a class="c-button c-button--basic c-button--green60" href="/securebydesign">Secure by design&nbsp;</a><a class="c-button c-button--basic c-button--teal" href="/secureyourbusiness">Secure Your Business</a><a class="c-button c-button--report" href="/report">Report A Cyber Issue</a>&nbsp;</p></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+  
+  
+
+
+<div class="usa-overlay"></div>
+<header class="usa-header usa-header--extended" role="banner">
+        
+<div class="usa-navbar">
+  <div class="l-constrain">
+    <div class="usa-navbar__row">
+                                    
+
+
+
+  <div class="c-block c-site-header">
+
+      <div class="l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-guswds-cisaheaderblock" class="c-block c-block--provider-block-content c-block--id-block-contentbc4e6844-86b4-4e20-b163-a73bda3d1d76">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><a href="/"><img src="/sites/default/files/images/SVG/header_logo_tagline_update.svg" alt="Cybersecurity &amp; Infrastructure Security Agency logo America’s Cyber Security Defense Agency National Coordinator For Critical Infrastructure Security and Resilience"><img class="print-only" src="/sites/default/files/images/SVG/header_logo_tagline_update.png" alt="Cybersecurity &amp; Infrastructure Security Agency logo America’s Cyber Security Defense Agency National Coordinator For Critical Infrastructure Security and Resilience"></a></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+
+        
+
+
+
+  <div class="c-block c-site-header-mobile">
+
+      <div class="l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-guswds-cisaheaderblockmobile" class="c-block c-block--provider-block-content c-block--id-block-content283396c9-cd36-4ce3-b1e2-9b5576ab4f50">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><a href="/"><img src="/sites/default/files/images/SVG/mobile_logo_wordmark.svg" alt="CISA Logo"></a></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+            <div class="usa-navbar__search">
+        <div class="usa-navbar__search-header">
+          <p>Search</p>
+        </div>
+        
+<div class="usa-search">
+  <script async="" src="https://cse.google.com/cse.js?cx=ffc4c79e29d5b3a8c"></script>
+  <div class="gcse-searchbox-only" data-resultsurl="/search">&nbsp;</div>
+</div>
+      </div>
+      <button class="mobile-menu-button usa-menu-btn">Menu</button>
+    </div>
+  </div>
+</div>
+    
+
+
+
+  <div class="c-block c-tagline-mobile">
+
+      <div class="l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-guswds-mobiletaglinecontainer" class="c-block c-block--provider-block-content c-block--id-block-contentc8d12e9d-7e48-4708-90c1-563609c4b566">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p></p><center><img src="/sites/default/files/images/SVG/header_tagline_mobile_update.svg" alt="America's Cyber Defense Agency"></center></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+    
+
+<nav class="usa-nav" role="navigation" aria-label="Primary navigation">
+  <div class="usa-nav__inner l-constrain">
+    <div class="usa-nav__row">
+      <button class="usa-nav__close">Close</button>
+      
+<div class="usa-search">
+  <script async="" src="https://cse.google.com/cse.js?cx=ffc4c79e29d5b3a8c"></script>
+  <div class="gcse-searchbox-only" data-resultsurl="/search">&nbsp;</div>
+</div>
+                
+  
+          <ul class="usa-nav__primary usa-accordion">
+    
+    
+              <li class="usa-nav__primary-item topics">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-1">
+          <span>Topics</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-1" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/topics">Topics</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/cybersecurity-best-practices">
+          <span>Cybersecurity Best Practices</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/cyber-threats-and-response">
+          <span>Cyber Threats and Response</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/critical-infrastructure-security-and-resilience">
+          <span>Critical Infrastructure Security and Resilience</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/election-security">
+          <span>Election Security</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/emergency-communications">
+          <span>Emergency Communications</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/industrial-control-systems">
+          <span>Industrial Control Systems</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/information-communications-technology-supply-chain-security">
+          <span>Information and Communications Technology Supply Chain Security</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/partnerships-and-collaboration">
+          <span>Partnerships and Collaboration</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/physical-security">
+          <span>Physical Security</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/risk-management">
+          <span>Risk Management</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+
+<div class="c-menu-feature-links">
+      <div class="c-menu-feature-links__title">
+      <a href="/audiences">        How can we help?
+      </a>    </div>
+        <div class="c-menu-feature-links__content"><a href="/topics/government">Government</a><a href="/topics/educational-institutions">Educational Institutions</a><a href="/topics/industry">Industry</a><a href="/topics/state-local-tribal-and-territorial">State, Local, Tribal, and Territorial</a><a href="/topics/individuals-and-families">Individuals and Families</a><a href="/topics/small-and-medium-businesses">Small and Medium Businesses</a><a href="/audiences/find-help-locally">Find Help Locally</a><a href="/audiences/faith-based-community">Faith-Based Community</a><a href="/audiences/executives">Executives</a><a href="/audiences/high-risk-communities">High-Risk Communities</a></div>
+  </div>
+
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item spotlight">
+      
+      
+                      <a href="/spotlight" class="usa-nav__link">
+          <span>Spotlight</span>
+        </a>
+              
+              </li>
+          
+              <li class="usa-nav__primary-item resources--tools">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-3">
+          <span>Resources &amp; Tools</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-3" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/resources-tools">Resources &amp; Tools</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/all-resources-tools">
+          <span>All Resources &amp; Tools</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/services">
+          <span>Services</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/programs">
+          <span>Programs</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/resources">
+          <span>Resources</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/training">
+          <span>Training</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/groups">
+          <span>Groups</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item news--events">
+      
+              <button class="usa-accordion__button usa-nav__link usa-current" aria-expanded="false" aria-controls="basic-mega-nav-section-4">
+          <span>News &amp; Events</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-4" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/news-events">News &amp; Events</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/directives">
+          <span>Directives</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/news">
+          <span>News</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/events">
+          <span>Events</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/cybersecurity-advisories">
+          <span>Cybersecurity Alerts &amp; Advisories</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/request-speaker">
+          <span>Request a CISA Speaker</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/congressional-testimony">
+          <span>Congressional Testimony</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/cisa-conferences">
+          <span>CISA Conferences</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/cisa-live">
+          <span>CISA Live!</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item careers">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-5">
+          <span>Careers</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-5" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/careers">Careers</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/benefits-perks">
+          <span>Benefits &amp; Perks</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/hiring-and-recruitment">
+          <span>Hiring and Recruitment</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/new-employee-orientation-and-onboarding">
+          <span>New Employee Orientation &amp; Onboarding</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/students-recent-graduates-employment-opportunities">
+          <span>Students &amp; Recent Graduates</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/veteran-and-military-spouse-employment-opportunities">
+          <span>Veteran and Military Spouses</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item about">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-6">
+          <span>About</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-6" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/about">About</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/divisions-offices">
+          <span>Divisions &amp; Offices</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/regions">
+          <span>Regions</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/leadership">
+          <span>Leadership</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/doing-business-cisa">
+          <span>Doing Business with CISA</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/site-links">
+          <span>Site Links</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/cisa-github">
+          <span>CISA GitHub</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/cisa-central">
+          <span>CISA Central</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/contact-us">
+          <span>Contact Us </span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/contact-us/subscribe-updates-cisa">
+          <span>Subscribe</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/transparency-and-accountability">
+          <span>Transparency and Accountability</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/policies-plans">
+          <span>Policies &amp; Plans</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+    
+      </ul>
+    
+  
+
+
+            
+
+
+
+  <div class="c-block c-global-menu-btns c-global-btns">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-globalbuttons" class="c-block c-block--provider-block-content c-block--id-block-content83069f9f-34fc-4d54-86ec-936a204f8088">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p><a class="c-button c-button--basic c-button--gray" href="/staying-secure-large-scale-events">Staying Secure at Events</a><a class="c-button c-button--basic c-button--blue" href="/resources-tools/resources/free-cybersecurity-services-and-tools" title="Free Cyber Services">no-cost Cyber Services</a><a class="c-button c-button--basic c-button--green60" href="/securebydesign">Secure by design&nbsp;</a><a class="c-button c-button--basic c-button--teal" href="/secureyourbusiness">Secure Your Business</a><a class="c-button c-button--report" href="/report">Report A Cyber Issue</a>&nbsp;</p></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+  
+  </div>
+    </div>
+  </div>
+</nav>
+    </header>
+
+
+  
+  
+  
+<div class="l-breadcrumb">
+  <div class="l-constrain">
+    <div class="l-breadcrumb__row">
+      
+
+
+
+
+
+
+
+  
+  
+    
+
+  
+              
+
+
+
+
+<nav aria-labelledby="breadcrumb-label" class="c-breadcrumb" role="navigation">
+  <div class="l-constrain">
+    <div id="breadcrumb-label" class="c-breadcrumb__title  u-visually-hidden">Breadcrumb</div>
+    <ol class="c-breadcrumb__list">
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/">Home</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/news-events">News &amp; Events</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/news-events/cybersecurity-advisories">Cybersecurity Advisories</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/news-events/cybersecurity-advisories?f%5B0%5D=advisory_type%3A94">Cybersecurity Advisory</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <span aria-current="page">
+              Ransomware Actors Exploit Unpatched SimpleHelp Remote Monitoring and Management to Compromise Utility Billing Software Provider
+            </span>
+                  </li>
+          </ol>
+  </div>
+</nav>
+
+  
+  
+  
+  
+
+
+
+
+
+
+  <div id="block-bettersocialsharingbuttons" class="c-block c-block--social-share c-block--provider-better-social-sharing-buttons c-block--id-social-sharing-buttons-block">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      <div class="c-block__row">
+      <span>Share:</span>
+      
+
+<div style="display: none"><link rel="preload" href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg" as="image" type="image/svg+xml" crossorigin="anonymous"></div>
+
+<div class="social-sharing-buttons">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a&amp;title=Ransomware%20Actors%20Exploit%20Unpatched%20SimpleHelp%20Remote%20Monitoring%20and%20Management%20to%20Compromise%20Utility%20Billing%20Software%20Provider" target="_blank" title="Share to Facebook" aria-label="Share to Facebook" class="social-sharing-buttons-button share-facebook" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#facebook"></use>
+            </svg>
+        </a>
+    
+                <a href="https://twitter.com/intent/tweet?text=Ransomware%20Actors%20Exploit%20Unpatched%20SimpleHelp%20Remote%20Monitoring%20and%20Management%20to%20Compromise%20Utility%20Billing%20Software%20Provider+https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a" target="_blank" title="Share to X" aria-label="Share to X" class="social-sharing-buttons-button share-x" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#x"></use>
+            </svg>
+        </a>
+    
+        
+        
+        
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a" target="_blank" title="Share to Linkedin" aria-label="Share to Linkedin" class="social-sharing-buttons-button share-linkedin" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#linkedin"></use>
+            </svg>
+        </a>
+    
+    
+    
+        
+        
+        
+        
+                <a href="mailto:?subject=Ransomware%20Actors%20Exploit%20Unpatched%20SimpleHelp%20Remote%20Monitoring%20and%20Management%20to%20Compromise%20Utility%20Billing%20Software%20Provider&amp;body=https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a" title="Share to Email" aria-label="Share to Email" class="social-sharing-buttons-button share-email" target="_blank" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#email"></use>
+            </svg>
+        </a>
+    
+        
+    </div>
+
+    </div>
+  
+      </div>
+  
+  
+  </div>
+
+    </div>
+  </div>
+</div>
+
+  
+  
+
+  <main id="main" class="c-main" role="main" tabindex="-1">
+        
+      
+    
+
+
+<div class="l-content">
+          
+
+
+
+
+
+
+
+  
+  
+    
+
+  
+            
+
+  
+  
+
+
+
+
+
+
+<div class="is-promoted l-full">
+    <div class="l-full__header">
+        
+<div class="c-page-title">
+	<div class="c-page-title__inner l-constrain">
+		<div class="c-page-title__row">
+			<div>
+				<div class="c-page-title__content">
+											<div class="c-page-title__meta">Cybersecurity Advisory</div>
+										<h1 class="c-page-title__title">
+<span>Ransomware Actors Exploit Unpatched SimpleHelp Remote Monitoring and Management to Compromise Utility Billing Software Provider</span>
+</h1>
+																																				<div class="c-page-title__fields">  
+
+
+
+
+<div class="c-field c-field--name-field-release-date c-field--type-datetime c-field--label-above">
+  <div class="c-field__label">Release Date</div><div class="c-field__content"><time datetime="2025-06-12T12:00:00Z">June 12, 2025</time></div></div>
+
+  
+
+
+
+
+<div class="c-field c-field--name-field-alert-code c-field--type-string c-field--label-above">
+  <div class="c-field__label">Alert Code</div><div class="c-field__content">AA25-163A</div></div>
+
+</div>
+																					<div class="c-page-title__buttons">    <a href="https://cisasurvey.gov1.qualtrics.com/jfe/form/SV_9n4TtB8uttUPaM6?product=https%3A//www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a" class="c-button">
+      CISA Product Feedback Survey
+    </a>
+  </div>
+																<div class="c-page-title__topic">
+							<div class="c-topic__label">
+								Related topics:
+							</div>
+							<div class="c-top__topics">
+																																												<a href="/topics/cybersecurity-best-practices">Cybersecurity Best Practices</a>
+										,
+																																																							<a href="/topics/critical-infrastructure-security-and-resilience">Critical Infrastructure Security and Resilience</a>
+																																		</div>
+						</div>
+									</div>
+				<div class="c-page-title__decoration"></div>
+			</div>
+					</div>
+	</div>
+</div>
+    </div>
+    <div class="l-full__main">
+                      
+
+<div class="l-page-section l-page-section--rich-text csaf-imported">
+      <div class="l-constrain">
+  
+  
+  <div class="l-page-section__content">
+          <h2><strong>Summary</strong></h2>
+<p>The Cybersecurity and Infrastructure Security Agency (CISA) is releasing this advisory in response to ransomware actors leveraging unpatched instances of a vulnerability in SimpleHelp Remote Monitoring and Management (RMM) to compromise customers of a utility billing software provider. This incident reflects a broader pattern of ransomware actors targeting organizations through unpatched versions of SimpleHelp RMM since January 2025.</p>
+<p>SimpleHelp versions 5.5.7 and earlier contain several vulnerabilities, including <a href="https://www.cve.org/CVERecord?id=CVE-2024-57727" target="_blank" title="CVE-2024-57727" class="ext" data-extlink="">CVE-2024-57727<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>—a path traversal vulnerability.<a href="/news-events/cybersecurity-advisories/aa25-163a#note1" title="Note1"><sup>1</sup></a><sup> </sup>Ransomware actors likely leveraged CVE-2024-57727 to access downstream customers’ unpatched SimpleHelp RMM for disruption of services in double extortion compromises.<a href="/news-events/cybersecurity-advisories/aa25-163a#note1" title="Note 1"><sup>1</sup></a><sup>&nbsp;</sup></p>
+<p>CISA added CVE-2024-57727 to its <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" title="Known Exploited Vulnerabilities Catalog">Known Exploited Vulnerabilities (KEV) Catalog</a> on Feb. 13, 2025.</p>
+<p>CISA urges software vendors, downstream customers, and end users to immediately implement the <strong>Mitigations </strong>listed in this advisory based on confirmed compromise or risk of compromise.</p>
+<p>Download the PDF version of this report:</p>
+
+
+
+
+
+<div class="c-file last-file-block" data-once="fileBlock">
+    <div class="c-file__download">
+    <a href="/sites/default/files/2025-06/aa25-163a-ransomware-simplehelp-rmm-compromise.pdf" class="c-file__link" target="_blank">AA25-163A Ransomware Actors Exploit Unpatched SimpleHelp Remote Monitoring and Management to Compromise Utility Billing Software Provider</a>
+    <span class="c-file__size">(PDF,       420.49 KB
+  )</span>
+  </div>
+</div>
+<h2><strong>Mitigations</strong></h2>
+<p>CISA recommends organizations implement the mitigations below to respond to emerging ransomware activity exploiting SimpleHelp software. These mitigations align with the Cross-Sector Cybersecurity Performance Goals (CPGs) developed by CISA and the National Institute of Standards and Technology (NIST). The CPGs provide a minimum set of practices and protections that CISA and NIST recommend all organizations implement. CISA and NIST based the CPGs on existing cybersecurity frameworks and guidance to protect against the most common and impactful threats, tactics, techniques, and procedures. Visit CISA’s <a href="https://www.cisa.gov/cross-sector-cybersecurity-performance-goals" title="CPGs webpage">CPGs webpage</a> for more information on the CPGs, including additional recommended baseline protections. These mitigations apply to all critical infrastructure organizations.</p>
+<h3>Vulnerable Third-Party Vendors</h3>
+<p>If SimpleHelp is embedded or bundled in vendor-owned software or if a third-party service provider leverages SimpleHelp on a downstream customer’s network, then identify the SimpleHelp server version at the top of the file <code>&lt;file_path&gt;/SimpleHelp/configuration/serverconfig.xml</code>. If version 5.5.7 or prior is found or has been used since January 2025, third-party vendors should:</p>
+<ol>
+<li>Isolate the SimpleHelp server instance from the internet or stop the server process.</li>
+<li>Upgrade immediately to the latest SimpleHelp version in accordance with SimpleHelp’s security vulnerability advisory.<a href="/news-events/cybersecurity-advisories/aa25-163a#note2" title="Note 2"><sup>2</sup></a></li>
+<li>Contact your downstream customers to direct them to take actions to secure their endpoints and undertake threat hunting actions on their network.</li>
+</ol>
+<h3>Vulnerable Downstream Customers and End Users</h3>
+<p>Determine if the system is running an unpatched version of SimpleHelp RMM either directly or embedded in third-party software.</p>
+<h4><strong>SimpleHelp Endpoints</strong></h4>
+<p>Determine if an endpoint is running the remote access (RAS) service by checking the following paths depending on the specific environment:</p>
+<ul>
+<li>Windows: <code>%APPDATA%\JWrapper-Remote Access</code></li>
+<li>Linux: <code>/opt/JWrapper-Remote Access</code></li>
+<li>MacOs: <code>/Library/Application Support/JWrapper-Remote Access</code></li>
+</ul>
+<p>If RAS installation is present and running, open the <code>serviceconfig.xml</code> file in <code>&lt;file_path&gt;/JWrapper-Remote Access/JWAppsSharedConfig/</code> to determine if the registered service is vulnerable. The lines starting with <code>&lt;ConnectTo</code> indicate the server addresses where the service is registered.</p>
+<h4><strong>SimpleHelp Server</strong></h4>
+<p>Determine the version of any SimpleHelp server by performing an HTTP query against it. Add <code>/allversions</code> (e.g.,&nbsp;<code>https://simple-help.com/allversions</code>)&nbsp;to query the URL for the version page. This page will list the running version.</p>
+<p>If an unpatched SimpleHelp version 5.5.7 or earlier is confirmed on a system, organizations should conduct threat hunting actions for evidence of compromise and continuously monitor for unusual inbound and outbound traffic from the SimpleHelp server. <strong>Note:&nbsp;</strong>This is not an exhaustive list of indicators of compromise.</p>
+<ol>
+<li>&nbsp;Refer to SimpleHelp’s guidance to determine compromise and next steps.<a href="/news-events/cybersecurity-advisories/aa25-163a#note3" title="Note 3"><sup>3</sup></a></li>
+<li>Isolate the SimpleHelp server instance from the internet or stop the server process.</li>
+<li>Search for any suspicious or anomalous executables with three alphabetic letter filenames (e.g., <code>aaa.exe</code>, <code>bbb.exe</code>, etc.) with a creation time after January 2025. Additionally, perform host and network vulnerability security scans via reputable scanning services to verify malware is not on the system.</li>
+<li>Even if there is no evidence of compromise, users should immediately upgrade to the latest SimpleHelp version in accordance with SimpleHelp’s security vulnerabilities advisory.<a href="/news-events/cybersecurity-advisories/aa25-163a#note4" title="Note 4"><sup>4</sup></a></li>
+</ol>
+<p>If your organization is unable to immediately identify and patch vulnerable versions of SimpleHelp, apply appropriate workarounds. In this circumstance, CISA recommends using other vendor-provided mitigations when available. These non-patching workarounds should not be considered permanent fixes and organizations should apply the appropriate patch as soon as it is made available.</p>
+<h3>Encrypted Downstream Customers and End Users</h3>
+<p>If a system has been encrypted by ransomware:</p>
+<ol>
+<li>Disconnect the affected system from the internet.</li>
+<li>Use clean installation media (e.g., a bootable USD drive or DVD) to reinstall the operating system. Ensure the installation media is free from malware.</li>
+<li>Wipe the system and only restore data from a clean backup. Ensure data files are obtained from a protected environment to avoid reintroducing ransomware to the system.</li>
+</ol>
+<p>CISA urges you to promptly report ransomware incidents to a <a href="https://www.fbi.gov/contact-us/field-offices" target="_blank" title="local FBI Field Office">local FBI Field Office</a>, FBI’s <a href="https://www.ic3.gov/" target="_blank" title="Internet Crime Compliant Center (IC3)">Internet Crime Compliant Center (IC3)</a>, and CISA via CISA’s 24/7 Operations Center (<a href="mailto:report@cisa.gov" title="report@cisa.gov" class="mailto" data-extlink="">report@cisa.gov<svg focusable="false" width="1em" height="1em" class="mailto" data-extlink-placement="append" aria-label="(link sends email)" viewBox="0 10 70 20" role="img" aria-hidden="false"><title>(link sends email)</title><path d="M56 14H8c-1.1 0-2 0.9-2 2v32c0 1.1 0.9 2 2 2h48c1.1 0 2-0.9 2-2V16C58 14.9 57.1 14 56 14zM50.5 18L32 33.4 13.5 18H50.5zM10 46V20.3l20.7 17.3C31.1 37.8 31.5 38 32 38s0.9-0.2 1.3-0.5L54 20.3V46H10z"></path></svg></a> or 1-844-Say-CISA).</p>
+<h3><strong>Proactive Mitigations to Reduce Risk</strong></h3>
+<p>To reduce opportunities for intrusion and to strengthen response to ransomware activity, CISA recommends customers of vendors and managed service providers (MSPs) implement the following best practices:</p>
+<ul>
+<li>Maintain a robust asset inventory and hardware list [<a href="https://www.cisa.gov/cybersecurity-performance-goals-cpgs#AssetInventory1A" title="CPG 1.A">CPG 1.A</a>].</li>
+<li>Maintain a clean, offline backup of the system to ensure encryption will not occur once reverted. Conduct a daily system backup on a separate, offline device, such as a flash drive or external hard drive. Remove the device from the computer after backup is complete [<a href="https://www.cisa.gov/cybersecurity-performance-goals-cpgs#SystemBackups2R" title="CPG 2.R">CPG 2.R</a>].</li>
+<li>Do not expose remote services such as Remote Desktop Protocol (RDP) on the web. If these services must be exposed, apply appropriate compensating controls to prevent common forms of abuse and exploitation. Disable unnecessary OS applications and network protocols on internet-facing assets [<a href="https://www.cisa.gov/cybersecurity-performance-goals-cpgs#NoExploitableServicesontheInternet2W" title="CPG 2.W">CPG 2.W</a>].</li>
+<li>Conduct a risk analysis for RMM software on the network. If RMM is required, ask third-party vendors what security controls are in place.</li>
+<li>Establish and maintain open communication channels with third-party vendors to stay informed about their patch management process.</li>
+<li>For software vendors, consider integrating a Software Bill of Materials (SBOM) into products to reduce the amount of time for vulnerability remediation.
+<ul>
+<li>An SBOM is a formal record of components used to build software. SBOMs enhance supply chain risk management by quickly identifying and avoiding known vulnerabilities, identifying security requirements, and managing mitigations for vulnerabilities. For more information, see CISA’s <a href="https://www.cisa.gov/sbom" title="SBOM">SBOM</a> page.</li>
+</ul>
+</li>
+</ul>
+<h2><strong>Resources</strong></h2>
+<ul>
+<li><strong>Health-ISAC:</strong><a href="https://health-isac.org/threat-bulletin-simplehelp-rmm-software-leveraged-in-exploitation-attempt-to-breach-networks/" target="_blank" title="Threat Bulletin: SimpleHelp RMM Software Leveraged in Exploitation Attempt to Breach Networks" class="ext" data-extlink="">Threat Bulletin: SimpleHelp RMM Software Leveraged in Exploitation Attempt to Breach Networks<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+<li><strong>Arctic Wolf:&nbsp;</strong><a href="https://arcticwolf.com/resources/blog-uk/arctic-wolf-observes-campaign-exploiting-simplehelp-rmm-software-initial-access/" target="_blank" title="Arctic Wolf Observes Campaign Exploiting SimpleHelp RMM Software for Initial Access" class="ext" data-extlink="">Arctic Wolf Observes Campaign Exploiting SimpleHelp RMM Software for Initial Access<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+<li><strong>CISA:&nbsp;</strong><a href="https://www.cisa.gov/stopransomware/ransomware-guide" title="#StopRansomware Guide">#StopR</a><a href="#StopRansomware" title="#StopRansomware Guide">ansomware Guide</a></li>
+</ul>
+<h2><strong>Reporting</strong></h2>
+<p>Your organization has no obligation to respond or provide information back to FBI in response to this advisory. If, after reviewing the information provided, your organization decides to provide information to FBI, reporting must be consistent with applicable state and federal laws.</p>
+<p>FBI is interested in any information that can be shared, to include boundary logs showing communication to and from foreign IP addresses, a sample ransom note, communications with threat actors, Bitcoin wallet information, decryptor files, and/or a benign sample of an encrypted file.</p>
+<p>Additional details of interest include a targeted company point of contact, status and scope of infection, estimated loss, operational impact, transaction IDs, date of infection, date detected, initial attack vector, and host- and network-based indicators.</p>
+<p>CISA and FBI do not encourage paying ransom as payment does not guarantee victim files will be recovered. Furthermore, payment may also embolden adversaries to target additional organizations, encourage other criminal actors to engage in the distribution of ransomware, and/or fund illicit activities. Regardless of whether you or your organization have decided to pay the ransom, FBI and CISA urge you to promptly report ransomware incidents to FBI’s <a href="https://www.ic3.gov/Home/ComplaintChoice" title="Internet Crime Complain Center (IC3)">Internet Crime Complain Center (IC3)</a>, a <a href="https://www.fbi.gov/contact-us/field-offices" title="local FBI Field Office">local FBI Field Office</a>, or CISA via the agency’s <a href="https://myservices.cisa.gov/irf" title="Incident Reporting System">Incident Reporting System</a> or its 24/7 Operations Center (<a href="mailto:report@cisa.gov)or" title="report@cisa.gov" class="mailto" data-extlink="">report@cisa.gov<svg focusable="false" width="1em" height="1em" class="mailto" data-extlink-placement="append" aria-label="(link sends email)" viewBox="0 10 70 20" role="img" aria-hidden="false"><title>(link sends email)</title><path d="M56 14H8c-1.1 0-2 0.9-2 2v32c0 1.1 0.9 2 2 2h48c1.1 0 2-0.9 2-2V16C58 14.9 57.1 14 56 14zM50.5 18L32 33.4 13.5 18H50.5zM10 46V20.3l20.7 17.3C31.1 37.8 31.5 38 32 38s0.9-0.2 1.3-0.5L54 20.3V46H10z"></path></svg></a>) or by calling 1-844-Say-CISA (1-844-729-2472).</p>
+<p>SimpleHelp users or vendors can contact&nbsp;<a href="mailto:support@simple-help.com" title="support@simple-help.com" class="mailto" data-extlink="">support@simple-help.com<svg focusable="false" width="1em" height="1em" class="mailto" data-extlink-placement="append" aria-label="(link sends email)" viewBox="0 10 70 20" role="img" aria-hidden="false"><title>(link sends email)</title><path d="M56 14H8c-1.1 0-2 0.9-2 2v32c0 1.1 0.9 2 2 2h48c1.1 0 2-0.9 2-2V16C58 14.9 57.1 14 56 14zM50.5 18L32 33.4 13.5 18H50.5zM10 46V20.3l20.7 17.3C31.1 37.8 31.5 38 32 38s0.9-0.2 1.3-0.5L54 20.3V46H10z"></path></svg></a> for assistance with queries or concerns.</p>
+<h2><strong>Disclaimer</strong></h2>
+<p>The information in this report is being provided “as is” for informational purposes only. CISA does not endorse any commercial entity, product, company, or service, including any entities, products, or services linked within this document. Any reference to specific commercial entities, products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply endorsement, recommendation, or favor by CISA.</p>
+<h2><strong>Version History</strong></h2>
+<p><strong>June 12, 2025:</strong> Initial version.</p>
+<h2><strong>Notes</strong></h2>
+<p><a class="ck-anchor" id="note1"><strong>1.</strong></a><strong> </strong>Anthony Bradshaw, et. al., “DragonForce Actors Target SimpleHelp Vulnerabilities to Attack MSP, Customers,” <em>Sophos News</em>, May 27, 2025, <a href="https://news.sophos.com/en-us/2025/05/27/dragonforce-actors-target-simplehelp-vulnerabilities-to-attack-msp-customers/" target="_blank" title="DragonForce actors target SimpleHelp vulnerabilities to attack MSP, customers" class="ext" data-extlink="">https://news.sophos.com/en-us/2025/05/27/dragonforce-actors-target-simplehelp-vulnerabilities-to-attack-msp-customers/<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>.<br><a class="ck-anchor" id="note2"><strong>2</strong></a><strong>.</strong> For instructions for upgrading to the latest version of SimpleHelp, see <a href="https://simple-help.com/kb---security-vulnerabilities-01-2025" target="_blank" title="SimpleHelp’s security vulnerability advisory." class="ext" data-extlink="">SimpleHelp’s security vulnerability<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> advisory.<br><a class="ck-anchor" id="note3"><strong>3.</strong></a> To determine possibility of compromise and next steps, see <a href="https://simple-help.com/kb---security-vulnerabilities-01-2025#characteristics-of-compromise" target="_blank" title="Characteristics of Compromise" class="ext" data-extlink="">SimpleHelp’s guidance<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>.<br><a class="ck-anchor" id="note4"><strong>4</strong></a><strong>. </strong>For instructions for upgrading to the latest version of SimpleHelp, see <a href="https://simple-help.com/kb---security-vulnerabilities-01-2025" target="_blank" title="security vulnerability advisory" class="ext" data-extlink="">SimpleHelp’s security vulnerability<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> advisory.</p>
+
+      </div>
+
+  
+      </div>
+  </div>
+      <div class="l-constrain l-page-section--rich-text">
+        <div class="l-page-section__content">
+          
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p>This product is provided subject to this&nbsp;<a href="/notification" rel="nofollow noopener" target="_blank" title="Follow link">Notification</a>&nbsp;and this&nbsp;<a href="/privacy-policy" rel="nofollow noopener" target="_blank" title="Follow link">Privacy &amp; Use</a>&nbsp;policy.</p></div></div>
+
+        </div>
+      </div>
+            </div>
+        <div class="l-full__footer">
+                            
+
+<div class="l-page-section l-page-section--tags l-page-section--rich-text">
+      <div class="l-constrain">
+  
+  
+  <div class="l-page-section__content">
+              <h3>Tags</h3>
+            
+        
+  
+  
+    
+    
+        
+  
+        <div class="c-field">
+        <strong>Audience</strong>:
+                                                                                                                                                                                                                                                                                                                                                Federal Government,
+                                        Industry,
+                                        Small and Medium Businesses
+                        </div>
+    
+  
+  
+  
+  
+        <div class="c-field">
+        <strong>Topics</strong>:
+                                                                                                                                                                                                                                                                                                                                                <a href="/topics/critical-infrastructure-security-and-resilience">Critical Infrastructure Security and Resilience</a>,
+                                        <a href="/topics/cybersecurity-best-practices">Cybersecurity Best Practices</a>
+                        </div>
+    
+
+          </div>
+
+  
+      </div>
+  </div>
+            
+<div class="l-constrain">
+  <div class="l-page-section--rich-text">
+    <div class="l-page-section__content">
+      <div class="c-product-survey l-page-section--tags l-page-section--rich-text">
+        <div class="c-product-survey__top-bar"></div>
+        <div class="c-product-survey__content-area">
+          <div class="c-product-survey__icon"></div>
+          <div class="c-product-survey__text-area">
+            <h2>Please share your thoughts</h2>
+            <p>We recently updated our anonymous <a href="https://cisasurvey.gov1.qualtrics.com/jfe/form/SV_9n4TtB8uttUPaM6?product=https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-163a" target="_blank">product survey</a>; we welcome your feedback.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+
+  
+
+<div class="c-view c-view--detail-page-related-content c-view--display-block_2 view js-view-dom-id-bd1c1d3cdc1b09e8d9e6eae526953a28fbea2ccf5fec84261291a742d560e8fb c-collection c-collection--blue c-collection--two-column">
+  <div class="l-constrain">
+    <div class="c-collection__row">
+              <div class="c-collection__content">
+                      <h2 class="c-collection__title"><span class="c-collection__title-wrap">Related Advisories</span></h2>
+                                        	        </div>
+                  <div class="c-collection__cards">
+        
+
+
+
+      
+
+
+
+
+
+<article class="is-promoted c-teaser c-teaser--horizontal" role="article">
+  <div class="c-teaser__row">
+        <div class="c-teaser__content">
+              <div class="c-teaser__eyebrow">
+                      <div class="c-teaser__date"><time datetime="2026-04-23T12:00:00Z">Apr 23, 2026</time>
+</div>
+                                <div class="c-teaser__meta">Cybersecurity Advisory | AA26-113A</div>
+                  </div>
+            <h3 class="c-teaser__title">
+        <a href="/news-events/cybersecurity-advisories/aa26-113a" target="_self">          
+<span>Defending Against China-Nexus Covert Networks of Compromised Devices</span>
+
+        </a>      </h3>
+                                      </div>
+  </div>
+</article>
+
+
+        
+
+
+
+
+
+<article class="is-promoted c-teaser c-teaser--horizontal" role="article">
+  <div class="c-teaser__row">
+        <div class="c-teaser__content">
+              <div class="c-teaser__eyebrow">
+                      <div class="c-teaser__date"><time datetime="2026-04-07T12:00:00Z">Apr 07, 2026</time>
+</div>
+                                <div class="c-teaser__meta">Cybersecurity Advisory | AA26-097A</div>
+                  </div>
+            <h3 class="c-teaser__title">
+        <a href="/news-events/cybersecurity-advisories/aa26-097a" target="_self">          
+<span>Iranian-Affiliated Cyber Actors Exploit Programmable Logic Controllers Across US Critical Infrastructure</span>
+
+        </a>      </h3>
+                                      </div>
+  </div>
+</article>
+
+
+        
+
+
+
+
+
+<article class="is-promoted c-teaser c-teaser--horizontal" role="article">
+  <div class="c-teaser__row">
+        <div class="c-teaser__content">
+              <div class="c-teaser__eyebrow">
+                      <div class="c-teaser__date"><time datetime="2025-12-09T12:00:00Z">Dec 09, 2025</time>
+</div>
+                                <div class="c-teaser__meta">Cybersecurity Advisory | AA25-343A</div>
+                  </div>
+            <h3 class="c-teaser__title">
+        <a href="/news-events/cybersecurity-advisories/aa25-343a" target="_self">          
+<span>Pro-Russia Hacktivists Conduct Opportunistic Attacks Against US and Global Critical Infrastructure</span>
+
+        </a>      </h3>
+                                      </div>
+  </div>
+</article>
+
+
+        
+
+
+
+
+
+<article class="is-promoted c-teaser c-teaser--horizontal" role="article">
+  <div class="c-teaser__row">
+        <div class="c-teaser__content">
+              <div class="c-teaser__eyebrow">
+                      <div class="c-teaser__date"><time datetime="2025-09-23T12:00:00Z">Sep 23, 2025</time>
+</div>
+                                <div class="c-teaser__meta">Cybersecurity Advisory | AA25-266A</div>
+                  </div>
+            <h3 class="c-teaser__title">
+        <a href="/news-events/cybersecurity-advisories/aa25-266a" target="_self">          
+<span>CISA Shares Lessons Learned from an Incident Response Engagement</span>
+
+        </a>      </h3>
+                                      </div>
+  </div>
+</article>
+
+
+  
+      </div>
+    </div>
+          </div>
+</div>
+
+
+          </div>
+  </div>
+  
+  
+  
+  
+
+      </div>
+
+  
+  </main>
+
+  
+<footer class="usa-footer usa-footer--slim" role="contentinfo">
+    <div class="usa-footer__return-to-top">
+    <div class="l-constrain">
+      <a href="#top">Return to top</a>
+    </div>
+  </div>
+    <div class="usa-footer__upper">
+    <div class="l-constrain">
+      
+
+
+
+
+
+
+
+  
+  
+    
+
+  
+            
+
+                                <ul class="c-menu c-menu--footer-main">
+        
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/topics" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7329">Topics</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/spotlight" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7330">Spotlight</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/resources-tools" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7331">Resources &amp; Tools</a>
+                        </li>
+    
+                                            
+                                                    
+      
+      
+      <li class="c-menu__item is-active-trail">
+                              <a href="/news-events" class="c-menu__link js-top-level is-active-trail" aria-current="false" data-drupal-link-system-path="node/7332">News &amp; Events</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/careers" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7323">Careers</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/about" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/6944">About</a>
+                        </li>
+        </ul>
+  
+
+  
+  
+  
+  
+
+    </div>
+  </div>
+    <div class="usa-footer__main">
+    <div class="l-constrain">
+      <div class="usa-footer__main-row">
+        <div class="usa-footer__brand">
+          
+<a class="c-site-name c-site-name--footer" href="/" rel="home" title="Go to the Cybersecurity &amp; Infrastructure Security Agency homepage">
+  <span class="c-site-name__text">Cybersecurity &amp; Infrastructure Security Agency</span>
+</a>        </div>
+        <div class="usa-footer__contact">
+                      
+
+                                <ul class="c-menu c-menu--social">
+        
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.facebook.com/CISA" class="c-menu__link--facebook c-menu__link js-top-level" aria-current="false">Facebook</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://x.com/CISAgov" class="c-menu__link--twitter c-menu__link js-top-level" aria-current="false">X</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.linkedin.com/company/cybersecurity-and-infrastructure-security-agency" class="c-menu__link--linkedin c-menu__link js-top-level" aria-current="false">LinkedIn</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.youtube.com/@cisagov" class="c-menu__link--youtube c-menu__link js-top-level" aria-current="false">YouTube</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.instagram.com/cisagov" class="c-menu__link--instagram c-menu__link js-top-level" aria-current="false">Instagram</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="/subscribe-updates-cisa" class="c-menu__link--rss c-menu__link js-top-level" aria-current="false">RSS</a>
+                        </li>
+        </ul>
+  
+
+                    <div class="usa-footer__contact-info">
+            <span>CISA Central</span>
+            <a href="tel:1-844-Say-CISA">1-844-Say-CISA</a>
+            <a href="mailto:contact@cisa.dhs.gov">contact@cisa.dhs.gov</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="usa-footer__lower">
+    <div class="l-constrain">
+      <div class="usa-footer__lower-row">
+        <div class="usa-footer__lower-left">
+          
+<div class="c-dhs-logo">
+  <div class="c-dhs-logo__seal">DHS Seal</div>
+  <div class="c-dhs-logo__content">
+    <div class="c-dhs-logo__url">CISA.gov</div>
+    <div class="c-dhs-logo__text">An official website of the U.S. Department of Homeland Security</div>
+  </div>
+</div>                      
+
+
+                                <ul class="c-menu c-menu--footer">
+        
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/about" title="About CISA" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/6944">About CISA</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.dhs.gov/performance-financial-reports" class="c-menu__link js-top-level" title="Budget and Performance" aria-current="false">Budget and Performance</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.dhs.gov" title="Department of Homeland Security" class="c-menu__link js-top-level" aria-current="false">DHS.gov</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.dhs.gov/foia" class="c-menu__link js-top-level" title="FOIA Requests" aria-current="false">FOIA Requests</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/no-fear-act" title="No FEAR Act Reporting" class="c-menu__link js-top-level" aria-current="false">No FEAR Act</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.oig.dhs.gov/" class="c-menu__link js-top-level" title="Office of Inspector General" aria-current="false">Office of Inspector General</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/privacy-policy" title="Privacy Policy" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/16115">Privacy Policy</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://public.govdelivery.com/accounts/USDHSCISA/subscriber/new?topic_id=USDHSCISA_138" title="Subscribe to Email Updates" class="c-menu__link js-top-level" aria-current="false">Subscribe</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.whitehouse.gov/" class="c-menu__link js-top-level" title="The White House" aria-current="false">The White House</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.usa.gov/" class="c-menu__link js-top-level" title="USA.gov" aria-current="false">USA.gov</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/forms/feedback" title="Website Feedback" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="forms/feedback">Website Feedback</a>
+                        </li>
+        </ul>
+  
+
+                  </div>
+        <div class="usa-footer__lower-right">
+          <iframe src="https://www.dhs.gov/ntas/" name="National Terrorism Advisory System" title="National Terrorism Advisory System" width="170" height="180" scrolling="no" frameborder="0" seamless="" border="0"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+  <script async="" src="https://siteimproveanalytics.com/js/siteanalyze_6342107.js"></script> 
+
+  
+
+
+
+
+
+  <div id="block-guswds-productfeedbackinterceptsurvey" class="visually-hidden c-block c-block--provider-block-content c-block--id-block-contentc577ef7a-dd93-4594-a89d-2db092b50b82">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><!--BEGIN QUALTRICS WEBSITE FEEDBACK SNIPPET--><script type="text/javascript">
+
+(function(){var g=function(g){
+
+this.go=function(){var a=document.createElement("script");a.type="text/javascript";a.src=g;document.body&&document.body.appendChild(a)};
+
+this.start=function(){var t=this;"complete"!==document.readyState?window.addEventListener?window.addEventListener("load",function(){t.go()},!1):window.attachEvent&&window.attachEvent("onload",function(){t.go()}):t.go()};};
+
+try{(new g("https://zn279ys5rg3kpfewc-cisasurvey.gov1.siteintercept.qualtrics.com/SIE/?Q_ZID=ZN_279yS5Rg3KpfeWC")).start()}catch(i){}})();
+
+</script><div id="ZN_279yS5Rg3KpfeWC"><!--DO NOT REMOVE-CONTENTS PLACED HERE--></div><!--END WEBSITE FEEDBACK SNIPPET--></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+
+
+</div>
+
+  </div>
+
+    
+        <script src="/core/assets/vendor/jquery/jquery.min.js?v=4.0.0"></script>
+<script src="/sites/default/files/js/js_qcZcGdXOa4bio9YZbYPKpsVm4g6n1Y8laN6CKrskEHQ.js?scope=footer&amp;delta=1&amp;language=en&amp;theme=guswds&amp;include=eJx1jUEOwyAMBD-E4EnIwcaicXBlIE1-3x5CpFbqZbUze9i0EpauFiElNSxaw918Nq2dKjo6upS6BrTxBPEXOlZlodiBA3_ilz084PiWm-PRXtgC4F6a2jl5MQJMNrZlmlyEZmfRBWRSJ2hkbrRMyLrH6wEqyNlLauHv4hPWN_l2Xx0"></script>
+<script src="/modules/contrib/ckeditor_accordion/js/accordion.frontend.min.js?thx9hh"></script>
+<script src="/sites/default/files/js/js_dxuvASeRGyShlUvoXfml9hmCgPluj2k1sgiL-Akm76M.js?scope=footer&amp;delta=3&amp;language=en&amp;theme=guswds&amp;include=eJx1jUEOwyAMBD-E4EnIwcaicXBlIE1-3x5CpFbqZbUze9i0EpauFiElNSxaw918Nq2dKjo6upS6BrTxBPEXOlZlodiBA3_ilz084PiWm-PRXtgC4F6a2jl5MQJMNrZlmlyEZmfRBWRSJ2hkbrRMyLrH6wEqyNlLauHv4hPWN_l2Xx0"></script>
+<script src="/profiles/cisad8_gov/themes/custom/gesso/dist/js/uswds.es6.js?thx9hh"></script>
+<script src="/sites/default/files/js/js_nWyKkcpu2Jozqgorrzo_rt4cWdTw7F3Nqfsoij_FwrA.js?scope=footer&amp;delta=5&amp;language=en&amp;theme=guswds&amp;include=eJx1jUEOwyAMBD-E4EnIwcaicXBlIE1-3x5CpFbqZbUze9i0EpauFiElNSxaw918Nq2dKjo6upS6BrTxBPEXOlZlodiBA3_ilz084PiWm-PRXtgC4F6a2jl5MQJMNrZlmlyEZmfRBWRSJ2hkbrRMyLrH6wEqyNlLauHv4hPWN_l2Xx0"></script>
+
+  
+
+<div id="drupal-live-announce" class="visually-hidden" aria-live="polite" aria-busy="false"></div></body><div id="codex-browser-sidebar-comments-root" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483647;"></div></html>

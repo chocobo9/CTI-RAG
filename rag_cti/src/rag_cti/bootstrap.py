@@ -121,7 +121,7 @@ def build_eval_pipeline(
     settings: Any,
     config_name: str,
     llm_client: Any | None = None,
-    llm_provider: str = "anthropic",
+    llm_provider: str = "groq",
 ) -> Any:
     """build_pipeline wired for a named eval config (dense / hybrid / hybrid+hyde).
 
@@ -137,7 +137,7 @@ def build_eval_pipeline(
         embedder=stack.embedder,
         encoder=stack.encoder,
         llm_client=llm_client if use_hyde else None,
-        llm_provider=llm_provider if use_hyde else "anthropic",
+        llm_provider=llm_provider if use_hyde else "groq",
         hybrid_alpha_override=ALPHA_MAP.get(config_name, 0.5),
         ontology_nodes=load_ontology_nodes(),
     )

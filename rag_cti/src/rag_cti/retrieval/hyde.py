@@ -39,8 +39,8 @@ class HyDERetriever:
     ) -> None:
         self._base = base_retriever
         self._settings = settings
-        # Provider-specific client (Groq/Ollama chat.completions vs Anthropic
-        # messages) — structurally too divergent for one protocol, so Any.
+        # Provider-specific OpenAI-compatible chat.completions clients
+        # (Groq/Ollama), so Any keeps tests light.
         self._llm: Any
         # Accept (provider, client) tuple from build_llm_client, or a bare client.
         if isinstance(llm_client, tuple) and len(llm_client) == 2:
@@ -57,7 +57,7 @@ class HyDERetriever:
                     "ollama" if getattr(settings, "ollama_enabled", False) else "groq"
                 )
             else:
-                self._llm_provider = "anthropic"
+                self._llm_provider = "groq"
 
     def search(
         self,
@@ -106,31 +106,21 @@ class HyDERetriever:
         max_tokens = getattr(self._settings, "hyde_max_tokens", 300)
         max_chars = getattr(self._settings, "hyde_output_max_chars", 2000)
         try:
-            if self._llm_provider in ("groq", "ollama"):
-                model = (
-                    self._settings.ollama_model
-                    if self._llm_provider == "ollama"
-                    else self._settings.groq_query_model
-                )
-                resp = self._llm.chat.completions.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    messages=[
-                        {"role": "system", "content": _HYDE_SYSTEM_PROMPT},
-                        {"role": "user", "content": query},
-                    ],
-                )
-                text: str = (resp.choices[0].message.content or "").strip()[:max_chars]
-                return text if text else None
-            else:
-                response = self._llm.messages.create(
-                    model=self._settings.llm_routing_model,
-                    max_tokens=max_tokens,
-                    system=_HYDE_SYSTEM_PROMPT,
-                    messages=[{"role": "user", "content": query}],
-                )
-                doc: str = response.content[0].text.strip()[:max_chars]
-                return doc
+            model = (
+                self._settings.ollama_model
+                if self._llm_provider == "ollama"
+                else self._settings.groq_query_model
+            )
+            resp = self._llm.chat.completions.create(
+                model=model,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": _HYDE_SYSTEM_PROMPT},
+                    {"role": "user", "content": query},
+                ],
+            )
+            text: str = (resp.choices[0].message.content or "").strip()[:max_chars]
+            return text if text else None
         except Exception as exc:
             logger.warning("hyde llm call failed, falling back to direct query", error=str(exc))
             return None

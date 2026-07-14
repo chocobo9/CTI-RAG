@@ -1,0 +1,173 @@
+Cybersecurity Advisory
+
+# SVR Cyber Actors Adapt Tactics for Initial Cloud Access
+
+Release Date
+
+February 26, 2024
+
+Alert Code
+
+AA24-057A
+
+Related topics:
+
+Cyber Threats and Response , Incident Response
+
+#### How SVR-Attributed Actors are Adapting to the Move of Government and Corporations to Cloud Infrastructure
+
+### OVERVIEW
+
+This advisory details recent tactics, techniques, and procedures (TTPs) of the group commonly known as APT29, also known as Midnight Blizzard, the Dukes, or Cozy Bear.
+
+The UK National Cyber Security Centre (NCSC) and international partners assess that APT29 is a cyber espionage group, almost certainly part of the SVR, an element of the Russian intelligence services. The US National Security Agency (NSA), the US Cybersecurity and Infrastructure Security Agency (CISA), the US Cyber National Mission Force (CNMF), the Federal Bureau of Investigation (FBI), Australian Signals Directorate’s Australian Cyber Security Centre (ASD’s ACSC), the Canadian Centre for Cyber Security (CCCS), and New Zealand Government Communications Security Bureau (GCSB) agree with this attribution and the details provided in this advisory.
+
+This advisory provides an overview of TTPs deployed by the actor to gain initial access into the cloud environment and includes advice to detect and mitigate this activity.
+
+To download the PDF version of this report, click here(link is external).
+
+### PREVIOUS ACTOR ACTIVITY
+
+The NCSC has previously detailed how Russian Foreign Intelligence Service (SVR) cyber actors have targeted governmental, think tank, healthcare, and energy targets for intelligence gain. It has now observed SVR actors expanding their targeting to include aviation, education, law enforcement, local and state councils, government financial departments, and military organizations.
+
+SVR actors are also known for:
+
+The supply chain compromise of SolarWinds software(link is external).
+
+Activity that targeted organizations developing the COVID-19 vaccine(link is external).
+
+### EVOLVING TTPs
+
+As organizations continue to modernize their systems and move to cloud-based infrastructure, the SVR has adapted to these changes in the operating environment.
+
+They have to move beyond their traditional means of initial access, such as exploiting software vulnerabilities in an on-premises network, and instead target the cloud services themselves.
+
+To access the majority of the victims’ cloud hosted network, actors must first successfully authenticate to the cloud provider. Denying initial access to the cloud environment can prohibit SVR from successfully compromising their target. In contrast, in an on-premises system, more of the network is typically exposed to threat actors.
+
+Below describes in more detail how SVR actors are adapting to continue their cyber operations for intelligence gain. These TTPs have been observed in the last 12 months.
+
+### ACCESS VIA SERVICE AND DORMANT ACCOUNTS
+
+Previous SVR campaigns reveal the actors have successfully used brute forcing [T1110(link is external)] and password spraying to access service accounts. This type of account is typically used to run and manage applications and services. There is no human user behind them so they cannot be easily protected with multi-factor authentication (MFA), making these accounts more susceptible to a successful compromise. Service accounts are often also highly privileged depending on which applications and services they’re responsible for managing. Gaining access to these accounts provides threat actors with privileged initial access to a network, to launch further operations.
+
+SVR campaigns have also targeted dormant accounts belonging to users who no longer work at a victim organization but whose accounts remain on the system [T1078.004(link is external)].
+
+Following an enforced password reset for all users during an incident, SVR actors have also been observed logging into inactive accounts and following instructions to reset the password. This has allowed the actor to regain access following incident response eviction activities.
+
+### CLOUD-BASED TOKEN AUTHENTICATION
+
+Account access is typically authenticated by either username and password credentials or system-issued access tokens. The NCSC and partners have observed SVR actors using tokens to access their victims’ accounts, without needing a password [T1528(link is external)].
+
+The default validity time of system-issued tokens varies dependent on the system; however, cloud platforms should allow administrators to adjust the validity time as appropriate for their users. More information can be found on this in the mitigations section of this advisory.
+
+### ENROLLING NEW DEVICES TO THE CLOUD
+
+On multiple occasions, the SVR have successfully bypassed password authentication on personal accounts using password spraying and credential reuse. SVR actors have also then bypassed MFA through a technique known as “MFA bombing” or “MFA fatigue,” in which the actors repeatedly push MFA requests to a victim’s device until the victim accepts the notification [T1621(link is external)].
+
+Once an actor has bypassed these systems to gain access to the cloud environment, SVR actors have been observed registering their own device as a new device on the cloud tenant [T1098.005(link is external)]. If device validation rules are not set up, SVR actors can successfully register their own device and gain access to the network.
+
+By configuring the network with device enrollment policies, there have been instances where these measures have defended against SVR actors and denied them access to the cloud tenant.
+
+### RESIDENTIAL PROXIES
+
+As network-level defenses improve detection of suspicious activity, SVR actors have looked at other ways to stay covert on the internet. A TTP associated with this actor is the use of residential proxies [T1090.002(link is external)]. Residential proxies typically make traffic appear to originate from IP addresses within internet service provider (ISP) ranges used for residential broadband customers and hide the true source. This can make it harder to distinguish malicious connections from typical users. This reduces the effectiveness of network defenses that use IP addresses as indicators of compromise, and so it is important to consider a variety of information sources such as application and host-based logging for detecting suspicious activity.
+
+### CONCLUSION
+
+The SVR is a sophisticated actor capable of carrying out a global supply chain compromise such as the 2020 SolarWinds, however the guidance in this advisory shows that a strong baseline of cyber security fundamentals can help defend from such actors.
+
+For organizations that have moved to cloud infrastructure, a first line of defense against an actor such as SVR should be to protect against SVR’s TTPs for initial access. By following the mitigations outlined in this advisory, organizations will be in a stronger position to defend against this threat.
+
+Once the SVR gain initial access, the actor is capable of deploying highly sophisticated post compromise capabilities such as MagicWeb(link is external), as reported in 2022. Therefore, mitigating against the SVR’s initial access vectors is particularly important for network defenders.
+
+CISA have also produced guidance through their Secure Cloud Business Applications (SCuBA) Project which is designed to protect assets stored in cloud environments.
+
+Some of the TTPs listed in this report, such as residential proxies and exploitation of system accounts, are similar to those reported as recently as January 2024 by Microsoft(link is external).
+
+### MITRE ATT&CK®
+
+This report has been compiled with respect to the MITRE ATT&CK® framework, a globally accessible knowledge base of adversary tactics and techniques based on real-world observations.
+
+Tactic | ID | Technique | Procedure
+
+Tactic Credential Access | ID T1110(link is external) | Technique Brute Force | Procedure The SVR use password spraying and brute forcing as an initial infection vector.
+
+Tactic Initial Access | ID T1078.004(link is external) | Technique Valid Accounts: Cloud Accounts | Procedure The SVR use compromised credentials to gain access to accounts for cloud services, including system and dormant accounts.
+
+Tactic Credential Access | ID T1528(link is external) | Technique Steal Application Access Token | Procedure The SVR use stolen access tokens to login to accounts without the need for passwords.
+
+Tactic Credential Access | ID T1621(link is external) | Technique Multi-Factor Authentication Request Generation | Procedure The SVR repeatedly push MFA requests to a victim’s device until the victim accepts the notification, providing SVR access to the account.
+
+Tactic Command and Control | ID T1090.002(link is external) | Technique Proxy: External Proxy | Procedure The SVR use open proxies in residential IP ranges to blend in with expected IP address pools in access logs.
+
+Tactic Persistence | ID T1098.005(link is external) | Technique Account Manipulation: Device Registration | Procedure The SVR attempt to register their own device on the cloud tenant after acquiring access to accounts.
+
+### MITIGATION AND DETECTION
+
+A number of mitigations will be useful in defending against the activity described in this advisory:
+
+Use multi-factor authentication (/2-factor authentication/two-step verification) to reduce the impact of password compromises. See NCSC guidance: Multifactor Authentication for Online Services(link is external) and Setting up 2-Step Verification (2SV)(link is external).
+
+Accounts that cannot use 2SV should have strong, unique passwords. User and system accounts should be disabled when no longer required with a “joiners, movers, and leavers” process in place and regular reviews to identify and disable inactive/dormant accounts. See NCSC guidance: 10 Steps to Cyber Security(link is external).
+
+System and service accounts should implement the principle of least privilege, providing tightly scoped access to resources required for the service to function.
+
+Canary service accounts should be created which appear to be valid service accounts but are never used by legitimate services. Monitoring and alerting on the use of these account provides a high confidence signal that they are being used illegitimately and should be investigated urgently.
+
+Session lifetimes should be kept as short as practical to reduce the window of opportunity for an adversary to use stolen session tokens. This should be paired with a suitable authentication method that strikes a balance between regular user authentication and user experience.
+
+Ensure device enrollment policies are configured to only permit authorized devices to enroll. Use zero-touch enrollment where possible, or if self-enrollment is required then use a strong form of 2SV that is resistant to phishing and prompt bombing. Old devices should be prevented from (re)enrolling when no longer required. See NCSC guidance: Device Security Guidance(link is external).
+
+Consider a variety of information sources such as application events and host-based logs to help prevent, detect and investigate potential malicious behavior. Focus on the information sources and indicators of compromise that have a better rate of false positives. For example, looking for changes to user agent strings that could indicate session hijacking may be more effective than trying to identify connections from suspicious IP addresses. See NCSC guidance: Introduction to Logging for Security Purposes(link is external).
+
+### DISCLAIMER
+
+This report draws on information derived from NCSC and industry sources. Any NCSC findings and recommendations made have not been provided with the intention of avoiding all risks and following the recommendations will not remove all such risk. Ownership of information risks remains with the relevant system owner at all times.
+
+This information is exempt under the Freedom of Information Act 2000 (FOIA) and may be exempt under other UK information legislation.
+
+Refer any FOIA queries to ncscinfoleg@ncsc.gov.uk(link sends email).
+
+All material is UK Crown Copyright.
+
+This product is provided subject to this Notification and this Privacy & Use policy.
+
+### Tags
+
+Co-Sealers and Partners: Federal Bureau of Investigation, International, National Security Agency
+
+MITRE ATT&CK TTP: Command and Control (TA0011), Credential Access (TA0006), Initial Access (TA0001), Persistence (TA0003)
+
+Nation-State Actor: Russia
+
+Topics: Cyber Threats and Response, Incident Response
+
+## Please share your thoughts
+
+We recently updated our anonymous product survey; we welcome your feedback.
+
+## Related Advisories
+
+Jul 31, 2025
+
+Cybersecurity Advisory | AA25-212A
+
+### CISA and USCG Identify Areas for Cyber Hygiene Improvement After Conducting Proactive Threat Hunt at US Critical Infrastructure Organization
+
+Jul 22, 2025
+
+Cybersecurity Advisory | aa25-203a
+
+### #StopRansomware: Interlock
+
+May 21, 2025
+
+Cybersecurity Advisory | AA25-141B
+
+### Threat Actors Deploy LummaC2 Malware to Exfiltrate Sensitive Data from Organizations
+
+Mar 12, 2025
+
+Cybersecurity Advisory | AA25-071A
+
+### #StopRansomware: Medusa Ransomware

@@ -1,0 +1,157 @@
+### Archived Content
+
+In an effort to keep CISA.gov current, the archive contains outdated information that may not reflect current policy or programs.
+
+Cybersecurity Advisory
+
+# Critical Vulnerability in Citrix Application Delivery Controller, Gateway, and SD-WAN WANOP
+
+Last Revised
+
+May 21, 2020
+
+Alert Code
+
+AA20-020A
+
+### Summary
+
+Note: As of January 24, 2020, Citrix has released all expected updates in response to CVE-2019-19781.[1](link is external)
+
+On January 19, 2020, Citrix released firmware updates for Citrix Application Delivery Controller (ADC) and Citrix Gateway versions 11.1 and 12.0. On January 22, 2020, Citrix released security updates for vulnerable SD-WAN WANOP appliances. On January 23, 2020, Citrix released firmware updates for Citrix ADC and Gateway versions 12.1 and 13.0. On January 24, 2020, Citrix released firmware updates for Citrix ADC and Gateway version 10.5.
+
+A remote, unauthenticated attacker could exploit CVE-2019-19781 to perform arbitrary code execution.[2](link is external) This vulnerability has been detected in exploits in the wild.[3](link is external)
+
+The Cybersecurity and Infrastructure Agency (CISA) strongly recommends that all users and administrators upgrade their vulnerable appliances as soon as possible.
+
+#### Timeline of Specific Events
+
+December 17, 2019 – Citrix released Security Bulletin CTX267027 with mitigations steps.
+
+January 8, 2020 – The CERT Coordination Center (CERT/CC) released Vulnerability Note VU#619785: Citrix Application Delivery Controller and Citrix Gateway Web Server Vulnerability,[4](link is external) and CISA releases a Current Activity entry.[5]
+
+January 10, 2020 – The National Security Agency (NSA) released a Cybersecurity Advisory on CVE-2019-19781.[6]
+
+January 11, 2020 – Citrix released blog post on CVE-2019-19781 with timeline for fixes.[7](link is external)
+
+January 13, 2020 – CISA released a Current Activity entry describing their utility that enables users and administrators to test whether their Citrix ADC and Citrix Gateway firmware is susceptible to the CVE-2019-19781 vulnerability.[8]
+
+January 16, 2020 – Citrix announced that Citrix SD-WAN WANOP appliance is also vulnerable to CVE-2019-19781.
+
+January 19, 2020 – Citrix released firmware updates for Citrix ADC and Citrix Gateway versions 11.1 and 12.0 and blog post on accelerated schedule for fixes.[9](link is external)
+
+January 22, 2020 – Citrix released security updates for Citrix SD-WAN WANOP release 10.2.6 and 11.0.3.[10](link is external)
+
+January 22, 2020 – Citrix and FireEye Mandiant released an indicator of compromise (IOC) scanning tool for CVE-2019-19781.[11](link is external)
+
+January 23, 2020 – Citrix released firmware updates for Citrix ADC and Citrix Gateway versions 12.1 and 13.0.[12](link is external)
+
+January 24, 2020 – Citrix released firmware updates for Citrix ADC and Citrix Gateway version 10.5.
+
+### Technical Details
+
+#### Impact
+
+On December 17, 2019, Citrix reported vulnerability CVE-2019-19781. A remote, unauthenticated attacker could exploit this vulnerability to perform arbitrary code execution. This vulnerability has been detected in exploits in the wild.
+
+The vulnerability affects the following appliances:
+
+Citrix NetScaler ADC and NetScaler Gateway version 10.5 – all supported builds before 10.5.70.12
+
+Citrix ADC and NetScaler Gateway version 11.1 – all supported builds before 11.1.63.15
+
+Citrix ADC and NetScaler Gateway version 12.0 – all supported builds before 12.0.63.13
+
+Citrix ADC and NetScaler Gateway version 12.1 – all supported builds before 12.1.55.18
+
+Citrix ADC and Citrix Gateway version 13.0 – all supported builds before 13.0.47.24
+
+Citrix SD-WAN WANOP appliance models 4000-WO, 4100-WO, 5000-WO, and 5100-WO – all supported software release builds before 10.2.6b and 11.0.3b. (Citrix SD-WAN WANOP is vulnerable because it packages Citrix ADC as a load balancer).
+
+#### Detection Measures
+
+Citrix and FireEye Mandiant released an IOC scanning tool for CVE-2019-19781(link is external) on January 22, 2020. The tool aids customers with detecting potential IOCs based on known attacks and exploits.[13](link is external)
+
+See the National Security Agency’s Cybersecurity Advisory on CVE-2019-19781 for other detection measures.[14]
+
+CISA released a utility that enables users and administrators to detect whether their Citrix ADC and Citrix Gateway firmware is susceptible to CVE-2019-19781.[15] CISA encourages administrators to visit CISA’s GitHub page(link is external) to download and run the tool.
+
+### Mitigations
+
+CISA strongly recommends users and administrators update Citrix ADC, Citrix Gateway, and Citrix SD-WAN WANOP as soon as possible.
+
+The fixed builds can be downloaded from Citrix Downloads pages for Citrix ADC(link is external), Citrix Gateway(link is external), and Citrix SD-WAN(link is external).
+
+Until the appropriate update is implemented, users and administrators should apply Citrix’s interim mitigation steps for CVE-2019-19781.[16](link is external) Verify the successful application of the above mitigations by using the tool in CTX269180 – CVE-2019-19781 – Verification ToolTest(link is external). Note: these mitigation steps apply to Citrix ADC and SD-WAN WANOP deployments.[17](link is external)
+
+Refer to table 1 for Citrix’s fix schedule.[18](link is external)
+
+Table 1. Fix schedule for Citrix appliances vulnerable to CVE-2019-19781
+
+Vulnerable Appliance | Firmware Update | Release Date
+
+Citrix ADC and Citrix Gateway version 10.5 | Refresh Build 10.5.70.12 | January 24, 2020
+
+Citrix ADC and Citrix Gateway version 11.1 | Refresh Build 11.1.63.15 | January 19, 2020
+
+Citrix ADC and Citrix Gateway version 12.0 | Refresh Build 12.0.63.13 | January 19, 2020
+
+Citrix ADC and Citrix Gateway version 12.1 | Refresh Build 12.1.55.18 | January 23, 2020
+
+Citrix ADC and Citrix Gateway version 13.0 | Refresh Build 13.0.47.24 | January 23, 2020
+
+Citrix SD-WAN WANOP Release 10.2.6 | Build 10.2.6b | January 22, 2020
+
+Citrix SD-WAN WANOP Release 11.0.3 | Build 11.0.3b | January 22, 2020
+
+Administrators should review NSA’s Citrix Advisory for other mitigations, such as applying the following defense-in-depth strategy:
+
+“Consider deploying a VPN capability using standardized protocols, preferably ones listed on the National Information Assurance Partnership (NIAP) Product Compliant List (PCL), in front of publicly accessible Citrix ADC and Citrix Gateway appliances to require user authentication for the VPN before being able to reach these appliances. Use of a proprietary SSLVPN/TLSVPN is discouraged.”
+
+### References
+
+[1] Citrix blog: Citrix releases final fixes for CVE-2019-19781(link is external)
+
+[2] Citrix Security Bulletin CTX267027, Vulnerability in Citrix Application Delivery Controller and Citrix Gateway (link is external)
+
+[3] United Kingdom National Cyber Secrity Centre (NCSC) Alert: Actors exploiting Citrix products vulnerability (link is external)
+
+[4] CERT/CC Vulnerability Note VU#619785 (link is external)
+
+[5] CISA Current Activity: Citrix Application Delivery Controller and Citrix Gateway Vulnerability
+
+[6] NSA Cybersecurity Advisory: Mitigate CVE-2019-19781: Critical Vulnerability in Citrix Application Delivery Controller (ADC) and Citrix Gateway
+
+[7] Citrix blog: Citrix provides update on Citrix ADC, Citrix Gateway vulnerability (link is external)
+
+[8] CISA Current Activity: CISA Releases Test for Citrix ADC and Gateway Vulnerability GitHub: CISAgov – check-cve-2019-19781
+
+[9] Citrix Blog: Vulnerability Update: First permanent fixes available, timeline accelerated (link is external)
+
+[10] Citrix Blog: Update on CVE-2019-19781: Fixes now available for Citrix SD-WAN WANOP(link is external)
+
+[11] Citrix Blog: Citrix and FireEye Mandiant share forensic tool for CVE-2019-19781(link is external)
+
+[12] Citrix Blog: Fixes now available for Citrix ADC, Citrix Gateway versions 12.1 and 13.0(link is external)
+
+[13] Citrix Blog: Citrix and FireEye Mandiant share forensic tool for CVE-2019-19781(link is external)
+
+[14] NSA Cybersecurity Advisory: Mitigate CVE-2019-19781: Critical Vulnerability in Citrix Application Delivery Controller (ADC) and Citrix Gateway
+
+[15] CISA Current Activity: CISA Releases Test for Citrix ADC and Gateway Vulnerability GitHub: CISAgov – check-cve-2019-19781
+
+[16] Citrix Security Bulletin CTX267679, Mitigation Steps for CVE-2019-19781 (link is external)
+
+[17] Citrix Security Bulletin CTX267027, Vulnerability in Citrix Application Delivery Controller and Citrix Gateway (link is external)
+
+[18] Citrix Security Bulletin CTX267027, Vulnerability in Citrix Application Delivery Controller and Citrix Gateway (link is external)
+
+### Revisions
+
+January 20, 2020: Initial Version|January 23, 2020: Updated with information about Citrix releasing fixes for SD-WAN WANOP appliances and an IOC scanning tool|January 24, 2020: Updated with information about Citrix releasing fixes for Citrix ADC and Gateway versions 10.5, 12.1, and 13.0|January 27, 2020: Updated vulnernable versions of ADC and Gateway version 10.5
+
+This product is provided subject to this Notification and this Privacy & Use policy.
+
+## Please share your thoughts
+
+We recently updated our anonymous product survey; we welcome your feedback.

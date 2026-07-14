@@ -14,7 +14,7 @@ from rag_cti.connectors.aptnotes_collection import AptnotesCollector
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("inspect", "snapshot", "collect", "rebuild", "validate", "report", "finalize"))
-    parser.add_argument("--root", type=Path, default=Path("data/aptnotes"))
+    parser.add_argument("--root", type=Path, default=Path("data/raw/aptnotes"))
     parser.add_argument("--source-repo", type=Path)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--indices", help="comma-separated zero-based source row indices")

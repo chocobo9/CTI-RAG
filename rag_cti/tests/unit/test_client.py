@@ -32,7 +32,6 @@ class _FakeSettings:
         self,
         ollama: bool = False,
         groq: str = "",
-        anthropic: str = "",
         base_url: str = "http://localhost:11434/v1",
     ) -> None:
         self.ollama_enabled = ollama
@@ -44,7 +43,6 @@ class _FakeSettings:
         self.groq_report_model = "llama-3.3-70b-versatile"
         self.groq_request_timeout = 30.0
         self.retry_after_ceiling_seconds = 60.0
-        self.anthropic_api_key = _FakeSecret(anthropic)
 
 
 # ---------------------------------------------------------------------------
@@ -175,16 +173,6 @@ def test_build_llm_client_groq_provider_when_groq_key_set() -> None:
         provider, client = build_llm_client(_FakeSettings(groq="gsk_fake"))
     assert provider == "groq"
     assert isinstance(client, RetryingGroqClient)
-
-
-def test_build_llm_client_anthropic_provider_when_only_anthropic_key() -> None:
-    mock_anthropic_cls = MagicMock()
-    mock_anthropic_inst = MagicMock()
-    mock_anthropic_cls.return_value = mock_anthropic_inst
-    with patch("anthropic.Anthropic", mock_anthropic_cls):
-        provider, client = build_llm_client(_FakeSettings(anthropic="sk-ant-fake"))
-    assert provider == "anthropic"
-    assert client is mock_anthropic_inst
 
 
 def test_build_llm_client_ollama_takes_priority_over_groq() -> None:

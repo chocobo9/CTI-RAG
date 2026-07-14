@@ -1,0 +1,773 @@
+Cybersecurity Advisory
+
+# #StopRansomware: Blacksuit (Royal) Ransomware
+
+Last Revised
+
+August 27, 2024
+
+Alert Code
+
+AA23-061A
+
+Related topics:
+
+Cyber Threats and Response , Incident Response , Malware, Phishing, and Ransomware
+
+#### Actions for Organizations to Take Today to Mitigate Cyber Threats Related to BlackSuit Ransomware Activity
+
+Prioritize remediating known exploited vulnerabilities.
+
+Train users to recognize and report phishing attempts.
+
+Enable and enforce multifactor authentication.
+
+## Summary
+
+Note: This joint Cybersecurity Advisory is part of an ongoing #StopRansomware effort to publish advisories for network defenders that detail various ransomware variants and ransomware threat actors. These #StopRansomware advisories include recently and historically observed tactics, techniques, and procedures (TTPs) and indicators of compromise (IOCs) to help organizations protect against ransomware. Visit stopransomware.gov to see all #StopRansomware advisories and to learn more about other ransomware threats and no-cost resources.
+
+Note: This advisory, originally published March 2, 2023, has been updated four times:
+
+November 13, 2023: The advisory was updated to share new Royal TTPs and IOCs.
+
+August 7, 2024: The advisory was updated to notify network defenders of the rebrand of “Royal” ransomware actors to “BlackSuit.” The update includes new TTPs, IOCs, and detection methods related to BlackSuit ransomware. “Royal” was updated to “BlackSuit” throughout unless referring to legacy Royal activity. Updates and new content are noted.
+
+August 14, 2024: The STIX files from the previous update (08/07/2024) were refreshed.
+
+August 27, 2024: The STIX files from the (08/19/2024) update were refreshed.
+
+(New August 7, 2024) The Federal Bureau of Investigation (FBI) and the Cybersecurity and Infrastructure Security Agency (CISA) are releasing this joint advisory to disseminate known BlackSuit ransomware IOCs and TTPs identified through FBI threat response activities and third-party reporting as recently as of July 2024. BlackSuit ransomware is the evolution of the ransomware previously identified as Royal ransomware, which was used from approximately September 2022 through June 2023. BlackSuit shares numerous coding similarities with Royal ransomware and has exhibited improved capabilities.
+
+(Updated August 7, 2024) BlackSuit conducts data exfiltration and extortion prior to encryption and then publishes victim data to a leak site if a ransom is not paid. Phishing emails are among the most successful vectors for initial access by BlackSuit threat actors. After gaining access to victims’ networks, BlackSuit actors disable antivirus software and exfiltrate large amounts of data before ultimately deploying the ransomware and encrypting the systems.
+
+(Updated August 7, 2024) Ransom demands have typically ranged from approximately $1 million to $10 million USD, with payment demanded in Bitcoin. BlackSuit actors have demanded over $500 million USD in total and the largest individual ransom demand was $60 million. BlackSuit actors have exhibited a willingness to negotiate payment amounts. Ransom amounts are not part of the initial ransom note, but require direct interaction with the threat actor via a .onion URL (reachable through the Tor browser) provided after encryption. Recently, an uptick was observed in the number of instances where victims received telephonic or email communications from BlackSuit actors regarding the compromise and ransom. BlackSuit uses a leak site to publish victim data based on non-payment.
+
+FBI and CISA encourage organizations to implement the recommendations found in the Mitigations section of this CSA to reduce the likelihood and impact of ransomware incidents.
+
+Download the PDF version of this report:
+
+AA23-061A #StopRansomware: BlackSuit (Royal) Ransomware (PDF, 660.84 KB )
+
+For a downloadable copy of IOCs, see:
+
+AA23-061A STIX XML (MAR 2023) (XML, 114.26 KB )
+
+AA23-061A STIX XML (NOV 2023 Update) (XML, 152.94 KB )
+
+AA23-061A STIX JSON (NOV 2023 Update) (JSON, 113.96 KB )
+
+AA23-061A STIX XML (BlackSuit) (XML, 242.82 KB )
+
+AA23-061A STIX JSON (BlackSuit) (JSON, 162.62 KB )
+
+## Technical Details
+
+Note: This advisory uses the MITRE ATT&CK®(link is external) for Enterprise(link is external) framework, version 15. See the MITRE ATT&CK Tactics and Techniques section for a table of the threat actors’ activity mapped to MITRE ATT&CK tactics and techniques. For assistance with mapping malicious cyber activity to the MITRE ATT&CK framework, see CISA and MITRE ATT&CK’s Best Practices for MITRE ATT&CK Mapping and CISA’s Decider Tool(link is external).
+
+### Initial Access
+
+BlackSuit uses a unique partial encryption approach that allows the threat actor to choose a specific percentage of data in a file to encrypt. This approach allows the actor to lower the encryption percentage for larger files, which helps evade detection, and also significantly improves ransomware speed.[1(link is external)] In addition to encrypting files, BlackSuit actors also engage in double extortion tactics in which they threaten to publicly release the exfiltrated data if the victim does not pay the ransom.
+
+BlackSuit actors gain initial access to victim networks in several ways, including:
+
+Phishing. According to third-party reporting, BlackSuit actors most commonly gain initial access to victim networks via phishing emails [T1566(link is external)]. According to open source reporting, victims have unknowingly installed malware that delivers BlackSuit ransomware after receiving phishing emails containing malicious PDF documents [T1566.001(link is external)] and malvertising [T1566.002(link is external)].[2(link is external)]
+
+Remote Desktop Protocol (RDP). The second most common vector (around 13.3% of incidents) BlackSuit actors use for initial access is RDP compromise [T1021.001(link is external)].
+
+Public-facing applications. FBI has observed BlackSuit actors gain initial access through exploiting vulnerable public-facing applications [T1190(link is external)].
+
+Brokers. Reports from trusted third-party sources indicate that BlackSuit actors may leverage initial access brokers to gain initial access and source traffic by harvesting virtual private network (VPN) credentials from stealer logs [T1650(link is external)].
+
+### Command and Control
+
+Once BlackSuit actors gain access to a network, they communicate with command and control (C2) infrastructure and download multiple tools [T1105(link is external)]. Legitimate Windows software is repurposed by BlackSuit actors to strengthen their foothold within the victim’s network. Ransomware operators often use open source projects to aid their intrusion activities.
+
+Historically, Royal actors were observed leveraging Chisel, Secure Shell (SSH) client, PuTTY, OpenSSH, and MobaXterm [T1572(link is external)], to communicate with their C2 infrastructure.
+
+### Lateral Movement and Persistence
+
+(Updated August 7, 2024) Historically, Royal threat actors used RDP and legitimate operating system (OS) diagnostic tools to move laterally across a network [T1021.001(link is external)]. BlackSuit actors used RDP and PsExec as well but also use SMB [T1021.001(link is external)] to move laterally. In one confirmed case, BlackSuit actors used a legitimate admin account [T1078(link is external)] to remotely log on to the domain controller via SMB. Once on the domain controller, the threat actor deactivated antivirus software [T1562.001(link is external)] by modifying Group Policy Objects [T1484.001(link is external)].
+
+(Updated August 7, 2024) FBI observed BlackSuit actors using legitimate remote monitoring and management (RMM) software to maintain persistence in victim networks [T1133](link is external).
+
+(New August 7, 2024) BlackSuit actors use SystemBC and Gootloader malware to load additional tools and maintain persistence.
+
+### Discovery and Credential Access
+
+(New August 7, 2024) BlackSuit actors have been observed using SharpShares and SoftPerfect NetWorx to enumerate victim networks. The publicly available credential stealing tool Mimikatz and password harvesting tools from Nirsoft have also been found on victim systems. Tools such as PowerTool and GMER are often used to kill system processes.
+
+### Exfiltration
+
+BlackSuit actors exfiltrate data from victim networks by repurposing legitimate cyber penetration testing tools, such as Cobalt Strike(link is external), and malware tools/derivatives, such as Ursnif(link is external)/Gozi, for data aggregation and exfiltration. According to third-party reporting, BlackSuit actors’ first hop in exfiltration and other operations is usually a U.S. IP address.
+
+(New August 7, 2024) BlackSuit actors also use RClone and Brute Ratel for exfiltration.
+
+### Encryption
+
+Before starting the encryption process, BlackSuit actors:
+
+Use Windows Restart Manager to determine whether targeted files are currently in use or blocked by other applications [T1486(link is external)].[1(link is external)]
+
+Use Windows Volume Shadow Copy service (vssadmin.exe) to delete shadow copies to inhibit system recovery.[1(link is external)]
+
+FBI has found numerous batch (.bat) files on impacted systems which are typically transferred as an encrypted 7zip file. Batch files create a new admin user [T1078.002(link is external)], force a group policy update, set pertinent registry keys to auto-extract [T1119(link is external)] and execute the ransomware, monitor the encryption process, and delete files upon completion—including Application, System, and Security event logs [T1070.001(link is external)]. Registry Keys created can be modified and deleted to enable persistence on the victim’s system.
+
+Malicious files have been found in victim networks in the following directories:
+
+C:\Temp\
+
+C:\Users\<user>\AppData\Roaming\
+
+C:\Users\<users>\
+
+C:\ProgramData\
+
+Root C:\ directory has also served as a storage location for malicious files. BlackSuit actors have been observed using legitimate software and open source tools during ransomware operations.
+
+## Indicators of Compromise (IOCs)
+
+See Table 1 through Table 5 for Royal ransomware IOCs obtained by FBI during threat response activities as of January 2023.
+
+(New November 13, 2023) See Table 6 and Table 7 for Royal and BlackSuit Ransomware IOCs as of June 2023. See Table 8 for a list of legitimate software used by Royal and BlackSuit threat actors identified through FBI investigations as of June 2023.
+
+(New August 7, 2024) See Table 9 through Table 15 for BlackSuit ransomware IOCs obtained by FBI during threat response activities as of July 2024 and Figure 1 for a sample ransom note.
+
+Disclaimer: Some of the observed IP addresses are several years old. FBI and CISA recommend vetting or investigating these IP addresses prior to taking forward-looking action, such as blocking.
+
+### Royal IOCs as of January 2023
+
+IOC | Description
+
+IOC .royal | Description Encrypted file extension
+
+IOC README.TXT | Description Ransom note
+
+Malicious IP | Last Observed Activity
+
+Malicious IP 102.157.44[.]105 | Last Observed Activity November 2022
+
+Malicious IP 105.158.118[.]241 | Last Observed Activity November 2022
+
+Malicious IP 105.69.155[.]85 | Last Observed Activity November 2022
+
+Malicious IP 113.169.187[.]159 | Last Observed Activity November 2022
+
+Malicious IP 134.35.9[.]209 | Last Observed Activity November 2022
+
+Malicious IP 139.195.43[.]166 | Last Observed Activity November 2022
+
+Malicious IP 139.60.161[.]213 | Last Observed Activity November 2022
+
+Malicious IP 148.213.109[.]165 | Last Observed Activity November 2022
+
+Malicious IP 163.182.177[.]80 | Last Observed Activity November 2022
+
+Malicious IP 181.141.3[.]126 | Last Observed Activity November 2022
+
+Malicious IP 181.164.194[.]228 | Last Observed Activity November 2022
+
+Malicious IP 185.143.223[.]69 | Last Observed Activity November 2022
+
+Malicious IP 186.64.67[.]6 | Last Observed Activity November 2022
+
+Malicious IP 186.86.212[.]138 | Last Observed Activity November 2022
+
+Malicious IP 190.193.180[.]228 | Last Observed Activity November 2022
+
+Malicious IP 196.70.77[.]11 | Last Observed Activity November 2022
+
+Malicious IP 197.11.134[.]255 | Last Observed Activity November 2022
+
+Malicious IP 197.158.89[.]85 | Last Observed Activity November 2022
+
+Malicious IP 197.204.247[.]7 | Last Observed Activity November 2022
+
+Malicious IP 197.207.181[.]147 | Last Observed Activity November 2022
+
+Malicious IP 197.207.218[.]27 | Last Observed Activity November 2022
+
+Malicious IP 197.94.67[.]207 | Last Observed Activity November 2022
+
+Malicious IP 23.111.114[.]52 | Last Observed Activity November 2022
+
+Malicious IP 41.100.55[.]97 | Last Observed Activity November 2022
+
+Malicious IP 41.107.77[.]67 | Last Observed Activity November 2022
+
+Malicious IP 41.109.11[.]80 | Last Observed Activity November 2022
+
+Malicious IP 41.251.121[.]35 | Last Observed Activity November 2022
+
+Malicious IP 41.97.65[.]51 | Last Observed Activity November 2022
+
+Malicious IP 42.189.12[.]36 | Last Observed Activity November 2022
+
+Malicious IP 45.227.251[.]167 | Last Observed Activity November 2022
+
+Malicious IP 5.44.42[.]20 | Last Observed Activity November 2022
+
+Malicious IP 61.166.221[.]46 | Last Observed Activity November 2022
+
+Malicious IP 68.83.169[.]91 | Last Observed Activity November 2022
+
+Malicious IP 81.184.181[.]215 | Last Observed Activity November 2022
+
+Malicious IP 82.12.196[.]197 | Last Observed Activity November 2022
+
+Malicious IP 98.143.70[.]147 | Last Observed Activity November 2022
+
+Malicious IP 140.82.48[.]158 | Last Observed Activity December 2022
+
+Malicious IP 147.135.36[.]162 | Last Observed Activity December 2022
+
+Malicious IP 147.135.11[.]223 | Last Observed Activity December 2022
+
+Malicious IP 152.89.247[.]50 | Last Observed Activity December 2022
+
+Malicious IP 172.64.80[.]1 | Last Observed Activity December 2022
+
+Malicious IP 179.43.167[.]10 | Last Observed Activity December 2022
+
+Malicious IP 185.7.214[.]218 | Last Observed Activity December 2022
+
+Malicious IP 193.149.176[.]157 | Last Observed Activity December 2022
+
+Malicious IP 193.235.146[.]104 | Last Observed Activity December 2022
+
+Malicious IP 209.141.36[.]116 | Last Observed Activity December 2022
+
+Malicious IP 45.61.136[.]47 | Last Observed Activity December 2022
+
+Malicious IP 45.8.158[.]104 | Last Observed Activity December 2022
+
+Malicious IP 5.181.234[.]58 | Last Observed Activity December 2022
+
+Malicious IP 5.188.86[.]195 | Last Observed Activity December 2022
+
+Malicious IP 77.73.133[.]84 | Last Observed Activity December 2022
+
+Malicious IP 89.108.65[.]136 | Last Observed Activity December 2022
+
+Malicious IP 94.232.41[.]105 | Last Observed Activity December 2022
+
+Malicious IP 47.87.229[.]39 | Last Observed Activity January 2023
+
+Malicious Domain | Last Observed Activity
+
+Malicious Domain sombrat[.]com | Last Observed Activity October 2022
+
+Malicious Domain gororama[.]com | Last Observed Activity November 2022
+
+Malicious Domain softeruplive[.]com | Last Observed Activity November 2022
+
+Malicious Domain altocloudzone[.]live | Last Observed Activity December 2022
+
+Malicious Domain ciborkumari[.]xyz | Last Observed Activity December 2022
+
+Malicious Domain myappearinc[.]com | Last Observed Activity December 2022
+
+Malicious Domain parkerpublic[.]com | Last Observed Activity December 2022
+
+Malicious Domain pastebin.mozilla[.]org/Z54Vudf9/raw | Last Observed Activity December 2022
+
+Malicious Domain tumbleproperty[.]com | Last Observed Activity December 2022
+
+Malicious Domain myappearinc[.]com/acquire/draft/c7lh0s5jv | Last Observed Activity January 2023
+
+Tool | SHA256
+
+Tool AV tamper | SHA256 8A983042278BC5897DBCDD54D1D7E3143F8B7EAD553B5A4713E30DEFFDA16375
+
+Tool TCP/UDP Tunnel over HTTP (Chisel) | SHA256 8a99353662ccae117d2bb22efd8c43d7169060450be413af763e8ad7522d2451
+
+Tool Ursnif/Gozi | SHA256 be030e685536eb38ba1fec1c90e90a4165f6641c8dc39291db1d23f4ee9fa0b1
+
+Tool Exfil | SHA256 B8C4AEC31C134ADBDBE8AAD65D2BCB21CFE62D299696A23ADD9AA1DE082C6E20
+
+Tool Remote Access (AnyDesk) | SHA256 4a9dde3979c2343c024c6eeeddff7639be301826dd637c006074e04a1e4e9fe7
+
+Tool PowerShell Toolkit Downloader | SHA256 4cd00234b18e04dcd745cc81bb928c8451f6601affb5fa45f20bb11bfb5383ce
+
+Tool PsExec (Microsoft Sysinternals) | SHA256 08c6e20b1785d4ec4e3f9956931d992377963580b4b2c6579fd9930e08882b1c
+
+Tool Keep Host Unlocked (Don’t Sleep) | SHA256 f8cff7082a936912baf2124d42ed82403c75c87cb160553a7df862f8d81809ee
+
+Tool Ransomware Executable | SHA256 d47d4b52e75e8cf3b11ea171163a66c06d1792227c1cf7ca49d7df60804a1681
+
+Tool Windows Command Line (NirCmd) | SHA256 216047C048BF1DCBF031CF24BD5E0F263994A5DF60B23089E393033D17257CB5
+
+Tool System Management (NSudo) | SHA256 19896A23D7B054625C2F6B1EE1551A0DA68AD25CDDBB24510A3B74578418E618
+
+Tool AV tamper | SHA256 8A983042278BC5897DBCDD54D1D7E3143F8B7EAD553B5A4713E30DEFFDA16375
+
+Tool TCP/UDP Tunnel over HTTP (Chisel) | SHA256 8a99353662ccae117d2bb22efd8c43d7169060450be413af763e8ad7522d2451
+
+Tool Ursnif/Gozi | SHA256 be030e685536eb38ba1fec1c90e90a4165f6641c8dc39291db1d23f4ee9fa0b1
+
+Tool Exfil | SHA256 B8C4AEC31C134ADBDBE8AAD65D2BCB21CFE62D299696A23ADD9AA1DE082C6E20
+
+Tool Remote Access (AnyDesk) | SHA256 4a9dde3979c2343c024c6eeeddff7639be301826dd637c006074e04a1e4e9fe7
+
+Tool PowerShell Toolkit Downloader | SHA256 4cd00234b18e04dcd745cc81bb928c8451f6601affb5fa45f20bb11bfb5383ce
+
+Tool PsExec (Microsoft Sysinternals) | SHA256 08c6e20b1785d4ec4e3f9956931d992377963580b4b2c6579fd9930e08882b1c
+
+Tool Keep Host Unlocked (Don’t Sleep) | SHA256 f8cff7082a936912baf2124d42ed82403c75c87cb160553a7df862f8d81809ee
+
+Tool Ransomware Executable | SHA256 d47d4b52e75e8cf3b11ea171163a66c06d1792227c1cf7ca49d7df60804a1681
+
+Tool Windows Command Line (NirCmd) | SHA256 216047C048BF1DCBF031CF24BD5E0F263994A5DF60B23089E393033D17257CB5
+
+Tool System Management (NSudo) | SHA256 19896A23D7B054625C2F6B1EE1551A0DA68AD25CDDBB24510A3B74578418E618
+
+File name | Hash Value
+
+File name 2.bat | Hash Value 585b05b290d241a249af93b1896a9474128da969
+
+File name 3.bat | Hash Value 41a79f83f8b00ac7a9dd06e1e225d64d95d29b1d
+
+File name 4.bat | Hash Value a84ed0f3c46b01d66510ccc9b1fc1e07af005c60
+
+File name 8.bat | Hash Value c96154690f60a8e1f2271242e458029014ffe30a
+
+File name kl.bat | Hash Value 65dc04f3f75deb3b287cca3138d9d0ec36b8bea0
+
+File name gp.bat | Hash Value 82f1f72f4b1bfd7cc8afbe6d170686b1066049bc7e5863b51aa15ccc5c841f58
+
+File name r.bat | Hash Value 74d81ef0be02899a177d7ff6374d699b634c70275b3292dbc67e577b5f6a3f3c
+
+File name runanddelete.bat | Hash Value 342B398647073159DFA8A7D36510171F731B760089A546E96FBB8A292791EFEE
+
+### Royal and BlackSuit IOCs as of June 2023 (New November 13, 2023)
+
+Name | Description or SHA 256 Hash Value
+
+Name C:\Users\Public\conhost.exe client 149.28.73.161:443 R:149.28.73.161:43657:socks | Description or SHA 256 Hash Value Executed on the victim’s machine, uses a Chisel client to tunnel traffic through port 443 instead of port 43657.
+
+Name royal_w | Description or SHA 256 Hash Value Encryption extension
+
+Name %PROGRAMDATA% | Description or SHA 256 Hash Value Ransomware Filepath
+
+Name %TEMP%\execute.bat | Description or SHA 256 Hash Value
+
+Name InstallerV20.8.msi | Description or SHA 256 Hash Value
+
+Name windows_encryptor.exe | Description or SHA 256 Hash Value 85087f28a84205e344d7e8e06979e6622fab0cfe1759fd24e38cd0390bca5fa6
+
+Name %PROGRAMDATA%\wine.exe | Description or SHA 256 Hash Value 5b08c02c141eab94a40b56240a26cab7ff07e9a6e760dfde8b8b053a3526f0e6
+
+Name %USERPROFILE%\Downloads\run1.bat | Description or SHA 256 Hash Value bc609cf53dde126b766d35b5bcf0a530c24d91fe23633dad6c2c59fd1843f781
+
+Name %USERPROFILE%\Downloads\run2.bat | Description or SHA 256 Hash Value 13c25164791d3436cf2efbc410caec6b6dd6978d7e83c4766917630e24e1af10
+
+Name %USERPROFILE%\Downloads\run3.bat | Description or SHA 256 Hash Value 2b93206d7a36cccdf7d7596b90ead301b2ff7e9a96359f39b6ba31bb13d11f45
+
+Name %USERPROFILE%\Downloads\run4.bat | Description or SHA 256 Hash Value 84e1efbed6bb7720caea6720a8bff7cd93b5d42fb1d71ef8031bfd3897ed4435
+
+Name %USERPROFILE%\Downloads\sc.bat | Description or SHA 256 Hash Value e0dbe3a2d07ee10731b68a142c65db077cfb88e5ec5c8415e548d3ede40e7ffc
+
+Name %USERPROFILE%\Downloads\sr.bat | Description or SHA 256 Hash Value 34a98f2b54ebab999f218b0990665485eb2bb74babdf7e714cc10a306616b00c
+
+Name runanddelete.bat | Description or SHA 256 Hash Value 342b398647073159dfa8a7d36510171f731b760089a546e96fbb8a292791efee
+
+Name scripttodo.ps1 (94.232.41.105) | Description or SHA 256 Hash Value 4cd00234b18e04dcd745cc81bb928c8451f6601affb5fa45f20bb11bfb5383ce
+
+Name dontsleep.exe | Description or SHA 256 Hash Value f8cff7082a936912baf2124d42ed82403c75c87cb160553a7df862f8d81809ee
+
+Name wstart.exe | Description or SHA 256 Hash Value d47d4b52e75e8cf3b11ea171163a66c06d1792227c1cf7ca49d7df60804a1681
+
+Name InstallerV8.1.ms | Description or SHA 256 Hash Value 3e6e2e0de75896033d91dfd07550c478590ca4cd4598004d9e19246e8a09cb97
+
+Name shutdowni.bat | Description or SHA 256 Hash Value 8a983042278bc5897dbcdd54d1d7e3143f8b7ead553b5a4713e30deffda16375
+
+Name f827.exe | Description or SHA 256 Hash Value 5654f32a4f0f2e900a35761e8caf7ef0c50ee7800e0a3b19354b571bc6876f61
+
+Name d2ef5.exe | Description or SHA 256 Hash Value be030e685536eb38ba1fec1c90e90a4165f6641c8dc39291db1d23f4ee9fa0b1
+
+Name f24dc8ea.msi | Description or SHA 256 Hash Value 91605641a4c7e859b7071a9841d1cd154b9027e6a58c20ec4cadafeaf47c9055
+
+Name defw10.bat | Description or SHA 256 Hash Value fb638dba20e5fec72f5501d7e0627b302834ec5eaf331dd999763ee925cbc0f9
+
+Name ll.exe | Description or SHA 256 Hash Value f0197bd7ccd568c523df9c7d9afcbac222f14d344312322c04c92e7968859726
+
+Name Royal Ransomware Hash | Description or SHA 256 Hash Value b987f738a1e185f71e358b02cafa5fe56a4e3457df3b587d6b40e9c9de1da410
+
+Name b34v2.dll | Description or SHA 256 Hash Value a51b1f1f0636bff199c0f87e2bb300d42e06698b
+
+Name 1.exe | Description or SHA 256 Hash Value d93f1ef533e6b8c95330ba0962e3670eaf94a026
+
+Name 34.dll | Description or SHA 256 Hash Value 9e19afc15c5781e8a89a75607578760aabad8e65
+
+Name ll.exe | Description or SHA 256 Hash Value 9a92b147cad814bfbd4632b6034b8abf8d84b1a5
+
+Name Royal Ransomware Hash | Description or SHA 256 Hash Value a4ef01d55e55cebdd37ba71c28b0c448a9c833c0
+
+IP Address | MD5 Hash Value
+
+IP Address sys32.exe | MD5 Hash Value 30cc7724be4a09d5bcd9254197af05e9fab76455
+
+IP Address esxi_encryptor | MD5 Hash Value 861793c4e0d4a92844994b640cc6bc3e20944a73
+
+BlackSuit threat actors have been observed using legitimate software and open source tools during ransomware operations. Threat actors have been observed using open source network tunneling tools such as Chisel and Cloudflared, as well as Secure Shell (SSH) Client, OpenSSH, and MobaXterm to establish SSH connections. The publicly available credential stealing tool Mimikatz and password harvesting tools from Nirsoft have also been found on victim systems. Legitimate RMM tools have also been observed as backdoor access vectors. Some legitimate software and open source tools can be found in Table 8.
+
+Name | Description or SHA 256 Hash Value
+
+Name C:\Program Files\OpenSSH\ssh-agent.exe
+
+C:\Program Files\OpenSSH\sshd.exe
+
+Name C:\Program Files\OpenSSH\ssh-agent.exe C:\Program Files\OpenSSH\sshd.exe | Description or SHA 256 Hash Value SSH Client
+
+Name %USERPROFILE%\Downloads\WinRAR.exe | Description or SHA 256 Hash Value Compression tool
+
+Name %APPDATA%\MobaXterm\ | Description or SHA 256 Hash Value Toolbox for remote computing
+
+Name \Program Files (x86)\Mobatek\ | Description or SHA 256 Hash Value Toolbox for remote computing
+
+Name \Program Files (x86)\Mobatek\MobaXterm\ | Description or SHA 256 Hash Value Toolbox for remote computing
+
+Name b34v2.dll | Description or SHA 256 Hash Value ColbaltStrike Beacon
+
+Name 34.dll | Description or SHA 256 Hash Value CobaltStrike Beacon
+
+Name mimikatz.exe | Description or SHA 256 Hash Value Mimikatz credential harvester
+
+Name dialuppass.exe | Description or SHA 256 Hash Value Nirsoft password harvesting utility
+
+Name iepv.exe | Description or SHA 256 Hash Value Nirsoft password harvesting utility
+
+Name mailpv.exe | Description or SHA 256 Hash Value Nirsoft password harvesting utility
+
+Name netpass.exe | Description or SHA 256 Hash Value Nirsoft password harvesting utility
+
+Name routerpassview.exe | Description or SHA 256 Hash Value Nirsoft password harvesting utility
+
+Name AdFind.exe | Description or SHA 256 Hash Value ADFind tool
+
+Name LogMeIn | Description or SHA 256 Hash Value Remote access tool
+
+Name Atera | Description or SHA 256 Hash Value Remote access tool
+
+Name C:\Program Files\Eraser\Eraser.exe | Description or SHA 256 Hash Value Anti-Forensics Tool used by TA
+
+Name advanced_ip_scanner.exe | Description or SHA 256 Hash Value Reconnaissance Tool used by TA
+
+Name conhost.exe (chisel_windows_1_7_7.exe) | Description or SHA 256 Hash Value b9ef2e948a9b49a6930fc190b22cbdb3571579d37a4de56564e41a2ef736767b
+
+Name %USERPROFILE%\Downloads\svvhost.exe\Users\Administrator\AppData\Local\Temp\cloudflared.exe | Description or SHA 256 Hash Value c429719a45ca14f52513fe55320ebc49433c729a0d2223479d9d43597eab39fa
+
+Name nircmd.exe | Description or SHA 256 Hash Value 216047c048bf1dcbf031cf24bd5e0f263994a5df60b23089e393033d17257cb5
+
+Name nsudo.exe | Description or SHA 256 Hash Value 19896a23d7b054625c2f6b1ee1551a0da68ad25cddbb24510a3b74578418e618
+
+### IOCs as of July 2024 (New August 7, 2024)
+
+Disclaimer: Several of these observed IP addresses were first observed as early as 2023, although the most recent are from July of 2024 and have been historically linked to BlackSuit (formerly known as Royal) Ransomware. IP addresses in this advisory were maliciously used during the time range highlighted below, and may have been used for legitimate purposes outside of that time span. FBI and CISA recommend these IP addresses be investigated or vetted by organizations prior to taking action, such as blocking.
+
+URL Association | Malicious URLs
+
+URL Association URLs from malicious PowerShell on P0, potentially debug.ps1 Malicious URLs https://1tvnews[.]af/xmlrpc.php
+
+https://avpvuurwerk[.]nl/xmlrpc.php
+
+https://beautyhabits[.]gr/xmlrpc.php
+
+https://interpolyaris[.]ru/xmlrpc.php
+
+https://libertygospeltracts[.]com/xmlrpc.php
+
+https://oldtimertreffen-rethem[.]de/xmlrpc.php
+
+https://parencyivf[.]com/xmlrpc.php
+
+https://pikaluna[.]com/xmlrpc.php
+
+https://stroeck[.]at/xmlrpc.php
+
+URL Association URLs from malicious PowerShell on P0, potentially debug.ps1 | Malicious URLs https://1tvnews[.]af/xmlrpc.php https://avpvuurwerk[.]nl/xmlrpc.php https://beautyhabits[.]gr/xmlrpc.php https://interpolyaris[.]ru/xmlrpc.php https://libertygospeltracts[.]com/xmlrpc.php https://oldtimertreffen-rethem[.]de/xmlrpc.php https://parencyivf[.]com/xmlrpc.php https://pikaluna[.]com/xmlrpc.php https://stroeck[.]at/xmlrpc.php
+
+URL Association URL associated to BRC4 / Brute Ratel | Malicious URLs megupdate[.]com
+
+URL Association URLs associated to Exfiltration | Malicious URLs mystuff[.]bublup[.]com
+
+URL Association URL associated to Cobalt Strike C2 | Malicious URLs provincial-gaiters-gw[.]aws-use1[.]cloud-ara[.]tyk[.]io
+
+URL Association URL associated to Initial Access Download | Malicious URLs zoommanager[.]com
+
+Filename | Hash Value – SHA-256 | Description
+
+Filename 1.exe | Hash Value – SHA-256 af9f95497b8503af1a399bc6f070c3bbeabc5aeecd8c09bca80495831ae71e61 | Description Encryptor
+
+Filename PowerTool64.exe | Hash Value – SHA-256 | Description Hacktool
+
+Filename aaa.exe | Hash Value – SHA-256 C4A2227CD8D85128EAFEF8EE2298AA105DA892C8B0F37405667C2D1647C35C46 | Description Encryptor
+
+Filename aaa.exe | Hash Value – SHA-256 8d16a23d5a5630502b09c33fbc571d2261c6c98fecc3a79a1e1129354f930d0a | Description
+
+Filename Wen.exe | Hash Value – SHA-256 01ce9cfebb29596d0ab7c99e8dbadf1a8409750b183e6bf73e0de021b365be13 | Description
+
+Filename etmc.exe | Hash Value – SHA-256 a0a4a99948e12309f54911264261d96f0e40d5fd695bab82e95fbc1f9024482e | Description
+
+Filename svchost.exe | Hash Value – SHA-256 9bbc9784ce3c818a127debfe710ec6ce21e7c9dd0daf4e30b8506a6dba533db4 | Description Data Exfiltration Tool ­– Renamed version of RClone.exe
+
+Filename locker_N1uYkmEsfoHmT4lK66trUjBuy5gyAj7n.ex_ | Hash Value – SHA-256 146335b1be627318ac09476f0c8f8e6e027805e6077673f72d6dce1677a24c78 | Description
+
+Filename socks32.exe | Hash Value – SHA-256 9493b512d7d15510ebee5b300c55b67f9f2ff1dda64bddc99ba8ba5024113300 | Description
+
+Filename C:\users\Administrator\AppData\Local\msa.ps1 | Hash Value – SHA-256 | Description SystemBC backdoor
+
+Filename %APPDATA%\ Zoom\Alternative Workplace Strategies.js | Hash Value – SHA-256 E813F8FAF3AA2EB20E285596413F5088B2D7FD153FE9F72F3FF45735D0FDDCED | Description Gootloader infection
+
+Filename C:\Users\Public\socks.ps1 Hash Value – SHA-256 25A6F82936134A6C5C0066F382530B9D6BF2C8DA6FEAFE028F166B1A9D7283CF Description PowerShell Backdoor
+
+Filename C:\Users\Public\socks.ps1 | Hash Value – SHA-256 25A6F82936134A6C5C0066F382530B9D6BF2C8DA6FEAFE028F166B1A9D7283CF | Description PowerShell Backdoor
+
+Filename HKEY_USERS\S-1-5-18\Software\Microsoft\Windows\CurrentVersion\Run (Value == socks_powershell) | Hash Value – SHA-256 | Description Executes socks.ps1 on reboot
+
+Filename share$.zip | Hash Value – SHA-256 e3d7c012040962acd66f395d1c5c5f73f305aa1058f2111e8e37d9cb213b80c4 | Description Contains _COPY.bat, PsExec.exe, etmc.exe, and _EXEC.bat to deploy encryptor (etmc.exe) across environment using domain admin credentials
+
+Filename socss.exe | Hash Value – SHA-256 C798B2690C5F16EB2917A679AF3117CFE9C7060FA8BC84FFC3159338EF33508E | Description Malware
+
+Filename qq.exe | Hash Value – SHA-256 3c8c1b1f53e0767b7291bb1ae605ffa62a93e9c8cc783e4ca47ac84b48320d59 | Description
+
+Filename gomer.exe | Hash Value – SHA-256 | Description A renamed executable of GMER used for defense evasion
+
+Filename 288-csrss.exe | Hash Value – SHA-256 ee6ec2810910c6d2a2957f041edd1e39dca4266a1cc8009ae6d7315aba9196f5 | Description
+
+Filename 372-winlogon.exe | Hash Value – SHA-256 68c57daed0e5899c49b827042bcf3bbeba33b524bd83315a44d889721664dc34 | Description
+
+Filename 776-svchost.exe | Hash Value – SHA-256 bbb7404419f91f82cedfec915931a9339f04165b27d8878d63827c9ee421ed62 | Description
+
+Filename Exe.exe, aaaa.exe, qq.exe | Hash Value – SHA-256 338228a3e79f3993abc102cbac2ff253c84965213d59ac30892538cdd9b0a22b | Description Ransomware file
+
+Filename Mwntv.sys | Hash Value – SHA-256 6332f189cc71df646ff0f1b9b02a005c9ebda3fe7b9712976660746913b030de | Description Potential Tool Ingress
+
+Filename Un_A.exe | Hash Value – SHA-256 | Description Malicious binary for attempting to disable/uninstall security software
+
+Filename Un_B.erxe | Hash Value – SHA-256 | Description Malicious binary for attempting to disable/uninstall security software
+
+Filename | Description | Hash Value – SHA-256
+
+Filename 2.bat | Description Batch Script to copy and execute encryptor | Hash Value – SHA-256 3041dfc13f356c2f0133a9c11a258f87cb7de1e17bc435e9b623d74bc5e1c6be
+
+Filename C:\share$\_EXEC.bat | Description Execute encrypter | Hash Value – SHA-256 8F87A1542EE790623896BBAAB933D1883484DE02A7B3D65D6C791D50173A923D
+
+Filename fstart.bat | Description A batch script used to enable remote services, perform anti-forensics, and enable clear-text passwords in memory | Hash Value – SHA-256
+
+Filename NLA.bat | Description A batch script used to disable Network Level Authentication (NLA) for Remote Desktop Services (RDS) | Hash Value – SHA-256
+
+Filename av.bat | Description A batch script that searches for presence of an application and uninstalls it | Hash Value – SHA-256
+
+Filename systeminfo.bat | Description A batch script used for system enumeration | Hash Value – SHA-256
+
+Filename mv.bat | Description A batch script used to move the PsExec executable and delete the netscan executable | Hash Value – SHA-256
+
+IP Address | Time Range of Use | Description
+
+IP Address 143[.]244[.]146[.]183:443 | Time Range of Use May 2024 | Description Unknown C2 – potential SOCKS Proxy
+
+IP Address 45[.]141[.]87[.]218:9000 | Time Range of Use May 2024 | Description Arechclient2 Backdoor/SecTopRAT
+
+IP Address 45[.]141[.]87[.]218:443 | Time Range of Use May 2024 | Description Arechclient2 Backdoor/SecTopRAT
+
+IP Address 184.174.96[.]16 | Time Range of Use May 2024 | Description Associated with download of the binary vm.dll
+
+IP Address 89.251.22[.]32 | Time Range of Use May 2024 | Description Cobalt Strike
+
+IP Address 135.148.67[.]84 | Time Range of Use May 2024 | Description Resolves to domain turnovercheck[.]com
+
+IP Address 180.131.145[.]85 | Time Range of Use May 2024 | Description Associated with malicious PowerShell execution
+
+IP Address 180.131.145[.]61 | Time Range of Use May 2024 | Description SystemBC Command & Control
+
+IP Address 138.199.53[.]226 | Time Range of Use Feb 2024 | Description
+
+IP Address 184.166.211[.]74 | Time Range of Use Feb 2024 | Description
+
+IP Address 185.190.24[.]103 | Time Range of Use Feb 2024 | Description
+
+IP Address 5.181.234[.]58 | Time Range of Use Feb 2024 | Description
+
+IP Address 137.220.61[.]94 | Time Range of Use Nov – Feb 2024 | Description connecting outbound from Socss.exe
+
+IP Address 193.37.69[.]116 | Time Range of Use Nov – Jan 2024 | Description Associated with exfiltration
+
+IP Address 144.202.120[.]122 | Time Range of Use Nov 2023 | Description socks1.ps1 backdoor; SystemBC Backdoor C2; www.recruitment-interview[.]org (C2 SystemBC)
+
+IP Address 104.21.58[.]219:443 | Time Range of Use Nov 2023 | Description Cobalt Strike
+
+IP Address 141.98.80[.]181:80 | Time Range of Use Nov 2023 | Description Cobalt Strike
+
+IP Address 144.202.120[.]122:433 | Time Range of Use Nov 2023 | Description PowerShell Reverse Proxy
+
+IP Address 155.138.150[.]236:8088 | Time Range of Use Nov 2023 | Description PowerShell Reverse Proxy
+
+IP Address 140.82.18[.]48 | Time Range of Use Nov 2023 | Description
+
+IP Address 141.98.80[.]181 | Time Range of Use Nov 2023 | Description
+
+IP Address 44.202.120[.]122 | Time Range of Use Nov 2023 | Description
+
+IP Address 45.76.225[.]156 | Time Range of Use Nov 2023 | Description
+
+File name | Hash Value – SHA-256 | Description
+
+File name share.exe | Hash Value – SHA-256 f02af8ffc37d1874b971307fdec80e33e583b56d9ebabda78a4b8ad038bc3bf0 | Description Cobalt Strike
+
+File name 181.exe | Hash Value – SHA-256 b028eaa0ec452c6844881dc34be813834813a40591b89ea9a57dd4fb4084e477 | Description Cobalt Strike – File name
+
+File name 222wqc.exe | Hash Value – SHA-256 ae724dce252c7b05a84bc264993172cf86950d22744b5e3a1b15ba645d9d3733 | Description Cobalt Strike
+
+File name gmer.exe | Hash Value – SHA-256 | Description GMER / Rootkit Hunter
+
+File name PowerTool64.exe | Hash Value – SHA-256 | Description PowerTool64 for hacking
+
+File name Psexesvc.exe | Hash Value – SHA-256 141b2190f51397dbd0dfde0e3904b264c91b6f81febc823ff0c33da980b69944 | Description Sysinternals
+
+File name Socks5.ps1
+
+Socks.ps1
+
+File name Socks5.ps1 Socks.ps1 | Hash Value – SHA-256 25a6f82936134a6c5c0066f382530b9d6bf2c8da6feafe028f166b1a9d7283cf | Description PowerShell Reverse Proxy
+
+File name netscan.exe | Hash Value – SHA-256 | Description A network reconnaissance tool
+
+File name 3iSDtcX.exe | Hash Value – SHA-256 e87512ea12288acec611cf8e995c4ced3971d9e35c0c5dcfd9ee17c9e3ed913d | Description Putty suite
+
+File name File.exe | Hash Value – SHA-256 f805dafb3c0b7e18aa7d8c96db8e8d4e9301ff619622d1aecc8080e0ecd9ebbe | Description Putty.exe. Possibly used for C2
+
+File name Mwntv.sys | Hash Value – SHA-256 6332f189cc71df646ff0f1b9b02a005c9ebda3fe7b9712976660746913b030de | Description Potential Tool Ingress
+
+File name AnyDesk | Hash Value – SHA-256 1cdafbe519f60aaadb4a92e266fff709129f86f0c9ee595c45499c66092e0499 | Description Potential remote access tool
+
+File name ScreenConnect | Hash Value – SHA-256 420db40d26d309d3dba3245abb91207f1bca050530545a8048f856e5840d22a2 | Description Potential remote access tool
+
+File name SharpShares.exe | Hash Value – SHA-256 | Description Enumerate network shares
+
+File name Networx.exe | Hash Value – SHA-256 | Description Bandwidth utilization
+
+Filename | Hash Value – SHA-1 | Description
+
+Filename 181[.]exe | Hash Value – SHA-1 790d40cd16fb458bf99e3600bce29eca06d40b56 | Description Cobalt Strike – Host name
+
+Filename | File Path | Description
+
+Filename Anydesk.exe | File Path C:\Program Files(x86)\AnyDesk\AnyDesk.exe | Description Remote Monitoring and Management (RMM) Tool
+
+Filename ehorus_display.exe | File Path C:\Program Files\ehorus_agent\ehorus_display\ehorus_display.exe | Description RMM Tool
+
+Filename ehorus_launcher.exe | File Path C:\Program Files\ehorus_agent\ehorus_launcher.exe | Description RMM Tool
+
+Domain Name | Description
+
+Domain Name Abbeymathiass[.]com | Description Cobalt Strike C2
+
+Domain Name Mail.abbeymathiass[.]com | Description Cobalt Strike C2
+
+Domain Name Store.abbeymathiass[.]com | Description Cobalt Strike C2
+
+Domain Name https://file[.]io/ScPd1KcJTtxO | Description Associated with download of the binary disabler.exe by threat actors
+
+Domain Name Mail.turnovercheck[.]com | Description Cobalt Strike C2
+
+Domain Name Store.turnovercheck[.]com | Description Cobalt Strike C2
+
+Domain Name turnovercheck[.]com | Description Cobalt Strike C2
+
+Domain Name Hourlyprofitstore[.]com | Description Cobalt Strike
+
+Domain Name IPs and Domains for downloads / C2 / exfiltration of communication Description https://protect-us.mimecast[.]com/s/A2PyC31xN5IpzR0XUvzaAj?domain=5.181.157.8
+
+https://protect-us.mimecast[.]com/s/CcsrC4xyO7fBK73ztjNfPl?domain=5.181.234.58
+
+https://protect-us.mimecast[.]com/s/NwueC5yzP5IZLW4MulfSrc?domain=137.220.61.94
+
+https://protect-us.mimecast[.]com/s/T3InC2kwM5hpzEOVU9S5zn?domain=147.135.36.162
+
+https://protect-us.mimecast[.]com/s/teBrC1wvL8iMNE56tXga0n?domain=147.135.11.223
+
+Domain Name IPs and Domains for downloads / C2 / exfiltration of communication | Description https://protect-us.mimecast[.]com/s/A2PyC31xN5IpzR0XUvzaAj?domain=5.181.157.8 https://protect-us.mimecast[.]com/s/CcsrC4xyO7fBK73ztjNfPl?domain=5.181.234.58 https://protect-us.mimecast[.]com/s/NwueC5yzP5IZLW4MulfSrc?domain=137.220.61.94 https://protect-us.mimecast[.]com/s/T3InC2kwM5hpzEOVU9S5zn?domain=147.135.36.162 https://protect-us.mimecast[.]com/s/teBrC1wvL8iMNE56tXga0n?domain=147.135.11.223
+
+File Name | Hash Value | Description
+
+File Name readme.BlackSuit.txt | Hash Value 1743494f803bbcbd11150a4a8b7a2c5faba1223da607f67d24b18ca2d95d5ba3 | Description Ransomware note
+
+### Ransom Note (New August 7, 2024)
+
+Figure 1 shows the observed BlackSuit ransom notes delivered to victims.
+
+Figure 1. BlackSuit Ransom Note Your safety service did a really poor job of protecting your files against our professionals.
+
+Extortioner named BlackSuit has attacked your system.
+
+As a result all your essential files were encrypted and saved at a secure server for further use and publishing on the Web into the public realm.
+
+Now we have all your files like: financial reports, intellectual property, accounting, law actions and complaints, personal files and so on and so forth.
+
+We are able to solve this problem in one touch.
+
+We (BlackSuit) are ready to give you an opportunity to get all the things back if you agree to make a deal with us.
+
+You have a chance to get rid of all possible financial, legal, insurance and many others risks and problems for a quite small compensation.
+
+You can have a safety review of your systems.
+
+All your files will be decrypted, your data will be reset, your systems will stay in safe.
+
+Contact us through TOR browser using the link:
+
+Your safety service did a really poor job of protecting your files against our professionals. Extortioner named BlackSuit has attacked your system. As a result all your essential files were encrypted and saved at a secure server for further use and publishing on the Web into the public realm. Now we have all your files like: financial reports, intellectual property, accounting, law actions and complaints, personal files and so on and so forth. We are able to solve this problem in one touch. We (BlackSuit) are ready to give you an opportunity to get all the things back if you agree to make a deal with us. You have a chance to get rid of all possible financial, legal, insurance and many others risks and problems for a quite small compensation. You can have a safety review of your systems. All your files will be decrypted, your data will be reset, your systems will stay in safe. Contact us through TOR browser using the link:
+
+## MITRE ATT&CK Tactics and Techniques
+
+See Table 18 through Table 23 for all referenced threat actor tactics and techniques in this advisory, as well as corresponding detection and/or mitigation recommendations. For additional mitigations, see the Mitigations section.
+
+Technique Title | ID | Use
+
+Technique Title Acquire Access | ID T1650(link is external) | Use BlackSuit actors may leverage brokers in support of gaining initial access.
+
+Technique Title | ID | Use
+
+Technique Title Remote Services: Remote Desktop Protocol | ID T1021.001(link is external) | Use BlacSuit actors use RDP compromise as secondary initial access vector.
+
+Technique Title External Remote Services | ID T1133(link is external) | Use BlackSuit actors gain initial access through a variety of RMM software.
+
+Technique Title Exploit Public Facing Application | ID T1190(link is external) | Use BlackSuit actors gain initial access through public-facing applications.
+
+Technique Title Phishing | ID T1566(link is external) | Use BlackSuit actors most commonly gain initial access to victim networks via phishing.
+
+Technique Title Phishing: Spear phishing Attachment | ID T1566.001(link is external) | Use BlackSuit actors used malicious PDF document attachments in phishing campaigns.
+
+Technique Title Phishing: Spear phishing Link | ID T1566.002(link is external) | Use The actors gain initial access using malvertising links via emails and public-facing sites.
+
+Technique Title | ID | Use
+
+Technique Title (New August 7, 2024) Valid Accounts | ID T1078(link is external) | Use BlackSuit actors used a legitimate admin account to gain access privileges to the domain controller.
+
+Technique Title Valid Accounts: Domain Accounts | ID T1078.002(link is external) | Use BlackSuit actors used encrypted files to create new admin user accounts.
+
+Technique Title | ID | Use
+
+Technique Title Remote Services: Remote Desktop Protocol | ID T1021.001(link is external) | Use BlackSuit actors used valid accounts to move laterally through the domain controller using RDP.
+
+Technique Title Indicator Removal: Clear Windows Event Logs | ID T1070.001(link is external) | Use BlackSuit actors deleted shadow files and system and security logs after exfiltration.
+
+Technique Title Automated Collection | ID T1119(link is external) | Use BlackSuit actors used registry keys to auto-extract and collect files.
+
+Technique Title Domain Policy Modification: Group Policy Modification | ID T1484.001(link is external) | Use BlackSuit actors modified Group Policy Objects to subvert antivirus protocols.
+
+Technique Title Impair Defenses: Disable or Modify Tools | ID T1562.001(link is external) | Use BlackSuit actors deactivated antivirus protocols.
+
+Technique Title | ID | Use
+
+Technique Title Ingress Tool Transfer | ID T1105(link is external) | Use BlackSuit actors used C2 infrastructure to download multiple tools.
+
+Technique Title Protocol Tunneling | ID T1572(link is external) | Use BlackSuit actors used an encrypted SSH tunnel to communicate within C2 infrastructure.
+
+Technique Title | ID | Use
+
+Technique Title Data Encrypted for Impact | ID T1486(link is external) | Use BlackSuit actors encrypted data to determine which files were being used or blocked by other applications.
+
+## Detection Methods
+
+(New August 7, 2024) Please reference YARA rule below to aid in detecting BlackSuit activity. Note: The YARA rule is derived from FBI investigations and is not guaranteed to detect confirmed malicious activity.

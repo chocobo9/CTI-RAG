@@ -1,0 +1,45 @@
+### Archived Content
+
+In an effort to keep CISA.gov current, the archive contains outdated information that may not reflect current policy or programs.
+
+Cybersecurity Advisory
+
+# ATT&CK Table for Sophisticated Spearphishing Campaign CSA
+
+Last Revised
+
+May 28, 2021
+
+Alert Code
+
+AA21-0000A
+
+### Summary
+
+See Technical Details section
+
+### Technical Details
+
+Table 1 provides a summary of the MITRE ATT&CK techniques observed.
+
+Table 1: MITRE ATT&CK techniques observed
+
+Technique Title | Technique ID
+
+Technique Title Process Injection: Dynamic-link Library Injection | Technique ID T1055.001(link is external)
+
+Technique Title Ingress Tool Transfer | Technique ID T1105(link is external)
+
+Technique Title User Execution: Malicious Link | Technique ID T1204.001(link is external)
+
+Technique Title Phishing: Spearphishing Link | Technique ID T1566.002(link is external)
+
+### Revisions
+
+May 28, 2021
+
+This product is provided subject to this Notification and this Privacy & Use policy.
+
+## Please share your thoughts
+
+We recently updated our anonymous product survey; we welcome your feedback.

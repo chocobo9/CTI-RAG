@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" prefix="og: https://ogp.me/ns#">
+  <head>
+    <meta charset="utf-8" />
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-19138737-27"></script>
+<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments)};gtag("js", new Date());gtag("set", "developer_id.dMDhkMT", true);gtag("config", "UA-19138737-27", {"groups":"default","anonymize_ip":true,"page_placeholder":"PLACEHOLDER_page_path","allow_ad_personalization_signals":false});gtag("config", "G-LL5Q69D404", {"groups":"default","page_placeholder":"PLACEHOLDER_page_location","allow_ad_personalization_signals":false});</script>
+<link rel="shortlink" href="https://ofac.treasury.gov/" />
+<link rel="canonical" href="https://ofac.treasury.gov/" />
+<meta property="og:site_name" content="Office of Foreign Assets Control | U.S. Department of the Treasury" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ofac.treasury.gov/home" />
+<meta property="og:title" content="Home" />
+<meta property="og:description" content="Office of Foreign Assets Control" />
+<meta property="og:updated_time" content="2023-03-23" />
+<meta property="og:image:alt" content="U.S. Department of the Treasury" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Home" />
+<meta name="twitter:description" content="Mission The Office of Foreign Assets Control (&quot;OFAC&quot;) of the US Department of the Treasury administers and enforces economic and trade sanctions based on US foreign policy and national security goals against targeted foreign countries and regimes, terrorists, international narcotics traffickers, those engaged in activities related to the proliferation of weapons of mass destruction, and other threats to the national security, foreign policy or economy of the United States." />
+<meta name="twitter:site" content="@USTreasury" />
+<meta name="twitter:image:alt" content="U.S. Department of the Treasury" />
+<meta name="Generator" content="Drupal 10 (https://www.drupal.org)" />
+<meta name="MobileOptimized" content="width" />
+<meta name="HandheldFriendly" content="true" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/themes/custom/ofac/favicon.ico" type="image/vnd.microsoft.icon" />
+<script>window.a2a_config=window.a2a_config||{};a2a_config.callbacks=[];a2a_config.overlays=[];a2a_config.templates={};</script>
+
+    <title>Home | Office of Foreign Assets Control</title>
+    <link rel="stylesheet" media="all" href="/sites/default/files/css/css_b91I772NVuV9p44TTVge9TrqA_18cvJuv6OnN9Usvz8.css?delta=0&amp;language=en&amp;theme=ofac&amp;include=eJxFjG0KAyEMRC8UNkeSrMkuFjUliS329LVf9M8wwxseMYdSn0jfsh2mPYDcJVLpF8mhhtl9Y2ma9CZmhcUh1_WZ2MSdzv_uygJZTVazRrU8BCpNHZH2USqLYdw1a02-1EX7j3Lx_LJP1C6Lgx6U8ay6UwWfHtJwJxcYfmdHtnFd4DPe-QTv_lAX" />
+<link rel="stylesheet" media="all" href="/sites/default/files/css/css_FZ8S8Bgs4oQSfqMuQ6XLfKkK4yRhKSc5DUURXaFE7RU.css?delta=1&amp;language=en&amp;theme=ofac&amp;include=eJxFjG0KAyEMRC8UNkeSrMkuFjUliS329LVf9M8wwxseMYdSn0jfsh2mPYDcJVLpF8mhhtl9Y2ma9CZmhcUh1_WZ2MSdzv_uygJZTVazRrU8BCpNHZH2USqLYdw1a02-1EX7j3Lx_LJP1C6Lgx6U8ay6UwWfHtJwJxcYfmdHtnFd4DPe-QTv_lAX" />
+<link rel="stylesheet" media="all" href="/sites/default/files/css/css_BHZfstOyLYn0EnXDiiZjChCQ4ByM9nDyowU920yCFpk.css?delta=2&amp;language=en&amp;theme=ofac&amp;include=eJxFjG0KAyEMRC8UNkeSrMkuFjUliS329LVf9M8wwxseMYdSn0jfsh2mPYDcJVLpF8mhhtl9Y2ma9CZmhcUh1_WZ2MSdzv_uygJZTVazRrU8BCpNHZH2USqLYdw1a02-1EX7j3Lx_LJP1C6Lgx6U8ay6UwWfHtJwJxcYfmdHtnFd4DPe-QTv_lAX" />
+
+    <script src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=TRE&amp;yt=1" id="_fed_an_ua_tag" async></script>
+
+  
+                                <script>!function(a){var e="https://s.go-mpulse.net/boomerang/",t="addEventListener";if("False"=="True")a.BOOMR_config=a.BOOMR_config||{},a.BOOMR_config.PageParams=a.BOOMR_config.PageParams||{},a.BOOMR_config.PageParams.pci=!0,e="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="84QAW-PTX96-C63E4-6CACM-662PE",function(){function n(e){a.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!a.BOOMR||!a.BOOMR.version&&!a.BOOMR.snippetExecuted){a.BOOMR=a.BOOMR||{},a.BOOMR.snippetExecuted=!0;var i,_,o,r=document.createElement("iframe");if(a[t])a[t]("load",n,!1);else if(a.attachEvent)a.attachEvent("onload",n);r.src="javascript:void(0)",r.title="",r.role="presentation",(r.frameElement||r).style.cssText="width:0;height:0;border:0;display:none;",o=document.getElementsByTagName("script")[0],o.parentNode.insertBefore(r,o);try{_=r.contentWindow.document}catch(O){i=document.domain,r.src="javascript:var d=document.open();d.domain='"+i+"';void(0);",_=r.contentWindow.document}_.open()._l=function(){var a=this.createElement("script");if(i)this.domain=i;a.id="boomr-if-as",a.src=e+"84QAW-PTX96-C63E4-6CACM-662PE",BOOMR_lstart=(new Date).getTime(),this.body.appendChild(a)},_.write("<bo"+'dy onload="document._l();">'),_.close()}}(),"".length>0)if(a&&"performance"in a&&a.performance&&"function"==typeof a.performance.setResourceTimingBufferSize)a.performance.setResourceTimingBufferSize();!function(){if(BOOMR=a.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var e=""=="true"?1:0,t="",n="ic2dizixzodo42stjlba-f-9168b02d5-clientnsv4-s.akamaihd.net",i="false"=="true"?2:1,_={"ak.v":"41","ak.cp":"1442937","ak.ai":parseInt("889092",10),"ak.ol":"0","ak.cr":4,"ak.ipv":4,"ak.proto":"http/1.1","ak.rid":"4513fad2","ak.r":49524,"ak.a2":e,"ak.m":"dscb","ak.n":"essl","ak.cport":51419,"ak.gh":"23.203.55.174","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.0rtt.ed":"","ak.csrc":"-","ak.acc":"bbr","ak.t":"1783843522","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==44jetafOc1AwL/vsYu63dkuq3hohFp9BVDgz9iog+obcQl83EUZ7lgInBTRPVve8JZVeEcqvJJK9ockRtJbNKm8ltETE7kngtPkjLUyKQ7EKAcziIk8ZdCU1+5mEoA+ze6uuMM1M27BYoIV/cz813dC+NUYzIhDtjBRfZMwNgK0LG9tw+9Y8E0Fuwc19200ZcEK5vk+lNuSNYguojUd1s8JmBigGjCl1igh1iMBfrbVrC/7n/P37YQczUgBAv7n8UUjrq2mBhPH88eHubCMbQbYkDx/EYscfSuYz/jkwoAU2r4CwtQ6UXTkLJ0aixQ4lf5q1H1ORYHWwNdbnTRfI/ttS3DKysCr58K25oqvq+Bb16DG3Aa4nQzBKkQjlCjWnXX/SNh4RgQuDVKk5TMAYq4rjET8+IUihSIFW1e2oVHY=","ak.pv":"35","ak.dpoabenc":"","ak.tf":i};if(""!==t)_["ak.ruds"]=t;var o={i:!1,av:function(e){var t="http.initiator";if(e&&(!e[t]||"spa_hard"===e[t]))_["ak.feo"]=void 0!==a.aFeoApplied?1:0,BOOMR.addVar(_)},rv:function(){var a=["ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.0rtt.ed","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(a)}};BOOMR.plugins.AK={akVars:_,akDNSPreFetchDomain:n,init:function(){if(!o.i){var a=BOOMR.subscribe;a("before_beacon",o.av,null,null),a("onbeacon",o.rv,null,null),o.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script><script >bazadebezolkohpepadr="326556705"</script><script type="text/javascript" src="https://ofac.treasury.gov/akam/13/1376de08"  defer></script></head>
+  <body class="path-frontpage page-node-type-landing-page">
+        <a href="#main-content" class="visually-hidden focusable skip-link">
+      Skip to main content
+    </a>
+    
+      <div class="dialog-off-canvas-main-canvas" data-off-canvas-main-canvas>
+    
+  <div class="usa-banner">
+  <div class="usa-accordion">
+    <header class="usa-banner__header">
+      <div class="usa-banner__inner">
+        <div class="grid-col-auto">
+          <img class="usa-banner__header-flag" src="/libraries/uswds/dist/img/us_flag_small.png" alt="U.S. flag">
+        </div>
+        <div class="grid-col-fill tablet:grid-col-auto">
+          <p class="usa-banner__header-text">An official website of the United States government</p>
+          <p class="usa-banner__header-action" aria-hidden="true">Here’s how you know</p>
+        </div>
+        <button class="usa-accordion__button usa-banner__button"
+          aria-expanded="false" aria-controls="gov-banner">
+          <span class="usa-banner__button-text">Here’s how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="usa-banner__content usa-accordion__content" id="gov-banner" hidden>
+      <div class="grid-row grid-gap-lg">
+        <div class="usa-banner__guidance tablet:grid-col-6">
+          <img class="usa-banner__icon usa-media-block__img" src="/libraries/uswds/dist/img/icon-dot-gov.svg" alt="Dot gov">
+          <div class="usa-media-block__body">
+            <p>
+              <strong>The .gov means it’s official.</strong>
+            </p>
+            <p>
+              Federal government websites often end in .gov or .mil. Before sharing sensitive information, make sure you’re on a federal government site.
+            </p>
+          </div>
+        </div>
+        <div class="usa-banner__guidance tablet:grid-col-6">
+          <img class="usa-banner__icon usa-media-block__img" src="/libraries/uswds/dist/img/icon-https.svg" alt="Https">
+          <div class="usa-media-block__body">
+            <p>
+              <strong>The site is secure.</strong>
+            </p>
+            <p>
+              The <strong>https://</strong> ensures that you are connecting to the official website and that any information you provide is encrypted and transmitted securely.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="usa-overlay"></div>
+
+  <header class="treas-mini-banner">
+    <div class="usa-banner__inner grid-row">
+        <div class="display-flex flex-wrap flex-align-center tablet:grid-col-6">
+            <img class="treas-mini-banner__header-icon" src="/themes/custom/gallatin/assets/img/mark_treasury.svg" alt="Treasury Seal">
+            <div class="treas-mini-banner__header-text">
+                <a class="treas-mini-banner__treas-link" href="https://home.treasury.gov">U.S. Department of the Treasury</a>
+            </div>
+        </div>
+        <div class="tablet:grid-col display-flex tablet:flex-justify-end grid-offset-1">
+            <a class="treas-mini-banner__link" href="https://home.treasury.gov/news">Read the latest Treasury news</a>
+        </div>
+    </div>
+</header>
+
+
+<header class="treas-header" role="banner">
+    <div class="treas-header__wrap">
+      <div class="region region-header">
+    <div id="block-ofac-branding" class="block block-system block-system-branding-block">
+  
+    
+   <div id="treas-logo-title">
+  <a href="/" title="Home" rel="home" class="navbar-brand d-flex align-items-center treas-header__title">
+              <span class="treas-header__name">Office of Foreign Assets Control</span>
+          </a>
+</div>
+</div>
+<div id="block-headerapartoftreasurysofficeofterrorismandfinancialintelligence" class="block block-block-content block-block-content5a604116-e182-46cc-b55c-96c90ac38dbe">
+  
+    
+      <div class="content">
+      
+            <div class="clearfix text-formatted field field--name-body field--type-text-with-summary field--label-hidden field__item"><div class="tablet:font-sans-3xs text-white desktop:padding-0 tablet:padding-top-1 padding-bottom-1 text-uppercase tablet:grid-col-7 align-right text-ls-1 treas-header__office">A Part of Treasury's Office of Terrorism and<br />
+Financial Intelligence</div>
+</div>
+      
+    </div>
+  </div>
+
+  </div>
+
+    <button class="navbar-toggler treas-burger-menu usa-menu-btn" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="sr-only">MENU</span>
+      <span class="treas-burger-menu__line"></span>
+      <span class="treas-burger-menu__line"></span>
+      <span class="treas-burger-menu__line"></span>
+    </button>
+  </div>
+  </header>
+<div class="treas-main-nav usa-nav">
+  <button class="usa-nav__close">
+    <img src="/themes/custom/gallatin/assets/img/close-white.svg" alt="close"/>
+  </button>
+  <nav class="treas-main-nav__wrap" role="navigation">
+    
+            <div class="region region-primary-menu">
+    
+  
+  
+          <ul class="usa-nav__primary treas-main-nav__list usa-accordion">
+
+      
+                      <li class="usa-nav__primary-item treas-main-nav__list-item  ">
+
+              
+                              <a href="/about-ofac" class="usa-nav__link treas-main-nav__link ">
+                  <span>About OFAC</span>
+                </a>
+              
+            </li>
+                      <li class="usa-nav__primary-item treas-main-nav__list-item  ">
+
+              
+                              <a href="/recent-actions" class="usa-nav__link treas-main-nav__link ">
+                  <span>Recent Actions</span>
+                </a>
+              
+            </li>
+                      <li class="usa-nav__primary-item treas-main-nav__list-item  ">
+
+                              <button class="usa-accordion__button usa-nav__link treas-main-nav__link" aria-expanded="false" aria-controls="megamenu-3">
+                  <span>Sanctions Lists</span>
+                </button>
+              
+                                
+  
+            <ul id="megamenu-3" class="usa-nav__submenu " hidden>
+
+                  
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-list-service" class="">
+                  <span>Sanctions List Service</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists" class="">
+                  <span> Specially Designated Nationals (SDN) List</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="https://sanctionslist.ofac.treas.gov/Home/ConsolidatedList" class="">
+                  <span>Consolidated Sanctions List (Non-SDN Lists)</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/other-ofac-sanctions-lists" class="">
+                  <span>Other OFAC Sanctions Lists</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="https://sanctionssearch.ofac.treas.gov/" class="">
+                  <span>Sanctions List Search</span>
+                </a>
+              
+            </li>
+                    
+
+        </ul>
+          
+              
+            </li>
+                      <li class="usa-nav__primary-item treas-main-nav__list-item  ">
+
+                              <button class="usa-accordion__button usa-nav__link treas-main-nav__link" aria-expanded="false" aria-controls="megamenu-4">
+                  <span>Sanctions Programs</span>
+                </button>
+              
+                                
+  
+            <ul id="megamenu-4" class="usa-nav__submenu " hidden>
+
+                  
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information/russia-related-sanctions" class="">
+                  <span>Russia-related Sanctions</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information/iran-sanctions" class="">
+                  <span>Iran Sanctions</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information/north-korea-sanctions" class="">
+                  <span>North Korea Sanctions</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information/cuba-sanctions" class="">
+                  <span>Cuba Sanctions</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information/counter-narcotics-trafficking-sanctions" class="">
+                  <span>Counter Narcotics Sanctions</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information/sanctions-related-to-significant-malicious-cyber-enabled-activities" class="">
+                  <span>Cyber-related Sanctions</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information/venezuela-related-sanctions" class="">
+                  <span>Venezuela-related Sanctions</span>
+                </a>
+              
+            </li>
+                      <li class=" usa-nav__submenu-item treas-main-nav__submenu-item ">
+
+              
+                              <a href="/sanctions-programs-and-country-information" class="">
+                  <span>Complete List of Sanctions Programs and Country Information</span>
+                </a>
+              
+            </li>
+                    
+
+        </ul>
+          
+              
+            </li>
+                      <li class="usa-nav__primary-item treas-main-nav__list-item  ">
+
+              
+                              <a href="/ofac-reporting-system" class="usa-nav__link treas-main-nav__link ">
+                  <span>Submit a Report</span>
+                </a>
+              
+            </li>
+                      <li class="usa-nav__primary-item treas-main-nav__list-item  ">
+
+              
+                              <a href="/contact-ofac" class="usa-nav__link treas-main-nav__link ">
+                  <span>Contact Us</span>
+                </a>
+              
+            </li>
+                                <li class="treas-main-nav__list-item treas-search-nav desktop:order-last order-first">
+              <button class="usa-accordion__button search-btn treas-main-nav__link" aria-expanded="false" aria-controls="megamenu-search">
+                <span>Search</span>
+              </button>
+            </li>
+          
+
+        </ul>
+          
+
+
+
+  </div>
+
+    
+    
+      </nav>
+</div>
+<div class="treas-search-menu grid-container" id="megamenu-search">
+      <div class="grid-row">
+      <div class="grid-col">
+        <div class="treas-search-menu__component">
+            <div class="region region-search-menu">
+    <div id="block-searchgovblock" class="block block-searchgov-drupal block-searchgov-block">
+  
+    
+      <div class="content">
+      
+        <form id="search_form" action="https://search.usa.gov/search" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓" />
+
+           <input type="hidden" name="affiliate" id="affiliate" value="ofac" />
+           <label for="query">Enter Search Term(s):</label>
+           <input type="text" name="query" id="query" autocomplete="off" placeholder="Enter keywords" class="usagov-search-autocomplete" />
+           <input type="submit" name="commit" value="Search" data-disable-with="Search" />
+        </form>
+    </div>
+  </div>
+
+  </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+<main>
+  <div class="grid-container">
+    <div class="grid-row grid-gap">
+      <div class="grid-col-12">
+          <div class="region region-highlighted">
+    <div data-drupal-messages-fallback class="hidden"></div>
+
+  </div>
+
+
+        
+      </div>
+    </div>
+  </div>
+  <div id="main-content" class="visually-hidden"></div>
+  <div class="region-content">
+    <div id="block-pagetitle" class="block block-core block-page-title-block">
+      <h1 class="uswds-page-title page-title visually-hidden focusable">Home</h1>
+    </div>
+      <div class="region region-content">
+    <div id="block-ofac-content" class="block block-system block-system-main-block">
+  
+    
+      <div class="content">
+      
+
+<article id="node-968911"  class="node node--type-landing-page node--view-mode-full">
+  	
+  
+  	  <div class="layout layout--twocol-section layout--twocol-section--67-33 grid-container layout-gutter margin-top-5">
+
+          <div  class="layout__region layout__region--first">
+        <div class="block block-entity-block block-entity-blocknode">
+  
+    
+      <div class="content">
+      
+
+<article id="node-970776"  class="node node--type-page node--view-mode-default">
+  	
+  
+  	  <div class="layout layout--onecol">
+    <div  class="layout__region layout__region--content">
+      <div class="block block-layout-builder block-extra-field-blocknodepagecontent-moderation-control">
+  
+    
+      <div class="content">
+      
+    </div>
+  </div>
+<div class="block block-layout-builder block-extra-field-blocknodepagelinks">
+  
+    
+      <div class="content">
+      
+    </div>
+  </div>
+<div class="block block-layout-builder block-field-blocknodepagefield-page-body">
+  
+    
+      <div class="content">
+      
+            <div class="clearfix text-formatted usa-prose field field--name-field-page-body field--type-text-long field--label-hidden field__item"><style>
+.usa-tooltip {
+ display: block !Important;
+}
+</style><div class="grid-row usa-prose"><div class="grid-col"><h2 class="font-serif-xl text-normal">Mission</h2><p>The Office of Foreign Assets Control ("OFAC") of the US Department of the Treasury administers and enforces economic and trade sanctions based on US foreign policy and national security goals against targeted foreign countries and regimes, terrorists, international narcotics traffickers, those engaged in activities related to the proliferation of weapons of mass destruction, and other threats to the national security, foreign policy or economy of the United States.&nbsp;</p></div></div><div class="grid-row grid-gap-6 usa-prose"><div class="tablet:grid-col-6"><h2 class="font-serif-xl text-normal">Sanctions Programs and Country Information</h2><p>OFAC administers a number of different sanctions programs. The sanctions can be either comprehensive or selective, using the blocking of assets and trade restrictions to accomplish foreign policy and national security goals. Read more information about OFAC's Sanctions Programs:</p><ul class="add-list-reset"><li class="margin-bottom-1" data-list-item-id="ed91066e1535588d747c840600937b813"><a href="/sanctions-programs-and-country-information/russia-related-sanctions" data-entity-type="node" data-entity-uuid="0628be58-4247-4dd6-a450-dcd1e64b29bc" data-entity-substitution="canonical" media_library="Media Library" title="Russia-related Sanctions Programs">Russia-related Sanctions</a></li><li class="margin-bottom-1" data-list-item-id="ecd1f79fea3daf40f4b386536f70a81a1"><a href="/sanctions-programs-and-country-information/iran-sanctions" data-entity-type="node" data-entity-uuid="aa5e9834-b141-4585-a287-f695aadeac59" data-entity-substitution="canonical" media_library="Media Library" title="Iran Sanctions">Iran Sanctions</a></li><li class="margin-bottom-1" data-list-item-id="e861f2705c9d62cc0c6dd358425a4d4b7"><a href="/sanctions-programs-and-country-information/north-korea-sanctions" data-entity-type="node" data-entity-uuid="742b17ca-83d7-445c-aa3a-e2ad6e6385a7" data-entity-substitution="canonical" media_library="Media Library" title="North Korea Sanctions">North Korea Sanctions</a></li><li class="margin-bottom-1" data-list-item-id="e02b9481c57359a384c1b8e6762da3a9c"><a href="/sanctions-programs-and-country-information/cuba-sanctions" data-entity-type="node" data-entity-uuid="83a3b9bb-dd1c-4f2b-85aa-9630bcbb2964" data-entity-substitution="canonical" media_library="Media Library" title="Cuba Sanctions">Cuba Sanctions</a></li><li class="margin-bottom-1" data-list-item-id="e49a5caf1cffea90c31fdcca9f9fa1c0c"><a href="/sanctions-programs-and-country-information/counter-narcotics-trafficking-sanctions" media_library="Media Library">Counter Narcotics Sanctions</a></li><li class="margin-bottom-1" data-list-item-id="e6159a152adaa267b6b0de75cb0a6dca2"><a href="/sanctions-programs-and-country-information/sanctions-related-to-significant-malicious-cyber-enabled-activities" data-entity-type="node" data-entity-uuid="5bdae523-646f-4133-a20f-a7ef1df36e5a" data-entity-substitution="canonical" media_library="Media Library" title="Cyber-Related Sanctions">Cyber-related Sanctions</a></li><li class="margin-bottom-1" data-list-item-id="e04b8f8974602817421ffd54cf84d59b3"><a href="/sanctions-programs-and-country-information/venezuela-related-sanctions" data-entity-type="node" data-entity-uuid="8a654e3e-7bc8-4d6e-9cac-6890a89f2095" data-entity-substitution="canonical" media_library="Media Library" title="Venezuela-Related Sanctions">Venezuela-related Sanctions</a></li><li class="margin-bottom-1" data-list-item-id="e22378b313f6e28f274d99b53cb5b44b2"><a href="/sanctions-programs-and-country-information" media_library="Media Library">Complete List of Sanctions Programs and Country Information</a></li></ul></div><div class="tablet:grid-col-6"><h2 class="font-serif-xl text-normal">Notices and Guidance</h2><p>OFAC updates its website with alerts and guidance on a regular basis.</p><p><a class="usa-button margin-bottom-2 display-flex flex-align-center" href="/recent-actions"><svg class="usa-icon width-3 height-3 margin-right-1" aria-hidden="true" focusable="false" role="img"><use xlink:href="/libraries/uswds/dist/img/sprite.svg#flag" xmlns:xlink="http://www.w3.org/1999/xlink" /></svg>Recent Actions Notices</a></p><p><a class="usa-button margin-bottom-2 display-flex flex-align-center" href="/press-releases"><svg class="usa-icon width-3 height-3 margin-right-1" aria-hidden="true" focusable="false" role="img"><use xlink:href="/libraries/uswds/dist/img/sprite.svg#account_balance" xmlns:xlink="http://www.w3.org/1999/xlink" /></svg>Press Releases</a></p><p><a class="usa-button usa-tooltip margin-bottom-2 display-flex flex-align-center" href="/file-finder" data-position="top" title="Search all files on OFAC’s website by name or content quickly and efficiently."><svg class="usa-icon width-3 height-3 margin-right-1" aria-hidden="true" focusable="false" role="img"><use xlink:href="/libraries/uswds/dist/img/sprite.svg#folder_open" xmlns:xlink="http://www.w3.org/1999/xlink" /></svg>File Finder</a></p><ul class="add-list-reset margin-top-4"><li class="margin-bottom-1" data-list-item-id="e0fa7ff3872d402c42e1c256178aacd56"><a href="/selected-general-licenses-issued-ofac" data-entity-type="node" data-entity-uuid="8a7a76c4-b9e9-4603-b573-18dbe6f37f04" data-entity-substitution="canonical" media_library="Media Library" title="Selected General Licenses Issued by OFAC">General Licenses Issued by OFAC</a></li><li class="margin-bottom-1" data-list-item-id="eede5bd7a26584409e087f0fa3d9ef8bd"><a href="/civil-penalties-and-enforcement-information" data-entity-type="node" data-entity-uuid="7ac61256-66bb-47e9-bd88-2df2063b60b6" data-entity-substitution="canonical" media_library="Media Library" title="Civil Penalties and Enforcement Information">Civil Penalties and Enforcement Information</a></li><li class="margin-bottom-1" data-list-item-id="edce7238a879dd4ecac0ce580dd2dc579"><a href="/ofac-reporting-system" data-entity-type="node" data-entity-uuid="786e0258-d2f4-4cd0-a91c-e1775db99e4c" data-entity-substitution="canonical" media_library="Media Library" title="OFAC Reporting System">Report Blocked and Rejected Transactions to OFAC</a></li><li class="margin-bottom-1" data-list-item-id="e81ff1bc001e48a9f241f5c45551decff"><a href="/additional-ofac-resources/ofac-information-for-industry-groups" data-entity-type="node" data-entity-uuid="ce1cd2cc-e5eb-42ea-aa77-f9d7cb665dd7" data-entity-substitution="canonical" media_library="Media Library" title="OFAC Information for Industry Groups">Guidance for Specific Industries</a></li><li class="margin-bottom-1" data-list-item-id="e6740648b4104501a201d9ecedf5df676"><a href="/additional-ofac-resources/ofac-legal-library" data-entity-type="node" data-entity-uuid="365e53fb-a8fa-4b05-82cc-141623c71673" data-entity-substitution="canonical" media_library="Media Library" title="OFAC Legal Library">Sanctions Legal Library</a></li><li class="margin-bottom-1" data-list-item-id="e96448ed96ace0cdf42a7bbd19d825b50"><a href="/additional-ofac-resources" data-entity-type="node" data-entity-uuid="dfc05677-c559-4cf9-ada1-253a509c943a" data-entity-substitution="canonical" media_library="Media Library" title="Additional OFAC Resources">Additional OFAC-Related Resources</a></li></ul></div></div><p>&nbsp;</p></div>
+      
+    </div>
+  </div>
+
+    </div>
+  </div>
+
+</article>
+    </div>
+  </div>
+<nav role="navigation" aria-labelledby="-menu" class="block block-menu navigation menu--i-need-help-with">
+      
+    <h2 id="-menu" class="font-serif-xl text-normal">I need help with...</h2>
+  
+
+        
+              <ul class="usa-list usa-list--unstyled uswds-horizontal-list">
+              <li class="usa-button-group__item">
+        <a href="/ofac-video-series" class="usa-button usa-button--outline margin-bottom-1">OFAC Video Series</a>
+      </li>
+          <li class="usa-button-group__item">
+        <a href="/faqs/topic/1541" class="usa-button usa-button--outline margin-bottom-1">I have questions about Cuba-related travel</a>
+      </li>
+          <li class="usa-button-group__item">
+        <a href="/faqs/51" class="usa-button usa-button--outline margin-bottom-1">Release blocked or &quot;frozen&quot; funds</a>
+      </li>
+          <li class="usa-button-group__item">
+        <a href="/contact-ofac" class="usa-button usa-button--outline margin-bottom-1">How do I contact OFAC?</a>
+      </li>
+          <li class="usa-button-group__item">
+        <a href="/sanctions-programs-and-country-information/where-is-ofacs-country-list-what-countries-do-i-need-to-worry-about-in-terms-of-us-sanctions" class="usa-button usa-button--outline margin-bottom-1">Where is OFAC&#039;s country list?</a>
+      </li>
+          <li class="usa-button-group__item">
+        <a href="/faqs/74" class="usa-button usa-button--outline margin-bottom-1">Do I need an OFAC License?</a>
+      </li>
+          <li class="usa-button-group__item">
+        <a href="/disclosure" class="usa-button usa-button--outline margin-bottom-1">Instructions for Self Disclosure</a>
+      </li>
+        </ul>
+  
+
+
+  </nav>
+
+      </div>
+    
+          <div  class="layout__region layout__region--second">
+        <div class="block block-entity-block block-entity-blocknode">
+  
+    
+      <div class="content">
+      
+
+<article id="node-970781"  class="node node--type-page node--view-mode-default">
+  	
+  
+  	  <div class="layout layout--onecol">
+    <div  class="layout__region layout__region--content">
+      <div class="block block-layout-builder block-extra-field-blocknodepagecontent-moderation-control">
+  
+    
+      <div class="content">
+      
+    </div>
+  </div>
+<div class="block block-layout-builder block-extra-field-blocknodepagelinks">
+  
+    
+      <div class="content">
+      
+    </div>
+  </div>
+<div class="block block-layout-builder block-field-blocknodepagefield-page-body">
+  
+    
+      <div class="content">
+      
+            <div class="clearfix text-formatted usa-prose field field--name-field-page-body field--type-text-long field--label-hidden field__item"><style>
+.treas-accent-card--title {
+    font-size: 2.27rem;
+}
+.treas-accent-card--purple {
+    background-color: #491780
+}
+</style><div class="margin-top-4"><div class="treas-accent-card treas-accent-card--red"><div class="treas-accent-card--title">Sanctions Lists&nbsp;</div><div class="treas-accent-card--text">Lists of individuals and companies owned or controlled by, or acting for or on behalf of, targeted countries.</div><p><a class="treas-btn treas-btn--ghost treas-accent-card--action" href="/sanctions-list-service">View Lists</a>&nbsp;<br><a class="treas-btn treas-btn--ghost treas-accent-card--action" href="https://sanctionssearch.ofac.treas.gov">Sanctions List Search</a></p></div><div class="treas-accent-card treas-accent-card--primary-darker"><div class="treas-accent-card--title">Frequently Asked Questions</div><div class="treas-accent-card--text">Guidance in the form of questions and answers that highlight key issues and topics relating to economic sanctions.</div><p><a class="treas-btn treas-btn--ghost treas-accent-card--action" href="/faqs" media_library="Media Library">Browse FAQs</a></p></div><div class="treas-accent-card treas-accent-card--purple"><div class="treas-accent-card--title">Compliance Hotline</div><div class="treas-accent-card--text">Contact OFAC's Compliance Hotline for assistance complying with OFAC sanctions and navigating OFAC's resources.</div><p><a class="treas-btn treas-btn--ghost treas-accent-card--action" href="/ofac-compliance-hotline">Contact ComplianCE HOTLINE</a></p></div><div class="treas-accent-card treas-accent-card--secondary-darker"><div class="treas-accent-card--title">Apply for a Specific License</div><div class="treas-accent-card--text">A license is an authorization from OFAC to engage in a transaction that otherwise would be prohibited (e.g. release of blocked funds).</div><p><a class="treas-btn treas-btn--ghost treas-accent-card--action" href="/ofac-license-application-page" media_library="Media Library">Contact Licensing</a></p></div></div></div>
+      
+    </div>
+  </div>
+
+    </div>
+  </div>
+
+</article>
+    </div>
+  </div>
+
+      </div>
+    
+  </div>
+
+</article>
+    </div>
+  </div>
+
+  </div>
+
+  </div>
+</main>
+
+
+<footer class="usa-footer usa-footer--medium" role="contentinfo">
+  <div class="usa-footer__primary-section">
+    <div class="grid-container">
+        <div class="grid-row grid-gap">
+          <div class="mobile-lg:grid-col-12">
+              <div class="region region-footer grid-row grid-gap">
+    <div id="block-footerofficeofterrorismandfinancialintelligence" class="block block-block-content block-block-content045f44ac-2f52-44b4-bf69-9a91a4cd1755">
+  
+    
+      <div class="content">
+      
+            <div class="clearfix text-formatted field field--name-body field--type-text-with-summary field--label-hidden field__item"><div class="display-flex maxw-mobile flex-align-start margin-top-4"><img class="width-10 margin-right-2" src="/themes/custom/gallatin/logo.svg" alt="Treasury seal"><h3 class="ofac-footer-logo display-flex text-uppercase grid-col-8 margin-0">Office of Terrorism and Financial Intelligence</h3></div></div>
+      
+    </div>
+  </div>
+<nav role="navigation" aria-labelledby="block-footeradditionalresources-menu" id="block-footeradditionalresources" class="block block-menu navigation menu--footer---additional-resources mobile-lg:grid-col-6 desktop:grid-col">
+      
+    <h3 class="treas-text--h2" id="block-footeradditionalresources-menu">Additional Resources</h3>
+  
+
+        
+              <ul class="menu">
+                    <li class="menu-item">
+        <a href="https://home.treasury.gov/footer/privacy-act">Privacy Act</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/policy-issues/small-business-programs/small-and-disadvantaged-business-utilization/bureau-small-business-specialists">Small Business Contacts</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/about/budget-financial-reporting-planning-and-performance">Budget and Performance</a>
+              </li>
+                <li class="menu-item">
+        <a href="http://www.treasurydirect.gov/">TreasuryDirect.gov Securities/Bonds</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/footer/freedom-of-information-act">Freedom of Information Act (FOIA)</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/footer/no-fear-act">No FEAR Act Data</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/footer/prohibited-personnel-practices-and-whistleblower-protection">Whistleblower Protection</a>
+              </li>
+        </ul>
+  
+
+
+  </nav>
+<nav role="navigation" aria-labelledby="block-ofacfootermenu-menu" id="block-ofacfootermenu" class="block block-menu navigation menu--ofac-footer-menu mobile-lg:grid-col-6 desktop:grid-col">
+      
+    <h3 class="treas-text--h2" id="block-ofacfootermenu-menu">Helpful OFAC Links</h3>
+  
+
+        
+              <ul class="menu">
+                    <li class="menu-item">
+        <a href="https://service.govdelivery.com/accounts/USTREAS/subscriber/new?topic_id=USTREAS_89">Sign Up For OFAC E-mail Alerts</a>
+              </li>
+                <li class="menu-item">
+        <a href="/contact-ofac" data-drupal-link-system-path="node/6926">Contact OFAC</a>
+              </li>
+                <li class="menu-item">
+        <a href="/faqs/71" data-drupal-link-system-path="node/17431">Dealing with an &quot;OFAC Alert&quot;</a>
+              </li>
+                <li class="menu-item">
+        <a href="/sanctions-programs-and-country-information/where-is-ofacs-country-list-what-countries-do-i-need-to-worry-about-in-terms-of-us-sanctions" data-drupal-link-system-path="node/6756">List of Country-related Sanctions</a>
+              </li>
+                <li class="menu-item">
+        <a href="/specially-designated-nationals-list-sdn-list/filing-a-petition-for-removal-from-an-ofac-list" data-drupal-link-system-path="node/6771">Appeal an OFAC designation or other listing</a>
+              </li>
+        </ul>
+  
+
+
+  </nav>
+<nav role="navigation" aria-labelledby="block-footerothergovernmentsites-menu" id="block-footerothergovernmentsites" class="block block-menu navigation menu--footer---other-government-sites mobile-lg:grid-col-6 desktop:grid-col">
+      
+    <h3 class="treas-text--h2" id="block-footerothergovernmentsites-menu">Other Government Sites</h3>
+  
+
+        
+              <ul class="menu">
+                    <li class="menu-item">
+        <a href="https://www.usa.gov/">USA.gov</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://www.usajobs.gov">USAJOBS.gov</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://www.opm.gov">OPM.gov</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://www.mymoney.gov">MyMoney.gov</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://www.data.gov">Data.gov</a>
+              </li>
+        </ul>
+  
+
+
+  </nav>
+
+  </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+        <div class="usa-footer__secondary-section">
+      <div class="grid-container">
+        <div class="grid-row grid-gap">
+          <div class="mobile-lg:grid-col-12">
+              <div class="region region-footer-secondary">
+    <nav role="navigation" aria-labelledby="block-footer-menu" id="block-footer" class="block block-menu navigation menu--footer">
+            
+  <h2 class="visually-hidden" id="block-footer-menu">Footer</h2>
+  
+
+        
+              <ul class="menu">
+                    <li class="menu-item">
+        <a href="https://home.treasury.gov/subfooter/privacy-policy">Privacy Policy </a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/subfooter/google-privacy-policy">Google Privacy </a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/subfooter/site-policies-and-notices">Site Policies and Notices</a>
+              </li>
+                <li class="menu-item">
+        <a href="https://home.treasury.gov/utility/accessibility">Accessibility</a>
+              </li>
+        </ul>
+  
+
+
+  </nav>
+
+  </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  </div>
+
+    
+    <script type="application/json" data-drupal-selector="drupal-settings-json">{"path":{"baseUrl":"\/","pathPrefix":"","currentPath":"node\/968911","currentPathIsAdmin":false,"isFront":true,"currentLanguage":"en"},"pluralDelimiter":"\u0003","suppressDeprecationErrors":true,"google_analytics":{"account":"UA-19138737-27","trackOutbound":true,"trackMailto":true,"trackTel":true,"trackDownload":true,"trackDownloadExtensions":"7z|aac|arc|arj|asf|asx|avi|bin|csv|doc(x|m)?|dot(x|m)?|exe|flv|gif|gz|gzip|hqx|jar|jpe?g|js|mp(2|3|4|e?g)|mov(ie)?|msi|msp|pdf|phps|png|ppt(x|m)?|pot(x|m)?|pps(x|m)?|ppam|sld(x|m)?|thmx|qtm?|ra(m|r)?|sea|sit|tar|tgz|torrent|txt|wav|wma|wmv|wpd|xls(x|m|b)?|xlt(x|m)|xlam|xml|z|zip"},"user":{"uid":0,"permissionsHash":"56a9fbda291a3adcca19d203c23a90a47279e9e7f599b4c944fdf8ea2fc4857c"}}</script>
+<script src="/sites/default/files/js/js_aO6TaTR_rJpjEiIH2KNpRNXGWSRYo2kNv7AW5Jeeen0.js?scope=footer&amp;delta=0&amp;language=en&amp;theme=ofac&amp;include=eJxlikEKgDAMBD_U2ieVxbShEBIwqdLfexEPepsZBkRh0FXwwNYP00gMEcTQMv0iT2zG0ioUsmLsXr4hTe-N2M76W8VA-dW8k96y5y5n"></script>
+<script src="https://static.addtoany.com/menu/page.js" defer></script>
+<script src="/sites/default/files/js/js_IYcHJr_KJDP_wNsDKf5DKtOZVdhEGGn2H1PkeEGIjR0.js?scope=footer&amp;delta=2&amp;language=en&amp;theme=ofac&amp;include=eJxlikEKgDAMBD_U2ieVxbShEBIwqdLfexEPepsZBkRh0FXwwNYP00gMEcTQMv0iT2zG0ioUsmLsXr4hTe-N2M76W8VA-dW8k96y5y5n"></script>
+
+  <noscript><img src="https://ofac.treasury.gov/akam/13/pixel_1376de08?a=dD03NTE4MTA1N2U0ZGNlMzA2MTI5NWEyNWRlNzY3ZDY5ZmY0MzNlM2JlJmpzPW9mZg==" style="visibility: hidden; position: absolute; left: -999px; top: -999px;" /></noscript></body>
+</html>

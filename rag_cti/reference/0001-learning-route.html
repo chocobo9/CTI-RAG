@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agentic RAG 学习路线</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Learning Route</p>
+    <h1>Agentic RAG 工程学习路线</h1>
+    <p class="lead">这条路线先给你全局地图，再进入局部概念。思维导图大约有 10 个分类、86 个概念节点；课程把它们折成 8 节课。每节课先讲概念位置，再用 CTI-RAG 代码或设计文档做辅助例子。</p>
+  </header>
+
+  <section>
+    <h2>从 10 类概念到 8 节课</h2>
+    <p>思维导图不是线性书本，而是一张工程地形图。课程顺序不按文件目录走，而按“你需要先有哪张概念坐标系”来走。</p>
+    <table>
+      <thead>
+        <tr><th>思维导图分类</th><th>课程里的位置</th><th>为什么这样放</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>输入理解与路由、Runtime/Harness、LLM 调用点、横切概念</td>
+          <td>第 1-3 课</td>
+          <td>先建立控制平面：任务如何进入系统、状态如何变化、工具如何被 runtime 约束。</td>
+        </tr>
+        <tr>
+          <td>检索与知识层、上下文与记忆</td>
+          <td>第 4 课</td>
+          <td>再建立证据平面：证据从长期知识源进入本次运行的 ledger 和 context。</td>
+        </tr>
+        <tr>
+          <td>证据约束与答案可信度</td>
+          <td>第 5 课</td>
+          <td>把 citation、grounding、faithfulness、sufficiency 拆开，避免把“有引用”误认为“可信”。</td>
+        </tr>
+        <tr>
+          <td>Multi-Agent / Supervisor</td>
+          <td>第 6 课</td>
+          <td>有了 state、ledger、grounding 以后，才容易理解 branch-local ledger、worker report、Composer。</td>
+        </tr>
+        <tr>
+          <td>Evaluation / Quality、Product/Ops</td>
+          <td>第 7-8 课</td>
+          <td>最后学习怎样分层评价、观察和审计整个系统，而不是只看一次答案。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>总路线</h2>
+    <div class="flow">
+      <div>1<br>Runtime Harness</div>
+      <div>2<br>State + Observation</div>
+      <div>3<br>Tool Boundary</div>
+      <div>4<br>Evidence Ledger</div>
+      <div>5-8<br>Trust + Review</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>课程顺序</h2>
+    <table>
+      <thead>
+        <tr><th>课</th><th>主题</th><th>代码/文档入口</th><th>你要学会评价什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><a href="../lessons/0001-runtime-harness-as-control-plane.html">把 runtime harness 看成控制平面</a></td>
+          <td><code>answer()</code>, <code>RuntimeQueryUnderstanding</code>, <code>AdmissionResult</code></td>
+          <td>入口是否统一；路由是否保守；依赖与运行状态是否分离。</td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><a href="../lessons/0002-state-and-observation.html">State 与 Observation：一次运行的控制记录</a></td>
+          <td><code>RuntimeInvestigationState</code>, <code>RuntimeObservation</code></td>
+          <td>每轮执行是否可解释；状态是否足够支持 stop policy 和 trace。</td>
+        </tr>
+        <tr>
+          <td>03</td>
+          <td><a href="../lessons/0003-tool-boundary-as-trust-boundary.html">Tool Calling Boundary：把模型建议变成可审计行动</a></td>
+          <td><code>RuntimeTurnAdapter</code>, <code>_validate_runtime_tool_args()</code>, <code>agent_tools.py</code></td>
+          <td>工具名、参数、预算、deadline、重复调用、错误是否由代码约束。</td>
+        </tr>
+        <tr>
+          <td>04</td>
+          <td><a href="../lessons/0004-evidence-ledger-as-evidence-authority.html">Evidence Ledger：一次运行的证据权威</a></td>
+          <td><code>EvidenceLedger</code>, <code>retrieve_to_ledger()</code>, <code>graph_query_to_ledger()</code></td>
+          <td>模型看到的是摘要，系统保存的是完整结构化证据；哪些 ID 真正可引用。</td>
+        </tr>
+        <tr>
+          <td>05</td>
+          <td><a href="../lessons/0005-citation-grounding-faithfulness.html">Citation / Grounding / Faithfulness：把“有引用”拆成多个质量问题</a></td>
+          <td><code>assemble_citations()</code>, <code>build_agentic_answer()</code>, <code>SufficiencyVerdict</code></td>
+          <td>引用存在、claim 被支持、答案忠实、证据充分是不同问题。</td>
+        </tr>
+        <tr>
+          <td>06</td>
+          <td><a href="../lessons/0006-supervisor-as-coordination-layer.html">Supervisor：Admission 之后的协调层</a></td>
+          <td><code>run_supervised_answer()</code>, <code>merge_branch_ledgers()</code>, <code>Composer</code></td>
+          <td>supervisor 是否只协调；worker 是否只 gather；Composer 是否 no-tool synthesis。</td>
+        </tr>
+        <tr>
+          <td>07</td>
+          <td><a href="../lessons/0007-eval-harness-measures-layers.html">Eval Harness：先说明你在测哪一层</a></td>
+          <td><code>retrieval_metrics.py</code>, <code>ragas_eval.py</code>, eval scripts</td>
+          <td>每个指标测的是检索、收集证据、答案、faithfulness、citation、成本中的哪一层。</td>
+        </tr>
+        <tr>
+          <td>08</td>
+          <td><a href="../lessons/0008-architecture-review-from-contract-to-evidence.html">Architecture Review：从设计合同读到证据</a></td>
+          <td>ADR + runtime contract + tests + eval outputs</td>
+          <td>把设计意图、代码事实、测试证据、eval 证据和残余风险分开说清楚。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>配套速查</h2>
+    <div class="grid">
+      <article class="card">
+        <h3><a href="./0002-core-terms.html">核心术语表</a></h3>
+        <p>按控制平面、状态与工具、证据与可信度、Supervisor/Eval 分组复习术语。</p>
+      </article>
+      <article class="card">
+        <h3><a href="./0003-state-observation-boundaries.html">State / Observation 边界速查</a></h3>
+        <p>第二课的重点边界：state、observation、event、ledger、context 不要混。</p>
+      </article>
+      <article class="card">
+        <h3><a href="./0004-lesson-verification-gate.html">Lesson Quality Gate</a></h3>
+        <p>每节课交付前使用的 TDD-style 行为门和 grill-with-docs 教学质量门。</p>
+      </article>
+      <article class="card">
+        <h3><a href="../GLOSSARY.md">Markdown Glossary</a></h3>
+        <p>更完整、便于维护的工作术语表。</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>读代码顺序</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>先读设计边界</h3>
+        <p><code>docs/adr/0001-runtime-harness-orchestration.md</code> 定义 production runtime 的边界。先读它，再读代码。</p>
+      </article>
+      <article class="card">
+        <h3>再读入口代码</h3>
+        <p><code>src/rag_cti/__init__.py</code> 的 <code>answer()</code> 展示 runtime harness 如何选择 single-agent 或 supervisor。</p>
+      </article>
+      <article class="card">
+        <h3>再读运行时对象</h3>
+        <p><code>runtime_harness.py</code> 里的 query understanding、state、observation、tool validation 是第一阶段主菜。</p>
+      </article>
+      <article class="card">
+        <h3>最后读证据和质量</h3>
+        <p><code>evidence_ledger.py</code>、<code>agentic_nodes.py</code>、<code>evaluation/</code> 负责证明答案从哪里来，以及质量如何被测。</p>
+      </article>
+    </div>
+  </section>
+</main>
+</body>
+</html>

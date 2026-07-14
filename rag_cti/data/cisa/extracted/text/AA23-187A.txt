@@ -1,0 +1,405 @@
+Cybersecurity Advisory
+
+# Increased Truebot Activity Infects U.S. and Canada Based Networks
+
+Release Date
+
+July 06, 2023
+
+Alert Code
+
+AA23-187A
+
+Related topics:
+
+Malware, Phishing, and Ransomware , Cyber Threats and Response
+
+### SUMMARY
+
+The Cybersecurity and Infrastructure Security Agency (CISA), the Federal Bureau of Investigation (FBI), the Multi-State Information Sharing and Analysis Center (MS-ISAC), and the Canadian Centre for Cyber Security (CCCS) are releasing this joint Cybersecurity Advisory (CSA) in response to cyber threat actors leveraging newly identified Truebot malware variants against organizations in the United States and Canada. As recently as May 31, 2023, the authoring organizations have observed an increase in cyber threat actors using new malware variants of Truebot (also known as Silence.Downloader(link is external)). Truebot is a botnet that has been used by malicious cyber groups like CL0P Ransomware Gang to collect and exfiltrate information from its target victims.
+
+Previous Truebot malware variants were primarily delivered by cyber threat actors via malicious phishing email attachments; however, newer versions allow cyber threat actors to also gain initial access through exploiting CVE-2022-31199—(a remote code execution vulnerability in the Netwrix Auditor application), enabling deployment of the malware at scale within the compromised environment. Based on confirmation from open-source reporting and analytical findings of Truebot variants, the authoring organizations assess cyber threat actors are leveraging both phishing campaigns with malicious redirect hyperlinks and CVE-2022-31199 to deliver new Truebot malware variants.
+
+The authoring organizations recommend hunting for the malicious activity using the guidance outlined in this CSA, as well as applying vendor patches to Netwrix Auditor (version 10.5—see Mitigations section below).[1(link is external)] Any organization identifying indicators of compromise (IOCs) within their environment should urgently apply the incident responses and mitigation measures detailed in this CSA and report the intrusion to CISA or the FBI.
+
+Download the PDF version of this report:
+
+AA23-187A Increased Truebot Activity Infects U.S. and Canada Based Networks (PDF, 891.26 KB )
+
+Read the associated Malware Analysis Report MAR-10445155-1.v1 Truebot Activity Infects U.S. and Canada Based Networks or download the PDF version below:
+
+MAR-10445155-1.v1 Truebot Activity Infects U.S. and Canada Based Networks (PDF, 315.39 KB )
+
+For a downloadable copy of IOCs in .xml and .json format, see:
+
+AA23-187A STIX XML (XML, 204.54 KB )
+
+AA23-187A STIX JSON (JSON, 140.24 KB )
+
+### TECHNICAL DETAILS
+
+Note: This advisory uses the MITRE ATT&CK® for Enterprise(link is external) framework, version 13. See the MITRE ATT&CK Tactics and Techniques section below for cyber threat actors’ activity mapped to MITRE ATT&CK tactics and techniques.
+
+#### Initial Access and Execution
+
+In recent months, open source reporting has detailed an increase in Truebot malware infections, particularly cyber threat actors using new tactics, techniques, and procedures (TTPs), and delivery methods.[2(link is external)] Based on the nature of observed Truebot operations, the primary objective of a Truebot infection is to exfiltrate sensitive data from the compromised host(s) for financial gain [TA0010(link is external)].
+
+Phishing: Cyber threat actors have historically used malicious phishing emails as the primary delivery method of Truebot malware, which tricks recipients into clicking a hyperlink to execute malware. Cyber threat actors have further been observed concealing email attachments (executables) as software update notifications [T1189(link is external)] that appear to be legitimate [T1204.002(link is external)], [T1566.002(link is external)]. Following interaction with the executable, users will be redirected to a malicious web domain where script files are then executed. Note: Truebot malware can be hidden within various, legitimate file formats that are used for malicious purposes [T1036.008(link is external)].[3(link is external)]
+
+Exploitation of CVE-2022-31199: Though phishing remains a prominent delivery method, cyber threat actors have shifted tactics, exploiting, in observable manner, a remote code execution vulnerability (CVE-2022-31199) in Netwrix Auditor [T1190(link is external)]—software used for on-premises and cloud-based IT system auditing. Through exploitation of this CVE, cyber threat actors gain initial access, as well as the ability to move laterally within the compromised network [T1210(link is external)].
+
+Figure 1: CVE-2022-31199 Delivery Method for Truebot Following the successful download of the malicous file, Truebot renames itself and then loads FlawedGrace(link is external) onto the host. Please see the FlawedGrace section below for more information on how this remote access tool (RAT) is used in Truebot operations.
+
+After deployment by Truebot, FlawedGrace is able to modify registry [T1112(link is external)] and print spooler(link is external) programs [T1547.012(link is external)] that control the order that documents are loaded to a print queue. FlawedGrace manipulates these features to both escalate privilege and establish persistence.
+
+During FlawedGrace’s execution phase, the RAT stores encrypted payloads [T1027.009(link is external)] within the registry. The tool can create scheduled tasks and inject payloads into msiexec[.]exe and svchost[.]exe, which are command processes that enable FlawedGrace to establish a command and control (C2) connection to 92.118.36[.]199, for example, as well as load dynamic link libraries (DLLs) [T1055.001(link is external)] to accomplish privilege escalation.
+
+Several hours post initial access, Truebot has been observed injecting Cobalt Strike(link is external) beacons into memory [T1055(link is external)] in a dormant mode for the first few hours prior to initiating additional operations. Please see the Cobalt Strike section below for more information on how this remote access tool (RAT) is used in Truebot operations.
+
+#### Discovery and Defense Evasion
+
+During the first stage of Truebot’s execution process, it checks the current version of the operating system (OS) with RtlGetVersion and processor architecture using GetNativeSystemInfo [T1082(link is external)].[4] Note: This variant of Truebot malware is designed with over one gigabyte (GB) of junk code which functions to hinder detection and analysis efforts [T1027.001(link is external)].
+
+Following the initial checks for system information, Truebot has the capability to enumerate all running processes [T1057(link is external)], collect sensitive local host data [T1005(link is external)], and send this data to an encoded data string described below for second-stage execution. Based on IOCs in table 1, Truebot also has the ability to discover software security protocols and system time metrics, which aids in defense evasion, as well as enables synchronization with the compromised system’s internal clock to facilitate scheduling tasks [T1518.001(link is external)][T1124(link is external)].
+
+Next, it uses a .JSONIP extension, (e.g., IgtyXEQuCEvAM.JSONIP), to create a thirteen character globally unique identifier (GUID)—a 128-bit text string that Truebot uses to label and organize the data it collects [T1036(link is external)].
+
+After creating the GUID, Truebot compiles and enumerates running process data into either a base64 or unique hexadecimal encoded string [T1027.001(link is external)]. Truebot’s main goal is identifying the presence of security debugger tools. However, the presence of identified debugger tools does not change Truebot’s execution process—the data is compiled into a base64 encoded string for tracking and defense evasion purposes [T1082(link is external)][T1622(link is external)].
+
+#### Data Collection and Exfiltration
+
+Following Truebot’s enumeration of running processes and tools, the affected system’s computer and domain name [T1082(link is external)][T1016(link is external)], along with the newly generated GUID, are sent to a hard-coded URL in a POST request (as observed in the user-agent string). Note: A user-agent string is a customized HTTP request that includes specific device information required for interaction with web content. In this instance, cyber threat actors can redirect victims to malicious domains and further establish a C2 connection.
+
+The POST request functions as means for establishing a C2 connection for bi-lateral communication. With this established connection, Truebot uses a second obfuscated domain to receive additional payloads [T1105(link is external)], self-replicate across the environment [T1570(link is external)], and/or delete files used in its operations [T1070.004(link is external)]. Truebot malware has the capability to download additional malicious modules [T1105(link is external)], load shell code [T1620(link is external)], and deploy various tools to stealthily navigate an infected network.
+
+#### Associated Delivery Vectors and Tools
+
+Truebot has been observed in association with the following delivery vectors and tools:
+
+##### Raspberry Robin (Malware)
+
+Raspberry Robin is a wormable malware with links to other malware families and various infection methods, including installation via USB drive [T1091(link is external)].[5(link is external)] Raspberry Robin has evolved into one of the largest malware distribution platforms and has been observed deploying Truebot, as well as other post-compromise payloads such as IcedID and Bumblebee malware.[6(link is external)] With the recent shift in Truebot delivery methods from malicious emails to the exploitation of CVE-2022-31199, a large number of Raspberry Robin infections have leveraged this exploitable CVE.[2(link is external)]
+
+##### Flawed Grace(link is external) (Malware)
+
+FlawedGrace is a remote access tool (RAT) that can receive incoming commands [T1059(link is external)] from a C2 server sent over a custom binary protocol [T1095(link is external)] using port 443 to deploy additional tools [T1105(link is external)].[7(link is external)] Truebot malware has been observed leveraging (and dropping) FlawedGrace via phishing campaigns as an additional payload [T1566.002(link is external)].[8(link is external)] Note: FlawedGrace is typically deployed minutes after Truebot malware is executed.
+
+##### Cobalt Strike(link is external) (Tool)
+
+Cobalt Strike is a popular remote access tool (RAT) that cyber threat actors have leveraged—in an observable manner—for a variety of post-exploitation means. Typically a few hours after Truebot’s execution phase, cyber threat actors have been observed deploying additional payloads containing Cobalt Strike beacons for persistence and data exfiltration purposes [T1059(link is external)].[2(link is external)] Cyber threat actors use Cobalt Strike to move laterally via remote service session hijacking [T1563.001(link is external)][T1563.002(link is external)], collecting valid credentials through LSASS memory credential dumping, or creating local admin accounts to achieve pass the hash alternate authentication [T1003.001(link is external)][T1550.002(link is external)].
+
+##### Teleport (Tool)
+
+Cyber threat actors have been observed using a custom data exfiltration tool, which Talos has named “Teleport.”[2(link is external)] Teleport is known to evade detection during data exfiltration by using an encryption key hardcoded in the binary and a custom communication protocol [T1095(link is external)] that encrypts data using advanced encryption standard (AES) and a hardcoded key [T1048(link is external)][T1573.002(link is external)]. Furthermore, to maintain its stealth, Teleport limits the data it collects and syncs with outbound organizational data/network traffic [T1029(link is external)][T1030(link is external)].
+
+#### Truebot Malware Indicators of Compromise (IOCs)
+
+Truebot IOCs from May 31, 2023, contain IOCs from cyber threat actors conducting Truebot malspam campaigns. Information is derived from a trusted third party, they observed cyber threat actors from 193.3.19[.]173 (Russia) using a compromised local account to conduct phishing campaigns on May 23, 2023 and spread malware through: https[:]//snowboardspecs[.]com/nae9v, which then promptly redirects the user to: https://www.meditimespharma[.]com/gfghthq/, which a trusted third party has linked to other trending Truebot activity.
+
+After redirecting to https://www.meditimespharma[.]com/gfghthq/, trusted third parties have observed, the cyber threat actors using Truebot to pivot to https://corporacionhardsoft[.]com/images/2/Document_16654.exe, which is a domain associated with snowboardspecs[.]com. This malicious domain has been linked to UNC4509, a threat cluster that has been known to use traffic distribution systems (TDS) to redirect users to either a benign or malicious website to facilitate their malicious phishing campaigns in May 2023.
+
+According to trusted third parties, the MD5 Hash: 6164e9d297d29aa8682971259da06848 is downloaded from https://corporacionhardsoft.com/images/2/Document_16654[.]exe, and has been flagged by numerous security vendors, as well as is linked to UNC4509 Truebot campaigns. Note: These IOCs are associated with Truebot campaigns used by Graceful Spider to deliver FlawedGrace and LummaStealer payloads in May of 2023.
+
+After Truebot is downloaded, the malware copies itself to C:\Intel\RuntimeBroker.exe and—based on trusted third party analysis—links to https://essadonio.com/538332[.]php (which is linked to 45.182.189[.]71 (Panama) and is associated with other trending Truebot malware campaigns from May 2023).
+
+Please reference table 1 for IOCs described in the paragraph above.
+
+Table 1: Truebot IOCs from May of 2023 |  | 
+
+Table 1: Truebot IOCs from May of 2023 Indicator Type | Indicator | Source
+
+Table 1: Truebot IOCs from May of 2023 Registrant | GKG[.]NET Domain Proxy Service Administrator | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 Compromised Account Created: | 2022-04-10 | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 Malicious account created | 1999-11-09 | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 IP | 193.3.19[.]173 (Russia) | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 URL | https://snowboardspecs[.]com/nae9v | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 Domain | https://corporacionhardsoft[.]com/images/2/Document_16654.exe | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 File | Document_16654[.]exe | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 MD5 Hash | 6164e9d297d29aa8682971259da06848 | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 File | Document_may_24_16654[.]exe | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 File | C:\Intel\RuntimeBroker[.]exe | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 URL | https://essadonio.com/538332[.]php | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 IP | 45.182.189[.]71 (Panama) | Trusted Third Party
+
+Table 1: Truebot IOCs from May of 2023 Account Created | 2023-05-18 | Trusted Third Party
+
+Table 2: Truebot malware IOCs from May of 2023 |  | 
+
+Table 2: Truebot malware IOCs from May of 2023 Indicator Type | Indicator | Source
+
+Table 2: Truebot malware IOCs from May of 2023 File Name | Secretsdump[.]py | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 Domain | Imsagentes[.]pe | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 URL | https://imsagentes[.]pe/dgrjfj/ | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 URL | https://imsagentes[.]pe/dgrjfj | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 URL | https://hrcbishtek[.]com/{5 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 URL | https://ecorfan.org/base/sj/document_may_24_16654[.]exe | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 Domain | Hrcbishtek[.]com | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 MD5 Hash | F33734DFBBFF29F68BCDE052E523C287 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 MD5 Hash | F176BA63B4D68E576B5BA345BEC2C7B7 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 MD5 Hash | F14F2862EE2DF5D0F63A88B60C8EEE56 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 Domain | Essadonio[.]com | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 Domain | Ecorfan[.]org | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 SHA256 Hash | C92C158D7C37FEA795114FA6491FE5F145AD2F8C08776B18AE79DB811E8E36A3 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 File Name | Atexec[.]py | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 MD5 Hash | A0E9F5D64349FB13191BC781F81F42E1 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 IPv4 | 92.118.36[.]199 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 IPv4 | 81.19.135[.]30 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 MD5 Hash | 72A589DA586844D7F0818CE684948EEA | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 SHA256 Hash | 717BEEDCD2431785A0F59D194E47970E9544FBF398D462A305F6AD9A1B1100CB | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 IPv4 | 5.188.86[.]18 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 IPv4 | 5.188.206[.]78 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 IPv4 | 45.182.189[.]71 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 IPv4 | 139.60.160[.]166 | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 2: Truebot malware IOCs from May of 2023 SHA256 Hash | 121A1F64FFF22C4BFCEF3F11A23956ED403CDEB9BDB803F9C42763087BD6D94E | https://thedfirreport.com/2023/06/12/a-truly-graceful-wipe-out/
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) |  | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) Malicious Domain | Associated IP(s) | Beacon URL
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) nitutdra[.]com | 46.161.40[.]128 | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) romidonionhhgtt[.]com | 46.161.40.128 | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) midnigthwaall[.]com | 46.161.40[.]128 | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) dragonetzone[.]com | 46.161.40[.]128 | hxxps://dragonetzone[.]com/gate_info[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) rprotecruuio[.]com | 45.182.189[.]71 | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) essadonio[.]com | 45.182.189[.]71 | hxxps://nomoresense[.]com/checkinfo[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) nomoresense[.]com | 45.182.189[.]91 | hxxps://nomoresense[.]com/checkinfo[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) ronoliffuion[.]com | 45.182.189[.]120 | hxxps://ronoliffuion[.]com/dns[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) bluespiredice[.]com | 45.182.189[.]119 | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) dremmfyttrred[.]com | 45.182.189[.]103 | hxxps://dremmfyttrred[.]com/dns[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) ms-online-store[.]com | 45.227.253[.]102 | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) ber6vjyb[.]com | 92.118.36[.]252 | hxxps://ber6vjyb[.]com/dns[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) jirostrogud[.]com | 88.214.27[.]101 | hxxps://ber6vjyb[.]com/dns[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) fuanshizmo[.]com | 45.182.189[.]229 | 
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) qweastradoc[.]com | 92.118.36[.]213 | hxxp://nefosferta[.]com/gate[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) qweastradoc[.]com | 92.118.36[.]213 | hxxp://nefosferta[.]com/gate[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) qweastradoc[.]com | 92.118.36[.]213 | hxxp://nefosferta[.]com/gate[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) hiperfdhaus[.]com | 88.214.27[.]100 | hxxp://nefosferta[.]com/gate[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) guerdofest[.]com | 45.182.189[.]228 | hxxp://qweastradoc[.]com/gate[.]php
+
+Table 3: Truebot IOCs from May 2023 (Malicious Domains, and Associated IP addresses and URLs) nefosferta[.]com | 179.60.150[.]139 | hxxp://nefosferta[.]com/gate[.]php
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) Malicious Domain | MD5 | SHA1 | SHA256
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nitutdra[.]com |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) romidonionhhgtt[.]com |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) midnigthwaall[.]com |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) dragonetzone[.]com | 64b27d2a6a55768506a5658a31c045de | c69f080180430ebf15f984be14fb4c76471cd476 | e0178ab0893a4f25c68ded11e74ad90403443e413413501d138e0b08a910471e
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) rprotecruuio[.]com |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) essadonio[.]com | 9a3bad7d8516216695887acc9668cda1 | a89c097138e5aab1f35b9a03900600057d907690 | 4862618fcf15ba4ad15df35a8dcb0bdb79647b455fea6c6937c7d050815494b0
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) essadonio[.]com | 6164e9d297d29aa8682971259da06848 | 96b95edc1a917912a3181d5105fd5bfad1344de0 | 717beedcd2431785a0f59d194e47970e9544fbf398d462a305f6ad9a1b1100cb
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nomoresense[.]com | 8f924f3cbe5d8fe3ecb7293478901f1a | 516051b4cab1be74d32a6c446eabac7fc354904f | 6b646641c823414c2ee30ae8b91be3421e4f13fa98e2d99272956e61eecfc5a1
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nomoresense[.]com | ac6a2f1eafaae9f6598390d1017dd76c | 1c637c2ded5d3a13fd9b56c35acf4443f308be52 | f9f649cb5de27f720d58aa44aec6d0419e3e89f453730e155067506ad3ece638
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) ronoliffuion[.]com | 881485ac77859cf5aaa8e0d64fbafc5f | 51be660a3bdaab6843676e9d3b2af8444e88bbda | 36d89f0455c95f9b00a8cea843003d0b53c4e33431fe57b5e6ec14a6c2e00e99
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) bluespiredice[.]com |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) dremmfyttrred[.]com | e4a42cbda39a20134d6edcf9f03c44ed | afda13d5365b290f7cdea701d00d05b0c60916f8 | 47f962063b42de277cd8d22550ae47b1787a39aa6f537c5408a59b5b76ed0464
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) dremmfyttrred[.]com | aa949d1a7ebe5f878023c6cfb446e29b | 06057d773ad04fda177f6b0f6698ddaa47f7168a | 594ade1fb42e93e64afc96f13824b3dbd942a2cdbc877a7006c248a38425bbc1
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) dremmfyttrred[.]com | 338476c2b0de4ee2f3e402f3495d0578 | 03916123864aa034f7ca3b9d45b2e39b5c91c502 | a67df0a8b32bdc5f9d224db118b3153f66518737e702314873b673c914b2bb5c
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) ms-online-store[.]com |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) ber6vjyb[.]com | 46fe07c07fd0f45ba45240ef9aae2a44 | b918f97c7c6ebc9594de3c8f2d9d75ecc292d02b | c0f8aeeb2d11c6e751ee87c40ee609aceb1c1036706a5af0d3d78738b6cc4125
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) jirostrogud[.]com | 89c8afc5bbd34f160d8a2b7218b9ca4a | 16ecf30ff8c7887037a17a3eaffcb17145b69160 | 5cc8c9f2c9cee543ebac306951e30e63eff3ee103c62dadcd2ce43ef68bc7487
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) jirostrogud[.]com | 5da364a8efab6370a174736705645a52 | 792623e143ddd49c36f6868e948febb0c9e19cd3 | 80b9c5ec798e7bbd71bbdfffab11653f36a7a30e51de3a72c5213eafe65965d9
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) fuanshizmo[.]com |  |  | 
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) qweastradoc[.]com | ee1ccb6a0e38bf95e44b73c3c46268c5 | 62f5a16d1ef20064dd78f5d934c84d474aca8bbe | 0e3a14638456f4451fe8d76fdc04e591fba942c2f16da31857ca66293a58a4c3
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) qweastradoc[.]com | 82d4025b84cf569ec82d21918d641540 | bb32c940f9ca06e7e8533b1d315545c3294ee1a0 | c042ad2947caf4449295a51f9d640d722b5a6ec6957523ebf68cddb87ef3545c
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) qweastradoc[.]com | dbecfe9d5421d319534e0bfa5a6ac162 | 9e7a2464f53ce74d840eb84077472bc29fd1ba05 | c9b874d54c18e895face055eeb6faa2da7965a336d70303d0bd6047bec27a29d
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) qweastradoc[.]com | b7fed593e8eb3646f876367b56725e6c | 44090a7858eceb28bc111e1edd2f0dc98047afb2 | ff8c8c8bfba5f2ba2f8003255949678df209dbff95e16f2f3c338cfa0fd1b885
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) hiperfdhaus[.]com | 8e2b823aac6c9e11fcabecb1d8c19adf | 77ad34334a370d85ca5e77436ed99f18b185eee3 | a30e1f87b78d1cd529fbe2afdd679c8241d3baab175b2f083740263911a85304
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) hiperfdhaus[.]com | 8a94163ddf956abd0ea92d89db0034e5 | abc96032071adeb6217f0a5ba1aff55dc11f5438 | b95a764820e918f42b664f3c9a96141e2d7d7d228da0edf151617fabdd9166cf
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) guerdofest[.]com | 65fb9572171b903aa31a325f550d8778 | d8bd44b7a8f136e29b31226f4edf566a4223266c | d5bbcaa0c3eeea17f12a5cc3dbcaffff423d00562acb694561841bcfe984a3b7
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | d9d85bdb6a3ac60a8ba6776c661dbace | 78e38e522b1765efb15d0585e13c1f1301e90788 | 092910024190a2521f21658be849c4ac9ae6fa4d5f2ecd44c9055cc353a26875
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 20643549f19bed9a6853810262622755 | c8227dcc1cd6ecc684de8c5ea9b16e3b35f613f1 | 1ef8cdbd3773bd82e5be25d4ba61e5e59371c6331726842107c0f1eb7d4d1f49
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | e9299fc9b7daa0742c28bfc4b03b7b25 | 77360abc473dc65c8bdd73b6459b9ea8fddb6f1d | 22e3f4602a258e92a0b8deb5a2bd69c67f4ac3ca67362a745178848a9da7a3cc
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 775fb391db27e299af08933917a3acda | eaaa5e68956a3a3f6113e965199f479e10ae9956 | 2d50b03a92445ba53ae147d0b97c494858c86a56fe037c44bc0edabb902420f7
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | f4045710c99d347fe6dfa2c0fcadde29 | b7bffdbbaf817d149bbd061070a2d171449afbfc | 32ae88cddeeeec255d6d9c827f6bffc7a95e9ea7b83a84a79ff793735a4b4ed7
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 587acecdb9491e0897d1067eb02e7c8d | a9eb1ac4b85d17da3a2bae5835c7e862d481c189 | 55d1480cd023b74f10692c689b56e7fd6cc8139fb6322762181daead55a62b9e
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 0bae65245e5423147fce079de29b6136 | f24232330e6f428bfbb6b9d8154db1c4046c2fc2 | 6210a9f5a5e1dc27e68ecd61c092d2667609e318a95b5dade3c28f5634a89727
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 5022a85b39a75ebe2bc0411d7b058b2e | a9040ac0e9f482454e040e2a7d874ddc50e6f6ce | 68a86858b4638b43d63e8e2aaec15a9ebd8fc14d460dd74463db42e59c4c6f89
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 6a2f114a8995dbeb91f766ac2390086e | edac3cf9533b6f7102f6324fadb437a0814cc680 | 72813522a065e106ac10aa96e835c47aa9f34e981db20fa46a8f36c4543bb85d
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | e9115cc3280c16f9019e0054e059f4b8 | dad01b0c745649c6c8b87dbeb7ab549ed039515d | 7a64bc69b60e3cd3fd00d4424b411394465640f499e56563447fe70579ccdd00
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | b54cc9a3dd88e478ea601dfd5b36805e | 318fdfec4575d1530a41c80274aa8caae7b7f631 | 7c607eca4005ba6415e09135ef38033bb0b0e0ff3e46d60253fc420af7519347
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | f129c12b1bda7426f6b31682b42ee4b0 | 5bb804153029c97fe23517ae5428a591c3c63f28 | 7c79ec3f5c1a280ffdf19d0000b4bfe458a3b9380c152c1e130a89de3fe04b63
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | f68aa4c92dd30bd5418f136aaf6c07d6 | aa56f43e39d114235a6b1d5f66b593cc80325fa4 | 7e39dcd15307e7de862b9b42bf556f2836bf7916faab0604a052c82c19e306ca
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | acac995cee8a6a75fa79eb41bdffa53f | 971a00a392b99f64a3886f40b6ef991e62f0fe2f | 97bae3587f1d2fd35f24eb214b9dd6eed95744bed62468d998c7ef55ff8726d4
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 36057710279d9f0d023cb5613aa76d5e | e4dd1f8fc4e44c8fd0e25242d994c4b59eed6939 | 97d0844ce9928e32b11706e06bf2c4426204d998cb39964dd3c3de6c5223fff0
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 37e6904d84153d1435407f4669135134 | 1dcd85f7364ea06cd595a86e3e9be48995d596e9 | bf3c7f0ba324c96c9a9bff6cf21650a4b78edbc0076c68a9a125ebcba0e523c9
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 4f3916e7714f2a32402c9d0b328a2c91 | 87a692e3592f7b997c7d962919e243b665f2be36 | c3743a8c944f5c9b17528418bf49b153b978946838f56e5fca0a3f6914bee887
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | d9daaa0df32b0bb01a09e500fc7f5881 | f9cb839adba612db5884e1378474996b4436c0cd | c3b3640ddf53b26f4ebd4eedf929540edb452c413ca54d0d21cc405c7263f490
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | c87fb9b9f6c343670bed605420583418 | f05cf0b026b2716927dac8bcd26a2719ea328964 | c6c4f690f0d15b96034b4258bdfaf797432a3ec4f73fbc920384d27903143cb0
+
+Table 4: Truebot IOCs from May 2023 Continued (Malicious Domains and Associated Hashes) nefosferta[.]com | 2be64efd0fa7739123b26e4b70e53c5c | 318fdfec4575d1530a41c80274aa8caae7b7f631 | ed38c454575879c2546e5fccace0b16a701c403dfe3c3833730d23b32e41f2fe
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations |  |  | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations Malicious Domain | IP Addresses | Files | SHA256
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations Dremmfyttrred[.]com |  |  | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations | 45.182.189[.]103 |  | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations | 94.142.138[.]61 |  | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations | 172.64.155[.]188 |  | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations | 104.18.32[.]68 |  | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations |  | Update[.]exe | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations |  | Document_26_apr_2443807[.]exe | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations |  | 3ujwy2rz7v[.]exe | 
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations |  |  | fe746402c74ac329231ae1b5dffa8229b509f4c15a0f5085617f14f0c1579040
+
+Table 5: Truebot IOCs Connected to Russia, and Panama Locations droogggdhfhf[.]com |  | 3LXJyA6Gf[.]exe | 7d75244449fb5c25d8f196a43a6eb9e453652b2185392376e7d44c21bd8431e7
+
+### MITRE ATT&CK TACTICS AND TECHNIQUES
+
+See Tables 6-16 for all referenced cyber threat actor tactics and techniques for enterprise environments in this advisory. For assistance with mapping malicious cyber activity to the MITRE ATT&CK framework, see CISA and MITRE ATT&CK’s Best Practices for MITRE ATT&CK Mapping and CISA’s Decider Tool(link is external).
+
+Table 6: Initial Access |  | 
+
+Table 6: Initial Access Technique Title | ID | Use
+
+Table 6: Initial Access Replication Through Removable Media | T1091(link is external) | Cyber threat actors use removable media drives to deploy Raspberry Robin malware.
+
+Table 6: Initial Access Drive-by Compromise | T1189(link is external) | Cyber threat actors embed malicious links or attachments within web domains to gain initial access.
+
+Table 6: Initial Access Exploit Public-Facing Application | T1190(link is external) | Cyber threat actors are exploiting Netwrix vulnerability CVE-2022-31199 for initial access with follow-on capabilities of lateral movement through remote code execution.
+
+Table 6: Initial Access Phishing | T1566.002(link is external) | Truebot actors can send spear phishing links to gain initial access.
+
+Table 7: Execution |  | 
+
+Table 7: Execution Technique Title | ID | Use
+
+Table 7: Execution Command and Scripting Interpreter T1059(link is external) Cyber threat actors have been observed dropping cobalt strike beacons as a reverse shell proxy to create persistence within the compromised network.
+
+Cyber threat actors use FlawedGrace to receive PowerShell commands over a C2 channel to deploy additional tools.
+
+Table 7: Execution Command and Scripting Interpreter | T1059(link is external) | Cyber threat actors have been observed dropping cobalt strike beacons as a reverse shell proxy to create persistence within the compromised network. Cyber threat actors use FlawedGrace to receive PowerShell commands over a C2 channel to deploy additional tools.
+
+Table 7: Execution Shared Modules | T1129(link is external) | Cyber threat actors can deploy malicious payloads through obfuscated share modules.
+
+Table 7: Execution User Execution: Malicious Link | T1204.001(link is external) | Cyber threat actors trick users into clicking a link by making them believe they need to perform a Google Chrome software update.
+
+Table 8: Persistence |  | 
+
+Table 8: Persistence Technique Title | ID | Use
+
+Table 8: Persistence Hijack Execution Flow: DLL Side-Loading | 1574.002(link is external) | Cyber threat actors use Raspberry Robin, among other toolsets to side-load DLLs to maintain persistence.
+
+Table 9: Privilege Escalation |  | 
+
+Table 9: Privilege Escalation Technique Title | ID | Use
+
+Table 9: Privilege Escalation Boot or Logon Autostart Execution: Print Processors | T1547.012(link is external) | FlawedGrace malware manipulates print spooler functions to achieve privilege escalation.
+
+Table 10: Defense Evasion |  | 
+
+Table 10: Defense Evasion Technique Title | ID | Use
+
+Table 10: Defense Evasion Obfuscated Files or Information | T1027(link is external) | Truebot uses a .JSONIP extension (e.g., IgtyXEQuCEvAM.JSONIP), to create a GUID.
+
+Table 10: Defense Evasion Obfuscated Files or Information: Binary Padding | T1027.001(link is external) | Cyber threat actors embed around one gigabyte of junk code within the malware string to evade detection protocols.
+
+Table 10: Defense Evasion Masquerading: Masquerade File Type | T1036.008(link is external) | Cyber threat actors hide Truebot malware as legitimate appearing file formats.
+
+Table 10: Defense Evasion Process Injection | T1055(link is external) | Truebot malware has the ability to load shell code after establishing a C2 connection.

@@ -1,0 +1,2381 @@
+{
+  "generated_at": "2026-07-02T20:29:27.733116+00:00",
+  "queries": [
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--d13c8a7f-740b-4efa-a232-de7d6bb05321",
+          "actor_name": "Silence",
+          "alias": "Silence",
+          "alias_normalized": "silence",
+          "mitre_attack_id": "G0091",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--d13c8a7f-740b-4efa-a232-de7d6bb05321"
+        }
+      ],
+      "query": "Silence",
+      "query_normalized": "silence"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--39d6890e-7f23-4474-b8ef-e7b0343c5fc8",
+          "actor_name": "Andariel",
+          "alias": "Silent Chollima",
+          "alias_normalized": "silent chollima",
+          "mitre_attack_id": "G0138",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--39d6890e-7f23-4474-b8ef-e7b0343c5fc8"
+        }
+      ],
+      "query": "Silent Chollima",
+      "query_normalized": "silent chollima"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--90784c1e-4aba-40eb-9adf-7556235e6384",
+          "actor_name": "Silent Librarian",
+          "alias": "Silent Librarian",
+          "alias_normalized": "silent librarian",
+          "mitre_attack_id": "G0122",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--90784c1e-4aba-40eb-9adf-7556235e6384"
+        }
+      ],
+      "query": "Silent Librarian",
+      "query_normalized": "silent librarian"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--56a05d27-4d47-418a-b330-781c5614f202",
+          "actor_name": "Sea Turtle",
+          "alias": "SILICON",
+          "alias_normalized": "silicon",
+          "mitre_attack_id": "G1041",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--56a05d27-4d47-418a-b330-781c5614f202"
+        }
+      ],
+      "query": "SILICON",
+      "query_normalized": "silicon"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--2688b13e-8e71-405a-9c40-0dee94bddf87",
+          "actor_name": "HAFNIUM",
+          "alias": "Silk Typhoon",
+          "alias_normalized": "silk typhoon",
+          "mitre_attack_id": "G0125",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--2688b13e-8e71-405a-9c40-0dee94bddf87"
+        }
+      ],
+      "query": "Silk Typhoon",
+      "query_normalized": "silk typhoon"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--76565741-3452-4069-ab08-80c0ea95bbeb",
+          "actor_name": "SilverTerrier",
+          "alias": "SilverTerrier",
+          "alias_normalized": "silverterrier",
+          "mitre_attack_id": "G0083",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--76565741-3452-4069-ab08-80c0ea95bbeb"
+        }
+      ],
+      "query": "SilverTerrier",
+      "query_normalized": "silverterrier"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--2a7914cf-dff3-428d-ab0f-1014d1c28aeb",
+          "actor_name": "FIN6",
+          "alias": "Skeleton Spider",
+          "alias_normalized": "skeleton spider",
+          "mitre_attack_id": "G0037",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--2a7914cf-dff3-428d-ab0f-1014d1c28aeb"
+        }
+      ],
+      "query": "Skeleton Spider",
+      "query_normalized": "skeleton spider"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6",
+          "actor_name": "Turla",
+          "alias": "Snake",
+          "alias_normalized": "snake",
+          "mitre_attack_id": "G0010",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6"
+        }
+      ],
+      "query": "Snake",
+      "query_normalized": "snake"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+          "actor_name": "APT28",
+          "alias": "SNAKEMACKEREL",
+          "alias_normalized": "snakemackerel",
+          "mitre_attack_id": "G0007",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c"
+        }
+      ],
+      "query": "SNAKEMACKEREL",
+      "query_normalized": "snakemackerel"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--03506554-5f37-4f8f-9ce4-0e9f01a1b484",
+          "actor_name": "Elderwood",
+          "alias": "Sneaky Panda",
+          "alias_normalized": "sneaky panda",
+          "mitre_attack_id": "G0066",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--03506554-5f37-4f8f-9ce4-0e9f01a1b484"
+        }
+      ],
+      "query": "Sneaky Panda",
+      "query_normalized": "sneaky panda"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+          "actor_name": "APT28",
+          "alias": "Sofacy",
+          "alias_normalized": "sofacy",
+          "mitre_attack_id": "G0007",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c"
+        }
+      ],
+      "query": "Sofacy",
+      "query_normalized": "sofacy"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+          "actor_name": "APT29",
+          "alias": "SolarStorm",
+          "alias_normalized": "solarstorm",
+          "mitre_attack_id": "G0016",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542"
+        }
+      ],
+      "query": "SolarStorm",
+      "query_normalized": "solarstorm"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--d1acfbb3-647b-4723-9154-800ec119006e",
+          "actor_name": "Sowbug",
+          "alias": "Sowbug",
+          "alias_normalized": "sowbug",
+          "mitre_attack_id": "G0054",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--d1acfbb3-647b-4723-9154-800ec119006e"
+        }
+      ],
+      "query": "Sowbug",
+      "query_normalized": "sowbug"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7eda3dd8-b09b-4705-8090-c2ad9fb8c14d",
+          "actor_name": "TA505",
+          "alias": "Spandex Tempest",
+          "alias_normalized": "spandex tempest",
+          "mitre_attack_id": "G0092",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7eda3dd8-b09b-4705-8090-c2ad9fb8c14d"
+        }
+      ],
+      "query": "Spandex Tempest",
+      "query_normalized": "spandex tempest"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--f29b7c5e-2439-42ad-a86f-9f8984fafae3",
+          "actor_name": "HEXANE",
+          "alias": "Spirlin",
+          "alias_normalized": "spirlin",
+          "mitre_attack_id": "G1001",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--f29b7c5e-2439-42ad-a86f-9f8984fafae3"
+        }
+      ],
+      "query": "Spirlin",
+      "query_normalized": "spirlin"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--88b7dbc2-32d3-4e31-af2f-3fc24e1582d7",
+          "actor_name": "Lotus Blossom",
+          "alias": "Spring Dragon",
+          "alias_normalized": "spring dragon",
+          "mitre_attack_id": "G0030",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--88b7dbc2-32d3-4e31-af2f-3fc24e1582d7"
+        }
+      ],
+      "query": "Spring Dragon",
+      "query_normalized": "spring dragon"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f",
+          "actor_name": "Kimsuky",
+          "alias": "Springtail",
+          "alias_normalized": "springtail",
+          "mitre_attack_id": "G0094",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f"
+        }
+      ],
+      "query": "Springtail",
+      "query_normalized": "springtail"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--9b36c218-4d80-4ec6-a68d-cc2886bbe410",
+          "actor_name": "Star Blizzard",
+          "alias": "Star Blizzard",
+          "alias_normalized": "star blizzard",
+          "mitre_attack_id": "G1033",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--9b36c218-4d80-4ec6-a68d-cc2886bbe410"
+        }
+      ],
+      "query": "Star Blizzard",
+      "query_normalized": "star blizzard"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--00f67a77-86a4-4adf-be26-1a54fc713340",
+          "actor_name": "APT38",
+          "alias": "Stardust Chollima",
+          "alias_normalized": "stardust chollima",
+          "mitre_attack_id": "G0082",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--00f67a77-86a4-4adf-be26-1a54fc713340"
+        }
+      ],
+      "query": "Stardust Chollima",
+      "query_normalized": "stardust chollima"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4",
+          "actor_name": "Mustang Panda",
+          "alias": "STATELY TAURUS",
+          "alias_normalized": "stately taurus",
+          "mitre_attack_id": "G0129",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4"
+        }
+      ],
+      "query": "STATELY TAURUS",
+      "query_normalized": "stately taurus"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--269e8108-68c6-4f99-b911-14b2e765dec2",
+          "actor_name": "MuddyWater",
+          "alias": "Static Kitten",
+          "alias_normalized": "static kitten",
+          "mitre_attack_id": "G0069",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--269e8108-68c6-4f99-b911-14b2e765dec2"
+        }
+      ],
+      "query": "Static Kitten",
+      "query_normalized": "static kitten"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--894aab42-3371-47b1-8859-a4a074c804c8",
+          "actor_name": "Stealth Falcon",
+          "alias": "Stealth Falcon",
+          "alias_normalized": "stealth falcon",
+          "mitre_attack_id": "G0038",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--894aab42-3371-47b1-8859-a4a074c804c8"
+        }
+      ],
+      "query": "Stealth Falcon",
+      "query_normalized": "stealth falcon"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--222fbd21-fc4f-4b7e-9f85-0e6e3a76c33f",
+          "actor_name": "menuPass",
+          "alias": "Stone Panda",
+          "alias_normalized": "stone panda",
+          "mitre_attack_id": "G0045",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--222fbd21-fc4f-4b7e-9f85-0e6e3a76c33f"
+        }
+      ],
+      "query": "Stone Panda",
+      "query_normalized": "stone panda"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7b404cd0-3ae9-41d4-90c0-023793d35d97",
+          "actor_name": "Storm-0501",
+          "alias": "Storm-0501",
+          "alias_normalized": "storm-0501",
+          "mitre_attack_id": "G1053",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7b404cd0-3ae9-41d4-90c0-023793d35d97"
+        }
+      ],
+      "query": "Storm-0501",
+      "query_normalized": "storm-0501"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--674582ec-51c4-42ce-b409-797239e37a2a",
+          "actor_name": "Saint Bear",
+          "alias": "Storm-0587",
+          "alias_normalized": "storm-0587",
+          "mitre_attack_id": "G1031",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--674582ec-51c4-42ce-b409-797239e37a2a"
+        }
+      ],
+      "query": "Storm-0587",
+      "query_normalized": "storm-0587"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--44d37b89-a739-4810-9111-0d2617a8939b",
+          "actor_name": "Scattered Spider",
+          "alias": "Storm-0875",
+          "alias_normalized": "storm-0875",
+          "mitre_attack_id": "G1015",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--44d37b89-a739-4810-9111-0d2617a8939b"
+        }
+      ],
+      "query": "Storm-0875",
+      "query_normalized": "storm-0875"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--e6db1e55-b199-4b6b-8633-989345ee45e0",
+          "actor_name": "Moonstone Sleet",
+          "alias": "Storm-1789",
+          "alias_normalized": "storm-1789",
+          "mitre_attack_id": "G1036",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--e6db1e55-b199-4b6b-8633-989345ee45e0"
+        }
+      ],
+      "query": "Storm-1789",
+      "query_normalized": "storm-1789"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--319fd652-edde-46b2-9987-3519493989f5",
+          "actor_name": "Storm-1811",
+          "alias": "Storm-1811",
+          "alias_normalized": "storm-1811",
+          "mitre_attack_id": "G1046",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--319fd652-edde-46b2-9987-3519493989f5"
+        }
+      ],
+      "query": "Storm-1811",
+      "query_normalized": "storm-1811"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--d8bc9788-4f7d-41a9-9e9d-ee1ea18a8cf7",
+          "actor_name": "LAPSUS$",
+          "alias": "Strawberry Tempest",
+          "alias_normalized": "strawberry tempest",
+          "mitre_attack_id": "G1004",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--d8bc9788-4f7d-41a9-9e9d-ee1ea18a8cf7"
+        }
+      ],
+      "query": "Strawberry Tempest",
+      "query_normalized": "strawberry tempest"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--277d2f87-2ae5-4730-a3aa-50c1fdff9656",
+          "actor_name": "Strider",
+          "alias": "Strider",
+          "alias_normalized": "strider",
+          "mitre_attack_id": "G0041",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--277d2f87-2ae5-4730-a3aa-50c1fdff9656"
+        }
+      ],
+      "query": "Strider",
+      "query_normalized": "strider"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--efed95ba-d7e8-47ff-8c53-99c42426ee7c",
+          "actor_name": "PROMETHIUM",
+          "alias": "StrongPity",
+          "alias_normalized": "strongpity",
+          "mitre_attack_id": "G0056",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--efed95ba-d7e8-47ff-8c53-99c42426ee7c"
+        }
+      ],
+      "query": "StrongPity",
+      "query_normalized": "strongpity"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+          "actor_name": "APT28",
+          "alias": "STRONTIUM",
+          "alias_normalized": "strontium",
+          "mitre_attack_id": "G0007",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c"
+        }
+      ],
+      "query": "STRONTIUM",
+      "query_normalized": "strontium"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--5cbe0d3b-6fb1-471f-b591-4b192915116d",
+          "actor_name": "Suckfly",
+          "alias": "Suckfly",
+          "alias_normalized": "suckfly",
+          "mitre_attack_id": "G0039",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--5cbe0d3b-6fb1-471f-b591-4b192915116d"
+        }
+      ],
+      "query": "Suckfly",
+      "query_normalized": "suckfly"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--fe8796a4-2a02-41a0-9d27-7aa1e995feb6",
+          "actor_name": "APT19",
+          "alias": "Sunshop Group",
+          "alias_normalized": "sunshop group",
+          "mitre_attack_id": "G0073",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--fe8796a4-2a02-41a0-9d27-7aa1e995feb6"
+        }
+      ],
+      "query": "Sunshop Group",
+      "query_normalized": "sunshop group"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+          "actor_name": "APT28",
+          "alias": "Swallowtail",
+          "alias_normalized": "swallowtail",
+          "mitre_attack_id": "G0007",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c"
+        }
+      ],
+      "query": "Swallowtail",
+      "query_normalized": "swallowtail"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--fd19bd82-1b14-49a1-a176-6cdc46b8a826",
+          "actor_name": "FIN8",
+          "alias": "Syssphinx",
+          "alias_normalized": "syssphinx",
+          "mitre_attack_id": "G0061",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--fd19bd82-1b14-49a1-a176-6cdc46b8a826"
+        }
+      ],
+      "query": "Syssphinx",
+      "query_normalized": "syssphinx"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--3fc023b2-c5cc-481d-9c3e-70141ae1a87e",
+          "actor_name": "Sidewinder",
+          "alias": "T-APT-04",
+          "alias_normalized": "t-apt-04",
+          "mitre_attack_id": "G0121",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--3fc023b2-c5cc-481d-9c3e-70141ae1a87e"
+        }
+      ],
+      "query": "T-APT-04",
+      "query_normalized": "t-apt-04"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7f848c02-4d1e-4808-a4ae-4670681370a9",
+          "actor_name": "BITTER",
+          "alias": "T-APT-17",
+          "alias_normalized": "t-apt-17",
+          "mitre_attack_id": "G1002",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7f848c02-4d1e-4808-a4ae-4670681370a9"
+        }
+      ],
+      "query": "T-APT-17",
+      "query_normalized": "t-apt-17"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--467271fd-47c0-4e90-a3f9-d84f5cf790d0",
+          "actor_name": "TA2541",
+          "alias": "TA2541",
+          "alias_normalized": "ta2541",
+          "mitre_attack_id": "G1018",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--467271fd-47c0-4e90-a3f9-d84f5cf790d0"
+        }
+      ],
+      "query": "TA2541",
+      "query_normalized": "ta2541"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--90784c1e-4aba-40eb-9adf-7556235e6384",
+          "actor_name": "Silent Librarian",
+          "alias": "TA407",
+          "alias_normalized": "ta407",
+          "mitre_attack_id": "G0122",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--90784c1e-4aba-40eb-9adf-7556235e6384"
+        }
+      ],
+      "query": "TA407",
+      "query_normalized": "ta407"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4",
+          "actor_name": "Mustang Panda",
+          "alias": "TA416",
+          "alias_normalized": "ta416",
+          "mitre_attack_id": "G0129",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4"
+        }
+      ],
+      "query": "TA416",
+      "query_normalized": "ta416"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f",
+          "actor_name": "Kimsuky",
+          "alias": "TA427",
+          "alias_normalized": "ta427",
+          "mitre_attack_id": "G0094",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f"
+        }
+      ],
+      "query": "TA427",
+      "query_normalized": "ta427"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--9b36c218-4d80-4ec6-a68d-cc2886bbe410",
+          "actor_name": "Star Blizzard",
+          "alias": "TA446",
+          "alias_normalized": "ta446",
+          "mitre_attack_id": "G1033",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--9b36c218-4d80-4ec6-a68d-cc2886bbe410"
+        }
+      ],
+      "query": "TA446",
+      "query_normalized": "ta446"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--269e8108-68c6-4f99-b911-14b2e765dec2",
+          "actor_name": "MuddyWater",
+          "alias": "TA450",
+          "alias_normalized": "ta450",
+          "mitre_attack_id": "G0069",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--269e8108-68c6-4f99-b911-14b2e765dec2"
+        }
+      ],
+      "query": "TA450",
+      "query_normalized": "ta450"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--4ca1929c-7d64-4aab-b849-badbfc0c760d",
+          "actor_name": "OilRig",
+          "alias": "TA452",
+          "alias_normalized": "ta452",
+          "mitre_attack_id": "G0049",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--4ca1929c-7d64-4aab-b849-badbfc0c760d"
+        }
+      ],
+      "query": "TA452",
+      "query_normalized": "ta452"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--f9d6633a-55e6-4adc-9263-6ae080421a13",
+          "actor_name": "Magic Hound",
+          "alias": "TA453",
+          "alias_normalized": "ta453",
+          "mitre_attack_id": "G0059",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--f9d6633a-55e6-4adc-9263-6ae080421a13"
+        }
+      ],
+      "query": "TA453",
+      "query_normalized": "ta453"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--3ea7add5-5b8f-45d8-b1f1-905d2729d62a",
+          "actor_name": "CURIUM",
+          "alias": "TA456",
+          "alias_normalized": "ta456",
+          "mitre_attack_id": "G1012",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--3ea7add5-5b8f-45d8-b1f1-905d2729d62a"
+        }
+      ],
+      "query": "TA456",
+      "query_normalized": "ta456"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--62a64fd3-aaf7-4d09-a375-d6f8bb118481",
+          "actor_name": "TA459",
+          "alias": "TA459",
+          "alias_normalized": "ta459",
+          "mitre_attack_id": "G0062",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--62a64fd3-aaf7-4d09-a375-d6f8bb118481"
+        }
+      ],
+      "query": "TA459",
+      "query_normalized": "ta459"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--674582ec-51c4-42ce-b409-797239e37a2a",
+          "actor_name": "Saint Bear",
+          "alias": "TA471",
+          "alias_normalized": "ta471",
+          "mitre_attack_id": "G1031",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--674582ec-51c4-42ce-b409-797239e37a2a"
+        }
+      ],
+      "query": "TA471",
+      "query_normalized": "ta471"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--75a07184-a7e5-4222-95a1-a04dbc96a29c",
+          "actor_name": "Winter Vivern",
+          "alias": "TA473",
+          "alias_normalized": "ta473",
+          "mitre_attack_id": "G1035",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--75a07184-a7e5-4222-95a1-a04dbc96a29c"
+        }
+      ],
+      "query": "TA473",
+      "query_normalized": "ta473"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7eda3dd8-b09b-4705-8090-c2ad9fb8c14d",
+          "actor_name": "TA505",
+          "alias": "TA505",
+          "alias_normalized": "ta505",
+          "mitre_attack_id": "G0092",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7eda3dd8-b09b-4705-8090-c2ad9fb8c14d"
+        }
+      ],
+      "query": "TA505",
+      "query_normalized": "ta505"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--94873029-f950-4268-9cfd-5032e15cb182",
+          "actor_name": "TA551",
+          "alias": "TA551",
+          "alias_normalized": "ta551",
+          "mitre_attack_id": "G0127",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--94873029-f950-4268-9cfd-5032e15cb182"
+        }
+      ],
+      "query": "TA551",
+      "query_normalized": "ta551"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0d4ac089-ced4-4cc4-a989-174d08e6d030",
+          "actor_name": "Mustard Tempest",
+          "alias": "TA569",
+          "alias_normalized": "ta569",
+          "mitre_attack_id": "G1020",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0d4ac089-ced4-4cc4-a989-174d08e6d030"
+        }
+      ],
+      "query": "TA569",
+      "query_normalized": "ta569"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--13ef3485-70d2-4567-b934-0e83c1eafcf1",
+          "actor_name": "TA577",
+          "alias": "TA577",
+          "alias_normalized": "ta577",
+          "mitre_attack_id": "G1037",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--13ef3485-70d2-4567-b934-0e83c1eafcf1"
+        }
+      ],
+      "query": "TA577",
+      "query_normalized": "ta577"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--a5cfbc79-316c-42f2-915d-6e8fef4085f8",
+          "actor_name": "TA578",
+          "alias": "TA578",
+          "alias_normalized": "ta578",
+          "mitre_attack_id": "G1038",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--a5cfbc79-316c-42f2-915d-6e8fef4085f8"
+        }
+      ],
+      "query": "TA578",
+      "query_normalized": "ta578"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--2a7914cf-dff3-428d-ab0f-1014d1c28aeb",
+          "actor_name": "FIN6",
+          "alias": "TAAL",
+          "alias_normalized": "taal",
+          "mitre_attack_id": "G0037",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--2a7914cf-dff3-428d-ab0f-1014d1c28aeb"
+        }
+      ],
+      "query": "TAAL",
+      "query_normalized": "taal"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--46599a4a-77ee-4697-9474-2683b6464859",
+          "actor_name": "Contagious Interview",
+          "alias": "TAG-121",
+          "alias_normalized": "tag-121",
+          "mitre_attack_id": "G1052",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--46599a4a-77ee-4697-9474-2683b6464859"
+        }
+      ],
+      "query": "TAG-121",
+      "query_normalized": "tag-121"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--c4d50cdf-87ce-407d-86d8-862883485842",
+          "actor_name": "APT-C-36",
+          "alias": "TAG-144",
+          "alias_normalized": "tag-144",
+          "mitre_attack_id": "G0099",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--c4d50cdf-87ce-407d-86d8-862883485842"
+        }
+      ],
+      "query": "TAG-144",
+      "query_normalized": "tag-144"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--cc613a49-9bfa-4e22-98d1-15ffbb03f034",
+          "actor_name": "Earth Lusca",
+          "alias": "TAG-22",
+          "alias_normalized": "tag-22",
+          "mitre_attack_id": "G1006",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--cc613a49-9bfa-4e22-98d1-15ffbb03f034"
+        }
+      ],
+      "query": "TAG-22",
+      "query_normalized": "tag-22"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--8332952e-b86b-486b-acc3-1c2a85d39394",
+          "actor_name": "APT-C-23",
+          "alias": "TAG-63",
+          "alias_normalized": "tag-63",
+          "mitre_attack_id": "G1028",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--8332952e-b86b-486b-acc3-1c2a85d39394"
+        }
+      ],
+      "query": "TAG-63",
+      "query_normalized": "tag-63"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4",
+          "actor_name": "Mustang Panda",
+          "alias": "TANTALUM",
+          "alias_normalized": "tantalum",
+          "mitre_attack_id": "G0129",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4"
+        }
+      ],
+      "query": "TANTALUM",
+      "query_normalized": "tantalum"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--56a05d27-4d47-418a-b330-781c5614f202",
+          "actor_name": "Sea Turtle",
+          "alias": "Teal Kurma",
+          "alias_normalized": "teal kurma",
+          "mitre_attack_id": "G1041",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--56a05d27-4d47-418a-b330-781c5614f202"
+        }
+      ],
+      "query": "Teal Kurma",
+      "query_normalized": "teal kurma"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--35d1b3be-49d4-42f1-aaa6-ef159c880bca",
+          "actor_name": "TeamTNT",
+          "alias": "TeamTNT",
+          "alias_normalized": "teamtnt",
+          "mitre_attack_id": "G0139",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--35d1b3be-49d4-42f1-aaa6-ef159c880bca"
+        }
+      ],
+      "query": "TeamTNT",
+      "query_normalized": "teamtnt"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--381fcf73-60f6-4ab2-9991-6af3cbc35192",
+          "actor_name": "Sandworm Team",
+          "alias": "Telebots",
+          "alias_normalized": "telebots",
+          "mitre_attack_id": "G0034",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--381fcf73-60f6-4ab2-9991-6af3cbc35192"
+        }
+      ],
+      "query": "Telebots",
+      "query_normalized": "telebots"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4",
+          "actor_name": "Mustang Panda",
+          "alias": "TEMP.Hex",
+          "alias_normalized": "temp.hex",
+          "mitre_attack_id": "G0129",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4"
+        }
+      ],
+      "query": "TEMP.Hex",
+      "query_normalized": "temp.hex"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--1c63d4ec-0a75-4daa-b1df-0d11af3d3cc1",
+          "actor_name": "Dragonfly",
+          "alias": "TEMP.Isotope",
+          "alias_normalized": "temp.isotope",
+          "mitre_attack_id": "G0035",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--1c63d4ec-0a75-4daa-b1df-0d11af3d3cc1"
+        }
+      ],
+      "query": "TEMP.Isotope",
+      "query_normalized": "temp.isotope"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7113eaa5-ba79-4fb3-b68a-398ee9cd698e",
+          "actor_name": "Leviathan",
+          "alias": "TEMP.Jumper",
+          "alias_normalized": "temp.jumper",
+          "mitre_attack_id": "G0065",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7113eaa5-ba79-4fb3-b68a-398ee9cd698e"
+        }
+      ],
+      "query": "TEMP.Jumper",
+      "query_normalized": "temp.jumper"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--dd2d9ca6-505b-4860-a604-233685b802c7",
+          "actor_name": "Wizard Spider",
+          "alias": "TEMP.MixMaster",
+          "alias_normalized": "temp.mixmaster",
+          "mitre_attack_id": "G0102",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--dd2d9ca6-505b-4860-a604-233685b802c7"
+        }
+      ],
+      "query": "TEMP.MixMaster",
+      "query_normalized": "temp.mixmaster"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7113eaa5-ba79-4fb3-b68a-398ee9cd698e",
+          "actor_name": "Leviathan",
+          "alias": "TEMP.Periscope",
+          "alias_normalized": "temp.periscope",
+          "mitre_attack_id": "G0065",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7113eaa5-ba79-4fb3-b68a-398ee9cd698e"
+        }
+      ],
+      "query": "TEMP.Periscope",
+      "query_normalized": "temp.periscope"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--4a2ce82e-1a74-468a-a6fb-bbead541383c",
+          "actor_name": "APT37",
+          "alias": "TEMP.Reaper",
+          "alias_normalized": "temp.reaper",
+          "mitre_attack_id": "G0067",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--4a2ce82e-1a74-468a-a6fb-bbead541383c"
+        }
+      ],
+      "query": "TEMP.Reaper",
+      "query_normalized": "temp.reaper"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--9538b1a4-4120-4e2d-bf59-3b11fcab05a4",
+          "actor_name": "TEMP.Veles",
+          "alias": "TEMP.Veles",
+          "alias_normalized": "temp.veles",
+          "mitre_attack_id": "G0088",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--9538b1a4-4120-4e2d-bf59-3b11fcab05a4"
+        }
+      ],
+      "query": "TEMP.Veles",
+      "query_normalized": "temp.veles"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--269e8108-68c6-4f99-b911-14b2e765dec2",
+          "actor_name": "MuddyWater",
+          "alias": "TEMP.Zagros",
+          "alias_normalized": "temp.zagros",
+          "mitre_attack_id": "G0069",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--269e8108-68c6-4f99-b911-14b2e765dec2"
+        }
+      ],
+      "query": "TEMP.Zagros",
+      "query_normalized": "temp.zagros"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--46599a4a-77ee-4697-9474-2683b6464859",
+          "actor_name": "Contagious Interview",
+          "alias": "Tenacious Pungsan",
+          "alias_normalized": "tenacious pungsan",
+          "mitre_attack_id": "G1052",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--46599a4a-77ee-4697-9474-2683b6464859"
+        }
+      ],
+      "query": "Tenacious Pungsan",
+      "query_normalized": "tenacious pungsan"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0bbdf25b-30ff-4894-a1cd-49260d0dd2d9",
+          "actor_name": "APT3",
+          "alias": "TG-0110",
+          "alias_normalized": "tg-0110",
+          "mitre_attack_id": "G0022",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0bbdf25b-30ff-4894-a1cd-49260d0dd2d9"
+        }
+      ],
+      "query": "TG-0110",
+      "query_normalized": "tg-0110"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--38fd6a28-3353-4f2b-bb2b-459fecd5c648",
+          "actor_name": "APT18",
+          "alias": "TG-0416",
+          "alias_normalized": "tg-0416",
+          "mitre_attack_id": "G0026",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--38fd6a28-3353-4f2b-bb2b-459fecd5c648"
+        }
+      ],
+      "query": "TG-0416",
+      "query_normalized": "tg-0416"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--d519164e-f5fa-4b8c-a1fb-cf0172ad0983",
+          "actor_name": "Threat Group-1314",
+          "alias": "TG-1314",
+          "alias_normalized": "tg-1314",
+          "mitre_attack_id": "G0028",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--d519164e-f5fa-4b8c-a1fb-cf0172ad0983"
+        }
+      ],
+      "query": "TG-1314",
+      "query_normalized": "tg-1314"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--8f5e8dc7-739d-4f5e-a8a1-a66e004d7063",
+          "actor_name": "Cleaver",
+          "alias": "TG-2889",
+          "alias_normalized": "tg-2889",
+          "mitre_attack_id": "G0003",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--8f5e8dc7-739d-4f5e-a8a1-a66e004d7063"
+        }
+      ],
+      "query": "TG-2889",
+      "query_normalized": "tg-2889"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--fb366179-766c-4a4a-afa1-52bff1fd601c",
+          "actor_name": "Threat Group-3390",
+          "alias": "TG-3390",
+          "alias_normalized": "tg-3390",
+          "mitre_attack_id": "G0027",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--fb366179-766c-4a4a-afa1-52bff1fd601c"
+        }
+      ],
+      "query": "TG-3390",
+      "query_normalized": "tg-3390"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+          "actor_name": "APT28",
+          "alias": "TG-4127",
+          "alias_normalized": "tg-4127",
+          "mitre_attack_id": "G0007",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c"
+        }
+      ],
+      "query": "TG-4127",
+      "query_normalized": "tg-4127"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--1c63d4ec-0a75-4daa-b1df-0d11af3d3cc1",
+          "actor_name": "Dragonfly",
+          "alias": "TG-4192",
+          "alias_normalized": "tg-4192",
+          "mitre_attack_id": "G0035",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--1c63d4ec-0a75-4daa-b1df-0d11af3d3cc1"
+        }
+      ],
+      "query": "TG-4192",
+      "query_normalized": "tg-4192"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f",
+          "actor_name": "Kimsuky",
+          "alias": "THALLIUM",
+          "alias_normalized": "thallium",
+          "mitre_attack_id": "G0094",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f"
+        }
+      ],
+      "query": "THALLIUM",
+      "query_normalized": "thallium"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+          "actor_name": "APT29",
+          "alias": "The Dukes",
+          "alias_normalized": "the dukes",
+          "mitre_attack_id": "G0016",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542"
+        }
+      ],
+      "query": "The Dukes",
+      "query_normalized": "the dukes"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--6688d679-ccdb-4f12-abf6-c7545dd767a4",
+          "actor_name": "The White Company",
+          "alias": "The White Company",
+          "alias_normalized": "the white company",
+          "mitre_attack_id": "G0089",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--6688d679-ccdb-4f12-abf6-c7545dd767a4"
+        }
+      ],
+      "query": "The White Company",
+      "query_normalized": "the white company"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--8f5e8dc7-739d-4f5e-a8a1-a66e004d7063",
+          "actor_name": "Cleaver",
+          "alias": "Threat Group 2889",
+          "alias_normalized": "threat group 2889",
+          "mitre_attack_id": "G0003",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--8f5e8dc7-739d-4f5e-a8a1-a66e004d7063"
+        }
+      ],
+      "query": "Threat Group 2889",
+      "query_normalized": "threat group 2889"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0bbdf25b-30ff-4894-a1cd-49260d0dd2d9",
+          "actor_name": "APT3",
+          "alias": "Threat Group-0110",
+          "alias_normalized": "threat group-0110",
+          "mitre_attack_id": "G0022",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0bbdf25b-30ff-4894-a1cd-49260d0dd2d9"
+        }
+      ],
+      "query": "Threat Group-0110",
+      "query_normalized": "threat group-0110"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--38fd6a28-3353-4f2b-bb2b-459fecd5c648",
+          "actor_name": "APT18",
+          "alias": "Threat Group-0416",
+          "alias_normalized": "threat group-0416",
+          "mitre_attack_id": "G0026",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--38fd6a28-3353-4f2b-bb2b-459fecd5c648"
+        }
+      ],
+      "query": "Threat Group-0416",
+      "query_normalized": "threat group-0416"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--d519164e-f5fa-4b8c-a1fb-cf0172ad0983",
+          "actor_name": "Threat Group-1314",
+          "alias": "Threat Group-1314",
+          "alias_normalized": "threat group-1314",
+          "mitre_attack_id": "G0028",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--d519164e-f5fa-4b8c-a1fb-cf0172ad0983"
+        }
+      ],
+      "query": "Threat Group-1314",
+      "query_normalized": "threat group-1314"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--fb366179-766c-4a4a-afa1-52bff1fd601c",
+          "actor_name": "Threat Group-3390",
+          "alias": "Threat Group-3390",
+          "alias_normalized": "threat group-3390",
+          "mitre_attack_id": "G0027",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--fb366179-766c-4a4a-afa1-52bff1fd601c"
+        }
+      ],
+      "query": "Threat Group-3390",
+      "query_normalized": "threat group-3390"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+          "actor_name": "APT28",
+          "alias": "Threat Group-4127",
+          "alias_normalized": "threat group-4127",
+          "mitre_attack_id": "G0007",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c"
+        }
+      ],
+      "query": "Threat Group-4127",
+      "query_normalized": "threat group-4127"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--88b7dbc2-32d3-4e31-af2f-3fc24e1582d7",
+          "actor_name": "Lotus Blossom",
+          "alias": "Thrip",
+          "alias_normalized": "thrip",
+          "mitre_attack_id": "G0030",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--88b7dbc2-32d3-4e31-af2f-3fc24e1582d7"
+        },
+        {
+          "actor_id": "intrusion-set--d69e568e-9ac8-4c08-b32c-d93b43ba9172",
+          "actor_name": "Thrip",
+          "alias": "Thrip",
+          "alias_normalized": "thrip",
+          "mitre_attack_id": "G0076",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--d69e568e-9ac8-4c08-b32c-d93b43ba9172"
+        }
+      ],
+      "query": "Thrip",
+      "query_normalized": "thrip"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--93f52415-0fe4-4d3d-896c-fc9b8e88ab90",
+          "actor_name": "BRONZE BUTLER",
+          "alias": "Tick",
+          "alias_normalized": "tick",
+          "mitre_attack_id": "G0060",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--93f52415-0fe4-4d3d-896c-fc9b8e88ab90"
+        }
+      ],
+      "query": "Tick",
+      "query_normalized": "tick"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--b516b235-fc7d-4635-aca5-3d33312339c3",
+          "actor_name": "ToddyCat",
+          "alias": "ToddyCat",
+          "alias_normalized": "toddycat",
+          "mitre_attack_id": "G1022",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--b516b235-fc7d-4635-aca5-3d33312339c3"
+        }
+      ],
+      "query": "ToddyCat",
+      "query_normalized": "toddycat"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--c5b81590-6814-4d2a-8baa-15c4b6c7f960",
+          "actor_name": "Tonto Team",
+          "alias": "Tonto Team",
+          "alias_normalized": "tonto team",
+          "mitre_attack_id": "G0131",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--c5b81590-6814-4d2a-8baa-15c4b6c7f960"
+        }
+      ],
+      "query": "Tonto Team",
+      "query_normalized": "tonto team"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--3ea7add5-5b8f-45d8-b1f1-905d2729d62a",
+          "actor_name": "CURIUM",
+          "alias": "Tortoise Shell",
+          "alias_normalized": "tortoise shell",
+          "mitre_attack_id": "G1012",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--3ea7add5-5b8f-45d8-b1f1-905d2729d62a"
+        }
+      ],
+      "query": "Tortoise Shell",
+      "query_normalized": "tortoise shell"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--e44e0985-bc65-4a8f-b578-211c858128e3",
+          "actor_name": "Transparent Tribe",
+          "alias": "Transparent Tribe",
+          "alias_normalized": "transparent tribe",
+          "mitre_attack_id": "G0134",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--e44e0985-bc65-4a8f-b578-211c858128e3"
+        }
+      ],
+      "query": "Transparent Tribe",
+      "query_normalized": "transparent tribe"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--56319646-eb6e-41fc-ae53-aadfa7adb924",
+          "actor_name": "Tropic Trooper",
+          "alias": "Tropic Trooper",
+          "alias_normalized": "tropic trooper",
+          "mitre_attack_id": "G0081",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--56319646-eb6e-41fc-ae53-aadfa7adb924"
+        }
+      ],
+      "query": "Tropic Trooper",
+      "query_normalized": "tropic trooper"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c",
+          "actor_name": "APT28",
+          "alias": "Tsar Team",
+          "alias_normalized": "tsar team",
+          "mitre_attack_id": "G0007",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--bef4c620-0787-42a8-a96d-b7eb6e85917c"
+        }
+      ],
+      "query": "Tsar Team",
+      "query_normalized": "tsar team"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6",
+          "actor_name": "Turla",
+          "alias": "Turla",
+          "alias_normalized": "turla",
+          "mitre_attack_id": "G0010",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6"
+        }
+      ],
+      "query": "Turla",
+      "query_normalized": "turla"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4",
+          "actor_name": "Mustang Panda",
+          "alias": "TWILL TYPHOON",
+          "alias_normalized": "twill typhoon",
+          "mitre_attack_id": "G0129",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4"
+        }
+      ],
+      "query": "TWILL TYPHOON",
+      "query_normalized": "twill typhoon"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--8332952e-b86b-486b-acc3-1c2a85d39394",
+          "actor_name": "APT-C-23",
+          "alias": "Two-tailed Scorpion",
+          "alias_normalized": "two-tailed scorpion",
+          "mitre_attack_id": "G1028",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--8332952e-b86b-486b-acc3-1c2a85d39394"
+        }
+      ],
+      "query": "Two-tailed Scorpion",
+      "query_normalized": "two-tailed scorpion"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--a7f57cc1-4540-4429-823f-f4e56b8473c9",
+          "actor_name": "Ember Bear",
+          "alias": "UAC-0056",
+          "alias_normalized": "uac-0056",
+          "mitre_attack_id": "G1003",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--a7f57cc1-4540-4429-823f-f4e56b8473c9"
+        },
+        {
+          "actor_id": "intrusion-set--674582ec-51c4-42ce-b409-797239e37a2a",
+          "actor_name": "Saint Bear",
+          "alias": "UAC-0056",
+          "alias_normalized": "uac-0056",
+          "mitre_attack_id": "G1031",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--674582ec-51c4-42ce-b409-797239e37a2a"
+        }
+      ],
+      "query": "UAC-0056",
+      "query_normalized": "uac-0056"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--75a07184-a7e5-4222-95a1-a04dbc96a29c",
+          "actor_name": "Winter Vivern",
+          "alias": "UAC-0114",
+          "alias_normalized": "uac-0114",
+          "mitre_attack_id": "G1035",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--75a07184-a7e5-4222-95a1-a04dbc96a29c"
+        }
+      ],
+      "query": "UAC-0114",
+      "query_normalized": "uac-0114"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0d4ac089-ced4-4cc4-a989-174d08e6d030",
+          "actor_name": "Mustard Tempest",
+          "alias": "UNC1543",
+          "alias_normalized": "unc1543",
+          "mitre_attack_id": "G1020",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0d4ac089-ced4-4cc4-a989-174d08e6d030"
+        }
+      ],
+      "query": "UNC1543",
+      "query_normalized": "unc1543"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--14225573-63b5-4e50-ba9a-5fdcaf6a7b4c",
+          "actor_name": "AppleJeus",
+          "alias": "UNC1720",
+          "alias_normalized": "unc1720",
+          "mitre_attack_id": "G1049",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--14225573-63b5-4e50-ba9a-5fdcaf6a7b4c"
+        }
+      ],
+      "query": "UNC1720",
+      "query_normalized": "unc1720"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--dd2d9ca6-505b-4860-a604-233685b802c7",
+          "actor_name": "Wizard Spider",
+          "alias": "UNC1878",
+          "alias_normalized": "unc1878",
+          "mitre_attack_id": "G0102",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--dd2d9ca6-505b-4860-a604-233685b802c7"
+        }
+      ],
+      "query": "UNC1878",
+      "query_normalized": "unc1878"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--01e28736-2ffc-455b-9880-ed4d1407ae07",
+          "actor_name": "Indrik Spider",
+          "alias": "UNC2165",
+          "alias_normalized": "unc2165",
+          "mitre_attack_id": "G0119",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--01e28736-2ffc-455b-9880-ed4d1407ae07"
+        }
+      ],
+      "query": "UNC2165",
+      "query_normalized": "unc2165"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+          "actor_name": "APT29",
+          "alias": "UNC2452",
+          "alias_normalized": "unc2452",
+          "mitre_attack_id": "G0016",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542"
+        }
+      ],
+      "query": "UNC2452",
+      "query_normalized": "unc2452"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--a7f57cc1-4540-4429-823f-f4e56b8473c9",
+          "actor_name": "Ember Bear",
+          "alias": "UNC2589",
+          "alias_normalized": "unc2589",
+          "mitre_attack_id": "G1003",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--a7f57cc1-4540-4429-823f-f4e56b8473c9"
+        }
+      ],
+      "query": "UNC2589",
+      "query_normalized": "unc2589"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--c1aab4c9-4c34-4f4f-8541-d529e46a07f9",
+          "actor_name": "APT5",
+          "alias": "UNC2630",
+          "alias_normalized": "unc2630",
+          "mitre_attack_id": "G1023",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--c1aab4c9-4c34-4f4f-8541-d529e46a07f9"
+        }
+      ],
+      "query": "UNC2630",
+      "query_normalized": "unc2630"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2",
+          "actor_name": "Volt Typhoon",
+          "alias": "UNC3236",
+          "alias_normalized": "unc3236",
+          "mitre_attack_id": "G1017",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2"
+        }
+      ],
+      "query": "UNC3236",
+      "query_normalized": "unc3236"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+          "actor_name": "APT29",
+          "alias": "UNC3524",
+          "alias_normalized": "unc3524",
+          "mitre_attack_id": "G0016",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542"
+        }
+      ],
+      "query": "UNC3524",
+      "query_normalized": "unc3524"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--461b8e25-8f4a-4ea2-a4a8-e39df7ce6630",
+          "actor_name": "UNC3886",
+          "alias": "UNC3886",
+          "alias_normalized": "unc3886",
+          "mitre_attack_id": "G1048",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--461b8e25-8f4a-4ea2-a4a8-e39df7ce6630"
+        }
+      ],
+      "query": "UNC3886",
+      "query_normalized": "unc3886"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--44d37b89-a739-4810-9111-0d2617a8939b",
+          "actor_name": "Scattered Spider",
+          "alias": "UNC3944",
+          "alias_normalized": "unc3944",
+          "mitre_attack_id": "G1015",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--44d37b89-a739-4810-9111-0d2617a8939b"
+        }
+      ],
+      "query": "UNC3944",
+      "query_normalized": "unc3944"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--14225573-63b5-4e50-ba9a-5fdcaf6a7b4c",
+          "actor_name": "AppleJeus",
+          "alias": "UNC4736",
+          "alias_normalized": "unc4736",
+          "mitre_attack_id": "G1049",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--14225573-63b5-4e50-ba9a-5fdcaf6a7b4c"
+        }
+      ],
+      "query": "UNC4736",
+      "query_normalized": "unc4736"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4",
+          "actor_name": "Mustang Panda",
+          "alias": "UNC6384",
+          "alias_normalized": "unc6384",
+          "mitre_attack_id": "G0129",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--420ac20b-f2b9-42b8-aa1a-6d4b72895ca4"
+        }
+      ],
+      "query": "UNC6384",
+      "query_normalized": "unc6384"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--c21dd6f1-1364-4a70-a1f7-783080ec34ee",
+          "actor_name": "Fox Kitten",
+          "alias": "UNC757",
+          "alias_normalized": "unc757",
+          "mitre_attack_id": "G0117",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--c21dd6f1-1364-4a70-a1f7-783080ec34ee"
+        }
+      ],
+      "query": "UNC757",
+      "query_normalized": "unc757"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0bbdf25b-30ff-4894-a1cd-49260d0dd2d9",
+          "actor_name": "APT3",
+          "alias": "UPS Team",
+          "alias_normalized": "ups team",
+          "mitre_attack_id": "G0022",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0bbdf25b-30ff-4894-a1cd-49260d0dd2d9"
+        }
+      ],
+      "query": "UPS Team",
+      "query_normalized": "ups team"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2",
+          "actor_name": "Volt Typhoon",
+          "alias": "Vanguard Panda",
+          "alias_normalized": "vanguard panda",
+          "mitre_attack_id": "G1017",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2"
+        }
+      ],
+      "query": "Vanguard Panda",
+      "query_normalized": "vanguard panda"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--e1fc262c-dad2-4b82-abda-5f08dd134971",
+          "actor_name": "Velvet Ant",
+          "alias": "Velvet Ant",
+          "alias_normalized": "velvet ant",
+          "mitre_attack_id": "G1047",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--e1fc262c-dad2-4b82-abda-5f08dd134971"
+        }
+      ],
+      "query": "Velvet Ant",
+      "query_normalized": "velvet ant"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f",
+          "actor_name": "Kimsuky",
+          "alias": "Velvet Chollima",
+          "alias_normalized": "velvet chollima",
+          "mitre_attack_id": "G0094",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--0ec2f388-bf0f-4b5c-97b1-fc736d26c25f"
+        }
+      ],
+      "query": "Velvet Chollima",
+      "query_normalized": "velvet chollima"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6",
+          "actor_name": "Turla",
+          "alias": "Venomous Bear",
+          "alias_normalized": "venomous bear",
+          "mitre_attack_id": "G0010",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6"
+        }
+      ],
+      "query": "Venomous Bear",
+      "query_normalized": "venomous bear"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--4283ae19-69c7-4347-a35e-b56f08eb660b",
+          "actor_name": "ZIRCONIUM",
+          "alias": "Violet Typhoon",
+          "alias_normalized": "violet typhoon",
+          "mitre_attack_id": "G0128",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--4283ae19-69c7-4347-a35e-b56f08eb660b"
+        }
+      ],
+      "query": "Violet Typhoon",
+      "query_normalized": "violet typhoon"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--6713ab67-e25b-49cc-808d-2b36d4fbc35c",
+          "actor_name": "Ke3chang",
+          "alias": "Vixen Panda",
+          "alias_normalized": "vixen panda",
+          "mitre_attack_id": "G0004",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--6713ab67-e25b-49cc-808d-2b36d4fbc35c"
+        }
+      ],
+      "query": "Vixen Panda",
+      "query_normalized": "vixen panda"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--ebd7ce77-c9ba-4fba-bb28-58296ac66559",
+          "actor_name": "VOID MANTICORE",
+          "alias": "VOID MANTICORE",
+          "alias_normalized": "void manticore",
+          "mitre_attack_id": "G1055",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--ebd7ce77-c9ba-4fba-bb28-58296ac66559"
+        }
+      ],
+      "query": "VOID MANTICORE",
+      "query_normalized": "void manticore"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--b2e34388-6938-4c59-a702-80dc219e15e3",
+          "actor_name": "Volatile Cedar",
+          "alias": "Volatile Cedar",
+          "alias_normalized": "volatile cedar",
+          "mitre_attack_id": "G0123",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--b2e34388-6938-4c59-a702-80dc219e15e3"
+        }
+      ],
+      "query": "Volatile Cedar",
+      "query_normalized": "volatile cedar"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2",
+          "actor_name": "Volt Typhoon",
+          "alias": "Volt Typhoon",
+          "alias_normalized": "volt typhoon",
+          "mitre_attack_id": "G1017",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2"
+        }
+      ],
+      "query": "Volt Typhoon",
+      "query_normalized": "volt typhoon"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2",
+          "actor_name": "Volt Typhoon",
+          "alias": "Voltzite",
+          "alias_normalized": "voltzite",
+          "mitre_attack_id": "G1017",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--174279b4-399f-4ddb-966e-5efedd1dd5f2"
+        }
+      ],
+      "query": "Voltzite",
+      "query_normalized": "voltzite"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--381fcf73-60f6-4ab2-9991-6af3cbc35192",
+          "actor_name": "Sandworm Team",
+          "alias": "Voodoo Bear",
+          "alias_normalized": "voodoo bear",
+          "mitre_attack_id": "G0034",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--381fcf73-60f6-4ab2-9991-6af3cbc35192"
+        }
+      ],
+      "query": "Voodoo Bear",
+      "query_normalized": "voodoo bear"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--be8847e0-9512-45db-895e-f871ab6d3820",
+          "actor_name": "Water Galura",
+          "alias": "Water Galura",
+          "alias_normalized": "water galura",
+          "mitre_attack_id": "G1050",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--be8847e0-9512-45db-895e-f871ab6d3820"
+        }
+      ],
+      "query": "Water Galura",
+      "query_normalized": "water galura"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6",
+          "actor_name": "Turla",
+          "alias": "Waterbug",
+          "alias_normalized": "waterbug",
+          "mitre_attack_id": "G0010",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6"
+        }
+      ],
+      "query": "Waterbug",
+      "query_normalized": "waterbug"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--a653431d-6a5e-4600-8ad3-609b5af57064",
+          "actor_name": "Deep Panda",
+          "alias": "WebMasters",
+          "alias_normalized": "webmasters",
+          "mitre_attack_id": "G0009",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--a653431d-6a5e-4600-8ad3-609b5af57064"
+        }
+      ],
+      "query": "WebMasters",
+      "query_normalized": "webmasters"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--d13c8a7f-740b-4efa-a232-de7d6bb05321",
+          "actor_name": "Silence",
+          "alias": "Whisper Spider",
+          "alias_normalized": "whisper spider",
+          "mitre_attack_id": "G0091",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--d13c8a7f-740b-4efa-a232-de7d6bb05321"
+        }
+      ],
+      "query": "Whisper Spider",
+      "query_normalized": "whisper spider"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6",
+          "actor_name": "Turla",
+          "alias": "WhiteBear",
+          "alias_normalized": "whitebear",
+          "mitre_attack_id": "G0010",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--7a19ecb1-3c65-4de3-a230-993516aed6a6"
+        }
+      ],
+      "query": "WhiteBear",
+      "query_normalized": "whitebear"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--b74f909f-8e52-4b69-b770-162bf59a1b4e",
+          "actor_name": "Whitefly",
+          "alias": "Whitefly",
+          "alias_normalized": "whitefly",
+          "mitre_attack_id": "G0107",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--b74f909f-8e52-4b69-b770-162bf59a1b4e"
+        }
+      ],
+      "query": "Whitefly",
+      "query_normalized": "whitefly"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+          "actor_name": "APT41",
+          "alias": "Wicked Panda",
+          "alias_normalized": "wicked panda",
+          "mitre_attack_id": "G0096",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7"
+        }
+      ],
+      "query": "Wicked Panda",
+      "query_normalized": "wicked panda"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--4e868dad-682d-4897-b8df-2dc98f46c68a",
+          "actor_name": "Windigo",
+          "alias": "Windigo",
+          "alias_normalized": "windigo",
+          "mitre_attack_id": "G0124",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--4e868dad-682d-4897-b8df-2dc98f46c68a"
+        }
+      ],
+      "query": "Windigo",
+      "query_normalized": "windigo"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--afec6dc3-a18e-4b62-b1a4-5510e1a498d1",
+          "actor_name": "Windshift",
+          "alias": "Windshift",
+          "alias_normalized": "windshift",
+          "mitre_attack_id": "G0112",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--afec6dc3-a18e-4b62-b1a4-5510e1a498d1"
+        }
+      ],
+      "query": "Windshift",
+      "query_normalized": "windshift"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--c5947e1c-1cbc-434c-94b8-27c7e3be0fff",
+          "actor_name": "Winnti Group",
+          "alias": "Winnti Group",
+          "alias_normalized": "winnti group",
+          "mitre_attack_id": "G0044",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--c5947e1c-1cbc-434c-94b8-27c7e3be0fff"
+        }
+      ],
+      "query": "Winnti Group",
+      "query_normalized": "winnti group"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--75a07184-a7e5-4222-95a1-a04dbc96a29c",
+          "actor_name": "Winter Vivern",
+          "alias": "Winter Vivern",
+          "alias_normalized": "winter vivern",
+          "mitre_attack_id": "G1035",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--75a07184-a7e5-4222-95a1-a04dbc96a29c"
+        }
+      ],
+      "query": "Winter Vivern",
+      "query_normalized": "winter vivern"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--f8cb7b36-62ef-4488-8a6d-a7033e3271c1",
+          "actor_name": "WIRTE",
+          "alias": "WIRTE",
+          "alias_normalized": "wirte",
+          "mitre_attack_id": "G0090",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--f8cb7b36-62ef-4488-8a6d-a7033e3271c1"
+        }
+      ],
+      "query": "WIRTE",
+      "query_normalized": "wirte"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--dd2d9ca6-505b-4860-a604-233685b802c7",
+          "actor_name": "Wizard Spider",
+          "alias": "Wizard Spider",
+          "alias_normalized": "wizard spider",
+          "mitre_attack_id": "G0102",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--dd2d9ca6-505b-4860-a604-233685b802c7"
+        }
+      ],
+      "query": "Wizard Spider",
+      "query_normalized": "wizard spider"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--9538b1a4-4120-4e2d-bf59-3b11fcab05a4",
+          "actor_name": "TEMP.Veles",
+          "alias": "XENOTIME",
+          "alias_normalized": "xenotime",
+          "mitre_attack_id": "G0088",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--9538b1a4-4120-4e2d-bf59-3b11fcab05a4"
+        }
+      ],
+      "query": "XENOTIME",
+      "query_normalized": "xenotime"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--3ea7add5-5b8f-45d8-b1f1-905d2729d62a",
+          "actor_name": "CURIUM",
+          "alias": "Yellow Liderc",
+          "alias_normalized": "yellow liderc",
+          "mitre_attack_id": "G1012",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--3ea7add5-5b8f-45d8-b1f1-905d2729d62a"
+        }
+      ],
+      "query": "Yellow Liderc",
+      "query_normalized": "yellow liderc"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542",
+          "actor_name": "APT29",
+          "alias": "YTTRIUM",
+          "alias_normalized": "yttrium",
+          "mitre_attack_id": "G0016",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542"
+        }
+      ],
+      "query": "YTTRIUM",
+      "query_normalized": "yttrium"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--9e729a7e-0dd6-4097-95bf-db8d64911383",
+          "actor_name": "Darkhotel",
+          "alias": "Zigzag Hail",
+          "alias_normalized": "zigzag hail",
+          "mitre_attack_id": "G0012",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--9e729a7e-0dd6-4097-95bf-db8d64911383"
+        }
+      ],
+      "query": "Zigzag Hail",
+      "query_normalized": "zigzag hail"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--c93fccb1-e8e8-42cf-ae33-2ad1d183913a",
+          "actor_name": "Lazarus Group",
+          "alias": "ZINC",
+          "alias_normalized": "zinc",
+          "mitre_attack_id": "G0032",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--c93fccb1-e8e8-42cf-ae33-2ad1d183913a"
+        }
+      ],
+      "query": "ZINC",
+      "query_normalized": "zinc"
+    },
+    {
+      "actors": [
+        {
+          "actor_id": "intrusion-set--4283ae19-69c7-4347-a35e-b56f08eb660b",
+          "actor_name": "ZIRCONIUM",
+          "alias": "ZIRCONIUM",
+          "alias_normalized": "zirconium",
+          "mitre_attack_id": "G0128",
+          "source": "mitre_attack",
+          "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json",
+          "stix_id": "intrusion-set--4283ae19-69c7-4347-a35e-b56f08eb660b"
+        }
+      ],
+      "query": "ZIRCONIUM",
+      "query_normalized": "zirconium"
+    }
+  ],
+  "query_count": 147,
+  "shard_count": 4,
+  "shard_index": 3,
+  "source_url": "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json"
+}

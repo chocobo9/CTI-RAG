@@ -66,7 +66,6 @@ class _FakeSettings:
     groq_query_model: str = "llama-3.1-8b-instant"
     groq_analysis_model: str = "llama-3.3-70b-versatile"
     groq_report_model: str = "llama-3.3-70b-versatile"
-    llm_routing_model: str = "claude-haiku-4-5-20251001"
     generation_max_tokens: int = 512
 
 
@@ -140,12 +139,6 @@ def test_router_all_task_types_return_non_empty_string() -> None:
         assert len(model) > 0
 
 
-def test_router_anthropic_provider_never_returns_groq_models() -> None:
-    # An Anthropic client cannot use Groq model names — every task must route
-    # to llm_routing_model when the provider is anthropic.
-    router = LLMRouter(_FakeSettings(), provider="anthropic")
-    for task in TaskType:
-        assert router.model_for(task) == "claude-haiku-4-5-20251001"
 
 
 # ---------------------------------------------------------------------------

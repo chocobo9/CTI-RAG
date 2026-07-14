@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eval Harness：先说明你在测哪一层</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 07 · Evaluation</p>
+    <h1>Eval Harness：先说明你在测哪一层</h1>
+    <p class="lead">第七课讲 Agentic RAG 的评价。不要一上来问“RAGAS 分数多少”。更工程化的问题是：这个 eval 测的是 retriever 候选、agent 收集到的 evidence、最终答案、citation、faithfulness、成本，还是一次代码变更的回归风险？</p>
+  </header>
+
+  <section>
+    <h2>先看全局：本课在地图哪里</h2>
+    <p>前面我们建立了 runtime、state、tool、ledger、grounding、supervisor。eval harness 要把这些运行层拆成可测对象。一个单分数不能覆盖整个系统，因为每层失败的原因不同，修复方向也不同。</p>
+    <div class="grid">
+      <article class="card">
+        <h3>Retrieval Eval</h3>
+        <p>测 retriever 是否把 gold evidence 放进 top-k。关注 hit@k、MRR、NDCG、category breakdown。</p>
+      </article>
+      <article class="card">
+        <h3>Gathered Evidence Eval</h3>
+        <p>测 agent 工具路径最终收集到的 ledger 是否覆盖问题，而不只看最初检索器。</p>
+      </article>
+      <article class="card">
+        <h3>Answer Eval</h3>
+        <p>测最终 response 是否 relevant、complete、structured，是否回答了用户问题。</p>
+      </article>
+      <article class="card">
+        <h3>Trust Eval</h3>
+        <p>测 faithfulness、citation validity、grounding、conflict handling，避免“看起来像答案”但证据不稳。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课核心胜利：</strong>你能评价任何 CTI-RAG eval 设计时先问“它测的是哪一层的失败模式”。如果一个分数没说明层级，你就不能知道该修 retriever、工具路径、ledger、prompt、composer、citation guard 还是 runtime policy。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：把 eval 从分数变成诊断</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能区分 retrieval eval、gathered evidence eval、answer eval、faithfulness/citation eval、latency/cost eval。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能解释 hit@k、MRR、context precision/recall、faithfulness、answer relevancy 各自不能证明什么。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能读懂 CTI-RAG 的 eval 代码，把 dataset、gold ids、answer objects、RAGAS dataset 和 regression tests 对上。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>很多 eval 文档会直接堆指标。我会先从故障诊断角度问：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>为什么先问它</th><th>例子</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>这个 eval 的输入是什么？</td>
+          <td>输入决定测量对象。</td>
+          <td>输入是 raw retriever results，还是 final AgenticAnswer？</td>
+        </tr>
+        <tr>
+          <td>gold/reference 是什么？</td>
+          <td>没有 gold，就只能做 judge/heuristic，不能算某些确定性指标。</td>
+          <td>gold attack id、expected chunk ids、reference answer。</td>
+        </tr>
+        <tr>
+          <td>指标失败时能定位到哪层吗？</td>
+          <td>eval 的价值在于诊断和回归，不只是排名。</td>
+          <td>retrieval hit@k 低，可能是 index/retriever 问题；citation invalid 是 guard/synthesis 问题。</td>
+        </tr>
+        <tr>
+          <td>它测的是本次 run 还是离线组件？</td>
+          <td>Agentic RAG 的工具路径会改变最终 evidence。</td>
+          <td>retriever 离线 top-k 好，不代表 agent 真的调用了正确工具。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一张图：Agentic RAG 的 eval 层</h2>
+    <p>这张图不是流水线执行顺序，而是 eval 视角的切片。每个切片问不同问题。</p>
+    <div class="flow">
+      <div>Retriever<br>候选证据</div>
+      <div>Agent Gather<br>ledger 覆盖</div>
+      <div>Answer<br>最终响应</div>
+      <div>Grounding<br>证据忠实</div>
+      <div>Ops Regression<br>成本与稳定性</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>层</th><th>典型输入</th><th>典型指标</th><th>不能证明什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Retriever</td>
+          <td>query + retriever top-k results。</td>
+          <td>hit@k、MRR、NDCG、category metrics。</td>
+          <td>不能证明 agent 最终用了这些证据，也不能证明答案 faithful。</td>
+        </tr>
+        <tr>
+          <td>Gathered Evidence</td>
+          <td>最终 ledger、tool calls、branch reports。</td>
+          <td>coverage、gold id present、tool path success、gap rate。</td>
+          <td>不能证明答案写得好。</td>
+        </tr>
+        <tr>
+          <td>Answer Quality</td>
+          <td>最终 response、user query、reference answer。</td>
+          <td>answer relevancy、completeness、task success。</td>
+          <td>不能单独证明引用真实或 evidence 支撑。</td>
+        </tr>
+        <tr>
+          <td>Faithfulness/Citation</td>
+          <td>response + retrieved contexts + citations。</td>
+          <td>faithfulness、context precision/recall、citation validity、dropped citations。</td>
+          <td>不能证明 retriever 离线召回好，也不能覆盖所有产品体验。</td>
+        </tr>
+        <tr>
+          <td>Ops/Regression</td>
+          <td>trace、latency、cost、stop reason、test fixtures。</td>
+          <td>p95 latency、token cost、tool count、golden set pass rate。</td>
+          <td>不能替代语义质量评估。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心概念一：retrieval eval 是必要的底座</h2>
+    <p>retrieval eval 直接测“候选证据有没有被找回来”。如果 gold evidence 连 top-k 都进不了，后续 agent 再聪明也很难稳定回答。CTI 场景里，gold 可能是 ATT&amp;CK technique id、expected chunk id、source + attack id 的模糊匹配等。</p>
+    <table>
+      <thead>
+        <tr><th>指标</th><th>它问什么</th><th>它不问什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>hit@k</td>
+          <td>top-k 中是否命中 gold。</td>
+          <td>不关心 gold 排第几之后的细节，也不关心答案。</td>
+        </tr>
+        <tr>
+          <td>MRR</td>
+          <td>第一个正确结果排得有多靠前。</td>
+          <td>不评估多个正确证据是否都被覆盖。</td>
+        </tr>
+        <tr>
+          <td>NDCG</td>
+          <td>排序质量，尤其是多相关等级时。</td>
+          <td>不直接证明最终 synthesis faithful。</td>
+        </tr>
+        <tr>
+          <td>Category metrics</td>
+          <td>不同问题类别上的表现差异。</td>
+          <td>不自动解释原因，需要结合数据和 trace。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>retrieval eval 是底座，但不是整栋楼。Agentic RAG 的后续工具选择、branching、ledger merge、citation guard 都可能让最终表现好于或差于 raw retriever。</p>
+  </section>
+
+  <section>
+    <h2>核心概念二：gathered evidence eval 测 agent 是否把证据真的拿到手</h2>
+    <p>Agentic RAG 不只是一次 retriever top-k。它可能先 resolve entity，再 graph outline，再 facts_for_evidence，再 retrieve 补充文本。所以 eval 需要一层专门问：最终 ledger 是否有足够证据？</p>
+    <table>
+      <thead>
+        <tr><th>信号</th><th>代表什么</th><th>失败时可能修哪里</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ledger contains gold id</td>
+          <td>agent path 最终收集到 gold evidence。</td>
+          <td>tool routing、query rewrite、graph target selection。</td>
+        </tr>
+        <tr>
+          <td>coverage gaps</td>
+          <td>sufficiency judge 认为仍缺 facet。</td>
+          <td>branch plan、next action policy、stop policy。</td>
+        </tr>
+        <tr>
+          <td>tool_call_count</td>
+          <td>达到答案用了多少工具动作。</td>
+          <td>预算、重复调用、routing efficiency。</td>
+        </tr>
+        <tr>
+          <td>stop_reason</td>
+          <td>为什么停止。</td>
+          <td>no_progress、budget、timeout、sufficient 的阈值。</td>
+        </tr>
+        <tr>
+          <td>branch statuses</td>
+          <td>supervisor 分支是否 partial/empty/failed。</td>
+          <td>branch planning、worker robustness、merge behavior。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心概念三：RAGAS 类 eval 测的是答案与 context 的关系</h2>
+    <p>RAGAS 这类 eval 通常需要把最终 answer 转成 dataset：用户问题、retrieved contexts、response，有 reference 时再加 reference。CTI-RAG 的 <code>answers_to_ragas_dataset</code> 就是把 <code>AgenticAnswer</code> 中的 query、query_result results、response 转成这样的结构。</p>
+    <table>
+      <thead>
+        <tr><th>字段</th><th>来自哪里</th><th>概念意义</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>user_input</code></td>
+          <td>原始 query。</td>
+          <td>answer relevancy 要知道用户问什么。</td>
+        </tr>
+        <tr>
+          <td><code>retrieved_contexts</code></td>
+          <td>answer 的 query_result / ledger-derived contexts。</td>
+          <td>faithfulness 和 context metrics 需要证据上下文。</td>
+        </tr>
+        <tr>
+          <td><code>response</code></td>
+          <td>最终答案文本。</td>
+          <td>judge 比较 response 与 query/context/reference。</td>
+        </tr>
+        <tr>
+          <td>reference</td>
+          <td>可选 gold answer。</td>
+          <td>有 reference 时可以测更强的 correctness/recall；没有时只能做无参考指标。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>这里要小心：RAGAS 分数也不是“真理”。如果 retrieved_contexts 本身错了，faithfulness 高可能只说明答案忠实于错误 context；如果 reference 缺失，context recall 这类指标就不能正常解释。</p>
+  </section>
+
+  <section>
+    <h2>CTI-RAG 里的代码映射</h2>
+    <table>
+      <thead>
+        <tr><th>代码位置</th><th>概念职责</th><th>读的时候重点问什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>evaluation/retrieval_metrics.py::hit_at_k</code></td>
+          <td>检查 top-k 是否命中 gold attack id 或相关 id。</td>
+          <td>gold matching 是 exact、parent/subtechnique，还是 fuzzy？</td>
+        </tr>
+        <tr>
+          <td><code>reciprocal_rank</code></td>
+          <td>第一个正确结果越靠前，分数越高。</td>
+          <td>多个 gold 时怎么处理？没有命中如何返回？</td>
+        </tr>
+        <tr>
+          <td><code>evaluate_retriever</code></td>
+          <td>离线评估 retriever 在 dataset 上的 top-k 表现。</td>
+          <td>dataset 是否代表真实 CTI 问题分布？</td>
+        </tr>
+        <tr>
+          <td><code>QuerySetRecord / QuerySetEvalResult</code></td>
+          <td>按 category、expected chunk ids、semantic/fuzzy 规则评估 query set。</td>
+          <td>是否能定位某类 query 退化？</td>
+        </tr>
+        <tr>
+          <td><code>evaluation/ragas_eval.py::answers_to_ragas_dataset</code></td>
+          <td>把 AgenticAnswer 转成 RAGAS dataset。</td>
+          <td>contexts 是否来自 answer.query_result？空 contexts 如何处理？</td>
+        </tr>
+        <tr>
+          <td><code>RagasEvalResult</code></td>
+          <td>保存 faithfulness、answer relevancy、context precision/recall、per-query、config。</td>
+          <td>reference 缺失时默认值如何解释？</td>
+        </tr>
+        <tr>
+          <td><code>tests/unit/test_retrieval_metrics.py</code></td>
+          <td>验证 retrieval metrics 行为。</td>
+          <td>测试覆盖 hit/mrr/category/per_query，而不是最终答案质量。</td>
+        </tr>
+        <tr>
+          <td><code>tests/unit/test_ragas_eval.py</code></td>
+          <td>验证 answer 到 RAGAS dataset 的转换。</td>
+          <td>测试证明数据格式正确，不证明 judge 分数一定可靠。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>具体场景：retrieval 分数高，但最终答案差</h2>
+    <p>假设离线 retriever hit@5 很高，gold chunk 总能进入 top-5。但 agent 最终答案仍然错。可能原因包括：</p>
+    <table>
+      <thead>
+        <tr><th>层</th><th>可能失败</th><th>你该看什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tool routing</td>
+          <td>agent 没有调用 retrieve，或过早走了错误 graph path。</td>
+          <td>RuntimeEvents、tool_call_count、observations。</td>
+        </tr>
+        <tr>
+          <td>Ledger</td>
+          <td>工具返回了结果，但没有正确进入 ledger。</td>
+          <td>ledger delta、real_id_set、query_result union。</td>
+        </tr>
+        <tr>
+          <td>Context assembly</td>
+          <td>gold chunk 在 ledger，但没进入 synthesis context。</td>
+          <td>top-k selection、fact_limit、context budget。</td>
+        </tr>
+        <tr>
+          <td>Synthesis</td>
+          <td>模型看到了证据，但写错或夸大。</td>
+          <td>faithfulness eval、claim-level review。</td>
+        </tr>
+        <tr>
+          <td>Citation</td>
+          <td>答案引用错误 ID 或漏引关键 ID。</td>
+          <td>citation guard、dropped_citation_count、cited_ids。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>所以 eval harness 应该能沿着 trace 定位，而不是只报告“总体分数下降”。</p>
+  </section>
+
+  <section>
+    <h2>具体场景：RAGAS faithfulness 高，也不代表产品可用</h2>
+    <p>如果答案严格复述 retrieved contexts，faithfulness 可能高。但用户体验仍可能差：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>为什么 faithfulness 不足以发现</th><th>需要补什么 eval</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>证据没覆盖用户关键 facet。</td>
+          <td>答案忠实于不完整 contexts。</td>
+          <td>sufficiency / coverage eval。</td>
+        </tr>
+        <tr>
+          <td>答案没有回答用户实际 intent。</td>
+          <td>faithfulness 不一定看 task success。</td>
+          <td>answer relevancy、task-specific rubric。</td>
+        </tr>
+        <tr>
+          <td>引用格式或 ID 错误。</td>
+          <td>faithfulness judge 未必检查 deterministic id validity。</td>
+          <td>citation guard metrics。</td>
+        </tr>
+        <tr>
+          <td>延迟和成本太高。</td>
+          <td>语义质量分不测 ops。</td>
+          <td>latency、token、tool count budgets。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>为什么不对</th><th>更好的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“一个 RAGAS 分数就能代表系统好坏。”</td>
+          <td>它只覆盖特定 answer/context 关系，不覆盖所有 runtime、retrieval、ops 风险。</td>
+          <td>用分层 eval 矩阵。</td>
+        </tr>
+        <tr>
+          <td>“retrieval hit@k 高，答案就会好。”</td>
+          <td>agent 可能没使用正确证据，或 synthesis 出错。</td>
+          <td>retrieval 是底座，不是最终质量。</td>
+        </tr>
+        <tr>
+          <td>“没有 reference 就不能 eval。”</td>
+          <td>不能做某些 reference-based 指标，但仍可做 citation validity、faithfulness judge、latency、regression。</td>
+          <td>区分 reference-based、reference-free、deterministic checks。</td>
+        </tr>
+        <tr>
+          <td>“eval 只给模型质量用。”</td>
+          <td>很多退化来自 tool boundary、state、ledger、branching、context assembly。</td>
+          <td>eval 要覆盖系统层，不只模型层。</td>
+        </tr>
+        <tr>
+          <td>“unit tests 和 eval 是一回事。”</td>
+          <td>unit tests 验证确定性契约，eval 测数据分布上的质量表现。</td>
+          <td>两者互补：contract tests 防回归，eval 发现质量变化。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>读代码时问什么</h2>
+    <table>
+      <thead>
+        <tr><th>审计问题</th><th>你在找什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>这个 eval 的 unit of analysis 是什么？</td>
+          <td>query、retriever result、AgenticAnswer、branch report、trace 还是 whole run。</td>
+        </tr>
+        <tr>
+          <td>gold labels 怎么定义？</td>
+          <td>attack id、chunk id、semantic expected ids、reference answer 是否清晰。</td>
+        </tr>
+        <tr>
+          <td>指标失败能定位到哪层？</td>
+          <td>是否能从 per-query、category、trace metadata 看到 failure source。</td>
+        </tr>
+        <tr>
+          <td>deterministic checks 和 judge checks 是否分开？</td>
+          <td>ID validity、schema、budgets 用代码；faithfulness/coverage 用 judge 或人工 rubric。</td>
+        </tr>
+        <tr>
+          <td>eval 是否记录 config？</td>
+          <td>模型、retriever、top-k、threshold、dataset version、timestamp。</td>
+        </tr>
+        <tr>
+          <td>是否有 regression/golden set？</td>
+          <td>架构改动后，核心行为是否能自动发现退化。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：先说清楚测量层</h2>
+    <div class="quiz-grid">
+      <div class="quiz quiz-question">
+        <p><strong>1. hit@k 主要测什么？</strong></p>
+        <button data-correct="true" data-feedback="对。hit@k 测 top-k 候选中是否出现 gold evidence 或 gold id。它是 retrieval 层指标。">retriever top-k 是否命中 gold。</button>
+        <button data-correct="false" data-feedback="hit@k 不看最终答案文本。答案可能错，即使 gold chunk 已经在 top-k。">最终答案是否 faithful。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>2. MRR 比 hit@k 多看了什么？</strong></p>
+        <button data-correct="false" data-feedback="MRR 仍是 retrieval/ranking 指标，不看生成文本，也不判断 evidence coverage 是否完整。它只告诉你第一个正确候选在排序里出现得早不早。">答案是否覆盖所有 facet。</button>
+        <button data-correct="true" data-feedback="对。MRR 关心第一个正确结果的排名，越靠前越好。它的诊断价值在于发现 gold evidence 虽然能被召回，但排得太后，后续 context selection 可能拿不到。">第一个正确结果排得有多靠前。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>3. retriever eval 高但答案差，最合理的下一步是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。沿 runtime trace 看 agent 是否调用了正确工具、ledger 是否收到了 gold、context 是否进入 synthesis、citation 是否验证。">检查 agent gather、ledger、context assembly 和 synthesis trace。</button>
+        <button data-correct="false" data-feedback="先别急着换 retriever。离线 retriever 已经表现好，失败可能在 agent runtime 后半段。">立刻重写 retriever。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>4. RAGAS 的 retrieved_contexts 应该来自哪里更合理？</strong></p>
+        <button data-correct="false" data-feedback="训练记忆不是本次 RAG evidence。RAGAS 的 contexts 应该反映系统给答案的检索/ledger evidence。">模型训练记忆。</button>
+        <button data-correct="true" data-feedback="对。CTI-RAG 中 contexts 来自 AgenticAnswer 的 query_result，也就是 ledger-derived evidence view。">本次 answer 的 query_result / ledger-derived contexts。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>5. reference 缺失时，context recall 怎么解释？</strong></p>
+        <button data-correct="true" data-feedback="对。没有 reference/gold 时，某些 reference-based 指标无法正常计算或只能用默认占位。要在报告里说明。">不能按有 reference 的方式解释，需标明缺失或默认值。</button>
+        <button data-correct="false" data-feedback="这会制造虚假确定性。无参考指标和有参考指标要分开看。">照常当成完整质量分。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>6. citation validity 更适合用什么检查？</strong></p>
+        <button data-correct="true" data-feedback="对。引用 ID 是否属于 ledger real_id_set 是确定性集合检查，用 guard 更稳。">deterministic guard。</button>
+        <button data-correct="false" data-feedback="LLM judge 可以评估 claim 支撑，但 ID 是否存在没必要让它猜。">只用 LLM judge。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>7. faithfulness 高但用户仍不满意，可能缺哪个 eval？</strong></p>
+        <button data-correct="false" data-feedback="faithfulness 已经高了，问题可能不是忠实性，而是 task success、coverage 或产品约束。">再测一次 faithfulness 就够。</button>
+        <button data-correct="true" data-feedback="对。答案可能忠实于不完整 contexts，但没有覆盖用户问题。需要 sufficiency/coverage/task-specific eval。">sufficiency / coverage / task success eval。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>8. eval config 为什么要记录？</strong></p>
+        <button data-correct="true" data-feedback="对。模型、retriever、top-k、dataset、threshold 变化都会影响分数。没有 config 就无法复现和比较。">为了复现和解释分数变化。</button>
+        <button data-correct="false" data-feedback="恰恰相反，eval 报告如果没有 config，很难知道是代码变了、模型变了还是数据集变了。">没有实际价值。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>9. unit tests 和 eval 的关系是什么？</strong></p>
+        <button data-correct="false" data-feedback="它们不同但互补。unit tests 验证确定性行为，eval 测质量和分布表现。">完全一样。</button>
+        <button data-correct="true" data-feedback="对。contract/unit tests 防止边界行为回归，eval 在数据集上衡量质量、覆盖和成本。">互补：一个测契约，一个测质量表现。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>10. 一个好 eval harness 最重要的特征是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。可诊断性比单一分数更重要。你要能知道失败属于 retriever、gather、ledger、synthesis、citation、faithfulness 还是 ops。">能把失败定位到具体系统层。</button>
+        <button data-correct="false" data-feedback="高分当然好，但没有层级诊断，高分也不知道为什么高，低分也不知道该修哪里。">只输出一个高分。</button>
+        <div class="feedback"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>本课小结</h2>
+    <p>Agentic RAG eval 的第一原则是先说明测量层。retrieval eval 测候选证据召回，gathered evidence eval 测 agent 是否把证据收进 ledger，answer eval 测响应任务质量，faithfulness/citation eval 测证据忠实和引用真实性，ops/regression eval 测成本、延迟和稳定性。最后一课会把全课程合起来，学习如何从架构评价角度审 CTI-RAG 的 runtime contract、代码证据、测试证据和残余风险。</p>
+  </section>
+
+  <section>
+    <h2>继续学习</h2>
+    <p><a href="0006-supervisor-as-coordination-layer.html">上一课：Supervisor</a> · <a href="../reference/0001-learning-route.html">学习路线</a> · <a href="0008-architecture-review-from-contract-to-evidence.html">下一课：Architecture Review</a></p>
+  </section>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

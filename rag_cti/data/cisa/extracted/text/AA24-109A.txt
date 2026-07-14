@@ -1,0 +1,493 @@
+Cybersecurity Advisory
+
+# #StopRansomware: Akira Ransomware
+
+Last Revised
+
+November 13, 2025
+
+Alert Code
+
+AA24-109A
+
+Related topics:
+
+Cybersecurity Best Practices , Cyber Threats and Response , Incident Response
+
+#### Actions for Organizations to Take Today to Mitigate Cyber Threats Related to Akira Ransomware Activity
+
+Prioritize remediating known exploited vulnerabilities.
+
+Enable and enforce phishing-resistant multifactor authentication (MFA).
+
+Maintain regular backups of critical data, ensure backups are stored offline, and regularly test the restoration process.
+
+## Summary
+
+This joint Cybersecurity Advisory is part of an ongoing #StopRansomware effort to publish advisories for network defenders that detail various ransomware variants and ransomware threat actors. These #StopRansomware advisories include recently and historically observed tactics, techniques, and procedures (TTPs) and indicators of compromise (IOCs) to help organizations protect against ransomware. Visit StopRansomware.gov to see all #StopRansomware advisories and to learn more about other ransomware threats and no-cost resources.
+
+Note: Originally published April 18, 2024, this advisory was updated Nov. 13, 2025, with information on new Akira ransomware activity that presents an imminent threat to critical infrastructure. Updated information is labeled with “Update Nov. 13, 2025” at the beginning and “End Update” at the end of sections that include substantive new information, such as new Akira threat actor activity, TTPs, and IOCs.
+
+Update Nov. 13, 2025:
+
+The United States’ Federal Bureau of Investigation (FBI), Cybersecurity and Infrastructure Security Agency (CISA), Department of Defense Cyber Crime Center (DC3), and Department of Health and Human Services (HHS); Europol’s European Cybercrime Centre (EC3); France’s Office Anti-Cybercriminalite (OFAC) – French Cybercrime Central Office; Germany’s Generalstaatsanwaltschaft Karlsruhe – Cybercrime-Zentrum Baden-Württemberg and Landeskriminalamt Baden-Württemberg; and the Netherlands’s National Cyber Security Centre (NCSC-NL)—hereafter referred to as the “authoring organizations”—are releasing this joint advisory to disseminate known Akira ransomware IOCs and TTPs identified through FBI investigations and trusted third-party reporting as recently as November 2025.
+
+Akira ransomware threat actors are associated with other groups known as Storm-1567, Howling Scorpius, Punk Spider, and Gold Sahara, and may have connections to the defunct Conti ransomware group. Akira threat actors primarily target small- and medium-sized businesses, but have also impacted larger organizations across various sectors. They have a notable preference for educational institutions and organizations in the Critical Manufacturing, Information Technology, Healthcare and Public Health, Financial Services, and Food and Agriculture sectors.
+
+End Update
+
+Since March 2023, Akira ransomware threat actors have impacted a wide range of businesses and critical infrastructure entities in North America, Europe, and Australia. In April 2023, following an initial focus on Windows systems, Akira threat actors deployed a Linux variant targeting VMware Elastic Sky X Integrated (ESXi) virtual machines (VMs).
+
+Update Nov. 13, 2025:
+
+Based on trusted third-party reporting, Akira threat actors deployed payloads to target Nutanix Acropolis Hypervisor (AHV) systems in a June 2025 incident.
+
+Akira threat actors likely abused Common Vulnerabilities and Exposures (CVE)-2024-40766(link is external) (Common Weakness Enumeration [CWE]-284: Improper Access Control(link is external)), a SonicWall vulnerability, for initial access. As of late September 2025, Akira ransomware has claimed approximately $244.17 million (USD) in ransomware proceeds.
+
+End Update
+
+Early versions of the Akira ransomware variant used C++ to write the code and encrypted files with a .akira extension; however, beginning in August 2023, some Akira attacks began deploying a Megazord encryptor—a Rust-based tool that encrypts files with a .powerranges extension. Akira threat actors have continued to use both Megazord and Akira (including Akira_v2, as identified by trusted third-party investigations) interchangeably.
+
+The authoring organizations encourage organizations to implement the recommendations in the Mitigations section of this advisory to reduce the likelihood and impact of Akira ransomware incidents.
+
+Download the PDF version of this report:
+
+#StopRansomware Akira Ransomware (NOV 2025) (PDF, 1.15 MB )
+
+For a downloadable copy of Nov. 13, 2025 IOCs, see:
+
+AA24-109A-#StopRansomware-Akira-Ransomware.stix_.xml (XML, 105.55 KB )
+
+AA24-109A-#StopRansomware-Akira-Ransomware.stix_.json (JSON, 70.17 KB )
+
+For a downloadable copy of historic IOCs, see:
+
+AA24-109A STIX XML (XML, 114.01 KB )
+
+AA24-109A STIX JSON (JSON, 67.80 KB )
+
+## Technical Details
+
+Note: This advisory uses the MITRE ATT&CK® Matrix for Enterprise(link is external) framework, version 18. See the MITRE ATT&CK Tactics and Techniques section of this advisory for tables with the threat actors’ activity mapped to MITRE ATT&CK tactics and techniques.
+
+### Initial Access
+
+FBI and cybersecurity researchers1 observed Akira threat actors obtaining initial access to organizations through a virtual private network (VPN) service without multifactor authentication (MFA) configured,2 mostly using known Common Vulnerabilities and Exposures (CVEs) [T1190(link is external)], including:
+
+CVE-2020-3259(link is external) [Common Weakness Enumeration (CWE)-200: Exposure of Sensitive Information to an Unauthorized Actor(link is external)];
+
+CVE-2023-20269(link is external) [CWE-288: Authentication Bypass Using an Alternate Path or Channel(link is external)];
+
+Update Nov. 13, 2025:
+
+CVE-2020-3580(link is external) [CWE-79: Improper Neutralization of Input During Web Page Generation (‘Cross-site Scripting’)(link is external)]3
+
+CVE-2023-28252(link is external) [CWE-122: Heap-based Buffer Overflow(link is external)];4 and
+
+CVE-2024-37085(link is external) [CWE-305: Authentication Bypass by Primary Weakness(link is external)].5
+
+Additionally, the authoring organizations observed Akira threat actors using these CVE exploits for initial access:
+
+CVE-2023-27532(link is external) [CWE-306: Missing Authentication for Critical Function(link is external)];
+
+CVE-2024-40711(link is external) [CWE-502: Deserialization of Untrusted Data(link is external)]; and
+
+CVE-2024-40766(link is external) [CWE-284: Improper Access Control(link is external)].
+
+End Update
+
+For initial access, Akira threat actors also use techniques including spearphishing [T1566.001(link is external)][T1566.002(link is external)], abusing valid credentials [T1078(link is external)], and techniques that leverage external-facing services, like Remote Desktop Protocol (RDP) [T1133(link is external)].6
+
+Update Nov. 13, 2025:
+
+Akira threat actors gain access to VPN products such as SonicWall, by stealing login credentials or exploiting vulnerabilities like CVE-2024-40766(link is external). In some instances, they gain initial access through compromised VPN credentials, potentially by using initial access brokers or brute-forcing VPN endpoints [T1110(link is external)]. Additionally, Akira threat actors deploy password spraying techniques, using tools such as SharpDomainSpray to gain access to account credentials [T1110.003(link is external)].
+
+Akira threat actors also deploy payloads to target Nutanix Acropolis Hypervisor (AHV) systems; this is the first observed instance in which Akira threat actors encrypted Nutanix AHV virtual machine (VM) disk files, indicating that they targeted hypervisors beyond the historical targeting of VMware ESXi and Hyper-V.
+
+In other incidents, indicators suggest that Akira threat actors gained initial access through the Secure Shell (SSH) protocol by exploiting a router’s IP address [T1021.004(link is external)]. After tunneling through a targeted router, Akira threat actors exploit publicly available vulnerabilities, such as those found in the Veeam Backup and Replication component of unpatched Veeam backup servers [T1068(link is external)] (CVE-2023-27532(link is external) and CVE-2024-40711(link is external)).7
+
+End Update
+
+### Execution
+
+Update Nov. 13, 2025:
+
+Akira threat actors frequently execute malicious commands by using Visual Basic (VB) scripts (event-driven programming languages that allow documents to contain macros to improve functionality through autonomous task execution) [T1059.005(link is external)].
+
+End Update
+
+### Persistence and Discovery
+
+Once initial access is achieved, Akira threat actors attempt to establish persistence by creating new domain accounts [T1136.002(link is external)] to abuse the functions of domain controllers. In some instances, the authoring organizations identified Akira threat actors creating an administrative account named itadm.
+
+According to the authoring organizations and open source reporting, Akira threat actors leverage post-exploitation techniques, such as Kerberoasting,8 to extract credentials stored in the process memory of the Local Security Authority Subsystem Service (LSASS)9 [T1003.001(link is external)]. Akira threat actors also use credential scraping tools [T1003(link is external)], like Mimikatz(link is external) and LaZagne(link is external), to aid in privilege escalation. For network discovery and reconnaissance, actors use tools like SoftPerfect, Advanced IP Scanner, and NetScan [T1016(link is external)]. net Windows commands [T1059.003(link is external)] are used to identify domain controllers [T1018(link is external)] and gather information on domain trust relationships [T1482(link is external)].
+
+See Table 1 for a descriptive listing of tools leveraged for malicious purposes by Akira threat actors.
+
+Update Nov. 13, 2025:
+
+The authoring organizations observed Akira threat actors using nltest /dclist: and nltest /DOMAIN_TRUSTS [T1018(link is external)][T1482(link is external)] for network and domain discovery.
+
+End Update
+
+### Defense Evasion
+
+As Akira threat actors prepare for lateral movement, they commonly disable security software to avoid detection. Cybersecurity researchers observed Akira threat actors using PowerTool to exploit the Zemana AntiMalware driver10 and terminate antivirus-related processes [T1562.001(link is external)].
+
+Update Nov. 13, 2025:
+
+In addition, the authoring organizations observed Akira threat actors abusing remote access tools such as AnyDesk and LogMeIn [T1219(link is external)] to maintain persistence and blend in with administrator activity. Akira threat actors leverage Impacket(link is external) (an open source tool designed for network protocol manipulation) to execute the remote command wmiexec.py. To evade detection, Akira threat actors implement techniques such as uninstalling endpoint detection and response (EDR) systems [T1562.001(link is external)].
+
+End Update
+
+### Privilege Escalation
+
+Update Nov. 13, 2025:
+
+The authoring organizations observed Akira threat actors creating new user accounts and adding them to the administrator group to establish a foothold in the environment [T1136.001(link is external)]. In a reported incident, Akira threat actors bypassed Virtual Machine Disk (VMDK) file protection by temporarily powering down the domain controller’s VM, copying the VMDK files, and attaching them to a newly created VM. This sequence of actions enabled them to extract the NTDS.dit file and the SYSTEM hive, ultimately compromising a highly privileged domain administrator’s account [T1003.002(link is external)][T1003.003(link is external)].11 Akira threat actors have also been observed leveraging services like Veeam.Backup.MountService.exe for privilege escalation (CVE-2024-40711(link is external)) [T1068(link is external)].
+
+End Update
+
+### Lateral Movement
+
+Update Nov. 13, 2025:
+
+To pivot laterally, Akira threat actors use legitimate remote access tools like AnyDesk or LogMeIn [T1219(link is external)]. They also employ RDP [T1021.001(link is external)], SSH [T1021.004(link is external)], and MobaXterm to expand their presence within the compromised network [T1021(link is external)].
+
+End Update
+
+### Command and Control
+
+Update Nov. 13, 2025:
+
+Based on observations from the authoring organizations and trusted third-party reporting, it has been determined that Megazord has likely fallen out of use since 2024.12
+
+End Update
+
+Trusted third-party investigations revealed that Akira threat actors deployed two distinct ransomware variants against different system architectures during one attempted compromise. Analysts first identified Akira threat actors deploying the Windows-specific “Megazord” ransomware, and further investigation revealed the threat actors concurrently deployed a second payload during the attack, later identified as a novel variant of the Akira ESXi encryptor, Akira_v2.
+
+Update Nov. 13, 2025:
+
+The authoring organizations observed Akira threat actors establishing command and control (C2) communications by using tunneling utilities, such as Ngrok(link is external) [T1572(link is external)], to initiate encrypted sessions that bypass perimeter monitoring. They also use PowerShell and Windows Management Instrumentation Command-line (WMIC) [T1059.001(link is external)] to disable services and execute malicious scripts.
+
+End Update
+
+### Exfiltration and Impact
+
+Akira threat actors leverage tools such as FileZilla and WinRAR to collect data [T1560.001(link is external)] and WinSCP and RClone(link is external) to exfiltrate data [T1048(link is external)]. To establish C2 channels, threat actors leverage readily available tools like AnyDesk, MobaXterm, RustDesk, and Cloudflare Tunnel. These tools enable exfiltration through various protocols such as File Transfer Protocol (FTP), Secure File Transfer Protocol (SFTP), and cloud storage services like Mega [T1537(link is external)], to connect to exfiltration servers. In some instances, Akira threat actors use Ngrok to create secure tunnels for data exfiltration [T1090(link is external)].
+
+After exfiltrating data, Akira threat actors use a double-extortion model [T1657(link is external)], which involves threat actors both encrypting systems [T1486(link is external)] and threatening to leak sensitive information. The Akira ransom note provides each company with a unique code and instructions to contact the threat actors via a .onion URL, which is accessible through the Tor network [T1090.003(link is external)][T1573.002(link is external)].
+
+(Note: Tor(link is external), short for The Onion Router, is a decentralized network designed to anonymize internet traffic by routing it through multiple servers, encrypting data at each step. This network is often leveraged by threat actors to conceal their identities and activities, enabling secure and anonymous communication channels for malicious purposes, such as ransomware negotiations.)
+
+Akira threat actors do not leave an initial ransom demand or payment instructions on compromised networks and do not relay this information until contacted by the victim. Victims make ransom payments by using Bitcoin to cryptocurrency-wallet addresses provided by the Akira threat actors. To further apply pressure, Akira threat actors threaten to publish exfiltrated data on the Tor network, and in some instances have called victimized companies, according to FBI reporting.
+
+Update Nov. 13, 2025:
+
+In some incidents, Akira threat actors exfiltrated data in just over two hours from initial access.13
+
+End Update
+
+### Encryption
+
+Akira threat actors use a sophisticated hybrid encryption scheme to lock data. This involves combining a ChaCha20 stream cipher with an RSA public-key cryptosystem for a fast and secure key exchange [T1486(link is external)]. This multilayered approach customizes encryption methods based on file type and size, and enables full or partial encryption. Encrypted files are appended with a .akira or .powerranges extension.
+
+Update Nov. 13, 2025:
+
+With the new Akira_v2 variant, encrypted files are appended either with an .akira or .powerranges extension, or with .akiranew or .aki.
+
+End Update
+
+To further inhibit system recovery and impede forensic analysis, Akira’s encryptor (w.exe) uses PowerShell commands to delete Volume Shadow Copy Service (VSS) copies on Windows systems [T1490(link is external)].
+
+Update Nov. 13, 2025:
+
+Additionally, a ransom note named fn.txt or akira_readme.txt appears in both the root directory (C:) and each user’s home directory (C:\Users).
+
+End Update
+
+Trusted third-party analysis determined the Akira_v2 encryptor is an upgrade from its previous version and includes additional functionalities because it is written in Rust. Previous versions of the encryptor provided options to insert arguments at runtime, including:
+
+- p –encryption_path (targeted file/folder paths);
+
+-s –share_file (targeted network drive path);
+
+-n –encryption_percent (percentage of encryption); and
+
+--fork (create a child process for encryption).
+
+Including threads allows the threat actors more granular control over the number of CPU cores in use, increasing the speed and efficiency of the encryption process. The Akira_v2 encryptor also adds a layer of protection, using the Build ID as a run condition to hinder dynamic analysis. The encryptor is unable to successfully execute without the specific Build ID. Akira_v2 also can deploy against only VMs using vmonly and stop running VMs with stopvm functionalities. After encryption, the Linux ESXi variant may include the file extension akiranew or an added file named akiranew.txt as a ransom note in directories where files were encrypted with the new nomenclature.
+
+### Leveraged Tools
+
+Table 1 lists publicly available tools and applications used by Akira threat actors, including legitimate tools repurposed for their operations. These tools and applications should not be attributed as malicious without analytical evidence to support threat actor use and/or control.
+
+Name | Description
+
+Name AdFind(link is external) | Description A command-line tool used to query and retrieve information from Active Directory [T1087.002(link is external)].
+
+Name Advanced IP Scanner | Description A network scanning tool used for reconnaissance that locates all computers on a network and conducts a scan of their ports. The program shows all network devices, gives access to shared folders, and provides remote control of computers (via RDP and Radmin) [T1046(link is external)].
+
+Name AnyDesk | Description Legitimate desktop support software used to obtain remote access to victim systems and for lateral movement, and support remote file transfer. The software can be maliciously used by threat actors to obtain remote access and maintain persistence [T1219(link is external)].
+
+Name LaZagne(link is external) | Description An open source tool that enables users to recover stored passwords on Windows, Linux, and Mac OS X systems [T1555(link is external)].
+
+Name Mimikatz(link is external) | Description A credential dumper that enables users to view and save authentication credentials, such as Kerberos tickets [T1550.002(link is external)].
+
+Name Ngrok(link is external) | Description A reverse proxy tool [T1090(link is external)] used to create a secure tunnel to servers behind firewalls or local machines without a public IP address.
+
+Name PCHunter64 | Description A tool used to acquire detailed process and system information [T1082(link is external)].14
+
+Name PowerShell(link is external) | Description A cross-platform task automation solution used for various malicious activities, including deleting shadow copies, and, potentially, for credential harvesting. It is composed of a command-line shell, a scripting language, and a configuration management framework, which runs on Windows, Linux, and macOS [T1059.001(link is external)].
+
+Name RClone(link is external) | Description A legitimate command-line program used to sync files with cloud storage services, such as Mega. Akira threat actors use it maliciously to exfiltrate data to compromised cloud services [T1567.002(link is external)].
+
+Name SoftPerfect | Description A network scanner (netscan.exe) used to ping computers, scan ports, discover shared folders, and retrieve information about network devices via Windows Management Instrumentation (WMI), Simple Network Management Protocol (SNMP), HTTP, SSH, and PowerShell. It also scans for remote services, registry, files, and performance counters [T1046(link is external)].
+
+Name WinRAR | Description Archive utility used to split compromised data into segments and to compress [T1560.001(link is external)] files into .RAR format prior to exfiltration.
+
+Name WinSCP | Description A free, open source FTP (including SSH FTP), WebDAV, Amazon S3, and secure copy protocol client. Akira threat actors use it to transfer data from a compromised network to actor-controlled accounts [T1048(link is external)].
+
+Name Update Nov. 13, 2025:
+
+7-zip
+
+Name Update Nov. 13, 2025: 7-zip | Description A free, open source software that enables users to compress various file formats. Akira threat actors use an archive feature within the 7-zip tool to compress data to evade detection [T1027.015(link is external)].15
+
+Name FileZilla | Description An open source client that enables users to transfer files between servers. Akira threat actors use it maliciously for data exfiltration [T1048(link is external)].16
+
+Name LogMeIn | Description A legitimate remote access tool that Akira threat actors maliciously use to move laterally and establish persistence.
+
+Name NetScan | Description A software suite used for IP address querying, Domain Name System (DNS) investigation, and port scanning. Akira threat actors use the tool maliciously for reconnaissance [T1046(link is external)].17
+
+Name Ngrok(link is external) | Description A legitimate reverse proxy tool. Akira threat actors maliciously use this tool to create secure tunnels to servers they use for data exfiltration [T1572(link is external)].
+
+Name NetExec | Description Linux-based network service exploitation tool that automates the assessment of large network security.
+
+Name PowerTool | Description A tool used by Akira threat actors to exploit the Zemana AntiMalware driver and terminate antivirus processes [T1562.001(link is external)].
+
+Name PSEXESVC.exe | Description A Windows executable file potentially used by Akira threat actors for remote execution and payload deployments [T1569.002(link is external)].
+
+Name SystemBC | Description Multi-purpose malware that Akira threat actors use as both a remote access trojan (RAT) and a proxy bot [T1090(link is external)][T1219(link is external)].
+
+Name Veeam Backup and Replication | Description A legitimate backup solution that Akira threat actors have exploited vulnerabilities in for initial access (and potentially for privilege escalation).
+
+Name Cobalt Strike | Description A commercial penetration testing framework abused by Akira threat actors for lateral movement, C2, and privilege escalation [T1059.001(link is external)].
+
+Name PuTTY/PSCP | Description Variants of Secure Copy Protocol (SCP)/SFTP tools that can be used for data exfiltration or remote management [T1048(link is external)].
+
+Name Vssadmin.exe | Description A Windows executable used by Akira threat actors to delete VSS copies [T1490(link is external)].
+
+Name Level.io | Description A remote monitoring and management platform leveraged by Akira threat actors.
+
+Name HeartCrypt | Description A packer-as-a-service obfuscation tool used by Akira threat actors to hinder analysis [T1027(link is external)].
+
+Name MEGA | Description A cloud storage utility used by Akira threat actors as the destination for exfiltrated data.
+
+Name POORTRY | Description Malware written as a signed vulnerable Windows deriver. Akira threat actors used the malware to implement the Bring Your Own Vulnerable Driver (BYOVD) tactic [T1068(link is external)].
+
+Name STONESTOP | Description Malware that Akira threat actors used as the loader/installer for POORTRY [T1105(link is external)].
+
+Name SharpDomainSpray | Description A password spraying tool used by Akira threat actors.
+
+Name OpenSSH | Description An open source SSH tool used by Akira threat actors for cross-platform remote management.
+
+Name CLOUDFLARED | Description A legitimate, publicly available command-line client for Cloudflare Tunnel, a tunneling daemon that serves as a proxy for traffic from the Cloudflare network to the endpoints.
+
+Name IMPACKET(link is external) Description A Python library that allows users to work with various network protocols.
+
+End Update
+
+Name IMPACKET(link is external) | Description A Python library that allows users to work with various network protocols. End Update
+
+## Indicators of Compromise
+
+Disclaimer: These IOCs were observed between June 2023 and August 2025. The authoring organizations recommend vetting or investigating these IOCs prior to taking action, such as blocking.
+
+See Table 2 through Table 9 for Akira ransomware IOCs.
+
+File Name | Hash (SHA-256) | Description
+
+File Name w.exe | Hash (SHA-256) d2fd0654710c27dcf37b6c1437880020824e161dd0bf28e3a133ed777242a0ca | Description Akira ransomware encryptor.
+
+File Name Win.exe | Hash (SHA-256) dcfa2800754e5722acf94987bb03e814edcb9acebda37df6da1987bf48e5b05e | Description Akira ransomware encryptor.
+
+File Name Akira_v2 Hash (SHA-256) 3298d203c2acb68c474e5fdad8379181890b4403d6491c523c13730129be3f75
+
+0ee1d284ed663073872012c7bde7fac5ca1121403f1a5d2d5411317df282796c
+
+File Name Akira_v2 | Hash (SHA-256) 3298d203c2acb68c474e5fdad8379181890b4403d6491c523c13730129be3f75 0ee1d284ed663073872012c7bde7fac5ca1121403f1a5d2d5411317df282796c | Description Akira_v2 ransomware.
+
+File Name Megazord Hash (SHA-256) ffd9f58e5fe8502249c67cad0123ceeeaa6e9f69b4ec9f9e21511809849eb8fc
+
+dfe6fddc67bdc93b9947430b966da2877fda094edf3e21e6f0ba98a84bc53198
+
+131da83b521f610819141d5c740313ce46578374abb22ef504a7593955a65f07
+
+9f393516edf6b8e011df6ee991758480c5b99a0efbfd68347786061f0e04426c
+
+9585af44c3ff8fd921c713680b0c2b3bbc9d56add848ed62164f7c9b9f23d065
+
+2f629395fdfa11e713ea8bf11d40f6f240acf2f5fcf9a2ac50b6f7fbc7521c83
+
+7f731cc11f8e4d249142e99a44b9da7a48505ce32c4ee4881041beeddb3760be
+
+95477703e789e6182096a09bc98853e0a70b680a4f19fa2bf86cbb9280e8ec5a
+
+0c0e0f9b09b80d87ebc88e2870907b6cacb4cd7703584baf8f2be1fd9438696d
+
+C9c94ac5e1991a7db42c7973e328fceeb6f163d9f644031bdfd4123c7b3898b0
+
+File Name Megazord | Hash (SHA-256) ffd9f58e5fe8502249c67cad0123ceeeaa6e9f69b4ec9f9e21511809849eb8fc dfe6fddc67bdc93b9947430b966da2877fda094edf3e21e6f0ba98a84bc53198 131da83b521f610819141d5c740313ce46578374abb22ef504a7593955a65f07 9f393516edf6b8e011df6ee991758480c5b99a0efbfd68347786061f0e04426c 9585af44c3ff8fd921c713680b0c2b3bbc9d56add848ed62164f7c9b9f23d065 2f629395fdfa11e713ea8bf11d40f6f240acf2f5fcf9a2ac50b6f7fbc7521c83 7f731cc11f8e4d249142e99a44b9da7a48505ce32c4ee4881041beeddb3760be 95477703e789e6182096a09bc98853e0a70b680a4f19fa2bf86cbb9280e8ec5a 0c0e0f9b09b80d87ebc88e2870907b6cacb4cd7703584baf8f2be1fd9438696d C9c94ac5e1991a7db42c7973e328fceeb6f163d9f644031bdfd4123c7b3898b0 | Description Akira Megazord ransomware.
+
+File Name VeeamHax.exe | Hash (SHA-256) aaa6041912a6ba3cf167ecdb90a434a62feaf08639c59705847706b9f492015d | Description Plaintext credential leaking tool.
+
+File Name Veeam-Get-Creds.ps1 | Hash (SHA-256) 18051333e658c4816ff3576a2e9d97fe2a1196ac0ea5ed9ba386c46defafdb88 | Description PowerShell script for obtaining and decrypting accounts from Veeam servers.
+
+File Name PowershellKerberos TicketDumper | Hash (SHA-256) 5e1e3bf6999126ae4aa52146280fdb913912632e8bac4f54e98c58821a307d32 | Description Kerberos ticket dumping tool from Local Security Authority (LSA) cache.
+
+File Name Update Nov. 13, 2025:
+
+Ladon.exe
+
+File Name Update Nov. 13, 2025: Ladon.exe | Hash (SHA-256) 58359209e215a9fc0dafd14039121398559790dba9aa2398c457348ee1cb8a4d | Description Akira ransomware file.
+
+File Name qKtul.vbs | Hash (SHA-256) cf3465d7e49b609defa1e2b6cfcc86ffa30c72246cb2744dbf50736c5f3d74d5 | Description VBScript used by Akira ransomware.
+
+File Name s64.dll | Hash (SHA-256) 58afef43cec0ee7a2fbfd9cdd5b71f55f971672d5e523a400b82b98c752ca5b7 | Description Backdoor.
+
+File Name w.exe | Hash (SHA-256) bfd5fc6cd3dea74738ac7025fa14ea844f400708df2293572796568f65bd6b61 | Description Encryptor.
+
+File Name 1.bat | Hash (SHA-256) 8e12c8eb39cec9a414b56a36acbcc1a5b31dc96a38bc668138a00f94f7c26ea5 | Description Encryptor launcher.
+
+File Name 2.exe | Hash (SHA-256) 4DC9F9684F715F50946E85557B82AF80FCB45576EFAD47EEE1BF054C15E570F0 | Description Malicious artifact.
+
+File Name akira.exe, win.exe | Hash (SHA-256) 7266e2afb5c70788c018d684698b0940eded4cb863f2b33f4edd31b59d1eab1d | Description Ransomware.
+
+File Name w.exe | Hash (SHA-256) c0f706ff43936c1bb19db4f39b11129c3fc8ddafbd159852475ef99a246b2f79 | Description Akira ransomware.
+
+File Name File.exe | Hash (SHA-256) 3a25d3f82651567e5760e48ad06c9f6caab4f9fdc071e98919163b3a71e67168 | Description Malicious artifact.
+
+File Name win_locker.exe | Hash (SHA-256) CFA209D56E296C40B32815270060E539963D68CDA3285C5F393C97EB3C960D37 | Description Encryptor executable.
+
+File Name moe.exe Hash (SHA-256) 77d48e8c13ce066b197905cc8fc69969af69b74d25f5e95dcd1302ada2e7ccec Description Malicious artifact.
+
+End Update
+
+File Name moe.exe | Hash (SHA-256) 77d48e8c13ce066b197905cc8fc69969af69b74d25f5e95dcd1302ada2e7ccec | Description Malicious artifact. End Update
+
+Update Nov. 13, 2025:
+
+File Name | Hash (MD5) | Description
+
+File Name 123.zip | Hash (MD5) 57D1AEB41D9CFEA4D6899724BC4B09A5 | Description Archive containing encryption malware and an AnyDesk setup.
+
+File Name All.bat | Hash (MD5) 17c624693f5dd575485ec4286b0ba786 | Description Encryption script.
+
+File Name w.exe | Hash (MD5) C56B31C9080B993D57C100B91D096C33 | Description Akira ransomware.
+
+File Name w.exe | Hash (MD5) 2FED7579556F01161BB1FDFD1C3E9E6C | Description Encryption script.
+
+File Name s.bat | Hash (MD5) 24e19d29a47b6b5e1a39bf5e4c313194 | Description Encryption script.
+
+File Name Start.bat | Hash (MD5) 814310fb7a59f23e3e137ee6fee04fa1 | Description Encryption script.
+
+File Name | Hash (SHA 1) | Description
+
+File Name Vmware.exe | Hash (SHA 1) 5961a99181df157b81d35a50eeb27f96577a2fa2 | Description Akira encryptor.
+
+File Name w.exe | Hash (SHA 1) d5efaa22a74aab87d17f8666686b554e41fb389a | Description Akira ransomware.
+
+File Name w.exe | Hash (SHA 1) 08CF869A19C76CA718BA80EF73636E7BC38218B8 | Description Akira ransomware.
+
+File Name snaffler.exe | Hash (SHA 1) ef328f68c6d865ba4ef4223b5d8ee9efb5667420 | Description Script used to enumerate sensitive data.
+
+File Name | Description
+
+File Name Edge_server.exe | Description Akira artifact.
+
+File Name lck.exe | Description Akira ransomware file.
+
+File Name 1.bat | Description Malicious batch file.
+
+File Name 1.exe | Description Encryption script.
+
+File Name locker.exe | Description Encryption script.
+
+File Name Win_locker_0234-BMMNBW-MONC.exe | Description Encryption script.
+
+File Name level.exe | Description Trojanized level.io malicious payload.
+
+File Name level-windows-amd64.exe | Description Trojanized level.io malicious payload.
+
+End Update
+
+Note: Trusted third-party analysis confirmed the Akira threat actors’ ransomware samples in Table 6 were created on Dec. 28, 2023.
+
+Hash (SHA-256)
+
+Hash (SHA-256) 0b5b31af5956158bfbd14f6cbf4f1bca23c5d16a40dbf3758f3289146c565f43
+
+Hash (SHA-256) 0d700ca5f6cc093de4abba9410480ee7a8870d5e8fe86c9ce103eec3872f225f
+
+Hash (SHA-256) a2df5477cf924bd41241a3326060cc2f913aff2379858b148ddec455e4da67bc
+
+Hash (SHA-256) 03aa12ac2884251aa24bf0ccd854047de403591a8537e6aba19e822807e06a45
+
+Hash (SHA-256) 2e88e55cc8ee364bf90e7a51671366efb3dac3e9468005b044164ba0f1624422
+
+Hash (SHA-256) 40221e1c2e0c09bc6104548ee847b6ec790413d6ece06ad675fff87e5b8dc1d5
+
+Hash (SHA-256) 5ea65e2bb9d245913ad69ce90e3bd9647eb16d992301145372565486c77568a2
+
+Hash (SHA-256) 643061ac0b51f8c77f2ed202dc91afb9879f796ddd974489209d45f84f644562
+
+Hash (SHA-256) 6f9d50bab16b2532f4683eeb76bd25449d83bdd6c85bf0b05f716a4b49584f84
+
+Hash (SHA-256) fef09b0aa37cbdb6a8f60a6bd8b473a7e5bffdc7fd2e952444f781574abccf64
+
+Hash (SHA-256)
+
+Hash (SHA-256) e1321a4b2b104f31aceaf4b19c5559e40ba35b73a754d3ae13d8e90c53146c0f
+
+Hash (SHA-256) 74f497088b49b745e6377b32ed5d9dfaef3c84c7c0bb50fabf30363ad2e0bfb1
+
+Hash (SHA-256) 3d2b58ef6df743ce58669d7387ff94740ceb0122c4fc1c4ffd81af00e72e60a4
+
+Commands
+
+Commands nltest /dclist: [T1018(link is external)]
+
+Commands nltest /DOMAIN_TRUSTS [T1482(link is external)]
+
+Commands net group “Domain admins” /dom [T1069.002(link is external)]
+
+Commands net localgroup “Administrators” /dom [T1069.001(link is external)]
+
+Commands tasklist [T1057(link is external)]
+
+Commands
+
+Commands cmd.exe /Q /c esentutl.exe /y
+
+"C:\Users\<username>\AppData\Roaming\Mozilla\Firefox\Profiles\<firefox_profile_id>.defaultrelease\key4.db" /d
+
+"C:\Users\<username>\AppData\Roaming\Mozilla\Firefox\Profiles\<firefox_profile_id>.defaultrelease\key4.db.tmp”
+
+Note: Akira threat actors use these commands to access Firefox data.
+
+Commands cmd.exe /Q /c esentutl.exe /y "C:\Users\<username>\AppData\Roaming\Mozilla\Firefox\Profiles\<firefox_profile_id>.defaultrelease\key4.db" /d "C:\Users\<username>\AppData\Roaming\Mozilla\Firefox\Profiles\<firefox_profile_id>.defaultrelease\key4.db.tmp” Note: Akira threat actors use these commands to access Firefox data.
+
+Commands cmd.exe /Q /c esentutl.exe /y
+
+"C:\Users\<username>\AppData\Local\Google\Chrome\User Data\Default\Login Data" /d
+
+"C:\Users\<username>\AppData\Local\Google\Chrome\User Data\Default\Login Data.tmp”
+
+Note: Akira threat actors use these commands to access Google Chrome data.
+
+Commands cmd.exe /Q /c esentutl.exe /y "C:\Users\<username>\AppData\Local\Google\Chrome\User Data\Default\Login Data" /d "C:\Users\<username>\AppData\Local\Google\Chrome\User Data\Default\Login Data.tmp” Note: Akira threat actors use these commands to access Google Chrome data.
+
+Commands powershell.exe -Command "Get-WmiObject Win32_Shadowcopy | Remove-WmiObject" [T1490(link is external)]
+
+Commands rundll32.exe c:\Windows\System32\comsvcs.dll, MiniDump ((Get-Process lsass).Id) C:\windows\temp\lsass.dmp full [T1003.001(link is external)]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from rag_cti.retrieval.hyde import HyDERetriever
@@ -29,12 +30,10 @@ class _FakeSettings:
         self,
         hyde_enabled: bool = True,
         hyde_min_query_tokens: int = 5,
-        llm_routing_model: str = "claude-haiku-4-5-20251001",
         groq_query_model: str = "llama-3.1-8b-instant",
     ) -> None:
         self.hyde_enabled = hyde_enabled
         self.hyde_min_query_tokens = hyde_min_query_tokens
-        self.llm_routing_model = llm_routing_model
         self.groq_query_model = groq_query_model
 
 
@@ -54,20 +53,18 @@ class _FakeLLMClient:
     ) -> None:
         self.last_call: dict = {}
         self._response_text = response_text
-        self.messages = self
+        self.chat = SimpleNamespace(completions=self)
 
-    def create(
-        self, model: str, max_tokens: int, messages: list, system: str = ""
-    ) -> _FakeMessagesResponse:
+    def create(self, model: str, max_tokens: int, messages: list) -> object:
         self.last_call = {
             "model": model,
             "max_tokens": max_tokens,
             "messages": messages,
-            "system": system,
         }
         if self._response_text is None:
             raise RuntimeError("simulated LLM failure")
-        return _FakeMessagesResponse(self._response_text)
+        message = SimpleNamespace(content=self._response_text)
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
 class _FakeBaseRetriever:
@@ -142,11 +139,9 @@ def test_uses_hyde_when_query_meets_min_tokens() -> None:
 def test_llm_called_with_correct_model() -> None:
     base = _FakeBaseRetriever()
     llm = _FakeLLMClient()
-    retriever = HyDERetriever(
-        base, llm, _FakeSettings(llm_routing_model="claude-haiku-4-5-20251001")
-    )
+    retriever = HyDERetriever(base, llm, _FakeSettings())
     retriever.search("how does APT group use spearphishing for initial access")
-    assert llm.last_call["model"] == "claude-haiku-4-5-20251001"
+    assert llm.last_call["model"] == "llama-3.1-8b-instant"
 
 
 def test_llm_called_with_max_tokens_300() -> None:
@@ -163,7 +158,7 @@ def test_llm_user_message_is_the_query() -> None:
     retriever = HyDERetriever(base, llm, _FakeSettings())
     query = "how does APT group use spearphishing for initial access"
     retriever.search(query)
-    assert llm.last_call["messages"][0]["content"] == query
+    assert llm.last_call["messages"][1]["content"] == query
 
 
 def test_llm_system_prompt_is_set() -> None:
@@ -171,7 +166,8 @@ def test_llm_system_prompt_is_set() -> None:
     llm = _FakeLLMClient()
     retriever = HyDERetriever(base, llm, _FakeSettings())
     retriever.search("how does APT group use spearphishing for initial access")
-    assert len(llm.last_call["system"]) > 0
+    assert llm.last_call["messages"][0]["role"] == "system"
+    assert len(llm.last_call["messages"][0]["content"]) > 0
 
 
 def test_llm_failure_falls_back_to_direct_query() -> None:

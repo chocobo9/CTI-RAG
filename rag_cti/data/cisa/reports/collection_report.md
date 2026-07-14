@@ -1,0 +1,22 @@
+# CISA Cybersecurity Advisory Collection Report
+
+- **source_url**: `"https://www.cisa.gov/news-events/cybersecurity-advisories?f%5B0%5D=advisory_type%3A94"`
+- **collection_time**: `"2026-07-12T08:12:17.227994Z"`
+- **urls_discovered**: `172`
+- **advisories_successfully_saved**: `172`
+- **page_versions**: `172`
+- **changed_page_versions**: `1`
+- **attachment_total**: `657`
+- **attachment_types**: `{"application/pdf": 171, "text/html": 8, "text/plain": 2, "text/xml": 1, "unknown": 475}`
+- **recovered_errors**: `0`
+- **permanent_errors**: `480`
+- **attachment_statuses**: `{"blocked": 455, "failed": 21, "not_found": 4, "success": 177}`
+- **actor_claim_candidate_count**: `3200`
+- **multi_actor_advisory_count**: `157`
+- **advisories_without_explicit_actor_wording**: `11`
+- **advisories_with_ioc_sections**: `73`
+- **publication_date_coverage**: `172`
+- **update_date_coverage**: `124`
+- **storage_size**: `198124768`
+- **known_source_limitations**: `["CISA may block non-browser clients at its CDN edge.", "Source dates are report metadata, not attack occurrence dates.", "Actor and IOC observations are conservative lexical candidates."]`
+- **generated_at**: `"2026-07-12T08:12:27.593235Z"`

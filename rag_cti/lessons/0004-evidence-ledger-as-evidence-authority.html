@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evidence Ledger：一次运行的证据权威</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 04 · Evidence Ledger</p>
+    <h1>Evidence Ledger：一次运行的证据权威</h1>
+    <p class="lead">第四课讲 Agentic RAG 里“证据到底放在哪里”。工具可以返回摘要，prompt 可以展示片段，trace 可以记录事件，但最终答案能引用什么，必须由一个结构化、可去重、可合并、可验证的 ledger 决定。</p>
+  </header>
+
+  <section>
+    <h2>先看全局：本课在地图哪里</h2>
+    <p>前三课已经建立了控制链：入口决定 runtime path，state 记录运行过程，tool boundary 把模型 proposal 变成 observation。现在的问题是：observation 里拿到的检索结果、图查询结果、事实结果，怎样成为后续 synthesis 和 citation 能信任的证据集合？</p>
+    <div class="grid">
+      <article class="card">
+        <h3>Retrieval/Knowledge</h3>
+        <p>Corpus、retriever、reranker、graph query、facts 都会产生候选知识。ledger 负责把这些候选转成一次 run 内的证据集合。</p>
+      </article>
+      <article class="card">
+        <h3>Evidence and Trust</h3>
+        <p>Citation、grounding、faithfulness 都依赖 ledger 的真实 ID 集合。没有 ledger，就很难判断引用 ID 是否真实存在。</p>
+      </article>
+      <article class="card">
+        <h3>Multi-Agent</h3>
+        <p>supervisor 多分支时，每个 worker 有 branch-local ledger，最后需要 merge 成 master ledger。</p>
+      </article>
+      <article class="card">
+        <h3>Cross-cutting</h3>
+        <p>State vs Memory、Context vs Prompt、Provenance、Replayability 都会在 ledger 设计里显形。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课核心胜利：</strong>你能把 ledger 从“工具结果列表”提升为“本次运行的证据权威”：它不是 prompt、不是 trace、不是长期知识库、也不是最终答案，而是 answer synthesis 和 citation validation 共同依赖的结构化事实源。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：你要能回答三件事</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能解释 ledger 和 context、state、trace、corpus 的边界：它保存本次 run 收集到的可用证据和 provenance。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能说明 chunks、facts、outlines、actions 分别为什么存在，以及哪些东西能成为 citable ID。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能评价 ledger 是否支持去重、merge、conflict surfacing、citation guard 和 eval 所需的 evidence view。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>ledger 很容易被误解成“把工具返回值 append 到数组”。如果我站在你现在的知识状态，我会先问这四个更基础的问题：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>概念答案</th><th>为什么重要</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ledger 保存的是所有知识吗？</td>
+          <td>不是。它保存 <strong>本次运行已经收集到</strong> 的证据视图。</td>
+          <td>长期知识在 corpus/graph/fact store；ledger 是 per-run evidence authority。</td>
+        </tr>
+        <tr>
+          <td>模型看到的摘要就是 ledger 吗？</td>
+          <td>不是。摘要是给模型看的 projection，ledger 保存更完整的结构化证据。</td>
+          <td>如果把摘要当 ledger，截断或格式化会影响 citation 和 eval。</td>
+        </tr>
+        <tr>
+          <td>为什么 action 也在 ledger 里？</td>
+          <td>action log 记录做过哪些工具调用，帮助去重、计数和审计。</td>
+          <td>action 本身不是 CTI 证据，但它解释证据是如何被收集的。</td>
+        </tr>
+        <tr>
+          <td>outline 算不算 citation evidence？</td>
+          <td>通常不算。outline 更像 coverage map 或探索提示。</td>
+          <td>把 outline 当可引用证据，会让“知道应该看哪里”和“已经有证据支持 claim”混在一起。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一张图：知识库、工具摘要、ledger、答案的关系</h2>
+    <p>这张图要表达的不是数据结构，而是证据权威流向：工具从外部知识源取回结果，ledger 保存本次 run 承认的证据，prompt 只渲染其中一部分给模型，最终答案引用 ledger 里的真实 ID。</p>
+    <div class="flow">
+      <div>Corpus/Graph<br>长期知识源</div>
+      <div>Tool Result<br>边界结果</div>
+      <div>EvidenceLedger<br>运行证据权威</div>
+      <div>Prompt View<br>模型可见摘要</div>
+      <div>Answer + Citations<br>引用验证</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>对象</th><th>负责什么</th><th>不负责什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Corpus / Graph / Fact Store</td>
+          <td>保存项目或产品层面的长期知识。</td>
+          <td>不说明某一次 answer run 已经实际收集了哪些证据。</td>
+        </tr>
+        <tr>
+          <td>Tool Result</td>
+          <td>一次工具执行返回的边界结果。</td>
+          <td>不自动等于最终可引用证据，必须进入 ledger。</td>
+        </tr>
+        <tr>
+          <td>EvidenceLedger</td>
+          <td>保存本次运行的 chunks、facts、outlines、actions、真实 ID 集合。</td>
+          <td>不保存所有控制状态，也不替代 corpus。</td>
+        </tr>
+        <tr>
+          <td>Prompt View</td>
+          <td>给模型看的有限上下文。</td>
+          <td>不应该成为 citation guard 的唯一事实源。</td>
+        </tr>
+        <tr>
+          <td>Answer</td>
+          <td>基于 ledger evidence synthesis，并引用经过验证的 ID。</td>
+          <td>不应该引入 ledger 外的新证据 ID。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心概念一：ledger 是 per-run authority</h2>
+    <p>“per-run” 很重要。用户问一个问题时，agent 会进行若干轮检索、图查询、事实拉取。ledger 只代表这一次运行已经收集到、可以被后续环节使用的 evidence set。它不是全局数据库，也不是长记忆。</p>
+    <p>这带来一个工程好处：最终答案的可引用范围是清楚的。模型即使知道某个 chunk id 的名字，如果这个 id 没进入本次 ledger，citation guard 也应该把它丢掉。这样可以防止模型凭空引用、引用旧 run 的证据、或者引用知识库里存在但本次没有检索到的材料。</p>
+    <div class="callout">
+      <p><strong>概念判断：</strong>“知识库里存在”不等于“本次答案可以引用”。本次答案能引用什么，要看本次 ledger 的 <code>real_id_set</code>。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>核心概念二：chunks、facts、outlines、actions 的边界</h2>
+    <table>
+      <thead>
+        <tr><th>ledger 项</th><th>保存什么</th><th>能不能作为 citation</th><th>为什么需要</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>chunks</code></td>
+          <td>检索到的文档片段，带 chunk id、source、score、text。</td>
+          <td>通常能。</td>
+          <td>回答自然语言问题时，chunk 是常见的可引用证据单位。</td>
+        </tr>
+        <tr>
+          <td><code>facts</code></td>
+          <td>结构化事实，带 fact id、subject、predicate、object、support。</td>
+          <td>能，前提是 fact 有真实 ID 和 support。</td>
+          <td>图/事实工具适合提供明确关系，比如某 actor 使用某 technique。</td>
+        </tr>
+        <tr>
+          <td><code>outlines</code></td>
+          <td>实体覆盖图、邻接关系、探索线索。</td>
+          <td>通常不能直接作为最终 claim 的 citation。</td>
+          <td>它帮助决定下一步查什么，但不是 claim proof 本身。</td>
+        </tr>
+        <tr>
+          <td><code>actions</code></td>
+          <td>工具调用名和紧凑参数。</td>
+          <td>不能。</td>
+          <td>它解释 agent 做过什么，支持去重、预算、tool count 和审计。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>这里的关键不是字段名，而是证据类型。一个好的 ledger 不只保存“文本”，还保存 provenance、id、score、支持关系和冲突信号。这样 citation、grounding、eval 才有地方查。</p>
+  </section>
+
+  <section>
+    <h2>CTI-RAG 里的代码映射</h2>
+    <table>
+      <thead>
+        <tr><th>代码位置</th><th>概念职责</th><th>读的时候重点问什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>knowledge/evidence_ledger.py::EvidenceLedger</code></td>
+          <td>per-run evidence authority。</td>
+          <td>它保存哪些集合？哪些集合参与 <code>real_id_set</code>？</td>
+        </tr>
+        <tr>
+          <td><code>add_query_result</code></td>
+          <td>把 retrieval chunks 合并进 ledger。</td>
+          <td>相同 chunk id 如何去重？score 更高时如何处理？</td>
+        </tr>
+        <tr>
+          <td><code>add_facts</code></td>
+          <td>把结构化事实合并进 ledger。</td>
+          <td>fact id 如何去重？support 和 conflict 信息是否保留？</td>
+        </tr>
+        <tr>
+          <td><code>add_outline</code></td>
+          <td>保存 coverage map 和探索提示。</td>
+          <td>它是否被当作 citable evidence？它怎样影响下一步 gather？</td>
+        </tr>
+        <tr>
+          <td><code>add_action</code></td>
+          <td>记录工具调用历史。</td>
+          <td>参数是否被压缩和截断？是否避免把 action 当 claim evidence？</td>
+        </tr>
+        <tr>
+          <td><code>merge</code></td>
+          <td>合并 branch-local ledgers。</td>
+          <td>多分支 supervisor 后，chunks/facts/outlines 如何合成 master ledger？</td>
+        </tr>
+        <tr>
+          <td><code>real_id_set</code></td>
+          <td>提供 citation guard 的真实可引用 ID 集合。</td>
+          <td>哪些 ID 能通过 citation validation？哪些不能？</td>
+        </tr>
+        <tr>
+          <td><code>agent_tools.py</code></td>
+          <td>工具 adapter 把外部结果写入 ledger。</td>
+          <td>模型看到的是 bounded summary，ledger 是否保存了完整结构化结果？</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>具体场景：graph query 的摘要和完整证据</h2>
+    <p>假设用户问某个 actor 使用了哪些 ATT&amp;CK techniques。<code>graph_query</code> 可能查到很多行。为了保护 context window，模型看到的摘要会被限制；但 ledger 仍应该保存完整行或结构化 facts。这样做的意义是：</p>
+    <table>
+      <thead>
+        <tr><th>层</th><th>保存什么</th><th>为什么这样设计</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>模型可见 summary</td>
+          <td>少量 rows、简短字段、下一步提示。</td>
+          <td>控制 prompt 长度，避免一次工具结果淹没下一轮推理。</td>
+        </tr>
+        <tr>
+          <td>EvidenceLedger</td>
+          <td>完整结构化 rows/facts，带 id 和 provenance。</td>
+          <td>synthesis、citation guard、eval 需要完整证据权威。</td>
+        </tr>
+        <tr>
+          <td>Trace/Event</td>
+          <td>工具调用结果概要、状态、错误类型、delta。</td>
+          <td>让人知道发生了什么，但不把所有证据正文塞进日志。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>这就是 “Context vs Ledger” 的边界：context 是当前给模型看的投影，ledger 是系统保留的证据权威。它们可以来自同一工具结果，但不能互相替代。</p>
+  </section>
+
+  <section>
+    <h2>具体场景：多分支合并为什么需要 ledger merge</h2>
+    <p>进入 supervisor 后，一个问题可能被拆成多个独立分支。例如“比较 APT29 和 Lazarus 的 technique overlap”：一个 worker 查 APT29，一个 worker 查 Lazarus，一个 worker 查 overlap 或 shared technique。每个 worker 都应该有自己的 branch-local ledger，最后合并成 master ledger。</p>
+    <table>
+      <thead>
+        <tr><th>设计点</th><th>如果没有它</th><th>ledger merge 应该保证什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>chunk 去重</td>
+          <td>同一 chunk 被多个分支重复引用，context 和 eval 都膨胀。</td>
+          <td>同 id 合并，保留更合理的 score 或排名信息。</td>
+        </tr>
+        <tr>
+          <td>fact 去重</td>
+          <td>相同 fact 重复出现，答案看似证据很多，其实重复。</td>
+          <td>按 fact id 去重，保持 provenance。</td>
+        </tr>
+        <tr>
+          <td>outline 合并</td>
+          <td>不同分支的 coverage map 丢失，无法解释探索范围。</td>
+          <td>按 entity/facet 保存覆盖信息。</td>
+        </tr>
+        <tr>
+          <td>citation guard</td>
+          <td>Composer 引用分支证据时，主流程找不到 id。</td>
+          <td>最终答案的 citation validation 以 merged master ledger 为准。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>为什么不对</th><th>更好的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“ledger 就是 prompt 里的 evidence section。”</td>
+          <td>prompt section 是 ledger 的有限投影，可能按 top-k、token budget、fact limit 裁剪。</td>
+          <td>ledger 是结构化权威，prompt 是给模型看的当前视图。</td>
+        </tr>
+        <tr>
+          <td>“只要知识库里有 id，答案就能引用。”</td>
+          <td>这会绕过本次运行的 evidence gathering。</td>
+          <td>citation guard 应该看本次 ledger 的 real id set。</td>
+        </tr>
+        <tr>
+          <td>“outline 已经说明图里有哪些关系，所以可以当证据。”</td>
+          <td>outline 常常只是 coverage 或导航结构，不一定包含支持 claim 的具体事实。</td>
+          <td>outline 帮助找证据；facts/chunks 支持 claim。</td>
+        </tr>
+        <tr>
+          <td>“action log 证明了答案内容。”</td>
+          <td>“调用过 retrieve”不能证明某个 CTI claim 成立。</td>
+          <td>action log 证明系统做过什么；evidence 证明答案说了什么。</td>
+        </tr>
+        <tr>
+          <td>“ledger 越大越好。”</td>
+          <td>无边界累积会带来重复、噪声、成本和错误引用。</td>
+          <td>ledger 应该完整但有结构，synthesis 再选择相关工作集。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>读代码时问什么</h2>
+    <table>
+      <thead>
+        <tr><th>审计问题</th><th>你在找什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>哪些工具写 ledger？</td>
+          <td>检索、图查询、fact 查询是否都通过统一 adapter 写入，而不是散落在 prompt 文本里。</td>
+        </tr>
+        <tr>
+          <td>哪些 ID 是 citable？</td>
+          <td><code>real_id_set</code> 是否只包含 chunk/fact 等真正证据 ID。</td>
+        </tr>
+        <tr>
+          <td>摘要和完整证据是否分离？</td>
+          <td>模型看到 bounded summary，ledger 保留完整结构化结果。</td>
+        </tr>
+        <tr>
+          <td>去重规则是什么？</td>
+          <td>chunk、fact、outline 是否按稳定 id 合并；score 或 support 如何保留。</td>
+        </tr>
+        <tr>
+          <td>冲突如何表达？</td>
+          <td>conflict facts 是否被 surfaced，而不是被系统悄悄解决或忽略。</td>
+        </tr>
+        <tr>
+          <td>多分支怎么合并？</td>
+          <td>branch ledger merge 后，Composer 的 citation 是否能被 master ledger 验证。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：把 evidence authority 讲清楚</h2>
+    <div class="quiz-grid">
+      <div class="quiz quiz-question">
+        <p><strong>1. EvidenceLedger 最准确的定位是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。ledger 是 per-run evidence authority。它保存本次运行实际收集到的结构化证据，供 synthesis、citation validation 和 eval 使用。">本次运行的结构化证据权威。</button>
+        <button data-correct="false" data-feedback="长期知识源是 corpus、graph 或 fact store。ledger 只代表一次运行收集到的证据，不是全量知识库。">全局长期知识库。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>2. 为什么 prompt 里的 evidence section 不能替代 ledger？</strong></p>
+        <button data-correct="true" data-feedback="对。prompt view 会为了 token budget 被裁剪、重排、摘要化。ledger 保存更完整的结构化证据和 ID，citation guard 需要查 ledger。">prompt 是裁剪后的投影，ledger 才是结构化事实源。</button>
+        <button data-correct="false" data-feedback="相反，prompt 正因为给模型看，才容易被格式化和压缩。它不是最可靠的系统 truth。">因为 prompt 比 ledger 更完整。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>3. 哪些 ledger 项通常能成为 citation ID？</strong></p>
+        <button data-correct="false" data-feedback="actions 记录做过什么，不证明 CTI claim；outlines 多数是 coverage/navigation，不是最终 proof。">actions 和 outlines。</button>
+        <button data-correct="true" data-feedback="对。chunks 和有 support 的 facts 通常是可引用证据单位。项目里的 real_id_set 也围绕 chunk id 和 fact id 建立。">chunks 和 facts。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>4. action log 在 ledger 中的价值是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。action log 帮助知道已经调用过什么、避免重复、统计工具次数、解释 evidence gathering 路径。但 action 本身不是答案 claim 的证据。">用于去重、计数和审计工具调用，不作为 claim 证据。</button>
+        <button data-correct="false" data-feedback="调用过工具只能说明系统做过动作，不能证明答案内容正确。证明 claim 要靠 chunks/facts。">证明最终答案里的 CTI claim。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>5. 同一个 chunk 被两次 retrieve 到，ledger 应该怎么处理？</strong></p>
+        <button data-correct="true" data-feedback="对。按稳定 chunk id 去重，并保留更有用的 score 或 metadata。这样 evidence set 不会被重复片段虚假放大。">按 chunk id 去重，必要时保留更高 score。</button>
+        <button data-correct="false" data-feedback="简单 append 会造成重复证据、膨胀 context，并让 eval 或 citation 统计失真。">直接 append 两份，显得证据更多。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>6. branch-local ledger merge 的主要目的是什么？</strong></p>
+        <button data-correct="false" data-feedback="Composer 看到报告还不够。最终 citation guard 需要在 master ledger 中找到真实 ID。">让 Composer 少读一点文本就行。</button>
+        <button data-correct="true" data-feedback="对。多分支各自收集证据，最终答案需要一个合并后的 master ledger 来做 synthesis 和 citation validation。">把各分支证据合成最终可验证的 master ledger。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>7. outline 为什么通常不该直接作为 citation？</strong></p>
+        <button data-correct="true" data-feedback="对。outline 多数表达覆盖范围或导航线索，告诉 agent 下一步查哪里。它不一定包含支持某个具体 claim 的原始证据或 fact support。">它偏向 coverage/navigation，不等于具体 claim proof。</button>
+        <button data-correct="false" data-feedback="outline 有价值，但价值是探索和覆盖，不是替代 chunks/facts 证明答案 claim。">因为 outline 完全没有用。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>8. citation guard 查 ledger 的意义是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。模型可能凭空写 citation id。guard 检查 id 是否在本次 ledger 的真实 ID 集合中，至少能挡住不存在或本次未收集的引用。">确认答案引用的 ID 属于本次运行真实收集到的证据。</button>
+        <button data-correct="false" data-feedback="citation guard 不能只看答案文字流畅度。它必须回到 ledger 的真实 ID 集合。">判断答案语言是否流畅。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>9. ledger 保存冲突事实的正确方式是什么？</strong></p>
+        <button data-correct="false" data-feedback="悄悄删除会隐藏不确定性。CTI 证据经常来自不同来源，冲突本身需要 surfaced 给答案或 trace。">自动删除冲突的一方。</button>
+        <button data-correct="true" data-feedback="对。ledger 应保留冲突信号，让后续 synthesis 或 answer assembly 能说明 unresolved conflict，而不是假装没有矛盾。">保留并 surfaced 冲突信号。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>10. “知识库里存在这个 fact”为什么不等于“本次答案可以引用”？</strong></p>
+        <button data-correct="true" data-feedback="对。本次答案的引用范围应由本次 run 的 ledger 决定。否则模型可能引用没有经过当前 gather path 的旧证据或外部知识。">因为 citation 范围应限制在本次 ledger 的 real ID set。</button>
+        <button data-correct="false" data-feedback="这会绕过 agentic RAG 的 evidence gathering。citation 不是全局知识库搜索结果，而是本次运行证据链的一部分。">只要全局存在，就可以引用。</button>
+        <div class="feedback"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>本课小结</h2>
+    <p>EvidenceLedger 的核心不是“保存工具结果”，而是“给一次运行建立证据权威”。chunks/facts 提供可引用证据，outlines 提供覆盖和探索线索，actions 提供运行审计。prompt 只能展示 ledger 的一部分；最终答案的 citation 必须回到 ledger 验证。下一课会在这个基础上拆 citation、grounding、faithfulness 和 sufficiency 的区别。</p>
+  </section>
+
+  <section>
+    <h2>继续学习</h2>
+    <p><a href="0003-tool-boundary-as-trust-boundary.html">上一课：Tool Boundary</a> · <a href="../reference/0001-learning-route.html">学习路线</a> · <a href="0005-citation-grounding-faithfulness.html">下一课：Citation / Grounding / Faithfulness</a></p>
+  </section>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

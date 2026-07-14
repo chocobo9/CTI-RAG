@@ -1,0 +1,1999 @@
+{
+  "audit": {
+    "evidence_file_sha256": {
+      "docs/reference/sample_code.py": "ce4f959fb035460c0092aca4fc00aa537598e6634f6f594acb3b407dc6aa060f",
+      "scripts/build_otx_downstream_projection.py": "02a8f65492b938d534228e69cd2ff0f8cae16b489174d5f69f6531d30b9f63c0",
+      "scripts/build_otx_paper_mapping.py": "2a773bf02dd68de601a8955e38ac2ed682ab5fdae42f8959058f8bfb61f5c088",
+      "src/rag_cti/intermediate/otx_downstream.py": "2fb55be85ac5202d888138a466d6cf24eff6108796ebdb4cc7ead1d6333803a2",
+      "src/rag_cti/intermediate/otx_paper_mapping.py": "11de64caea492edde38002f4eefef7e33ccaba5cd702e599477acd68a779fd3b",
+      "tests/unit/test_otx_downstream_projection.py": "2765225d6e0454dd48425f286dfefe0d618a0b222690b77974f607142b442eb2",
+      "tests/unit/test_otx_paper_mapping.py": "a27630c77044192152a55e147520709d2c18577fe7837b097827f774e58067bf"
+    },
+    "generator": "scripts/generate_otx_mapping_audit.py",
+    "mapping_input_sha256": {
+      "data/raw/mitre/enterprise-attack.json": "f857d8f78f2f0c0b7db321a711a39fba98546c1e3076a657684850c83d0962fb",
+      "docs/reference/seeds/mitre_actors.json": "bdb7ef6cc263b743797177a5626955d4b3f84316bcfe20810cc65228bdebbd76"
+    },
+    "paper_pdf": {
+      "pages": 19,
+      "path": "docs/sp.pdf",
+      "sha256": "093988eeb248c6c26d3b3be6f35ee83a62988f3bcf07c90617ab75c2ecbc283c"
+    },
+    "repository_head": "59c316c2763276b5d5e9bc68f05485179e765477",
+    "scope_rule": "checkpoint.completed_pulse_details joined only through the same run saved_files.jsonl"
+  },
+  "comparison": {
+    "b0_available": true,
+    "b1_feasible": true,
+    "b1_prerequisite": "vendor MISP 42b5d56 and record hash",
+    "b2_policy": "MISP primary for paper comparison; MITRE separately versioned exact resolver/corroborator; retain conflicts",
+    "b2_recommended": true,
+    "required_metrics": [
+      "same raw input count",
+      "resolved",
+      "ambiguous",
+      "unmapped",
+      "WIP",
+      "canonical disagreement",
+      "prototype-only",
+      "paper-only",
+      "possible overmerge",
+      "source/version",
+      "loader compatibility"
+    ]
+  },
+  "consumer": {
+    "actual_input": "populated Neo4j graph; no staging-JSONL loader exists here",
+    "ambiguous_unmapped": "unlabeled Event context only",
+    "blocking_assumptions": [
+      "single Event.apt from fixed APT_TO_IDX",
+      "no JSONL-to-Neo4j loader",
+      "Actor/AttributedTo ignored",
+      "multi/ambiguous cannot be forced into single truth"
+    ],
+    "bypass_paths_requiring_p4_guard_not_refactor_now": [
+      "src/rag_cti/intermediate/otx.py",
+      "src/rag_cti/ingest/normalize.py",
+      "scripts/build_entity_registry.py",
+      "src/rag_cti/connectors/otx.py"
+    ],
+    "current_mapping_output_consumers": [],
+    "current_v2_Event_apt_compatibility": {
+      "active_APT_TO_IDX_at_inspected_commit": [
+        "APT28",
+        "APT29",
+        "APT37",
+        "APT41",
+        "Cobalt Group",
+        "Gamaredon",
+        "Kimsuky",
+        "Lazarus Group",
+        "Mustang Panda",
+        "Sandworm",
+        "Turla"
+      ],
+      "basis": "v2 parser + v2 exact resolver + current local MITRE bundle; projection schema_version v0.1",
+      "exactly_one_resolved_event_count": 346,
+      "mitre_bundle_sha256": "f857d8f78f2f0c0b7db321a711a39fba98546c1e3076a657684850c83d0962fb",
+      "note": "only exact single resolved actor names in active APT_TO_IDX become supervised truth",
+      "pulse_counts": {
+        "multi_actor_not_representable": 3,
+        "no_resolved_single_actor": 3811,
+        "single_resolved_in_active_APT_TO_IDX": 132,
+        "single_resolved_outside_active_APT_TO_IDX": 214
+      },
+      "resolution_group_counts": {
+        "alias_collapsed": 2,
+        "missing": 3447,
+        "mixed_resolved_unresolved": 6,
+        "non_actor": 45,
+        "parse_ambiguous": 5,
+        "resolved_multi_actor": 2,
+        "resolved_single": 339,
+        "taxonomy_ambiguous": 31,
+        "unmapped": 283
+      }
+    },
+    "entrypoints": [
+      "docs/reference/sample_code.py",
+      "Mitraaaaa/GNN_APT@8e82a6381c9555ba4e6ef05783e40eb6c7bd7770:train_gnn_hierarchical.py",
+      "Mitraaaaa/GNN_APT@8e82a6381c9555ba4e6ef05783e40eb6c7bd7770:trail_gnn/graph_export.py"
+    ],
+    "identity": {
+      "asn": "number",
+      "domain_ip_url": "normalized value",
+      "duplicates": "Neo4j MERGE",
+      "event": "OTX Pulse id"
+    },
+    "input_files": [],
+    "multi_actor": "not representable in Event.apt",
+    "pinned_remote_file_validation": {
+      "archive/old_pipeline/collect_otx.py": {
+        "bytes": 29439,
+        "sha256": "37f66c37bbf966badaf3680060ada26dab1d440512362216932e41ae211c2eb8",
+        "status": "VERIFIED"
+      },
+      "trail_gnn/config.py": {
+        "bytes": 6148,
+        "sha256": "c9d19410028e7e83698a8595e96d177a161a138d6bbf392c0a9ca4a0bb5c75a6",
+        "status": "VERIFIED"
+      },
+      "trail_gnn/graph_export.py": {
+        "bytes": 12302,
+        "sha256": "0c9fec93e0e60710605a89e96e29c59a77392ec86f33f2185200772aa00af953",
+        "status": "VERIFIED"
+      },
+      "trail_gnn/training_hierarchical.py": {
+        "bytes": 35442,
+        "sha256": "9eb26fd4ec41e8f547947bf963a87c08f6f558d90d634bd8a08d309258f8b98c",
+        "status": "VERIFIED"
+      },
+      "train_gnn_hierarchical.py": {
+        "bytes": 6397,
+        "sha256": "01a77dac8b53f4fee03460297958d86dbb9217507b2763e8b0a50e26f333f1af",
+        "status": "VERIFIED"
+      }
+    },
+    "projection_available": [
+      "nodes_events.jsonl",
+      "nodes_iocs.jsonl",
+      "nodes_actors.jsonl",
+      "actor_label_claims.jsonl",
+      "edges.jsonl"
+    ],
+    "provenance": "not consumed by old trainer; retain staging raw_refs",
+    "required_fields": {
+      "ASN": {
+        "number": "unique integer-like"
+      },
+      "Domain/IP/URL": {
+        "value": "unique string"
+      },
+      "Event": {
+        "apt": "single string or null",
+        "id": "unique string",
+        "label_confidence": "optional number",
+        "pulse_created": "ISO-like"
+      },
+      "relationships": [
+        "InReport",
+        "HostedOn",
+        "ResolvesTo",
+        "InGroup"
+      ]
+    }
+  },
+  "decision": {
+    "reasons": [
+      "4,160 run-scoped raw files complete",
+      "222 is verified as exact-distinct raw string count, not actor count",
+      "old 776-segment input is parser-contaminated and prohibited for clean B1",
+      "P1 can begin occurrence-level without MISP",
+      "pinned MISP is reachable for later B1",
+      "old consumer needs a thin loader and cannot encode multi/ambiguity in Event.apt"
+    ],
+    "status": "READY_TO_IMPLEMENT_P1"
+  },
+  "otx_input": {
+    "actor_mention_heuristic": {
+      "method": "MITRE exact tag match; boundary-delimited MITRE name/alias length>=5 for text/reference fields",
+      "pulse_counts": {
+        "description": 1027,
+        "name": 1433,
+        "references": 701,
+        "tags_exact_mitre_alias": 987
+      },
+      "warning": "mention counts are discovery evidence only and are not attribution claims"
+    },
+    "actor_value_statistics": {
+      "empty_or_null_pulses": 3447,
+      "empty_string_pulses": 3431,
+      "field_type_counts": {
+        "null": 16,
+        "string": 4144
+      },
+      "most_common_values": [
+        {
+          "pulse_count": 42,
+          "value": "APT41"
+        },
+        {
+          "pulse_count": 42,
+          "value": "BlindEagle"
+        },
+        {
+          "pulse_count": 28,
+          "value": "Informational"
+        },
+        {
+          "pulse_count": 28,
+          "value": "APT28"
+        },
+        {
+          "pulse_count": 27,
+          "value": "APT34"
+        },
+        {
+          "pulse_count": 25,
+          "value": "APT36"
+        },
+        {
+          "pulse_count": 20,
+          "value": "APT29"
+        },
+        {
+          "pulse_count": 17,
+          "value": "Akira"
+        },
+        {
+          "pulse_count": 16,
+          "value": "Malware Advisory"
+        },
+        {
+          "pulse_count": 15,
+          "value": "Lazarus"
+        },
+        {
+          "pulse_count": 13,
+          "value": "NSO Group - MIrai - Botnets - Spyware - Law enforcement - Intelligence agencies - Others"
+        },
+        {
+          "pulse_count": 12,
+          "value": "Andariel"
+        },
+        {
+          "pulse_count": 10,
+          "value": "APT37"
+        },
+        {
+          "pulse_count": 10,
+          "value": "BlackTech"
+        },
+        {
+          "pulse_count": 9,
+          "value": "wiper"
+        },
+        {
+          "pulse_count": 9,
+          "value": "APT33"
+        },
+        {
+          "pulse_count": 9,
+          "value": "APT40"
+        },
+        {
+          "pulse_count": 8,
+          "value": "APT 28"
+        },
+        {
+          "pulse_count": 7,
+          "value": "Sofacy"
+        },
+        {
+          "pulse_count": 7,
+          "value": "APT31"
+        }
+      ],
+      "nonempty_pulses": 713,
+      "null_pulses": 16,
+      "separator_pulse_counts_nonexclusive": {
+        "and_word": 3,
+        "comma": 17,
+        "pipe": 7,
+        "plus": 0,
+        "semicolon": 0,
+        "slash": 6
+      },
+      "unique_nonempty_values": 222,
+      "unmapped_actor_like_examples": [
+        {
+          "pulse_count": 42,
+          "value": "BlindEagle"
+        },
+        {
+          "pulse_count": 17,
+          "value": "Lazarus"
+        },
+        {
+          "pulse_count": 13,
+          "value": "NSO Group - MIrai - Botnets - Spyware - Law enforcement - Intelligence agencies - Others"
+        },
+        {
+          "pulse_count": 9,
+          "value": "wiper"
+        },
+        {
+          "pulse_count": 8,
+          "value": "APT 28"
+        },
+        {
+          "pulse_count": 7,
+          "value": "Cobalt Strike"
+        },
+        {
+          "pulse_count": 6,
+          "value": "Insikt"
+        },
+        {
+          "pulse_count": 5,
+          "value": "Lucky Mouse APT27"
+        },
+        {
+          "pulse_count": 5,
+          "value": "NoName057(16)"
+        },
+        {
+          "pulse_count": 5,
+          "value": "Unnamed"
+        },
+        {
+          "pulse_count": 5,
+          "value": "RedEyes"
+        },
+        {
+          "pulse_count": 4,
+          "value": "Threat"
+        }
+      ],
+      "v2_parse_resolution_pulse_status": {
+        "ambiguous_taxonomy": 31,
+        "missing": 3447,
+        "non_attributing": 45,
+        "parse_ambiguous": 4,
+        "resolved_alias_collapsed": 4,
+        "resolved_multi_actor": 3,
+        "resolved_single": 342,
+        "unmapped_actor_like": 284
+      },
+      "v2_resolved_actor_name_counts": {
+        "APT-C-23": 2,
+        "APT-C-36": 5,
+        "APT1": 2,
+        "APT19": 1,
+        "APT28": 38,
+        "APT29": 22,
+        "APT30": 3,
+        "APT32": 9,
+        "APT33": 9,
+        "APT37": 10,
+        "APT38": 3,
+        "APT39": 3,
+        "APT41": 43,
+        "APT42": 5,
+        "APT5": 1,
+        "Agrius": 10,
+        "Ajax Security Team": 1,
+        "Akira": 17,
+        "Andariel": 14,
+        "BRONZE BUTLER": 1,
+        "BackdoorDiplomacy": 6,
+        "BlackByte": 7,
+        "BlackTech": 10,
+        "Carbanak": 3,
+        "Cinnamon Tempest": 1,
+        "Contagious Interview": 2,
+        "CostaRicto": 1,
+        "Dragonfly": 3,
+        "Ember Bear": 3,
+        "Equation": 1,
+        "FIN7": 2,
+        "GALLIUM": 1,
+        "Gamaredon Group": 2,
+        "Ke3chang": 8,
+        "Kimsuky": 9,
+        "Lazarus Group": 9,
+        "Leviathan": 9,
+        "Machete": 1,
+        "Magic Hound": 6,
+        "Mustang Panda": 1,
+        "OilRig": 4,
+        "SideCopy": 2,
+        "TA505": 1,
+        "Threat Group-3390": 8,
+        "Tonto Team": 3,
+        "Transparent Tribe": 26,
+        "Turla": 2,
+        "Windshift": 5,
+        "Winnti Group": 3,
+        "ZIRCONIUM": 8,
+        "admin@338": 1,
+        "menuPass": 8
+      }
+    },
+    "adversary_related_fields": {
+      "payload.adversary": {
+        "records_present": 4160
+      }
+    },
+    "discovery_provenance_comparison": {
+      "alignment_counts": {
+        "adversary_not_exactly_resolved": 310,
+        "disjoint_exact_actor_ids": 28,
+        "exact_actor_id_overlap": 375,
+        "query_actor_present_but_adversary_empty": 3447
+      },
+      "distinct_query_actor_ids_per_pulse": {
+        "1": 2799,
+        "10": 8,
+        "11": 3,
+        "12": 5,
+        "13": 15,
+        "14": 3,
+        "15": 30,
+        "16": 10,
+        "18": 13,
+        "19": 5,
+        "2": 1106,
+        "20": 1,
+        "24": 1,
+        "26": 1,
+        "27": 4,
+        "28": 18,
+        "29": 1,
+        "3": 45,
+        "4": 31,
+        "5": 21,
+        "6": 6,
+        "7": 9,
+        "8": 18,
+        "9": 7
+      },
+      "semantic_rule": "query and query_actors are collection provenance, never attribution"
+    },
+    "ioc_type_statistics": {
+      "distinct_raw_indicator_types": 19,
+      "embedded_indicator_observations": 55659022,
+      "pulses_with_embedded_indicators": 3525,
+      "pulses_with_nonempty_adversary_and_indicators": 469,
+      "raw_type_counts": {
+        "BitcoinAddress": 22,
+        "CIDR": 259498,
+        "CVE": 27440,
+        "FileHash-IMPHASH": 25,
+        "FileHash-MD5": 656243,
+        "FileHash-SHA1": 424539,
+        "FileHash-SHA256": 4007287,
+        "FilePath": 50,
+        "IPv4": 260794,
+        "IPv6": 25434,
+        "JA3": 26,
+        "Mutex": 79,
+        "SSLCertFingerprint": 2901,
+        "URI": 32,
+        "URL": 11839772,
+        "YARA": 1140,
+        "domain": 29402513,
+        "email": 39230,
+        "hostname": 8711997
+      },
+      "source_path": "payload.indicators[]"
+    },
+    "multi_actor_statistics": {
+      "examples": [
+        {
+          "pulse_count": 5,
+          "value": "Lucky Mouse APT27 | NoName057(16) |  Unnamed"
+        },
+        {
+          "pulse_count": 2,
+          "value": "DragonForce Hacker Group Malaysia, Al-Arqam"
+        },
+        {
+          "pulse_count": 2,
+          "value": "Kimsuky and Andariel"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Colorado Quasi Government | Workerk Compensation"
+        },
+        {
+          "pulse_count": 1,
+          "value": "APT32, APT-C-00"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Akira Ransomware, Lockbit Ransomware"
+        },
+        {
+          "pulse_count": 1,
+          "value": "APT27, APT30, APT31, Ke3chang, GALLIUM and Mustang Pand"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Lazarus: Labyrinth Chollima, HIDDEN COBRA, Guardians of Peace, ZINC, NICKEL ACADEMY, Diamond Sleet,"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Sidecopy, Transparenttribe"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Lazarus, APT38"
+        },
+        {
+          "pulse_count": 1,
+          "value": "APT32, OceanLotus, SeaLotus, APT-C-00, Ocean Buffalo, Tin Woodlawn, ATK 17, SectorF01"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Suspected Iridium / APT39 .  Brother of SEA , Iranian Cyber Army"
+        }
+      ],
+      "parse_ambiguous_examples": [
+        {
+          "pulse_count": 1,
+          "value": "TrojanDownloader:Win32/Nemucod"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Two-tailed Scorpion/APT-C-23"
+        },
+        {
+          "pulse_count": 1,
+          "value": "Suspected Iridium / APT39 . Brother of SEA"
+        },
+        {
+          "pulse_count": 1,
+          "value": "StealthWorker/GoBrut (The adversary demonstrates advanced telemetry suppression within specialized s"
+        },
+        {
+          "pulse_count": 1,
+          "value": "DPRK-aligned / Contagious Interview cluster"
+        }
+      ],
+      "unique_raw_values": 16,
+      "v2_parser_multi_label_pulses": 22
+    },
+    "non_actor_examples": [
+      {
+        "pulse_count": 28,
+        "value": "Informational"
+      },
+      {
+        "pulse_count": 16,
+        "value": "Malware Advisory"
+      },
+      {
+        "pulse_count": 1,
+        "value": "https://www.pwc.co.uk/issues/cyber-security-data-privacy/insights/operation-cloud-hopper.html"
+      }
+    ],
+    "raw_value_identity_statistics": {
+      "definition_result": "raw exact distinct nonempty adversary strings",
+      "maximum_occurrence_count": 42,
+      "maximum_occurrence_values": [
+        "APT41",
+        "BlindEagle"
+      ],
+      "normalization_collision_groups": [
+        [
+          "CARBANAK",
+          "Carbanak"
+        ],
+        [
+          "APT28",
+          "apt28"
+        ],
+        [
+          "APT29,",
+          "apt29,"
+        ],
+        [
+          "FANCY BEAR",
+          "Fancy Bear"
+        ],
+        [
+          "TransparentTribe",
+          "Transparenttribe"
+        ],
+        [
+          "BlueNoroff",
+          "Bluenoroff"
+        ],
+        [
+          "WinNTI",
+          "Winnti"
+        ],
+        [
+          "FAMOUS CHOLLIMA",
+          "Famous Chollima"
+        ]
+      ],
+      "normalized_distinct_count": 214,
+      "raw_exact_distinct_count": 222,
+      "raw_values_changed_by_nfkc": 0,
+      "raw_values_changed_by_trim": 1,
+      "repeated_raw_value_count": 96,
+      "same_visible_nfc_collision_groups": [],
+      "singleton_raw_value_count": 126,
+      "trim_collision_groups": [],
+      "trimmed_distinct_count": 222
+    },
+    "repeated_value_context": {
+      "blocks_raw_value_only_decision_reuse": true,
+      "blocks_starting_p1": false,
+      "context_variation_counts": {
+        "multiple_description": 82,
+        "multiple_references": 66,
+        "multiple_tags": 64,
+        "multiple_title": 77
+      },
+      "machine_conclusion": "the current parsers are deterministic functions of raw_value, so exact repeats always get the same parser output",
+      "minimum_safe_p1_unit": "occurrence keyed by pulse_id + raw_ref + source_path; P1 may later prove which decisions can be shared by raw value",
+      "repeated_raw_value_count": 96,
+      "samples": [
+        {
+          "occurrences": 42,
+          "raw_value": "APT41",
+          "sample_contexts": [
+            {
+              "pulse_id": "61684d3f74608776b909c824",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/61684d3f74608776b909c824/2026-07-04T09-20-52.855181+00-00.json",
+              "references": [
+                "https://github.com/PwCUK-CTO/TheSAS2021-Red-Kelpie/tree/main/indicators",
+                "https://www.redpacketsecurity.com/sas-2021-learning-to-chacha-with-apt41/"
+              ],
+              "tags": [
+                "red kelpie",
+                "cobalt strike",
+                "lnk file",
+                "unique icon",
+                "motnug",
+                "url http",
+                "cobat strike",
+                "low confidence",
+                "ms13098 dll",
+                "chachaloader"
+              ],
+              "title": "Learning to ChaCha with APT41"
+            },
+            {
+              "pulse_id": "6968eda3f1acc46a1328fee8",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/6968eda3f1acc46a1328fee8/2026-07-04T13-26-14.857890+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/5aec1ab38170f445dbd22f2b",
+                "https://otx.alienvault.com/pulse/64b7cb35f1186b9409aeec5c"
+              ],
+              "tags": [
+                "APT41"
+              ],
+              "title": "APT41"
+            },
+            {
+              "pulse_id": "69319067afd899634ae234e8",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69319067afd899634ae234e8/2026-07-04T13-26-14.857890+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/5aec1ab38170f445dbd22f2b",
+                "https://otx.alienvault.com/pulse/64b7cb35f1186b9409aeec5c"
+              ],
+              "tags": [
+                "APT41"
+              ],
+              "title": "APT41"
+            }
+          ]
+        },
+        {
+          "occurrences": 42,
+          "raw_value": "BlindEagle",
+          "sample_contexts": [
+            {
+              "pulse_id": "69a58e3e0f69e3a8faf9ded9",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69a58e3e0f69e3a8faf9ded9/2026-07-05T00-54-23.218747+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/68add0f60282b650edbd7169"
+              ],
+              "tags": [
+                "BlindEagle",
+                "Blind Eagle"
+              ],
+              "title": "BlindEagle"
+            },
+            {
+              "pulse_id": "69a0383abcda0ee91576996c",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69a0383abcda0ee91576996c/2026-07-05T00-54-23.218747+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/68add0f60282b650edbd7169"
+              ],
+              "tags": [
+                "BlindEagle",
+                "Blind Eagle"
+              ],
+              "title": "BlindEagle"
+            },
+            {
+              "pulse_id": "699c4e943c3d6bcb023e2887",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/699c4e943c3d6bcb023e2887/2026-07-05T00-54-23.218747+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/68add0f60282b650edbd7169"
+              ],
+              "tags": [
+                "BlindEagle",
+                "Blind Eagle"
+              ],
+              "title": "BlindEagle"
+            }
+          ]
+        },
+        {
+          "occurrences": 28,
+          "raw_value": "APT28",
+          "sample_contexts": [
+            {
+              "pulse_id": "6982ee645ad2d45755d78613",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/6982ee645ad2d45755d78613/2026-07-04T09-20-52.855181+00-00.json",
+              "references": [
+                "https://blog.synapticsystems.de/apt28-geofencing-as-a-targeting-signal-cve-2026-21509/"
+              ],
+              "tags": [
+                "word",
+                "cve202621509",
+                "office",
+                "webdav",
+                "apt28",
+                "windows",
+                "urls",
+                "czech republic",
+                "romania",
+                "iocs",
+                "click"
+              ],
+              "title": "APT28: Geofencing as a Targeting Signal (CVE-2026-21509 Campaign)"
+            },
+            {
+              "pulse_id": "69954252f54064020df7e514",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69954252f54064020df7e514/2026-07-04T09-20-52.855181+00-00.json",
+              "references": [
+                "https://lab52.io/blog/operation-macromaze-new-apt28-campaign-using-basic-tooling-and-legit-infrastructure"
+              ],
+              "tags": [
+                "persistence",
+                "operation macromaze",
+                "html",
+                "vbscript",
+                "droppers",
+                "macros",
+                "batch files",
+                "exfiltration",
+                "webhook",
+                "fancy bear"
+              ],
+              "title": "Operation MacroMaze: New APT28 Campaign Using Basic Tooling and Legitimate Infrastructure"
+            },
+            {
+              "pulse_id": "68be5bf2a1580d28a2cc47b0",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/68be5bf2a1580d28a2cc47b0/2026-07-04T09-46-15.047075+00-00.json",
+              "references": [
+                "https://lab52.io/blog/analyzing-notdoor-inside-apt28s-expanding-arsenal"
+              ],
+              "tags": [
+                "vba macro",
+                "outlook",
+                "exfiltration",
+                "nato",
+                "obfuscation",
+                "persistence",
+                "dll side-loading",
+                "backdoor",
+                "notdoor"
+              ],
+              "title": "Analyzing NotDoor: Inside APT28's Expanding Arsenal"
+            }
+          ]
+        },
+        {
+          "occurrences": 28,
+          "raw_value": "Informational",
+          "sample_contexts": [
+            {
+              "pulse_id": "61fa0c05017efcc3b0aa3f40",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/61fa0c05017efcc3b0aa3f40/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://therecord.media/conti-ransomware-hits-apple-tesla-supplier/"
+              ],
+              "tags": [
+                "conti",
+                "iocs file",
+                "conti sample",
+                "delta"
+              ],
+              "title": "Conti Ransomware Strikes Delta Electronics Resulting in Encryption of 1,500 Servers and 12,000 Computers"
+            },
+            {
+              "pulse_id": "62b968fb8745e91fccef623c",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/62b968fb8745e91fccef623c/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://www.sentinelone.com/labs/aoqin-dragon-newly-discovered-chinese-linked-apt-has-been-quietly-spying-on-organizations-for-10-years/"
+              ],
+              "tags": [
+                "modified heyoka",
+                "mongall c2",
+                "internal ips",
+                "iocs sha1",
+                "mongall",
+                "dropper",
+                "document",
+                "installer",
+                "upan component",
+                "heyoka c2",
+                "Aoqin Dragon",
+                "Document Lures"
+              ],
+              "title": "Aoqin Dragon Uses Document Lures and USB Shortcut Techniques to Infect Targets"
+            },
+            {
+              "pulse_id": "627a54e78b331b13008345cf",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/627a54e78b331b13008345cf/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [],
+              "tags": [
+                "ulrs",
+                "cicada apt",
+                "sha256",
+                "moreeggs sha256",
+                "t regdword",
+                "regdword",
+                "Legal Services Sector"
+              ],
+              "title": "Legal Services Sector Cyber Threat Intel - Key Insights (April 2022)"
+            }
+          ]
+        },
+        {
+          "occurrences": 27,
+          "raw_value": "APT34",
+          "sample_contexts": [
+            {
+              "pulse_id": "69fb369081751eee8e157ead",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69fb369081751eee8e157ead/2026-07-04T11-33-00.843704+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/69fa3e5f84a20294f972fa64"
+              ],
+              "tags": [
+                "APT34"
+              ],
+              "title": "APT34"
+            },
+            {
+              "pulse_id": "67ed03c2432a950a26d6e1de",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/67ed03c2432a950a26d6e1de/2026-07-04T12-01-06.455293+00-00.json",
+              "references": [
+                "https://threatbook.io/blog/id/1101",
+                "https://www.zscaler.com/blogs/security-research/analyzing-new-hijackloader-evasion-tactics#indicators-of-compromise--iocs-"
+              ],
+              "tags": [],
+              "title": "New Malware from APT34 Targets Iraqi Entities | ThreatBook CTI"
+            },
+            {
+              "pulse_id": "6772950f65e692c98e0b6ecc",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/6772950f65e692c98e0b6ecc/2026-07-04T12-01-06.455293+00-00.json",
+              "references": [
+                "https://www.picussecurity.com/resource/blog/oilrig-exposed-tools-techniques-apt34"
+              ],
+              "tags": [
+                "oilrig",
+                "apt34",
+                "middle east",
+                "powershell",
+                "quadagent",
+                "cve202430088",
+                "saudi arabian",
+                "helix kitten",
+                "control",
+                "http",
+                "lazagne",
+                "greenbug",
+                "ismagent",
+                "june",
+                "mimikatz",
+                "longwatch",
+                "plink",
+                "restrict",
+                "stealhook",
+                "helminth"
+              ],
+              "title": "OilRig Exposed: Unveiling the Tools and Techniques of APT34"
+            }
+          ]
+        },
+        {
+          "occurrences": 25,
+          "raw_value": "APT36",
+          "sample_contexts": [
+            {
+              "pulse_id": "69a58e3c9b43558a08870cd6",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69a58e3c9b43558a08870cd6/2026-07-04T10-38-28.109218+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/6820e8bd5fd696b2e4158092",
+                "https://otx.alienvault.com/pulse/68962f0efb122a6feb479f83"
+              ],
+              "tags": [
+                "APT36"
+              ],
+              "title": "APT36"
+            },
+            {
+              "pulse_id": "6a436d8db2b9631af1537196",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/6a436d8db2b9631af1537196/2026-07-04T10-38-28.109218+00-00.json",
+              "references": [
+                "https://x.com/GenThreatLabs/status/2068972067307811234"
+              ],
+              "tags": [
+                "apt36",
+                "turkey",
+                "firepower",
+                "lnk",
+                "rtf",
+                "crystalshell"
+              ],
+              "title": "The #APT36 cluster can't stop, won't stop"
+            },
+            {
+              "pulse_id": "697b5ea487810077c4522c6f",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/697b5ea487810077c4522c6f/2026-07-04T11-33-00.843704+00-00.json",
+              "references": [
+                "https://otx.alienvault.com/pulse/6820e8bd5fd696b2e4158092",
+                "https://otx.alienvault.com/pulse/68962f0efb122a6feb479f83"
+              ],
+              "tags": [
+                "APT36"
+              ],
+              "title": "APT36"
+            }
+          ]
+        },
+        {
+          "occurrences": 20,
+          "raw_value": "APT29",
+          "sample_contexts": [
+            {
+              "pulse_id": "69fddfc6723db9eb022c17c9",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69fddfc6723db9eb022c17c9/2026-07-04T09-20-52.855181+00-00.json",
+              "references": [
+                "https://lab52.io/blog/wp-content/uploads/2026/05/LAB52EasterBunny.pdf"
+              ],
+              "tags": [],
+              "title": "Easter Bunny"
+            },
+            {
+              "pulse_id": "6776438792fb5576b94857e6",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/6776438792fb5576b94857e6/2026-07-04T09-46-15.047075+00-00.json",
+              "references": [
+                "IOCs.txt"
+              ],
+              "tags": [
+                "Watering Hole",
+                "CVE-2024-5274",
+                "CVE-2023-41993"
+              ],
+              "title": "State-backed attackers and commercial surveillance vendors repeatedly use the same exploits"
+            },
+            {
+              "pulse_id": "65b0d5c2f90243717be60f0d",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/65b0d5c2f90243717be60f0d/2026-07-04T09-46-15.047075+00-00.json",
+              "references": [
+                "https://www.fortinet.com/blog/threat-research/teamcity-intrusion-saga-apt29-suspected-exploiting-cve-2023-42793"
+              ],
+              "tags": [
+                "Remote Code Execution Vulnerability",
+                "JetBrains TeamCity",
+                "Amazon S3 bucket",
+                "WMIC",
+                "Python",
+                "AnyDesk",
+                "Powershell",
+                "CVE-2023-42793"
+              ],
+              "title": "TeamCity Intrusion Saga: APT29 Suspected Among the Attackers Exploiting CVE-2023-42793"
+            }
+          ]
+        },
+        {
+          "occurrences": 17,
+          "raw_value": "Akira",
+          "sample_contexts": [
+            {
+              "pulse_id": "693c89a51f1158f951e33f69",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/693c89a51f1158f951e33f69/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://www.threatlocker.com/blog/from-armillaria-loader-to-edr-killer"
+              ],
+              "tags": [
+                "ioctl code",
+                "akira",
+                "edr killer",
+                "intelligence",
+                "process",
+                "threatlocker",
+                "cyber hero",
+                "intro",
+                "armillaria",
+                "november",
+                "psexec"
+              ],
+              "title": "From Armillaria Loader to EDR Killer"
+            },
+            {
+              "pulse_id": "68ec96015340b595bd782f5d",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/68ec96015340b595bd782f5d/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://blog.polyswarm.io/akira-reloaded"
+              ],
+              "tags": [
+                "akira",
+                "cve202440766",
+                "canada",
+                "sonicwall",
+                "ssl vpn",
+                "europe",
+                "south america",
+                "australia",
+                "india",
+                "impacket",
+                "anydesk",
+                "energy",
+                "wolf",
+                "powershell",
+                "threat"
+              ],
+              "title": "Akira Reloaded."
+            },
+            {
+              "pulse_id": "68c2d9198b3bff0252c25c6a",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/68c2d9198b3bff0252c25c6a/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://www.rapid7.com/blog/post/dr-akira-ransomware-group-utilizing-sonicwall-devices-for-initial-access/",
+                "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2024-0015"
+              ],
+              "tags": [
+                "cybersecurity company",
+                "managed detection and response",
+                "exposure management",
+                "managed security solutions",
+                "vulnerability management",
+                "exposure assessment platform",
+                "sonicwall",
+                "rapid7",
+                "virtual office",
+                "portal",
+                "sslvpn",
+                "mfatotp",
+                "august",
+                "akira",
+                "background",
+                "gen5"
+              ],
+              "title": "Akira Ransomware Group Utilizing SonicWall Devices for Initial Access."
+            }
+          ]
+        },
+        {
+          "occurrences": 16,
+          "raw_value": "Malware Advisory",
+          "sample_contexts": [
+            {
+              "pulse_id": "623d8a4242cd9e7b1ed7c8d5",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/623d8a4242cd9e7b1ed7c8d5/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://www.deepinstinct.com/blog/arid-gopher-the-newest-micropsia-malware-variant"
+              ],
+              "tags": [
+                "archive",
+                "iocs sha256",
+                "aridgopher v2",
+                "v1 c2",
+                "Arid Gopher Malware",
+                "Microsoft"
+              ],
+              "title": "Arid Gopher Malware Targets Computers Running Microsoft Windows to Infiltrate Important Assets"
+            },
+            {
+              "pulse_id": "62bade38dd42cc2255b65fb9",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/62bade38dd42cc2255b65fb9/2026-07-04T12-01-06.455293+00-00.json",
+              "references": [
+                "https://blog.malwarebytes.com/threat-intelligence/2022/06/russias-apt28-uses-fear-of-nuclear-war-to-spread-follina-docs-in-ukraine/"
+              ],
+              "tags": [
+                "userprofile",
+                "iocs nuclear",
+                "terrorism a",
+                "very real",
+                "legitimate dll",
+                "credomap",
+                "network hxxp",
+                "command",
+                "Malware",
+                "Russian Hacking",
+                "Cobalt Strike"
+              ],
+              "title": "Russian Hacking Groups Exploit Follina Bug to Install CredoMap Malware and Cobalt Strike Beacons"
+            },
+            {
+              "pulse_id": "628272df97a93a0472223dd3",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/628272df97a93a0472223dd3/2026-07-04T12-01-06.455293+00-00.json",
+              "references": [
+                "https://www.secureworks.com/blog/cobalt-mirage-conducts-ransomware-operations-in-us"
+              ],
+              "tags": [
+                "email",
+                "sha1",
+                "sha256 hash",
+                "Malware",
+                "Iranian APT",
+                "Cobalt Mirage"
+              ],
+              "title": "Iranian APT Cobalt Mirage Targets US and European Entities for Financial Gains and Data Theft"
+            }
+          ]
+        },
+        {
+          "occurrences": 15,
+          "raw_value": "Lazarus",
+          "sample_contexts": [
+            {
+              "pulse_id": "67ae795747811bf0de17e16a",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/67ae795747811bf0de17e16a/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://asec.ahnlab.com/en/66088/"
+              ],
+              "tags": [
+                "nestdoor",
+                "dora rat",
+                "andariel group",
+                "lazarus group",
+                "tigerrat",
+                "asec",
+                "korea",
+                "apache tomcat",
+                "vmware horizon",
+                "c server",
+                "dora",
+                "keylogger",
+                "infostealer",
+                "june",
+                "korean",
+                "malware",
+                "stealer",
+                "kimsuky",
+                "lazarus",
+                "andariel"
+              ],
+              "title": "Analysis of APT Attack Cases Using Dora RAT Against Korean Companies (Andariel Group) - ASEC"
+            },
+            {
+              "pulse_id": "656df70873f5a2a602eb5734",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/656df70873f5a2a602eb5734/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://asec.ahnlab.com/en/59318/"
+              ],
+              "tags": [
+                "strong",
+                "nukesped",
+                "apache activemq",
+                "andariel group",
+                "c server",
+                "tigerrat",
+                "november",
+                "cve202346604",
+                "october",
+                "april",
+                "february",
+                "downloader",
+                "august",
+                "june",
+                "lazarus",
+                "korean",
+                "format",
+                "period",
+                "defense",
+                "cobaltstrike",
+                "malware",
+                "path",
+                "kimsuky",
+                "download",
+                "insert",
+                "andariel",
+                "hellokitty",
+                "huntress"
+              ],
+              "title": "Circumstances of the Andariel Group Exploiting an Apache ActiveMQ Vulnerability (CVE-2023-46604) "
+            },
+            {
+              "pulse_id": "6564f921500ae6dab82c3bea",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/6564f921500ae6dab82c3bea/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://asec.ahnlab.com/en/59318/"
+              ],
+              "tags": [
+                "strong",
+                "nukesped",
+                "apache activemq",
+                "andariel group",
+                "c server",
+                "tigerrat",
+                "november",
+                "cve202346604",
+                "october",
+                "april",
+                "february",
+                "downloader",
+                "august",
+                "june",
+                "lazarus",
+                "korean",
+                "format",
+                "period",
+                "defense",
+                "cobaltstrike",
+                "malware",
+                "path",
+                "kimsuky",
+                "download",
+                "insert",
+                "andariel",
+                "hellokitty",
+                "huntress"
+              ],
+              "title": "Circumstances of the Andariel Group Exploiting an Apache ActiveMQ Vulnerability (CVE-2023-46604) - ASEC BLOG"
+            }
+          ]
+        },
+        {
+          "occurrences": 13,
+          "raw_value": "NSO Group - MIrai - Botnets - Spyware - Law enforcement - Intelligence agencies - Others",
+          "sample_contexts": [
+            {
+              "pulse_id": "69b2b92a27c47d4e28927364",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69b2b92a27c47d4e28927364/2026-07-04T07-05-38.351128+00-00.json",
+              "references": [],
+              "tags": [
+                "Spyware",
+                "Trojan",
+                "Pegasus",
+                "DNS",
+                "Graphite",
+                "Paragon",
+                "NSO",
+                "NSO Group",
+                "Security",
+                "Samsung",
+                "Google",
+                "Amazon",
+                "HP",
+                "Cloudflare",
+                "Endgame",
+                "Europe",
+                "Espionage",
+                "Malware",
+                "Campaign",
+                "Civil",
+                "People",
+                "Civilians",
+                "Crime",
+                "Hackers",
+                "Sony",
+                "Wix",
+                "Mobileye",
+                "Skynet",
+                "Android",
+                "iOS",
+                "Mac",
+                "Windows",
+                "Microsoft",
+                "Linux",
+                "Mirai",
+                "Berbew",
+                "Trojan Downloader",
+                "html_smuggling",
+                "FormBook",
+                "stealer"
+              ],
+              "title": "operation endgame clone by privacynotacrime (very detailed piece)"
+            },
+            {
+              "pulse_id": "69b2b9295603a6100edfa8c8",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69b2b9295603a6100edfa8c8/2026-07-04T07-05-38.351128+00-00.json",
+              "references": [],
+              "tags": [
+                "Spyware",
+                "Trojan",
+                "Pegasus",
+                "DNS",
+                "Graphite",
+                "Paragon",
+                "NSO",
+                "NSO Group",
+                "Security",
+                "Samsung",
+                "Google",
+                "Amazon",
+                "HP",
+                "Cloudflare",
+                "Endgame",
+                "Europe",
+                "Espionage",
+                "Malware",
+                "Campaign",
+                "Civil",
+                "People",
+                "Civilians",
+                "Crime",
+                "Hackers",
+                "Sony",
+                "Wix",
+                "Mobileye",
+                "Skynet",
+                "Android",
+                "iOS",
+                "Mac",
+                "Windows",
+                "Microsoft",
+                "Linux",
+                "Mirai",
+                "Berbew",
+                "Trojan Downloader",
+                "html_smuggling",
+                "FormBook",
+                "stealer"
+              ],
+              "title": "operation endgame clone by privacynotacrime (very detailed piece)"
+            },
+            {
+              "pulse_id": "69b2b927aa7f10e82639d204",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/69b2b927aa7f10e82639d204/2026-07-04T07-05-38.351128+00-00.json",
+              "references": [],
+              "tags": [
+                "Spyware",
+                "Trojan",
+                "Pegasus",
+                "DNS",
+                "Graphite",
+                "Paragon",
+                "NSO",
+                "NSO Group",
+                "Security",
+                "Samsung",
+                "Google",
+                "Amazon",
+                "HP",
+                "Cloudflare",
+                "Endgame",
+                "Europe",
+                "Espionage",
+                "Malware",
+                "Campaign",
+                "Civil",
+                "People",
+                "Civilians",
+                "Crime",
+                "Hackers",
+                "Sony",
+                "Wix",
+                "Mobileye",
+                "Skynet",
+                "Android",
+                "iOS",
+                "Mac",
+                "Windows",
+                "Microsoft",
+                "Linux",
+                "Mirai",
+                "Berbew",
+                "Trojan Downloader",
+                "html_smuggling",
+                "FormBook",
+                "stealer"
+              ],
+              "title": "operation endgame clone by privacynotacrime (very detailed piece)"
+            }
+          ]
+        },
+        {
+          "occurrences": 12,
+          "raw_value": "Andariel",
+          "sample_contexts": [
+            {
+              "pulse_id": "699a6018f14b9e04b3050de4",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/699a6018f14b9e04b3050de4/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [],
+              "tags": [
+                "Andariel"
+              ],
+              "title": "Andariel 2018"
+            },
+            {
+              "pulse_id": "67729e5bf032072b64e4231e",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/67729e5bf032072b64e4231e/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://asec.ahnlab.com/en/85400/"
+              ],
+              "tags": [
+                "smalltiger",
+                "andariel group",
+                "attack cases",
+                "korean asset",
+                "modeloader",
+                "file",
+                "rdp access",
+                "server",
+                "regdword d",
+                "f figure",
+                "webshell",
+                "andariel",
+                "apache tomcat"
+              ],
+              "title": "Analysis of Attack Cases Against Korean Solutions by the Andariel Group (SmallTiger) - ASEC"
+            },
+            {
+              "pulse_id": "667a56f2da8692db36d4167d",
+              "raw_ref": "D:/proj/CTI-RAG/rag_cti/data/raw/otx/667a56f2da8692db36d4167d/2026-07-04T08-31-14.950703+00-00.json",
+              "references": [
+                "https://asec.ahnlab.com/en/66088/"
+              ],
+              "tags": [
+                "Dora RAT",
+                "infostealer",
+                "Nestdoor"
+              ],
+              "title": "Analysis of APT Attack Cases Using Dora RAT Against Korean Companies (Andariel Group)"
+            }
+          ]
+        }
+      ],
+      "semantic_uniformity": "UNRESOLVED: title/tags/reference variation cannot prove whether every repeat has the same actor/malware/campaign meaning"
+    },
+    "structured_adversary_semantics": {
+      "finding": "OTX exposes adversary as a dedicated Pulse string field, the strongest structured actor-claim input in this snapshot",
+      "limit": "no per-claim evidence, confidence, or explicit relation to individual indicators; presence does not prove correctness"
+    }
+  },
+  "paper_reproduction": {
+    "adapted_steps": [
+      "OTX IOC flatten/type normalization",
+      "OTX adversary claim extraction before resolution",
+      "separate Pulse-indicator observation from actor-IOC attribution",
+      "WIP retained without claiming the paper's single-feed definition"
+    ],
+    "misp_snapshot": {
+      "commit": "42b5d56",
+      "date": "2025-07-29",
+      "path": "clusters/threat-actor.json",
+      "present_locally": false,
+      "remote_validation": {
+        "actor_object_count": 856,
+        "ambiguous_exact_name_count": 23,
+        "bytes": 1096378,
+        "exact_casefold_name_count": 2080,
+        "objects_with_country": 401,
+        "objects_with_synonyms": 355,
+        "objects_with_uuid_and_value": 856,
+        "paper_count_discrepancy": "UNRESOLVED: pinned JSON currently contains 856 objects",
+        "paper_reported_actor_count": 855,
+        "sha256": "f0dfaff774461dd44cd5bbd2545284b9bde857ed6477b0b1e8f50b52e4751034",
+        "status": "VERIFIED",
+        "top_level_keys": [
+          "authors",
+          "category",
+          "description",
+          "name",
+          "source",
+          "type",
+          "uuid",
+          "values",
+          "version"
+        ],
+        "url": "https://raw.githubusercontent.com/MISP/misp-galaxy/42b5d56/clusters/threat-actor.json"
+      },
+      "required_for_b1": true
+    },
+    "missing_inputs": [
+      "local pinned MISP 42b5d56",
+      "seven commercial feeds",
+      "manual latest 3-5 vendor reports per unmapped actor",
+      "augmented TAG decisions",
+      "versioned CS/MS validation table"
+    ],
+    "not_reproducible": [
+      "complete public reconstruction of augmented 1,726-object TAG",
+      "paper final actor/agreement results"
+    ],
+    "out_of_scope": [
+      "co-observation windows",
+      "Krippendorff alpha/pairwise agreement",
+      "VirusTotal disagreement analysis"
+    ],
+    "paper_input_semantics": "commercial-feed IOC records already carrying vendor-attributed actor names",
+    "reproducible_steps": [
+      "MISP actor object/name/synonym construction",
+      "unique/ambiguous/unmapped exact lookup",
+      "no cascading alias merge"
+    ]
+  },
+  "parser_execution": {
+    "b0_776_interpretation": {
+      "clean_extraction_input": false,
+      "is_distinct_label_count": false,
+      "is_segment_occurrence_count": true,
+      "permitted_use": "replay the historical B0 resolver behavior only",
+      "preserves_order": false,
+      "prohibited_use": "formal mapping input or clean B1 resolver comparison input",
+      "source": "old paper prototype _split_actor_labels over 713 nonempty occurrences",
+      "uses_set_sorted": true
+    },
+    "corrected_parser_impact": {
+      "blocks": [
+        "clean B1 comparison",
+        "counts of Event.apt retained/revoked/added/changed"
+      ],
+      "missing_evidence": "reviewed extraction decisions for all raw values/occurrences",
+      "required_check": "complete P1 review and replay v2 resolution/projection against frozen occurrence ids",
+      "status": "UNRESOLVED"
+    },
+    "delimiter_distinct_raw_value_counts": {
+      "and_word": 2,
+      "comma": 16,
+      "pipe": 3,
+      "plus": 0,
+      "semicolon": 0,
+      "slash": 6
+    },
+    "delimiter_occurrence_counts": {
+      "and_word": 3,
+      "comma": 17,
+      "pipe": 7,
+      "plus": 0,
+      "semicolon": 0,
+      "slash": 6
+    },
+    "old_split_values_v2_marks_parse_ambiguous": [
+      "DPRK-aligned / Contagious Interview cluster",
+      "StealthWorker/GoBrut (The adversary demonstrates advanced telemetry suppression within specialized s",
+      "Suspected Iridium / APT39 .  Brother of SEA , Iranian Cyber Army",
+      "TrojanDownloader:Win32/Nemucod",
+      "Two-tailed Scorpion/APT-C-23"
+    ],
+    "ordered_output_different_raw_value_count": 18,
+    "prototype_behavior": "per occurrence: regex split, then set dedupe and sorted order",
+    "prototype_distinct_segments": 253,
+    "prototype_segment_occurrences": 776,
+    "requested_example_results": [
+      {
+        "prototype": [
+          {
+            "label": "Ltd.",
+            "resolution_status": "unmapped"
+          },
+          {
+            "label": "Shenzhen Haimaiyunxiang Media Co.",
+            "resolution_status": "unmapped"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": false,
+        "raw_value": "Shenzhen Haimaiyunxiang Media Co., Ltd.",
+        "snapshot_occurrences_exact": 0,
+        "snapshot_occurrences_normalized": 0,
+        "snapshot_occurrences_trimmed": 0,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": false,
+            "label": "Shenzhen Haimaiyunxiang Media Co., Ltd.",
+            "parse_status": "non_actor_value",
+            "resolution_status": "non_actor_value",
+            "resolved_actor_ids": []
+          }
+        ],
+        "v2_actor_nodes": 0,
+        "v2_attributed_to_edges": 0,
+        "v2_event_apt": null
+      },
+      {
+        "prototype": [
+          {
+            "label": "MOIS (Ministry of Intelligence",
+            "resolution_status": "unmapped"
+          },
+          {
+            "label": "Security)",
+            "resolution_status": "unmapped"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": false,
+        "raw_value": "MOIS (Ministry of Intelligence and Security)",
+        "snapshot_occurrences_exact": 0,
+        "snapshot_occurrences_normalized": 0,
+        "snapshot_occurrences_trimmed": 0,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "MOIS (Ministry of Intelligence and Security)",
+            "parse_status": "parsed",
+            "resolution_status": "unmapped_actor_like",
+            "resolved_actor_ids": []
+          }
+        ],
+        "v2_actor_nodes": 0,
+        "v2_attributed_to_edges": 0,
+        "v2_event_apt": null
+      },
+      {
+        "prototype": [
+          {
+            "label": "Nemucod",
+            "resolution_status": "unmapped"
+          },
+          {
+            "label": "TrojanDownloader:Win32",
+            "resolution_status": "unmapped"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": false,
+        "raw_value": "TrojanDownloader:Win32/Nemucod",
+        "snapshot_occurrences_exact": 1,
+        "snapshot_occurrences_normalized": 1,
+        "snapshot_occurrences_trimmed": 1,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": false,
+            "label": "TrojanDownloader:Win32/Nemucod",
+            "parse_status": "parse_ambiguous",
+            "resolution_status": "parse_ambiguous",
+            "resolved_actor_ids": []
+          }
+        ],
+        "v2_actor_nodes": 0,
+        "v2_attributed_to_edges": 0,
+        "v2_event_apt": null
+      },
+      {
+        "prototype": [
+          {
+            "label": "Cobalt Strike",
+            "resolution_status": "unmapped"
+          },
+          {
+            "label": "campaign",
+            "resolution_status": "unmapped"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": false,
+        "raw_value": "Cobalt Strike + campaign",
+        "snapshot_occurrences_exact": 0,
+        "snapshot_occurrences_normalized": 0,
+        "snapshot_occurrences_trimmed": 0,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Cobalt Strike",
+            "parse_status": "parsed",
+            "resolution_status": "unmapped_actor_like",
+            "resolved_actor_ids": []
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "campaign",
+            "parse_status": "parsed",
+            "resolution_status": "unmapped_actor_like",
+            "resolved_actor_ids": []
+          }
+        ],
+        "v2_actor_nodes": 0,
+        "v2_attributed_to_edges": 0,
+        "v2_event_apt": null
+      },
+      {
+        "prototype": [
+          {
+            "label": "Akira Ransomware",
+            "resolution_status": "unmapped"
+          },
+          {
+            "label": "Lockbit Ransomware",
+            "resolution_status": "unmapped"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": false,
+        "raw_value": "Akira Ransomware, Lockbit Ransomware",
+        "snapshot_occurrences_exact": 1,
+        "snapshot_occurrences_normalized": 1,
+        "snapshot_occurrences_trimmed": 1,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Akira Ransomware",
+            "parse_status": "parsed",
+            "resolution_status": "unmapped_actor_like",
+            "resolved_actor_ids": []
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Lockbit Ransomware",
+            "parse_status": "parsed",
+            "resolution_status": "unmapped_actor_like",
+            "resolved_actor_ids": []
+          }
+        ],
+        "v2_actor_nodes": 0,
+        "v2_attributed_to_edges": 0,
+        "v2_event_apt": null
+      },
+      {
+        "prototype": [
+          {
+            "label": "Diamond Sleet",
+            "resolution_status": "mapped_unambiguous"
+          },
+          {
+            "label": "Guardians of Peace",
+            "resolution_status": "mapped_unambiguous"
+          },
+          {
+            "label": "HIDDEN COBRA",
+            "resolution_status": "mapped_unambiguous"
+          },
+          {
+            "label": "Lazarus: Labyrinth Chollima",
+            "resolution_status": "unmapped"
+          },
+          {
+            "label": "NICKEL ACADEMY",
+            "resolution_status": "mapped_unambiguous"
+          },
+          {
+            "label": "ZINC",
+            "resolution_status": "mapped_unambiguous"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": true,
+        "raw_value": "Lazarus: Labyrinth Chollima, HIDDEN COBRA, Guardians of Peace, ZINC, NICKEL ACADEMY, Diamond Sleet,",
+        "snapshot_occurrences_exact": 0,
+        "snapshot_occurrences_normalized": 1,
+        "snapshot_occurrences_trimmed": 1,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Lazarus: Labyrinth Chollima",
+            "parse_status": "parsed",
+            "resolution_status": "unmapped_actor_like",
+            "resolved_actor_ids": []
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "HIDDEN COBRA",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0032"
+            ]
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Guardians of Peace",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0032"
+            ]
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "ZINC",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0032"
+            ]
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "NICKEL ACADEMY",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0032"
+            ]
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Diamond Sleet",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0032"
+            ]
+          }
+        ],
+        "v2_actor_nodes": 1,
+        "v2_attributed_to_edges": 1,
+        "v2_event_apt": "Lazarus Group"
+      },
+      {
+        "prototype": [
+          {
+            "label": "APT32",
+            "resolution_status": "mapped_unambiguous"
+          },
+          {
+            "label": "OceanLotus",
+            "resolution_status": "mapped_unambiguous"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": true,
+        "raw_value": "APT32/OceanLotus",
+        "snapshot_occurrences_exact": 0,
+        "snapshot_occurrences_normalized": 0,
+        "snapshot_occurrences_trimmed": 0,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "APT32",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0050"
+            ]
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "OceanLotus",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0050"
+            ]
+          }
+        ],
+        "v2_actor_nodes": 1,
+        "v2_attributed_to_edges": 1,
+        "v2_event_apt": "APT32"
+      },
+      {
+        "prototype": [
+          {
+            "label": "Andariel",
+            "resolution_status": "mapped_unambiguous"
+          },
+          {
+            "label": "Kimsuky",
+            "resolution_status": "mapped_unambiguous"
+          }
+        ],
+        "prototype_can_emit_ioc_rows": true,
+        "raw_value": "Kimsuky and Andariel",
+        "snapshot_occurrences_exact": 2,
+        "snapshot_occurrences_normalized": 2,
+        "snapshot_occurrences_trimmed": 2,
+        "v2": [
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Kimsuky",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0094"
+            ]
+          },
+          {
+            "candidate_actor_ids": [],
+            "enters_resolver": true,
+            "label": "Andariel",
+            "parse_status": "parsed",
+            "resolution_status": "resolved",
+            "resolved_actor_ids": [
+              "actor_G0138"
+            ]
+          }
+        ],
+        "v2_actor_nodes": 2,
+        "v2_attributed_to_edges": 2,
+        "v2_event_apt": null
+      }
+    ],
+    "segment_set_different_raw_value_count": 8,
+    "v2_distinct_segments": 237,
+    "v2_parse_status_segment_counts": {
+      "non_actor_value": 45,
+      "parse_ambiguous": 5,
+      "parsed": 707
+    },
+    "v2_resolution_group_counts": {
+      "alias_collapsed": 2,
+      "missing": 3447,
+      "mixed_resolved_unresolved": 6,
+      "non_actor": 45,
+      "parse_ambiguous": 5,
+      "resolved_multi_actor": 2,
+      "resolved_single": 339,
+      "taxonomy_ambiguous": 31,
+      "unmapped": 283
+    },
+    "v2_resolution_status_segment_counts": {
+      "ambiguous_taxonomy": 31,
+      "non_actor_value": 45,
+      "parse_ambiguous": 5,
+      "resolved": 364,
+      "unmapped_actor_like": 312
+    },
+    "v2_segment_occurrences": 757,
+    "verified_old_parser_error_lower_bound": {
+      "definition": "whole value is non_actor_value under current v2 guard but old prototype split it into multiple resolver inputs",
+      "occurrence_count": 1,
+      "old_resolver_status_counts": {
+        "unmapped": 6
+      },
+      "raw_value_count": 1,
+      "raw_values": [
+        "https://www.pwc.co.uk/issues/cyber-security-data-privacy/insights/operation-cloud-hopper.html"
+      ],
+      "scope_limit": "lower bound only; no exhaustive gold parse decisions exist",
+      "segment_occurrence_count": 6
+    }
+  },
+  "prototype": {
+    "actor_source": "docs/reference/seeds/mitre_actors.json",
+    "automatically_creates_actor": false,
+    "input": "run-scoped payload.adversary; tags candidate-only; embedded indicators[]",
+    "known_risks": [
+      "broad splitting mixes extraction and resolution",
+      "resolved identity is treated as true attribution",
+      "Pulse co-occurrence expands to actor-IOC rows",
+      "MITRE substitutes for paper MISP"
+    ],
+    "matching_methods": [
+      "casefolded exact MITRE name",
+      "casefolded exact MITRE alias"
+    ],
+    "output": "pulse mappings plus every exact-resolved adversary label x every Pulse indicator",
+    "projected_ioc_attribution_rows": 40065,
+    "pulse_status": {
+      "mapped_multi_actor": 2,
+      "mapped_single_actor": 392,
+      "missing_direct_actor_label": 3447,
+      "partial_actor_mapping": 9,
+      "unmapped_direct_actor_label": 310
+    },
+    "raw_actor_input_pulses": 713,
+    "split_label_status": {
+      "mapped_unambiguous": 423,
+      "unmapped": 353
+    },
+    "unique_raw_actor_inputs": 222,
+    "uses_fuzzy_matching": false,
+    "uses_query_actors_as_attribution": false
+  },
+  "snapshot": {
+    "checkpoint": "data/raw/otx_collection_runs/routeA_20260704_policy_small_first/checkpoint.json",
+    "completed_pulse_details": 4160,
+    "counting_policy": {
+      "empty": "null, empty string, and whitespace-only string",
+      "indicator_observations": "every mapping object in payload.indicators[], including duplicate values/ids",
+      "nonempty": "string with value.strip() != empty",
+      "normalized_distinct": "NFKC + trim + whitespace collapse + casefold",
+      "raw_exact_distinct": "exact stored string before trim or normalization",
+      "trimmed_distinct": "value.strip()"
+    },
+    "invalid_raw": 0,
+    "missing_raw": 0,
+    "missing_saved_raw_ref": 0,
+    "pulse_id_mismatch": 0,
+    "raw_layouts": {
+      "rawstore_wrapper.payload": 4160
+    },
+    "resolved_raw_paths": 4160,
+    "scope": "data/raw/otx_collection_runs/routeA_20260704_policy_small_first"
+  }
+}

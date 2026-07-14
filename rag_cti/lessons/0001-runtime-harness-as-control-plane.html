@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 1 课：Runtime Harness 是控制平面</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 0001</p>
+    <h1>Runtime Harness 是控制平面</h1>
+    <p class="lead">本课先建立一个概念判断：runtime harness 是 agent 外部的控制平面。CTI-RAG 的 <code>answer()</code> 只是这个概念在项目里的例子，用来帮助你看见边界，而不是要你从函数实现开始背架构。</p>
+  </header>
+
+  <section>
+    <h2>先看全局：这张图有多大</h2>
+    <p>你现在的起点不是“不懂某个函数”，而是还没有一张系统地图。整张 Agentic RAG 工程地图大约包含 <strong>10 类、86 个概念节点</strong>。第一课只拿其中最靠前的一层：runtime harness，也就是让 agent 运行起来但不失控的控制平面。</p>
+    <div class="grid">
+      <article class="card">
+        <h3>输入与路由</h3>
+        <p>Query understanding、query rewrite、intent classification、routing policy、supervisor admission。它们回答：用户到底要什么，应该走哪条路。</p>
+      </article>
+      <article class="card">
+        <h3>运行控制</h3>
+        <p>Runtime harness、state、action proposal、tool validation、observation、reducer、stop policy、budget。它们回答：agent 每一步能做什么，何时停止。</p>
+      </article>
+      <article class="card">
+        <h3>证据与上下文</h3>
+        <p>Corpus、indexes、retriever、graph query、evidence ledger、provenance、context window、working memory。它们回答：证据从哪里来，如何被保存和送进模型。</p>
+      </article>
+      <article class="card">
+        <h3>可信度与质量</h3>
+        <p>Citation、grounding、faithfulness、supervisor、composer、eval、observability、deployment。它们回答：答案凭什么可信，系统如何被评价和运维。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课的位置：</strong>我们从“运行控制”开始，不是因为它最重要，而是因为它是读后面所有层的坐标系。你先知道谁负责控制、谁负责证据、谁负责合成，后面读 ledger、supervisor、citation/eval 才不会混在一起。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：概念优先</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能用自己的话说明 runtime harness 控制什么、不控制什么：它管入口、路由、工具边界、预算、停止和 trace；它不负责直接“拥有”所有知识。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能区分能力、运行过程、证据权威：依赖是系统能用什么，state 是这次运行发生到哪里，ledger 是本次答案能引用什么。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能判断什么时候应该保守退回 single-agent：理解失败、分支不独立、只是检索提示、或任务不需要并行合成时，不应放行 supervisor。</p></article>
+    </div>
+    <div class="callout">
+      <p><strong>本课如何使用代码：</strong>代码是例子，不是主体。我们用 CTI-RAG 的对象名和入口函数给概念找落点；真正要掌握的是边界判断，而不是记住某个函数在哪一行。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>假设我现在还没有 Agentic RAG 的系统地图，我不会先问“<code>answer()</code> 里每一行在做什么”。我会先问下面四个问题，因为它们决定我能不能把后面的术语放到正确位置：</p>
+    <table>
+      <thead>
+        <tr><th>先问的问题</th><th>为什么它是第一课的问题</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>一个用户问题进入系统后，谁负责决定下一步？</td>
+          <td>这就是 runtime harness / control plane 的问题。先搞清“谁控制”，再看“谁执行”。</td>
+        </tr>
+        <tr>
+          <td>系统什么时候应该相信模型，什么时候必须用代码挡住？</td>
+          <td>Agentic RAG 的风险来自模型会提议行动；runtime guardrails 负责把提议变成可控行动。</td>
+        </tr>
+        <tr>
+          <td>证据、状态、记忆、上下文是不是一回事？</td>
+          <td>不是。后面所有 citation、grounding、eval 都依赖这些边界。混了就很难判断答案是否可信。</td>
+        </tr>
+        <tr>
+          <td>复杂问题是不是都应该多 agent？</td>
+          <td>不是。Supervisor 只适合独立分支并行收集后再合成；复杂但顺序依赖的问题可能更适合 single-agent。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>所以第一课不是教一套实现细节，而是教你建立四个槽位：</strong>控制、执行、证据、合成。后面每个新术语都先放进这四个槽位里。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>这张图在讲什么</h2>
+    <p>这张图不是在说“代码按这 5 个函数顺序执行”。它讲的是 <strong>runtime harness 把一个不确定的用户请求逐步变成可执行、可审计路径</strong> 的过程。你可以把它理解成一个决策漏斗：越往右，系统越知道自己要做什么、允许谁做、依据什么证据停下来。</p>
+    <div class="flow">
+      <div>User Query</div>
+      <div>Query Understanding</div>
+      <div>Admission</div>
+      <div>Gather Evidence</div>
+      <div>Synthesize + Guard</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>格子</th><th>它在概念上做什么</th><th>它不是在做什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>User Query</td>
+          <td>保留用户原始问题和对话历史。这里的信息通常是模糊、口语化、上下文依赖的。</td>
+          <td>它还不是检索查询，也不是可执行计划。</td>
+        </tr>
+        <tr>
+          <td>Query Understanding</td>
+          <td>把原始问题整理成系统能操作的任务视图：独立问题、实体、约束、检索提示，以及可能的分解建议。</td>
+          <td>它不是直接查证据，也不是最终决定 supervisor 一定能跑。</td>
+        </tr>
+        <tr>
+          <td>Admission</td>
+          <td>控制平面做保守裁决：这个任务是否真的适合多分支并行？如果不适合，就退回 single-agent。</td>
+          <td>它不是质量评测，也不是答案生成；它只决定运行拓扑。</td>
+        </tr>
+        <tr>
+          <td>Gather Evidence</td>
+          <td>被选中的路径开始调用工具：检索、图查询、实体解析等。工具结果写入 evidence ledger。</td>
+          <td>它不是自由聊天，也不应该绕过工具验证和预算。</td>
+        </tr>
+        <tr>
+          <td>Synthesize + Guard</td>
+          <td>基于 ledger 里的证据生成答案，并做 citation validation、stop reason、trace 等收尾。</td>
+          <td>它不是重新收集证据；它应该在稳定的证据集合上合成。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>为什么第一课先看前三格：</strong>前三格决定“任务形状”和“运行路径”。如果你还没分清 query understanding、retrieval query、decomposition proposal、supervisor admission，后面看 ledger、worker、Composer、citation guard 时会一直混：到底是谁在理解问题，谁在查证据，谁在决定并行，谁在合成答案。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>三个例子：同样是 CTI 问题，路径可能不同</h2>
+    <p>runtime harness 不是看到 CTI 问题就机械套同一条工作流。它要先判断任务形状，再选择路径。</p>
+    <table>
+      <thead>
+        <tr><th>用户问题</th><th>任务形状</th><th>可能路径</th><th>为什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>APT29 使用了哪些 ATT&CK techniques？</td>
+          <td>单实体枚举</td>
+          <td>Single-agent</td>
+          <td>通常只需要围绕一个实体收集证据。没有天然需要多个独立 worker 并行合成。</td>
+        </tr>
+        <tr>
+          <td>比较 APT29 和 Turla 的 techniques，有哪些相同和不同？</td>
+          <td>可并行比较</td>
+          <td>可能进入 Supervisor</td>
+          <td>APT29 和 Turla 可以分别收集证据，再由 Composer 合并比较。前提是分支独立、数量合理、需要最终合成。</td>
+        </tr>
+        <tr>
+          <td>先根据这组 infrastructure 找可能 actor，再解释该 actor 的 TTP。</td>
+          <td>顺序依赖</td>
+          <td>Single-agent 或更保守路径</td>
+          <td>第二步依赖第一步发现。强行拆成并行 worker 会让后续分支缺少必要输入。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Supervisor 的定位：概念 vs CTI-RAG 当前实现</h2>
+    <p>先把最容易混的地方说清楚：<strong>supervisor 不是“更聪明的回答者”，也不是生产入口的总路由器。</strong>在 Agentic RAG 里，它的概念定位是一个多分支协调层：当任务已经被判断为适合拆成多个独立分支时，它负责让不同 worker 去收集证据，然后把这些分支结果交给 Composer 合成。</p>
+    <div class="callout">
+      <p><strong>一句话版本：</strong><code>runtime harness</code> 决定要不要进入 supervisor path；<code>supervisor</code> 协调 worker；<code>worker</code> 收集证据；<code>Composer</code> 写最终答案；<code>citation guard</code> 校验引用是否真的来自 ledger。</p>
+    </div>
+    <table>
+      <thead>
+        <tr><th>角色</th><th>它负责什么</th><th>它不负责什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Runtime harness</td>
+          <td>理解任务形状，做 supervisor admission，选择 single-agent path 或 supervisor path。</td>
+          <td>不亲自替每个分支收集证据，也不把所有复杂问题都交给 supervisor。</td>
+        </tr>
+        <tr>
+          <td>Supervisor</td>
+          <td>接受已放行的 branch plan，调度 gather-only workers，汇总 branch reports，触发 Composer。</td>
+          <td>不直接 retrieve，不写最终答案，不做 citation validation。</td>
+        </tr>
+        <tr>
+          <td>Worker</td>
+          <td>围绕一个 sub-question 收集证据，维护 branch-local ledger，产出 BranchReport。</td>
+          <td>不协调其他分支，不写全局最终答案。</td>
+        </tr>
+        <tr>
+          <td>Composer</td>
+          <td>基于 branch reports 和已接受的证据上下文写一个最终答案。</td>
+          <td>不再查证据，不新建分支，不修 citation。</td>
+        </tr>
+        <tr>
+          <td>Citation guard</td>
+          <td>用合并后的 master ledger 校验答案里的引用 ID 是否真实存在。</td>
+          <td>不负责重新生成答案，也不证明每个自然语言 claim 都完全 faithful。</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>为什么你会觉得 supervisor 模糊</h3>
+    <p>因为“supervisor”这个词在很多 agent 框架里听起来像一个老板：它似乎应该理解问题、拆任务、调工具、看结果、写答案。但 CTI-RAG 的目标设计更保守：<strong>把“能不能走 supervisor”放在 runtime harness 里，把“分支协调”留给 supervisor。</strong>这样做的好处是，生产入口有一个稳定的 admission 门，不会让一个 LLM 在运行中随意把普通搜索子查询变成多 agent fan-out。</p>
+    <table>
+      <thead>
+        <tr><th>CTI-RAG 里的形态</th><th>代码路径</th><th>你应该怎么理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>生产路径：validated branch plan</td>
+          <td><code>answer()</code> → <code>evaluate_supervisor_admission()</code> → <code>run_supervised_answer(branch_plan=...)</code></td>
+          <td><code>answer()</code> 先决定是否放行；进入后按已验证分支确定性 dispatch workers。这里 supervisor 不是重新做路由判断。</td>
+        </tr>
+        <tr>
+          <td>调试/评测路径：legacy autonomous supervisor</td>
+          <td><code>supervised_answer()</code> 或 <code>run_supervised_answer(branch_plan=None)</code></td>
+          <td>保留一个 ReAct-style supervisor，让它通过 <code>dispatch_worker</code> 和 <code>compose_answer</code> 工具协调流程。它适合 baseline、debug、eval，不应被误认为生产主入口。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>所以读这个项目时，你可以把 supervisor 放在一个很窄但重要的位置：<strong>它不是“是否使用多 agent”的裁判；它是“多 agent 已被允许以后，如何把分支工作组织起来”的协调者。</strong></p>
+  </section>
+
+  <section>
+    <h2>本课的核心概念拆开看</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>Runtime Harness</h3>
+        <p>它是模型外面的运行环境。模型可以提出下一步，但 harness 决定这个下一步能不能执行、由哪个工具执行、执行结果如何进入 state、什么时候停止。</p>
+      </article>
+      <article class="card">
+        <h3>Control Plane</h3>
+        <p>控制平面关心“允许什么发生”。它管理入口、路由、验证、预算、deadline、stop policy、trace。它不直接等同于检索、图数据库或知识库。</p>
+      </article>
+      <article class="card">
+        <h3>Data Plane</h3>
+        <p>数据平面关心“证据从哪里来”。语料、chunk、vector/BM25 index、fact store、graph query、retriever 都偏数据平面。</p>
+      </article>
+      <article class="card">
+        <h3>Admission</h3>
+        <p>Admission 是从“模型建议”到“系统放行”的门。它不问答案对不对，而是问这个运行拓扑是否安全、清楚、可控。</p>
+      </article>
+    </div>
+    <p>这四个概念合在一起，就是第一课要建立的坐标：<strong>用户请求进入系统以后，先被控制平面塑形；证据收集和答案生成只是被塑形后的执行阶段。</strong></p>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>更准确的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Runtime harness 就是一条固定 workflow。</td>
+          <td>不是。workflow 是预先写死路线；runtime harness 是给 agentic 行为加边界。它允许模型或系统选择路径，但选择必须被 state、工具验证、预算和 stop policy 约束。</td>
+        </tr>
+        <tr>
+          <td>Query understanding 就是把问题改写成搜索词。</td>
+          <td>不止。搜索词只是 retrieval hints。runtime 级理解还要保留任务意图、实体、约束、历史消解、是否可能分解，以及解析失败时的 fallback 状态。</td>
+        </tr>
+        <tr>
+          <td>Supervisor 就是更强的 agent，所以复杂问题都应该走 supervisor。</td>
+          <td>不是。Supervisor 适合独立分支并行 gather 后再合成。复杂但顺序依赖的问题，或者需要共享探索 ledger 的问题，反而不适合简单 fan-out。</td>
+        </tr>
+        <tr>
+          <td>有 citation 就说明答案可信。</td>
+          <td>不够。citation valid 只说明引用 ID 存在于 ledger；grounding 说明答案基于证据；faithfulness 才问每个 claim 是否真的被证据支持。后两者会在第 5 课展开。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心解释</h2>
+    <p><strong>控制平面不是“做所有事”的地方。</strong> 它负责决定什么可以发生、什么时候停止、如何记录发生过什么。真正拿证据的是工具和检索/图查询；真正保存证据的是 ledger；真正合成答案的是 generator 或 Composer。</p>
+    <p><strong><code>RuntimeQueryUnderstanding</code> 比 query rewrite 高一层。</strong> 它包含 standalone query、retrieval queries、entities、payload constraint、decomposition、status 和 confidence。retrieval queries 只是搜索提示；decomposition 才可能进入 supervisor admission。</p>
+    <p><strong>Supervisor admission 必须保守。</strong> 进入 supervisor 意味着并发 worker、分支 ledger、Composer、更多 provider 调用和更复杂的 citation guard。如果分支不独立，或者只是搜索子查询，就应该回到 single-agent path。</p>
+    <h3>这里真正要学的概念：运行时对象的责任边界</h3>
+    <p>这一组词不是为了背代码名，而是为了建立一个判断：同一次 agent run 里，<strong>能力、过程、证据、边界结果</strong>不能混在一起。混在一起以后，系统就很难并发、复现、审计，也很难判断一个答案到底基于什么。</p>
+    <table>
+      <thead>
+        <tr><th>对象</th><th>它回答的问题</th><th>为什么要单独分出来</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Deps</td>
+          <td>这次运行可以使用哪些能力？例如模型、retriever、fact store、judge、composer。</td>
+          <td>能力应该可复用、可注入、可替换；它不应该携带某一次问题的中间推理历史。</td>
+        </tr>
+        <tr>
+          <td>State</td>
+          <td>这次运行已经走到哪里？例如轮数、预算、当前 gap、stop reason。</td>
+          <td>控制平面需要它来决定下一步：继续 gather、停止、降级、还是合成。</td>
+        </tr>
+        <tr>
+          <td>Ledger</td>
+          <td>这次运行真正收集到了哪些证据？哪些 chunk/fact 可以被引用？</td>
+          <td>答案可信度必须回到证据权威，而不是回到模型 transcript 或一段摘要。</td>
+        </tr>
+        <tr>
+          <td>Observation</td>
+          <td>一次工具边界之后发生了什么？成功、失败、被拒绝、增加了哪些证据？</td>
+          <td>模型提出 action 还不是事实；只有 observation 才能被 reducer 合并进 state 和 ledger。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>所以这不是口诀，而是边界检查：</strong>看到一个字段或对象时，先问它属于“能力”“运行过程”“证据权威”还是“工具边界结果”。如果一个对象同时承担太多类职责，它通常会让 runtime harness 变得难测、难审计、难复现。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>代码作为例子</h2>
+    <p>到这里再看代码就比较合适：下面的锚点不是要你从实现开始学，而是用项目里的具体对象验证概念边界是否真实存在。读的时候先问“这个对象承担什么概念职责”，再看代码怎样实现。</p>
+    <table>
+      <thead>
+        <tr><th>项目例子</th><th>对应的概念问题</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src/rag_cti/__init__.py:117</code></td>
+          <td>生产入口是否由 runtime harness 统一掌握，而不是让调用方手动选择 agent 拓扑？</td>
+        </tr>
+        <tr>
+          <td><code>src/rag_cti/runtime_harness.py:64</code></td>
+          <td>输入理解是否高于检索改写：它是否同时描述任务、实体、约束和可能的分解？</td>
+        </tr>
+        <tr>
+          <td><code>src/rag_cti/runtime_harness.py:98</code></td>
+          <td>系统能力和运行状态是否分开：可复用服务是否没有混入本次推理历史？</td>
+        </tr>
+        <tr>
+          <td><code>src/rag_cti/runtime_harness.py:118</code></td>
+          <td>本次运行是否有显式 state：进展、预算、sufficiency、stop reason 是否可被控制平面观察？</td>
+        </tr>
+        <tr>
+          <td><code>src/rag_cti/runtime_harness.py:1701</code></td>
+          <td>从“模型建议”到“系统放行”之间是否有保守 admission，而不是直接相信分解结果？</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：控制平面判断</h2>
+    <p>目标不是背术语，而是看到一段设计或代码时能立刻判断：它属于入口、状态、工具边界、证据权威，还是质量 guard。</p>
+    <div class="quiz-grid">
+      <div class="quiz" data-answer="0">
+        <p><strong>1. <code>answer()</code> 在第一课里应该被当成什么？</strong></p>
+        <button>生产入口</button>
+        <button>调试入口</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p><code>answer()</code> 的概念位置是 runtime harness 的公开入口：调用方交给它一个任务，而不是替它选择 agent 拓扑。入口统一以后，query understanding、supervisor admission、trace、fallback 和 citation guard 才能稳定地套在每次生产调用上。</p></template>
+        <template class="wrong-feedback"><strong>再想一下。</strong><p>调试入口通常用于强制走某条路径，方便比较或复现；生产入口应该拥有“选择路径”的权力。否则每个调用方都要懂 single-agent 和 supervisor 的差别，runtime harness 的边界就外泄了。</p></template>
+      </div>
+      <div class="quiz" data-answer="0">
+        <p><strong>2. “APT29 techniques”和“Turla techniques”这类搜索词首先是什么？</strong></p>
+        <button>检索提示</button>
+        <button>分支计划</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>检索提示的目标是“让 retriever 找到更好的材料”；分支计划的目标是“把任务切成可以独立完成的工作单元”。搜索词可以帮助某个 worker 找证据，但它本身不自动拥有 branch identity、独立性理由、合成需求和失败语义。</p></template>
+        <template class="wrong-feedback"><strong>差一点。</strong><p>如果把每个 retrieval query 都当成 branch，supervisor 就会把搜索策略误认为任务分解。好的 branch 要能独立产出一个可合成的子结论；搜索词只是寻找证据的入口。</p></template>
+      </div>
+      <div class="quiz" data-answer="0">
+        <p><strong>3. <code>RuntimeDeps</code> 应该保存哪类东西？</strong></p>
+        <button>服务依赖</button>
+        <button>运行状态</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p><code>RuntimeDeps</code> 表示“这次运行可以使用哪些稳定能力”：settings、retrieval pipeline、fact store、模型、judge、generator、composer。它的生命周期应该比单次推理长，内容不应该随着某个问题的中间步骤变化。</p><p>概念重点是生命周期和责任边界：deps 提供能力，state 记录这一次能力被怎样使用。</p></template>
+        <template class="wrong-feedback"><strong>换个角度。</strong><p>运行状态会随着每一轮工具调用改变，例如已经收集的 evidence、branch reports、tokens、stop reason。把这些塞进 deps，会让“可复用服务”变成“带历史的对象”，后续复现、并发和测试都会变得含混。</p></template>
+      </div>
+      <div class="quiz" data-answer="1">
+        <p><strong>4. iteration、tokens、stop reason 属于哪类东西？</strong></p>
+        <button>服务依赖</button>
+        <button>运行状态</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>这些值描述“这一次运行走到了哪里”：第几轮、花了多少预算、为什么停止。它们是 control plane 做下一步判断的输入，不是长期知识，也不是可复用服务。</p><p>掌握这个边界后，你读 state 管理时就会问：这个字段是否会影响 stop policy、trace 或下一次工具调用？如果会，它多半属于 runtime state。</p></template>
+        <template class="wrong-feedback"><strong>再分一下。</strong><p>服务依赖回答“我能用什么”，运行状态回答“我已经做了什么、还剩什么、为什么停”。iteration 和 stop reason 明显是后者。</p></template>
+      </div>
+      <div class="quiz" data-answer="0">
+        <p><strong>5. query understanding 解析失败时，supervisor admission 应该怎么做？</strong></p>
+        <button>拒绝</button>
+        <button>放行</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>supervisor admission 依赖结构化理解结果。如果解析失败，runtime 没有可靠的 branch plan，也无法判断分支是否独立、是否需要合成、是否只是检索提示。保守拒绝不是“能力弱”，而是在信任边界不成立时避免放大错误。</p></template>
+        <template class="wrong-feedback"><strong>这里要保守。</strong><p>解析失败时继续放行，等于让一个不可信的结构控制并发 worker。Agentic RAG 的关键不是永远多走一步，而是在不确定时选择更可控的路径。</p></template>
+      </div>
+      <div class="quiz" data-answer="1">
+        <p><strong>6. 分支之间有顺序依赖时，应该走哪条路径？</strong></p>
+        <button>监督路径</button>
+        <button>单体路径</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>supervisor path 的前提是 branch 可以并行 gather，然后再统一 compose。若 B 分支必须等待 A 分支的发现，分支就不是独立工作单元；用 branch-local ledger 也会丢掉“共享探索”的上下文。</p><p>这种任务更像 sequential investigation，应该用 single-agent 或另一个显式的多步规划机制，而不是并行 supervisor。</p></template>
+        <template class="wrong-feedback"><strong>注意 supervisor 的前提。</strong><p>监督路径不是“问题复杂就用”。它适合可并行的独立分面；依赖式 multi-hop 需要前一轮结果指导后一轮，强行 fan-out 会制造错误的独立性。</p></template>
+      </div>
+      <div class="quiz" data-answer="0">
+        <p><strong>7. 工具参数缺失或类型错误，应优先在哪一层挡住？</strong></p>
+        <button>工具边界</button>
+        <button>最终答案</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>模型提出 tool call 只是 action proposal，不是已经获准执行的动作。工具边界负责把“不完整、越权、类型错误、预算外”的动作挡住，这属于 runtime guardrail。</p><p>如果等到最终答案才发现工具调用错了，外部 API、检索、图查询可能已经被错误执行，trace 也会变得难解释。</p></template>
+        <template class="wrong-feedback"><strong>太晚了。</strong><p>最终答案层只能处理输出质量，不能阻止错误工具调用已经发生。Agent harness 的职责之一，就是在 action 变成 side effect 之前先验证它。</p></template>
+      </div>
+      <div class="quiz" data-answer="1">
+        <p><strong>8. 工具执行后的 status、error、ledger_delta 叫什么？</strong></p>
+        <button>动作意图</button>
+        <button>观察结果</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>Action 是“要做什么”，Observation 是“做完或被拒绝之后，系统观测到了什么”。status、error、ledger_delta 都是 observation 的内容，因为它们描述执行边界的结果。</p><p>这个区别很重要：runtime 不能把模型提出的 action 当事实，只能把通过工具边界产生的 observation 合并进 state。</p></template>
+        <template class="wrong-feedback"><strong>动作还不是事实。</strong><p>动作意图来自模型，可能非法、重复、超预算或失败。只有 observation 才能作为 reducer 更新 state 和 ledger 的依据。</p></template>
+      </div>
+      <div class="quiz" data-answer="0">
+        <p><strong>9. 最终合成和 citation guard 应该相信什么？</strong></p>
+        <button>证据权威</button>
+        <button>提示文本</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>ledger 是本次运行的证据权威，因为它保存完整、结构化、去重后的 chunks、facts、outlines 和 action history。提示文本只是模型可见的压缩视图，可能被截断、摘要化或为了上下文长度而省略细节。</p><p>因此，合成可以使用 prompt/context，但 citation guard 应该回到 ledger 判断哪些 ID 真实存在。</p></template>
+        <template class="wrong-feedback"><strong>提示不是证据权威。</strong><p>Agentic RAG 常常给模型看 bounded summary，而不是完整证据。如果把提示文本当权威，就会把“模型看见了什么摘要”和“系统实际收集到了什么证据”混在一起。</p></template>
+      </div>
+      <div class="quiz" data-answer="0">
+        <p><strong>10. 引用 ID 是否存在于 ledger，优先由谁判断？</strong></p>
+        <button>确定校验</button>
+        <button>模型评估</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>“ID 是否存在”是集合成员关系：答案里写出的 ID 是否在 ledger 的真实 ID 集合里。这种问题应该由代码确定性判断，不需要 LLM 猜。</p><p>但这只证明 citation valid，不证明 claim faithful。后者才可能需要 claim verification 或 LLM-as-judge。</p></template>
+        <template class="wrong-feedback"><strong>把两层分开。</strong><p>模型可以帮助判断“这个 claim 是否被证据支持”，但不该负责判断一个 ID 是否真实存在。存在性是 deterministic guard；相关性和忠实性是更高一层的质量问题。</p></template>
+      </div>
+      <div class="quiz" data-answer="1">
+        <p><strong>11. sufficiency 认为证据不足且还有明确 gap 时，下一步通常是什么？</strong></p>
+        <button>直接合成</button>
+        <button>继续收集</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>sufficiency 不是“已经有一些证据”，而是“证据是否覆盖了问题所需的关键面”。如果 judge 或 deterministic state 还指出明确 gap，runtime harness 应该让 gather loop 针对 gap 继续行动，直到预算、时间、no-progress 或其他 stop policy 触发。</p></template>
+        <template class="wrong-feedback"><strong>这会过早合成。</strong><p>直接合成可能得到一个 grounded 但不 sufficient 的答案：每句话都来自证据，但问题的关键部分没覆盖。第一课要把 grounding 和 sufficiency 分开。</p></template>
+      </div>
+      <div class="quiz" data-answer="0">
+        <p><strong>12. Composer 在 supervisor path 里主要是什么角色？</strong></p>
+        <button>合成角色</button>
+        <button>检索角色</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>Composer 的概念边界是 no-tool synthesis：它接收 branch reports 和已经收集的证据上下文，写出一个最终答案。这样 evidence set 在合成前已经稳定，后续 citation guard 才能针对合并后的 ledger 做确定性校验。</p></template>
+        <template class="wrong-feedback"><strong>这会破坏边界。</strong><p>如果 Composer 还能检索，它就会在最终合成阶段改变证据集。那 supervisor、worker、branch ledger、ledger merge、citation validation 的职责都会缠在一起，很难复盘最终答案到底基于哪一轮证据。</p></template>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>课后阅读</h2>
+    <p>主读：<code>docs/adr/0001-runtime-harness-orchestration.md</code> 的 “Runtime Query Understanding Contract” 和 “Supervisor Admission”。</p>
+    <p>辅读：<a href="../reference/0001-learning-route.html">学习路线</a>，<a href="../reference/0002-core-terms.html">核心术语表</a>。</p>
+    <p>下一课：<a href="./0002-state-and-observation.html">State 与 Observation：一次运行的控制记录</a>。</p>
+    <p class="small">复习时可以问 agent：请让我用自己的话解释 RuntimeDeps vs RuntimeInvestigationState，并纠正我的表述。</p>
+  </section>
+</main>
+
+<script>
+  for (const quiz of document.querySelectorAll(".quiz")) {
+    const answer = Number(quiz.dataset.answer);
+    const feedback = quiz.querySelector(".feedback");
+    quiz.querySelectorAll("button").forEach((button, index) => {
+      button.addEventListener("click", () => {
+        const ok = index === answer;
+        feedback.className = "feedback " + (ok ? "good" : "bad");
+        const template = quiz.querySelector(ok ? ".correct-feedback" : ".wrong-feedback");
+        feedback.innerHTML = template ? template.innerHTML : "";
+      });
+    });
+  }
+</script>
+</body>
+</html>

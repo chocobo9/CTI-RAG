@@ -27,7 +27,6 @@ dependencies = [
 # ── Generation: LLM answer synthesis ───────────────────────────────
 # pip install -e ".[generation]"  →  +~50MB
 generation = [
-    "anthropic>=0.40.0",
     "groq>=0.9.0",
     "openai>=1.0.0",                      # Ollama via OpenAI-compat
 ]
@@ -39,7 +38,6 @@ agentic = [
     "langgraph>=1.0.0",
     "langchain-core>=0.3.0",
     "langchain-openai>=0.3.0",            # DeepSeek via OpenAI-compatible endpoint
-    "langchain-anthropic>=0.3.0",
 ]
 
 # ── PDF: unstructured + pymupdf for CTI report ingestion ───────────

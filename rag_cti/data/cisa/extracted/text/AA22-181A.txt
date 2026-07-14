@@ -1,0 +1,417 @@
+### Archived Content
+
+In an effort to keep CISA.gov current, the archive contains outdated information that may not reflect current policy or programs.
+
+Cybersecurity Advisory
+
+# #StopRansomware: MedusaLocker
+
+Last Revised
+
+August 11, 2022
+
+Alert Code
+
+AA22-181A
+
+### Summary
+
+Actions to take today to mitigate cyber threats from ransomware:• Prioritize remediating known exploited vulnerabilities.• Train users to recognize and report phishing attempts.• Enable and enforce multifactor authentication.
+
+Note: this joint Cybersecurity Advisory (CSA) is part of an ongoing #StopRansomware effort to publish advisories for network defenders that detail various ransomware variants and ransomware threat actors. These #StopRansomware advisories include recently and historically observed tactics, techniques, and procedures (TTPs) and indicators of compromise (IOCs) to help organizations protect against ransomware. Visit stopransomware.gov to see all #StopRansomware advisories and to learn more about other ransomware threats and no-cost resources.
+
+The Federal Bureau of Investigation (FBI), the Cybersecurity and Infrastructure Security Agency (CISA), the Department of the Treasury, and the Financial Crimes Enforcement Network (FinCEN) are releasing this CSA to provide information on MedusaLocker ransomware. Observed as recently as May 2022, MedusaLocker actors predominantly rely on vulnerabilities in Remote Desktop Protocol (RDP) to access victims’ networks. The MedusaLocker actors encrypt the victim's data and leave a ransom note with communication instructions in every folder containing an encrypted file. The note directs victims to provide ransomware payments to a specific Bitcoin wallet address. MedusaLocker appears to operate as a Ransomware-as-a-Service (RaaS) model based on the observed split of ransom payments. Typical RaaS models involve the ransomware developer and various affiliates that deploy the ransomware on victim systems. MedusaLocker ransomware payments appear to be consistently split between the affiliate, who receives 55 to 60 percent of the ransom; and the developer, who receives the remainder.
+
+Download the PDF version of this report: pdf, 633 kb
+
+### Technical Details
+
+MedusaLocker ransomware actors most often gain access to victim devices through vulnerable Remote Desktop Protocol (RDP) configurations [T1133(link is external)]. Actors also frequently use email phishing and spam email campaigns—directly attaching the ransomware to the email—as initial intrusion vectors [T1566(link is external)].
+
+MedusaLocker ransomware uses a batch file to execute PowerShell script invoke-ReflectivePEInjection [T1059.001(link is external)]. This script propagates MedusaLocker throughout the network by editing the EnableLinkedConnections value within the infected machine’s registry, which then allows the infected machine to detect attached hosts and networks via Internet Control Message Protocol (ICMP) and to detect shared storage via Server Message Block (SMB) Protocol.
+
+MedusaLocker then:
+
+Restarts the LanmanWorkstation service, which allows registry edits to take effect.
+
+Kills the processes of well-known security, accounting, and forensic software.
+
+Restarts the machine in safe mode to avoid detection by security software [T1562.009(link is external)].
+
+Encrypts victim files with the AES-256 encryption algorithm; the resulting key is then encrypted with an RSA-2048 public key [T1486(link is external)].
+
+Runs every 60 seconds, encrypting all files except those critical to the functionality of the victim’s machine and those that have the designated encrypted file extension.
+
+Establishes persistence by copying an executable (svhost.exe or svhostt.exe) to the %APPDATA%\Roaming directory and scheduling a task to run the ransomware every 15 minutes.
+
+Attempts to prevent standard recovery techniques by deleting local backups, disabling startup recovery options, and deleting shadow copies [T1490(link is external)].
+
+MedusaLocker actors place a ransom note into every folder containing a file with the victim's encrypted data. The note outlines how to communicate with the MedusaLocker actors, typically providing victims one or more email address at which the actors can be reached. The size of MedusaLocker ransom demands appears to vary depending on the victim’s financial status as perceived by the actors.
+
+#### Indicators of Compromise
+
+Encrypted File Extensions |  |  | 
+
+Encrypted File Extensions .1btc | .matlock20 | .marlock02 | .readinstructions
+
+Encrypted File Extensions .bec | .mylock | .jpz.nz | .marlock11
+
+Encrypted File Extensions .cn | .NET1 | .key1 | .fileslocked
+
+Encrypted File Extensions .datalock | .NZ | .lock | .lockfilesUS
+
+Encrypted File Extensions .deadfilesgr | .tyco | .lockdata7 | .rs
+
+Encrypted File Extensions .faratak | .uslockhh | .lockfiles | .tyco
+
+Encrypted File Extensions .fileslock | .zoomzoom | .perfection | .uslockhh
+
+Encrypted File Extensions .marlock13 | n.exe | .Readinstruction | .marlock08
+
+Encrypted File Extensions .marlock25 | nt_lock20 | .READINSTRUCTION | 
+
+Encrypted File Extensions .marlock6 | .marlock01 | .ReadInstructions | 
+
+Ransom Note File Names | 
+
+Ransom Note File Names how_to_ recover_data.html | how_to_recover_data.html.marlock01
+
+Ransom Note File Names instructions.html | READINSTRUCTION.html
+
+Ransom Note File Names !!!HOW_TO_DECRYPT!!! | How_to_recovery.txt
+
+Ransom Note File Names readinstructions.html | readme_to_recover_files
+
+Ransom Note File Names recovery_instructions.html | HOW_TO_RECOVER_DATA.html
+
+Ransom Note File Names recovery_instruction.html | 
+
+Payment Wallets
+
+Payment Wallets 14oxnsSc1LZ5M2cPZeQ9rFnXqEvPCnZikc
+
+Payment Wallets 1DRxUFhvJjGUdojCzMWSLmwx7Qxn79XbJq
+
+Payment Wallets 18wRbb94CjyTGkUp32ZM7krCYCB9MXUq42
+
+Payment Wallets 1AbRxRfP6yHePpi7jmDZkS4Mfpm1ZiatH5
+
+Payment Wallets 1Edcufenw1BB4ni9UadJpQh9LVx9JGtKpP
+
+Payment Wallets 1DyMbw6R9PbJqfUSDcK5729xQ57yJrE8BC
+
+Payment Wallets 184ZcAoxkvimvVZaj8jZFujC7EwR3BKWvf
+
+Payment Wallets 14oH2h12LvQ7BYBufcrY5vfKoCq2hTPoev
+
+Payment Wallets bc1qy34v0zv6wu0cugea5xjlxagsfwgunwkzc0xcjj
+
+Payment Wallets bc1q9jg45a039tn83jk2vhdpranty2y8tnpnrk9k5q
+
+Payment Wallets bc1qz3lmcw4k58n79wpzm550r5pkzxc2h8rwmmu6xm
+
+Payment Wallets 1AereQUh8yjNPs9Wzeg1Le47dsqC8NNaNM
+
+Payment Wallets 1DeNHM2eTqHp5AszTsUiS4WDHWkGc5UxHf
+
+Payment Wallets 1HEDP3c3zPwiqUaYuWZ8gBFdAQQSa6sMGw
+
+Payment Wallets 1HdgQM9bjX7u7vWJnfErY4MWGBQJi5mVWV
+
+Payment Wallets 1nycdn9ebxht4tpspu4ehpjz9ghxlzipll
+
+Payment Wallets 12xd6KrWVtgHEJHKPEfXwMVWuFK4k1FCUF
+
+Payment Wallets 1HZHhdJ6VdwBLCFhdu7kDVZN9pb3BWeUED
+
+Payment Wallets 1PormUgPR72yv2FRKSVY27U4ekWMKobWjg
+
+Payment Wallets 14cATAzXwD7CQf35n8Ea5pKJPfhM6jEHak
+
+Payment Wallets 1PopeZ4LNLanisswLndAJB1QntTF8hpLsD
+
+Email Addresses | 
+
+Email Addresses willyhill1960@tutanota[.]com | unlockfile@cock[.]li
+
+Email Addresses zlo@keem[.]ne | unlockmeplease@airmail[.]cc
+
+Email Addresses zlo@keemail[.]me | unlockmeplease@protonmail[.]com
+
+Email Addresses zlo@tfwno[.]gf | willyhill1960@protonmail[.]com
+
+Email Addresses support@ypsotecs[.]com | support@imfoodst[.]com
+
+Email Addresses | 
+
+Email Addresses traceytevin@protonmail[.]com | support@itwgset[.]com
+
+Email Addresses unlock_file@aol[.]com | support@novibmaker[.]com
+
+Email Addresses unlock_file@outlook[.]com | support@securycasts[.]com
+
+Email Addresses support@exoprints[.]com | rewmiller-1974@protonmail[.]com
+
+Email Addresses support@exorints[.]com | rpd@keemail[.]me
+
+Email Addresses support@fanbridges[.]com | soterissylla@wyseil[.]com
+
+Email Addresses support@faneridges[.]com | support@careersill[.]com
+
+Email Addresses perfection@bestkoronavirus[.]com | karloskolorado@tutanota[.]com
+
+Email Addresses pool1256@tutanota[.]com | kevynchaz@protonmail[.]com
+
+Email Addresses rapid@aaathats3as[.]com | korona@bestkoronavirus[.]com
+
+Email Addresses rescuer@tutanota[.]com | lockPerfection@gmail[.]com
+
+Email Addresses ithelp01@decorous[.]cyou | lockperfection@gmail[.]com
+
+Email Addresses ithelp01@wholeness[.]business | mulierfagus@rdhos[.]com
+
+Email Addresses ithelp02@decorous[.]cyou | [rescuer]@cock[.]li
+
+Email Addresses ithelp02@wholness[.]business | 107btc@protonmail[.]com
+
+Email Addresses ithelpresotre@outlook[.]com | 33btc@protonmail[.]com
+
+Email Addresses cmd@jitjat[.]org | 777decoder777@protonmail[.]com
+
+Email Addresses coronaviryz@gmail[.]com | 777decoder777@tfwno[.]gf
+
+Email Addresses dec_helper@dremno[.]com | andrewmiller-1974@protonmail[.]com
+
+Email Addresses dec_helper@excic[.]com | angelomartin-1980@protonmail[.]com
+
+Email Addresses dec_restore@prontonmail[.]com | ballioverus@quocor[.]com
+
+Email Addresses dec_restore1@outlook[.]com | beacon@jitjat[.]org
+
+Email Addresses bitcoin@sitesoutheat[.]com | beacon@msgsafe[.]io
+
+Email Addresses briansalgado@protonmail[.]com | best666decoder@tutanota[.]com
+
+Email Addresses bugervongir@outlook[.]com | bitcoin@mobtouches[.]com
+
+Email Addresses best666decoder@protonmail[.]com | encrypt2020@outlook[.]com
+
+Email Addresses decoder83540@cock[.]li | fast-help@inbox[.]lv
+
+Email Addresses decra2019@gmail[.]com | fuc_ktheworld1448@outlook[.]com
+
+Email Addresses diniaminius@winrof[.]com | fucktheworld1448@cock[.]li
+
+Email Addresses dirhelp@keemail[.]me | gartaganisstuffback@gmail[.]com
+
+Email Addresses | 
+
+Email Addresses emaila.elaich@iav.ac[.]ma | gavingonzalez@protonmail[.]com
+
+Email Addresses emd@jitjat[.]org | gsupp@onionmail[.]org
+
+Email Addresses encrypt2020@cock[.]li | gsupp@techmail[.]info
+
+Email Addresses best666decoder@protonmail[.]com | helper@atacdi[.]com
+
+Email Addresses ithelp@decorous[.]cyou | helper@buildingwin[.]com
+
+Email Addresses ithelp@decorous[.]cyoum | helprestore@outlook[.]com
+
+Email Addresses ithelp@wholeness[.]business | helptorestore@outlook[.]com
+
+TOR Addresses
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/6-iSm1B1Ehljh8HYuXGym4Xyu1WdwsR2Av-6tXiw1BImsqoLh7pd207Rl6XYoln7sId
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/8-grp514hncgblilsjtd32hg6jtbyhlocr5pqjswxfgf2oragnl3pqno6fkqcimqin
+
+TOR Addresses http://gvlay6y4g53rxdi5.onion/21-8P4ZLCsMETPaLw9MkSlXJsNZWdHe0rxjt-XmBgZLWlm5ULGFCOJFuVdEymmxysofwu
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/2l-8P4ZLCsMTPaLw9MkSlXJsNZWdHeOrxjtE9lck1MuXPYo29daQys6gomZZXUImN7Z
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/21-8P4ZLCsMTPaLw9MkSlXJsNZWdHe0rxjt-DcaE9HeHywqSHvdcIwOndCS4PuWASX8g
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/21-8P4ZLCsMTPaLw9MkSlXJsNZWdHe0rxjt-kB4rQXGKyxGiLyw7YDsMKSBjyfdwcyxo
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/21-8P4ZLCsMTPaLw9MkSlXJsNZWdHe0rxjt-bET6JbB9vEMZ7qYBPqUMCxOQExFx4iOi
+
+TOR Addresses http://gvlay6u4g53rxdi5. onion/8-MO0Q7O97Hgxvm1YbD7OMnimImZJXEWaG-RbH4TvdwVTGQB3X6VOUOP3lgO6YOJEOW
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/8-gRp514hncgb1i1sjtD32hG6jTbUh1ocR-Uola2Fo30KTJvZX0otYZgTh5txmKwUNe
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/21-E6UQFCEuCn4KvtAh4TonRTpyHqFo6F6L-OWQwD1w1Td7hY7IGUUjxmHMoFSQW6blg
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/21-E6UQFCEuCn4KvtAh4TonRTpyHqFo6F6L-uGHwkkWCoUtBbZWN50sSS4Ds8RABkrKy
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/21-E6UQFCEuCn4KvtAh4TonRTpyHqFo6F6L-Tj3PRnQlpHc9OftRVDGAWUulvE80yZbc
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/8-Ww5sCBhsL8eM4PeAgsfgfa9lrqa81r31-tDQRZCAUe4164X532j9Ky16IBN9StWTH
+
+TOR Addresses http://gvlay6u4g53rxdi5.onion/21-wIq5kK9gGKiTmyups1U6fABj1VnXIYRB-I5xek6PG2EbWlPC7C1rXfsqJBlWlFFfY
+
+TOR Addresses qd7pcafncosqfqu3ha6fcx4h6sr7tzwagzpcdcnytiw3b6varaeqv5yd.onion
+
+TOR Addresses http://medusacegu2ufmc3kx2kkqicrlcxdettsjcenhjena6uannk5f4ffuyd.onion/leakdata/[REDACTED]
+
+Disclaimer: Many of these observed IP addresses are several years old and have been historically linked to MedusaLocker ransomware. We recommend these IP addresses be investigated or vetted by organizations prior to taking action, such as blocking.
+
+IP Address | Last Observed
+
+IP Address 195.123.246.138 | Last Observed Nov-2021
+
+IP Address 138.124.186.221 | Last Observed Nov-2021
+
+IP Address 159.223.0.9 | Last Observed Nov-2021
+
+IP Address 45.146.164.141 | Last Observed Nov-2021
+
+IP Address 185.220.101.35 | Last Observed Nov-2021
+
+IP Address 185.220.100.249 | Last Observed Sep-2021
+
+IP Address 50.80.219.149 | Last Observed Sep-2021
+
+IP Address 185.220.101.146 | Last Observed Sep-2021
+
+IP Address 185.220.101.252 | Last Observed Sep-2021
+
+IP Address 179.60.150.97 | Last Observed Sep-2021
+
+IP Address 84.38.189.52 | Last Observed Sep-2021
+
+IP Address 94.232.43.63 | Last Observed Jul-2021
+
+IP Address 108.11.30.103 | Last Observed Apr-2021
+
+IP Address 194.61.55.94 | Last Observed Apr-2021
+
+IP Address 198.50.233.202 | Last Observed Apr-2021
+
+IP Address 40.92.90.105 | Last Observed Jan-2021
+
+IP Address 188.68.216.23 | Last Observed Dec-2020
+
+IP Address 87.251.75.71 | Last Observed Dec-2020
+
+IP Address 196.240.57.20 | Last Observed Oct-2020
+
+IP Address 198.0.198.5 | Last Observed Aug-2020
+
+IP Address 194.5.220.122 | Last Observed Mar-2020
+
+IP Address 194.5.250.124 | Last Observed Mar-2020
+
+IP Address 194.5.220.124 | Last Observed Mar-2020
+
+IP Address 104.210.72.161 | Last Observed Nov-2019
+
+### MITRE ATT&CK Techniques
+
+MedusaLocker actors use the ATT&CK techniques listed in Table 1.
+
+Table 1: MedusaLocker Actors ATT&CK Techniques for Enterprise
+
+Initial Access |  | 
+
+Initial Access Technique Title | ID | Use
+
+Initial Access External Remote Services | T1133 | MedusaLocker actors gained access to victim devices through vulnerable RDP configurations.
+
+Initial Access Phishing | T1566 | MedusaLocker actors used phishing and spearphishing to obtain access to victims' networks.
+
+Initial Access Execution |  | 
+
+Initial Access Technique Title | ID | Use
+
+Initial Access Command and Scripting Interpreter: PowerShell | T1059.001 | MedusaLocker actors may abuse PowerShell commands and scripts for execution.
+
+Initial Access Defense Evasion |  | 
+
+Initial Access Technique Title | ID | Use
+
+Initial Access Impair Defenses: Safe Mode Boot | T1562.009 | MedusaLocker actors may abuse Windows safe mode to disable endpoint defenses. Safe mode starts up the Windows operating system with a limited set of drivers and services.
+
+Initial Access Impact |  | 
+
+Initial Access Technique Title | ID | Use
+
+Initial Access Data Encrypted for Impact | T1486 | MedusaLocker actors encrypt data on target systems or on large numbers of systems in a network to interrupt availability to system and network resources.
+
+Initial Access Inhibit System Recovery | T1490 | MedusaLocker actors may deny access to operating systems containing features that can help fix corrupted systems, such as backup catalog, volume shadow copies, and automatic repair.
+
+### Mitigations
+
+Implement a recovery plan that maintains and retains multiple copies of sensitive or proprietary data and servers in a physically separate, segmented, and secure location (i.e., hard drive, storage device, or the cloud).
+
+Implement network segmentation and maintain offline backups of data to ensure limited interruption to the organization.
+
+Regularly back up data and password protect backup copies stored offline. Ensure copies of critical data are not accessible for modification or deletion from the system where the data resides.
+
+Install, regularly update, and enable real time detection for antivirus software on all hosts.
+
+Install updates for operating systems, software, and firmware as soon as possible.
+
+Review domain controllers, servers, workstations, and active directories for new and/or unrecognized accounts.
+
+Audit user accounts with administrative privileges and configure access controls according to the principle of least privilege.
+
+Disable unused ports.
+
+Consider adding an email banner to emails received from outside your organization.
+
+Disable hyperlinks in received emails.
+
+Enforce multifactor authentication (MFA).
+
+Use National Institute of Standards and Technology (NIST) standards for developing and managing password policies: Use longer passwords consisting of at least 8 characters and no more than 64 characters in length.
+
+Store passwords in hashed format using industry-recognized password managers.
+
+Add password user “salts” to shared login credentials.
+
+Avoid reusing passwords.
+
+Implement multiple failed login attempt account lockouts.
+
+Disable password “hints”.
+
+Refrain from requiring password changes unless there is evidence of password compromise. Note: NIST guidance suggests favoring longer passwords and no longer require regular and frequent password resets. Frequent password resets are more likely to result in users developing password “patterns” cyber criminals can easily decipher.
+
+Require administrator credentials to install software.
+
+Only use secure networks; avoid using public Wi-Fi networks.
+
+Consider installing and using a virtual private network (VPN) to establish secure remote connections.
+
+Focus on cybersecurity awareness and training. Regularly provide users with training on information security principles and techniques as well as overall emerging cybersecurity risks and vulnerabilities, such as ransomware and phishing scams.
+
+### Resources
+
+Stopransomware.gov is a whole-of-government approach that gives one central location for ransomware resources and alerts.
+
+Resource to mitigate a ransomware attack: CISA-Multi-State Information Sharing and Analysis Center (MS-ISAC) Joint Ransomware Guide
+
+No-cost cyber hygiene services: Cyber Hygiene Services and Ransomware Readiness Assessment
+
+### Reporting
+
+To report an incident and request technical assistance, contact CISA at Central@cisa.dhs.gov(link sends email) or 1-844-Say-CISA, or FBI through a local field office.
+
+Financial Institutions must ensure compliance with any applicable Bank Secrecy Act requirements, including suspicious activity reporting obligations. Indicators of compromise (IOCs), such as suspicious email addresses, file names, hashes, domains, and IP addresses, can be provided under Item 44 of the Suspicious Activity Report (SAR) form. For more information on mandatory and voluntary reporting of cyber events via SARs, see FinCEN Advisory FIN-2016-A005, Advisory to Financial Institutions on Cyber-Events and Cyber-Enabled Crime, October 25, 2016; and FinCEN Advisory FIN-2021-A004, Advisory on Ransomware and the Use of the Financial System to Facilitate Ransom Payments, November 8, 2021, which updates FinCEN Advisory FIN-2020-A006.
+
+The U.S. Department of State’s Rewards for Justice (RFJ) program offers a reward of up to $10 million for reports of foreign government malicious activity against U.S. critical infrastructure. See the RFJ website for more information and how to report information securely.
+
+### Contact Information
+
+To report suspicious or criminal activity related to information found in this Joint Cybersecurity Advisory, contact your local FBI field office at www.fbi.gov/contact-us/field-offices. When available, please include the following information regarding the incident: date, time, and location of the incident; type of activity; number of people affected; type of equipment used for the activity; the name of the submitting company or organization; and a designated point of contact. To report incidents and anomalous activity or to request incident response resources or technical assistance related to this threat, contact CISA at contact@mail.cisa.dhs.gov(link sends email).
+
+### Revisions
+
+June 30, 2022: Initial Version
+
+This product is provided subject to this Notification and this Privacy & Use policy.
+
+## Please share your thoughts
+
+We recently updated our anonymous product survey; we welcome your feedback.

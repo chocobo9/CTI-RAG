@@ -1,0 +1,297 @@
+### Archived Content
+
+In an effort to keep CISA.gov current, the archive contains outdated information that may not reflect current policy or programs.
+
+Cybersecurity Advisory
+
+# TrickBot Malware
+
+Last Revised
+
+May 20, 2021
+
+Alert Code
+
+AA21-076A
+
+### Summary
+
+This Joint Cybersecurity Advisory uses the MITRE Adversarial Tactics, Techniques, and Common Knowledge (ATT&CK®) framework, Version 8. See the ATT&CK for Enterprise(link is external) for all referenced threat actor tactics and techniques.
+
+The Cybersecurity and Infrastructure Security Agency (CISA) and Federal Bureau of Investigation (FBI) have observed continued targeting through spearphishing campaigns using TrickBot malware in North America. A sophisticated group of cybercrime actors is luring victims, via phishing emails, with a traffic infringement phishing scheme to download TrickBot.
+
+TrickBot—first identified in 2016—is a Trojan developed and operated by a sophisticated group of cybercrime actors. Originally designed as a banking Trojan to steal financial data, TrickBot has evolved into highly modular, multi-stage malware that provides its operators a full suite of tools to conduct a myriad of illegal cyber activities.
+
+To secure against TrickBot, CISA and FBI recommend implementing the mitigation measures described in this Joint Cybersecurity Advisory, which include blocking suspicious Internet Protocol addresses, using antivirus software, and providing social engineering and phishing training to employees.
+
+Click here for a PDF version of this report.
+
+### Technical Details
+
+TrickBot is an advanced Trojan that malicious actors spread primarily by spearphishing campaigns using tailored emails that contain malicious attachments or links, which—if enabled—execute malware (Phishing: Spearphishing Attachment [T1566.001(link is external)], Phishing: Spearphishing Link [T1566.002(link is external)]). CISA and FBI are aware of recent attacks that use phishing emails, claiming to contain proof of a traffic violation, to steal sensitive information. The phishing emails contain links that redirect to a website hosted on a compromised server that prompts the victim to click on photo proof of their traffic violation. (User Execution: Malicious Link [T1204.001(link is external)], User Execution: Malicious File [T1204.002(link is external)]). In clicking the photo, the victim unknowingly downloads a malicious JavaScript file that, when opened, automatically communicates with the malicious actor’s command and control (C2) server to download TrickBot to the victim’s system (Command and Scripting Interpreter: JavaScript [T1059.007(link is external)]).
+
+Attackers can use TrickBot to:
+
+Drop other malware, such as Ryuk and Conti ransomware, or
+
+Serve as an Emotet downloader (Ingress Tool Transfer [T1105(link is external)]).[1(link is external)]
+
+TrickBot uses person-in-the-browser attacks to steal information, such as login credentials (Man in the Browser [T1185(link is external)]). Additionally, some of TrickBot’s modules spread the malware laterally across a network by abusing the Server Message Block (SMB) Protocol. TrickBot operators have a toolset capable of spanning the entirety of the MITRE ATT&CK framework, from actively or passively gathering information that can be used to support targeting (Reconnaissance [TA0043(link is external)]), to trying to manipulate, interrupt, or destroy systems and data (Impact [TA0040(link is external)]).
+
+TrickBot is capable of data exfiltration over a hardcoded C2 server, cryptomining, and host enumeration (e.g., reconnaissance of Unified Extensible Firmware Interface or Basic Input/Output System [UEFI/BIOS] firmware) (Exfiltration Over C2 Channel [T1041(link is external)], Resource Hijacking [T1496(link is external)], System Information Discovery.[2(link is external)] For host enumeration, operators deliver TrickBot in modules containing a configuration file with specific tasks.
+
+Figure 1 lays out TrickBot’s use of enterprise techniques.
+
+Figure 1: MITRE ATT&CK enterprise techniques used by TrickBot
+
+### MITRE ATT&CK Techniques
+
+According to MITRE, TrickBot [S0266(link is external)] uses the ATT&CK techniques listed in table 1.
+
+Table 1: TrickBot ATT&CK techniques for enterprise
+
+Initial Access [TA0001(link is external)]
+
+Technique Title | ID | Use
+
+Technique Title Phishing: Spearphishing Attachment | ID T1566.001(link is external) | Use TrickBot has used an email with an Excel sheet containing a malicious macro to deploy the malware.
+
+Technique Title Phishing: Spearphishing Link | ID T1566.002(link is external) | Use TrickBot has been delivered via malicious links in phishing emails.
+
+Execution [TA0002(link is external)]
+
+Technique Title | ID | Use
+
+Technique Title Scheduled Task/Job: Scheduled Task | ID T1053.005(link is external) | Use TrickBot creates a scheduled task on the system that provides persistence.
+
+Technique Title Command and Scripting Interpreter: Windows Command Shell | ID T1059.003(link is external) | Use TrickBot has used macros in Excel documents to download and deploy the malware on the user’s machine.
+
+Technique Title Command and Scripting Interpreter: JavaScript/JScript | ID T1059.007(link is external) | Use TrickBot victims unknowingly download a malicious JavaScript file that, when opened, automatically communicates with the malicious actor’s C2 server to download TrickBot to the victim’s system.
+
+Technique Title Native API | ID T1106(link is external) | Use TrickBot uses the Windows Application Programming Interface (API) call, CreateProcessW(), to manage execution flow.
+
+Technique Title User Execution: Malicious Link | ID T1204.001(link is external) | Use TrickBot has sent spearphishing emails in an attempt to lure users to click on a malicious link.
+
+Technique Title User Execution: Malicious File | ID T1204.002(link is external) | Use TrickBot has attempted to get users to launch malicious documents to deliver its payload.
+
+Persistence [TA0003(link is external)]
+
+Technique Title | ID | Use
+
+Technique Title Scheduled Task/Job: Scheduled Task | ID T1053.005(link is external) | Use TrickBot creates a scheduled task on the system that provides persistence.
+
+Technique Title Create or Modify System Process: Windows Service | ID T1543.003(link is external) | Use TrickBot establishes persistence by creating an autostart service that allows it to run whenever the machine boots.
+
+Privilege Escalation [TA0004(link is external)]
+
+Technique Title | ID | Use
+
+Technique Title Scheduled Task/Job: Scheduled Task | ID T1053.005(link is external) | Use TrickBot creates a scheduled task on the system that provides persistence.
+
+Technique Title Process Injection: Process Hollowing | ID T1055.012(link is external) | Use TrickBot injects into the svchost.exe process.
+
+Technique Title Create or Modify System Process: Windows Service | ID T1543.003(link is external) | Use TrickBot establishes persistence by creating an autostart service that allows it to run whenever the machine boots.
+
+Defense Evasion [TA0005(link is external)]
+
+Technique Title | ID | Use
+
+Technique Title Obfuscated Files or Information | ID T1027(link is external) | Use TrickBot uses non-descriptive names to hide functionality and uses an AES CBC (256 bits) encryption algorithm for its loader and configuration files.
+
+Technique Title Obfuscated Files or Information: Software Packing | ID T1027.002(link is external) | Use TrickBot leverages a custom packer to obfuscate its functionality.
+
+Technique Title Masquerading | ID T1036(link is external) | Use The TrickBot downloader has used an icon to appear as a Microsoft Word document.
+
+Technique Title Process Injection: Process Hollowing | ID T1055.012(link is external) | Use TrickBot injects into the svchost.exe process.
+
+Technique Title Modify Registry | ID T1112(link is external) | Use TrickBot can modify registry entries.
+
+Technique Title Deobfuscate/Decode Files or Information | ID T1140(link is external) | Use TrickBot decodes the configuration data and modules.
+
+Technique Title Subvert Trust Controls: Code Signing | ID T1553.002(link is external) | Use TrickBot has come with a signed downloader component.
+
+Technique Title Impair Defenses: Disable or Modify Tools | ID T1562.001(link is external) | Use TrickBot can disable Windows Defender.
+
+Credential Access [TA0006(link is external)]
+
+Technique Title | ID | Use
+
+Technique Title Input Capture: Credential API Hooking | ID T1056.004(link is external) | Use TrickBot has the ability to capture Remote Desktop Protocol credentials by capturing the CredEnumerateA API.
+
+Technique Title Unsecured Credentials: Credentials in Files | ID T1552.001(link is external) | Use TrickBot can obtain passwords stored in files from several applications such as Outlook, Filezilla, OpenSSH, OpenVPN and WinSCP. Additionally, it searches for the .vnc.lnk affix to steal VNC credentials.
+
+Technique Title Unsecured Credentials: Credentials in Registry | ID T1552.002(link is external) | Use TrickBot has retrieved PuTTY credentials by querying the Software\SimonTatham\Putty\Sessions registry key.
+
+Technique Title Credentials from Password Stores | ID T1555(link is external) | Use TrickBot can steal passwords from the KeePass open-source password manager.
+
+Technique Title Credentials from Password Stores: Credentials from Web Browsers | ID T1555.003(link is external) | Use TrickBot can obtain passwords stored in files from web browsers such as Chrome, Firefox, Internet Explorer, and Microsoft Edge, sometimes using esentutl.
+
+Discovery [TA0007(link is external)]
+
+Technique Tactic | ID | Use
+
+Technique Tactic System Service Discovery | ID T1007(link is external) | Use TrickBot collects a list of install programs and services on the system’s machine.
+
+Technique Tactic System Network Configuration Discovery | ID T1016(link is external) | Use TrickBot obtains the IP address, location, and other relevant network information from the victim’s machine.
+
+Technique Tactic Remote System Discovery | ID T1018(link is external) | Use TrickBot can enumerate computers and network devices.
+
+Technique Tactic System Owner/User Discovery | ID T1033(link is external) | Use TrickBot can identify the user and groups the user belongs to on a compromised host.
+
+Technique Tactic Permission Groups Discovery | ID T1069(link is external) | Use TrickBot can identify the groups the user on a compromised host belongs to.
+
+Technique Tactic System Information Discovery | ID T1082(link is external) | Use TrickBot gathers the OS version, machine name, CPU type, amount of RAM available from the victim’s machine.
+
+Technique Tactic File and Directory Discovery | ID T1083(link is external) | Use TrickBot searches the system for all of the following file extensions: .avi, .mov, .mkv, .mpeg, .mpeg4, .mp4, .mp3, .wav, .ogg, .jpeg, .jpg, .png, .bmp, .gif, .tiff, .ico, .xlsx, and .zip. It can also obtain browsing history, cookies, and plug-in information.
+
+Technique Tactic Account Discovery: Local Account | ID T1087.001(link is external) | Use TrickBot collects the users of the system.
+
+Technique Tactic Account Discovery: Email Account | ID T1087.003(link is external) | Use TrickBot collects email addresses from Outlook.
+
+Technique Tactic Domain Trust Discovery | ID T1482(link is external) | Use TrickBot can gather information about domain trusts by utilizing Nltest.
+
+Lateral Movement [TA0008(link is external)]
+
+Technique Tactic | ID | Use
+
+Technique Tactic Lateral Tool Transfer | ID T1570(link is external) | Use Some TrickBot modules spread the malware laterally across a network by abusing the SMB Protocol.
+
+Collection [TA0009(link is external)]
+
+Technique Tactic | ID | Use
+
+Technique Tactic Data from Local System | ID T1005(link is external) | Use TrickBot collects local files and information from the victim’s local machine.
+
+Technique Tactic Input Capture:Credential API Hooking | ID T1056.004(link is external) | Use TrickBot has the ability to capture Remote Desktop Protocol credentials by capturing the CredEnumerateA API.
+
+Technique Tactic Person in the Browser | ID T1185(link is external) | Use TrickBot uses web injects and browser redirection to trick the user into providing their login credentials on a fake or modified webpage.
+
+Command and Control [TA0011(link is external)]
+
+Technique Tactic | ID | Use
+
+Technique Tactic Fallback Channels | ID T1008(link is external) | Use TrickBot can use secondary command and control (C2) servers for communication after establishing connectivity and relaying victim information to primary C2 servers.
+
+Technique Tactic Application Layer Protocol: Web Protocols | ID T1071.001(link is external) | Use TrickBot uses HTTPS to communicate with its C2 servers, to get malware updates, modules that perform most of the malware logic and various configuration files.
+
+Technique Tactic Ingress Tool Transfer | ID T1105(link is external) | Use TrickBot downloads several additional files and saves them to the victim's machine.
+
+Technique Tactic Data Encoding: Standard Encoding | ID T1132.001(link is external) | Use TrickBot can Base64-encode C2 commands.
+
+Technique Tactic Non-Standard Port | ID T1571(link is external) | Use Some TrickBot samples have used HTTP over ports 447 and 8082 for C2.
+
+Technique Tactic Encrypted Channel: Symmetric Cryptography | ID T1573.001(link is external) | Use TrickBot uses a custom crypter leveraging Microsoft’s CryptoAPI to encrypt C2 traffic.
+
+Exfiltration [TA0010(link is external)]
+
+Technique Tactic | ID | Use
+
+Technique Tactic Exfiltration Over C2 Channel | ID T1041(link is external) | Use TrickBot can send information about the compromised host to a hardcoded C2 server.
+
+Impact [TA0040(link is external)]
+
+Technique Tactic | ID | Use
+
+Technique Tactic Resource Hijacking | ID T1496(link is external) | Use TrickBot actors can leverage the resources of co-opted systems for cryptomining to validate transactions of cryptocurrency networks and earn virtual currency.
+
+### Detection
+
+#### Signatures
+
+CISA developed the following snort signature for use in detecting network activity associated with TrickBot activity.
+
+alert tcp any [443,447] -> any any (msg:"TRICKBOT:SSL/TLS Server X.509 Cert Field contains 'example.com' (Hex)"; sid:1; rev:1; flow:established,from_server; ssl_state:server_hello; content:"|0b|example.com"; fast_pattern:only; content:"Global Security"; content:"IT Department"; pcre:"/(?:\x09\x00\xc0\xb9\x3b\x93\x72\xa3\xf6\xd2|\x00\xe2\x08\xff\xfb\x7b\x53\x76\x3d)/"; classtype:bad-unknown; metadata:service ssl,service and-ports;)
+
+alert tcp any any -> any $HTTP_PORTS (msg:"TRICKBOT_ANCHOR:HTTP URI GET contains '/anchor'"; sid:1; rev:1; flow:established,to_server; content:"/anchor"; http_uri; fast_pattern:only; content:"GET"; nocase; http_method; pcre:"/^\/anchor_?.{3}\/[\w_-]+\.[A-F0-9]+\/?$/U"; classtype:bad-unknown; priority:1; metadata:service http;)
+
+alert tcp any $SSL_PORTS -> any any (msg:"TRICKBOT:SSL/TLS Server X.509 Cert Field contains 'C=XX, L=Default City, O=Default Company Ltd'"; sid:1; rev:1; flow:established,from_server; ssl_state:server_hello; content:"|31 0b 30 09 06 03 55 04 06 13 02|XX"; nocase; content:"|31 15 30 13 06 03 55 04 07 13 0c|Default City"; nocase; content:"|31 1c 30 1a 06 03 55 04 0a 13 13|Default Company Ltd"; nocase; content:!"|31 0c 30 0a 06 03 55 04 03|"; classtype:bad-unknown; reference:url,www.virustotal.com/gui/file/e9600404ecc42cf86d38deedef94068db39b7a0fd06b3b8fb2d8a3c7002b650e/detection; metadata:service ssl;)
+
+alert tcp any any -> any $HTTP_PORTS (msg:"TRICKBOT:HTTP Client Header contains 'boundary=Arasfjasu7'"; sid:1; rev:1; flow:established,to_server; content:"boundary=Arasfjasu7|0d 0a|"; http_header; content:"name=|22|proclist|22|"; http_header; content:!"Referer"; content:!"Accept"; content:"POST"; http_method; classtype:bad-unknown; metadata:service http;)
+
+alert tcp any any -> any $HTTP_PORTS (msg:"TRICKBOT:HTTP Client Header contains 'User-Agent|3a 20|WinHTTP loader/1.'"; sid:1; rev:1; flow:established,to_server; content:"User-Agent|3a 20|WinHTTP loader/1."; http_header; fast_pattern:only; content:".png|20|HTTP/1."; pcre:"/^Host\x3a\x20(?:\d{1,3}\.){3}\d{1,3}(?:\x3a\d{2,5})?$/mH"; content:!"Accept"; http_header; content:!"Referer|3a 20|"; http_header; classtype:bad-unknown; metadata:service http;)
+
+alert tcp any $HTTP_PORTS -> any any (msg:"TRICKBOT:HTTP Server Header contains 'Server|3a 20|Cowboy'"; sid:1; rev:1; flow:established,from_server; content:"200"; http_stat_code; content:"Server|3a 20|Cowboy|0d 0a|"; http_header; fast_pattern; content:"content-length|3a 20|3|0d 0a|"; http_header; file_data; content:"/1/"; depth:3; isdataat:!1,relative; classtype:bad-unknown; metadata:service http;)
+
+alert tcp any any -> any $HTTP_PORTS (msg:"TRICKBOT:HTTP URI POST contains C2 Exfil"; sid:1; rev:1; flow:established,to_server; content:"Content-Type|3a 20|multipart/form-data|3b 20|boundary=------Boundary"; http_header; fast_pattern; content:"User-Agent|3a 20|"; http_header; distance:0; content:"Content-Length|3a 20|"; http_header; distance:0; content:"POST"; http_method; pcre:"/^\/[a-z]{3}\d{3}\/.+?\.[A-F0-9]{32}\/\d{1,3}\//U"; pcre:"/^Host\x3a\x20(?:\d{1,3}\.){3}\d{1,3}$/mH"; content:!"Referer|3a|"; http_header; classtype:bad-unknown; metadata:service http;)
+
+alert tcp any any -> any $HTTP_PORTS (msg:"HTTP URI GET/POST contains '/56evcxv' (Trickbot)"; sid:1; rev:1; flow:established,to_server; content:"/56evcxv"; http_uri; fast_pattern:only; classtype:bad-unknown; metadata:service http;)
+
+alert icmp any any -> any any (msg:"TRICKBOT_ICMP_ANCHOR:ICMP traffic conatins 'hanc'"; sid:1; rev:1; itype:8; content:"hanc"; offset:4; fast_pattern; classtype:bad-unknown;)
+
+alert tcp any any -> any $HTTP_PORTS (msg:"HTTP Client Header contains POST with 'host|3a 20|*.onion.link' and 'data=' (Trickbot/Princess Ransomeware)"; sid:1; rev:1; flow:established,to_server; content:"POST"; nocase; http_method; content:"host|3a 20|"; http_header; content:".onion.link"; nocase; http_header; distance:0; within:47; fast_pattern; file_data; content:"data="; distance:0; within:5; classtype:bad-unknown; metadata:service http;)
+
+alert tcp any any -> any $HTTP_PORTS (msg:"HTTP Client Header contains 'host|3a 20|tpsci.com' (trickbot)"; sid:1; rev:1; flow:established,to_server; content:"host|3a 20|tpsci.com"; http_header; fast_pattern:only; classtype:bad-unknown; metadata:service http;)
+
+### Mitigations
+
+CISA and FBI recommend that network defenders—in federal, state, local, tribal, territorial governments, and the private sector—consider applying the following best practices to strengthen the security posture of their organization's systems. System owners and administrators should review any configuration changes prior to implementation to avoid negative impacts.
+
+Provide social engineering and phishing training to employees.
+
+Consider drafting or updating a policy addressing suspicious emails that specifies users must report all suspicious emails to the security and/or IT departments.
+
+Mark external emails with a banner denoting the email is from an external source to assist users in detecting spoofed emails.
+
+Implement Group Policy Object and firewall rules.
+
+Implement an antivirus program and a formalized patch management process.
+
+Implement filters at the email gateway and block suspicious IP addresses at the firewall.
+
+Adhere to the principle of least privilege.
+
+Implement a Domain-Based Message Authentication, Reporting & Conformance validation system.
+
+Segment and segregate networks and functions.
+
+Limit unnecessary lateral communications between network hoses, segments, and devices.
+
+Consider using application allowlisting technology on all assets to ensure that only authorized software executes, and all unauthorized software is blocked from executing on assets. Ensure that such technology only allows authorized, digitally signed scripts to run on a system.
+
+Enforce multi-factor authentication.
+
+Enable a firewall on agency workstations configured to deny unsolicited connection requests.
+
+Disable unnecessary services on agency workstations and servers.
+
+Implement an Intrusion Detection System, if not already used, to detect C2 activity and other potentially malicious network activity
+
+Monitor web traffic. Restrict user access to suspicious or risky sites.
+
+Maintain situational awareness of the latest threats and implement appropriate access control lists.
+
+Disable the use of SMBv1 across the network and require at least SMBv2 to harden systems against network propagation modules used by TrickBot.
+
+Visit the MITRE ATT&CK Techniques pages (linked in table 1 above) for additional mitigation and detection strategies.
+
+See CISA’s Alert on Technical Approaches to Uncovering and Remediating Malicious Activity for more information on addressing potential incidents and applying best practice incident response procedures.
+
+For additional information on malware incident prevention and handling, see the National Institute of Standards and Technology Special Publication 800-83, Guide to Malware Incident Prevention and Handling for Desktops and Laptops.
+
+### Resources
+
+CISA Fact Sheet: TrickBot Malware
+
+MS-ISAC White Paper: Security Primer – TrickBot
+
+United Kingdom National Cyber Security Centre Advisory: Ryuk Ransomware Targeting Organisations Globally
+
+CISA and MS-ISAC Joint Alert AA20-280A: Emotet Malware
+
+MITRE ATT&CK for Enterprise(link is external)
+
+### References
+
+[1] FireEye Blog - A Nasty Trick: From Credential Theft Malware to Business Disruption(link is external)
+
+[2] Eclypsium Blog - TrickBot Now Offers 'TrickBoot': Persist, Brick, Profit(link is external)
+
+### Revisions
+
+March 17, 2021: Initial Version|March 24, 2021: Added MITRE ATT&CK Technique T1592.003 used for reconnaissance|May 20, 2021: Added new MITRE ATT&CKs and updated Table 1
+
+This product is provided subject to this Notification and this Privacy & Use policy.
+
+## Please share your thoughts
+
+We recently updated our anonymous product survey; we welcome your feedback.

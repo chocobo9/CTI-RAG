@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>State / Observation 边界速查</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Reference</p>
+    <h1>State / Observation 边界速查</h1>
+    <p class="lead">这页是第二课的压缩版：用来快速判断一个对象到底是控制状态、证据权威、边界记录、观测事件，还是模型可见投影。</p>
+  </header>
+
+  <section>
+    <h2>一句话</h2>
+    <div class="callout">
+      <p><strong>Runtime state 解释这次运行如何推进；EvidenceLedger 证明答案基于什么证据；Observation 记录工具边界发生了什么；Event 让过程可观测；Context 只是给模型看的投影。</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>对象边界</h2>
+    <table>
+      <thead>
+        <tr><th>对象</th><th>负责什么</th><th>不要放什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>RuntimeDeps</td>
+          <td>可复用服务和 provider policy。</td>
+          <td>per-run reasoning state、ledger、branch report、final answer。</td>
+        </tr>
+        <tr>
+          <td>RuntimeInvestigationState</td>
+          <td>iteration、tokens、progress、sufficiency、stop reason、observations、events。</td>
+          <td>长期记忆、provider client、完整证据正文。</td>
+        </tr>
+        <tr>
+          <td>RuntimeObservation</td>
+          <td>一次工具边界的结构化结果：status、payload、delta、model-visible text。</td>
+          <td>最终答案、全局路由裁决。</td>
+        </tr>
+        <tr>
+          <td>RuntimeEvent</td>
+          <td>trace/eval 友好的事件摘要：tool_result、tool_error、invalid_tool_call。</td>
+          <td>完整 chunks/facts。</td>
+        </tr>
+        <tr>
+          <td>EvidenceLedger</td>
+          <td>本次运行的证据权威：chunks、facts、outlines、actions、real_id_set。</td>
+          <td>provider error、prompt transcript、route decision。</td>
+        </tr>
+        <tr>
+          <td>Prompt / Context</td>
+          <td>从 state/ledger 渲染给模型看的当前工作视图。</td>
+          <td>唯一 truth source。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>状态流</h2>
+    <div class="flow">
+      <div>Proposal<br>模型建议</div>
+      <div>Validation<br>runtime 审核</div>
+      <div>Observation<br>结构化结果</div>
+      <div>Reducer<br>应用变化</div>
+      <div>Stop Policy<br>收束判断</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>五个判断</h2>
+    <table>
+      <thead>
+        <tr><th>看到这个现象</th><th>优先判断</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>工具参数不合法</td>
+          <td>应该是 <code>invalid</code> observation，不应进入工具执行。</td>
+        </tr>
+        <tr>
+          <td>预算或 deadline 不允许执行</td>
+          <td>应该是 <code>rejected</code> observation，而不是 tool error。</td>
+        </tr>
+        <tr>
+          <td>模型没有提出工具调用</td>
+          <td>应该有 <code>no_action</code> observation/event，方便解释 run 为何收束。</td>
+        </tr>
+        <tr>
+          <td>只完成 entity resolution</td>
+          <td>可能是 setup progress，不是 citable evidence。</td>
+        </tr>
+        <tr>
+          <td>答案引用了 ID</td>
+          <td>去 EvidenceLedger 的 <code>real_id_set</code> 校验，不看 prompt 文本。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

@@ -74,7 +74,6 @@ def sample_otx_document(fixed_datetime: datetime) -> Document:
 @pytest.fixture
 def mock_settings() -> MagicMock:
     settings = MagicMock()
-    settings.anthropic_api_key.get_secret_value.return_value = "sk-ant-test"
     settings.qdrant_url = "http://localhost:6333"
     settings.qdrant_collection = "cti_chunks_test"
     settings.embedding_model = "BAAI/bge-m3"

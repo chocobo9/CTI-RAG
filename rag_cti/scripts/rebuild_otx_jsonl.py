@@ -24,6 +24,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from rag_cti.connectors.otx import pulse_metadata, render_pulse_content
+from rag_cti.connectors.otx_raw_views import (
+    indicator_page_source_index,
+    latest_indicator_pages,
+    pulse_with_full_indicators,
+)
 from rag_cti.ingest.normalize import normalize_otx_pulse
 from rag_cti.preprocess.chunk_projection import project_chunk
 from rag_cti.preprocess.chunking import ChunkStrategy, chunk_document
@@ -51,6 +56,7 @@ def main() -> None:
 
     store = RawStore(args.raw_root)
     source_ids = store.source_ids("otx")
+    page_index = indicator_page_source_index(store)
     print(f"Found {len(source_ids)} OTX raw records in versioned store")
     if not source_ids:
         print("Nothing to rebuild (run scripts/migrate_raw_store.py first).")
@@ -67,6 +73,10 @@ def main() -> None:
                 continue
             fetched_at = versions[-1]
             raw = store.read("otx", pulse_id, fetched_at)
+            raw = pulse_with_full_indicators(
+                raw,
+                latest_indicator_pages(store, pulse_id, page_index),
+            )
 
             content = render_pulse_content(raw)
             try:

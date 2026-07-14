@@ -1,0 +1,491 @@
+Cybersecurity Advisory
+
+# NSA and CISA Red and Blue Teams Share Top Ten Cybersecurity Misconfigurations
+
+Release Date
+
+October 05, 2023
+
+Alert Code
+
+AA23-278A
+
+Related topics:
+
+Securing Networks , Cybersecurity Best Practices , Cyber Threats and Response
+
+#### A plea for network defenders and software manufacturers to fix common problems.
+
+### EXECUTIVE SUMMARY
+
+The National Security Agency (NSA) and Cybersecurity and Infrastructure Security Agency (CISA) are releasing this joint cybersecurity advisory (CSA) to highlight the most common cybersecurity misconfigurations in large organizations, and detail the tactics, techniques, and procedures (TTPs) actors use to exploit these misconfigurations.
+
+Through NSA and CISA Red and Blue team assessments, as well as through the activities of NSA and CISA Hunt and Incident Response teams, the agencies identified the following 10 most common network misconfigurations:
+
+Default configurations of software and applications
+
+Improper separation of user/administrator privilege
+
+Insufficient internal network monitoring
+
+Lack of network segmentation
+
+Poor patch management
+
+Bypass of system access controls
+
+Weak or misconfigured multifactor authentication (MFA) methods
+
+Insufficient access control lists (ACLs) on network shares and services
+
+Poor credential hygiene
+
+Unrestricted code execution
+
+These misconfigurations illustrate (1) a trend of systemic weaknesses in many large organizations, including those with mature cyber postures, and (2) the importance of software manufacturers embracing secure-by-design principles to reduce the burden on network defenders:
+
+Properly trained, staffed, and funded network security teams can implement the known mitigations for these weaknesses.
+
+Software manufacturers must reduce the prevalence of these misconfigurations—thus strengthening the security posture for customers—by incorporating secure-by-design and -default principles and tactics into their software development practices.[1]
+
+NSA and CISA encourage network defenders to implement the recommendations found within the Mitigations section of this advisory—including the following—to reduce the risk of malicious actors exploiting the identified misconfigurations.
+
+Remove default credentials and harden configurations.
+
+Disable unused services and implement access controls.
+
+Update regularly and automate patching, prioritizing patching of known exploited vulnerabilities.[2]
+
+Reduce, restrict, audit, and monitor administrative accounts and privileges.
+
+NSA and CISA urge software manufacturers to take ownership of improving security outcomes of their customers by embracing secure-by-design and-default tactics, including:
+
+Embedding security controls into product architecture from the start of development and throughout the entire software development lifecycle (SDLC).
+
+Eliminating default passwords.
+
+Providing high-quality audit logs to customers at no extra charge.
+
+Mandating MFA, ideally phishing-resistant, for privileged users and making MFA a default rather than opt-in feature.[3]
+
+Download the PDF version of this report: PDF, 660 KB
+
+### TECHNICAL DETAILS
+
+Note: This advisory uses the MITRE ATT&CK® for Enterprise(link is external) framework, version 13, and the MITRE D3FEND™(link is external) cybersecurity countermeasures framework.[4],[5] See the Appendix: MITRE ATT&CK tactics and techniques section for tables summarizing the threat actors’ activity mapped to MITRE ATT&CK tactics and techniques, and the Mitigations section for MITRE D3FEND countermeasures.
+
+For assistance with mapping malicious cyber activity to the MITRE ATT&CK framework, see CISA and MITRE ATT&CK’s Best Practices for MITRE ATT&CK Mapping and CISA’s Decider Tool(link is external).[6],[7]
+
+#### Overview
+
+Over the years, the following NSA and CISA teams have assessed the security posture of many network enclaves across the Department of Defense (DoD); Federal Civilian Executive Branch (FCEB); state, local, tribal, and territorial (SLTT) governments; and the private sector:
+
+Depending on the needs of the assessment, NSA Defensive Network Operations (DNO) teams feature capabilities from Red Team (adversary emulation), Blue Team (strategic vulnerability assessment), Hunt (targeted hunt), and/or Tailored Mitigations (defensive countermeasure development).
+
+CISA Vulnerability Management (VM) teams have assessed the security posture of over 1,000 network enclaves. CISA VM teams include Risk and Vulnerability Assessment (RVA) and CISA Red Team Assessments (RTA).[8] The RVA team conducts remote and onsite assessment services, including penetration testing and configuration review. RTA emulates cyber threat actors in coordination with an organization to assess the organization’s cyber detection and response capabilities.
+
+CISA Hunt and Incident Response teams conduct proactive and reactive engagements, respectively, on organization networks to identify and detect cyber threats to U.S. infrastructure.
+
+During these assessments, NSA and CISA identified the 10 most common network misconfigurations, which are detailed below. These misconfigurations (non-prioritized) are systemic weaknesses across many networks.
+
+Many of the assessments were of Microsoft® Windows® and Active Directory® environments. This advisory provides details about, and mitigations for, specific issues found during these assessments, and so mostly focuses on these products. However, it should be noted that many other environments contain similar misconfigurations. Network owners and operators should examine their networks for similar misconfigurations even when running other software not specifically mentioned below.
+
+#### 1. Default Configurations of Software and Applications
+
+Default configurations of systems, services, and applications can permit unauthorized access or other malicious activity. Common default configurations include:
+
+Default credentials
+
+Default service permissions and configurations settings
+
+##### Default Credentials
+
+Many software manufacturers release commercial off-the-shelf (COTS) network devices —which provide user access via applications or web portals—containing predefined default credentials for their built-in administrative accounts.[9] Malicious actors and assessment teams regularly abuse default credentials by:
+
+Finding credentials with a simple web search [T1589.001(link is external)] and using them [T1078.001(link is external)] to gain authenticated access to a device.
+
+Resetting built-in administrative accounts [T1098(link is external)] via predictable forgotten passwords questions.
+
+Leveraging default virtual private network (VPN) credentials for internal network access [T1133(link is external)].
+
+Leveraging publicly available setup information to identify built-in administrative credentials for web applications and gaining access to the application and its underlying database.
+
+Leveraging default credentials on software deployment tools [T1072(link is external)] for code execution and lateral movement.
+
+In addition to devices that provide network access, printers, scanners, security cameras, conference room audiovisual (AV) equipment, voice over internet protocol (VoIP) phones, and internet of things (IoT) devices commonly contain default credentials that can be used for easy unauthorized access to these devices as well. Further compounding this problem, printers and scanners may have privileged domain accounts loaded so that users can easily scan documents and upload them to a shared drive or email them. Malicious actors who gain access to a printer or scanner using default credentials can use the loaded privileged domain accounts to move laterally from the device and compromise the domain [T1078.002(link is external)].
+
+##### Default Service Permissions and Configuration Settings
+
+Certain services may have overly permissive access controls or vulnerable configurations by default. Additionally, even if the providers do not enable these services by default, malicious actors can easily abuse these services if users or administrators enable them.
+
+Assessment teams regularly find the following:
+
+Insecure Active Directory Certificate Services
+
+Insecure legacy protocols/services
+
+Insecure Server Message Block (SMB) service
+
+##### Insecure Active Directory Certificate Services
+
+Active Directory Certificate Services (ADCS) is a feature used to manage Public Key Infrastructure (PKI) certificates, keys, and encryption inside of Active Directory (AD) environments. ADCS templates are used to build certificates for different types of servers and other entities on an organization’s network.
+
+Malicious actors can exploit ADCS and/or ADCS template misconfigurations to manipulate the certificate infrastructure into issuing fraudulent certificates and/or escalate user privileges to domain administrator privileges. These certificates and domain escalation paths may grant actors unauthorized, persistent access to systems and critical data, the ability to impersonate legitimate entities, and the ability to bypass security measures.
+
+Assessment teams have observed organizations with the following misconfigurations:
+
+ADCS servers running with web-enrollment enabled. If web-enrollment is enabled, unauthenticated actors can coerce a server to authenticate to an actor-controlled computer, which can relay the authentication to the ADCS web-enrollment service and obtain a certificate [T1649(link is external)] for the server’s account. These fraudulent, trusted certificates enable actors to use adversary-in-the-middle techniques [T1557(link is external)] to masquerade as trusted entities on the network. The actors can also use the certificate for AD authentication to obtain a Kerberos Ticket Granting Ticket (TGT) [T1558.001(link is external)], which they can use to compromise the server and usually the entire domain.
+
+ADCS templates where low-privileged users have enrollment rights, and the enrollee supplies a subject alternative name. Misconfiguring various elements of ADCS templates can result in domain escalation by unauthorized users (e.g., granting low-privileged users certificate enrollment rights, allowing requesters to specify a subjectAltName in the certificate signing request [CSR], not requiring authorized signatures for CSRs, granting FullControl or WriteDacl permissions to users). Malicious actors can use a low-privileged user account to request a certificate with a particular Subject Alternative Name (SAN) and gain a certificate where the SAN matches the User Principal Name (UPN) of a privileged account.
+
+Note: For more information on known escalation paths, including PetitPotam NTLM relay techniques(link is external), see: Domain Escalation: PetitPotam NTLM Relay to ADCS Endpoints(link is external) and Certified Pre-Owned, Active Directory Certificate Services(link is external).[10],[11],[12]
+
+##### Insecure legacy protocols/services
+
+Many vulnerable network services are enabled by default, and assessment teams have observed them enabled in production environments. Specifically, assessment teams have observed Link-Local Multicast Name Resolution (LLMNR) and NetBIOS Name Service (NBT-NS), which are Microsoft Windows components that serve as alternate methods of host identification. If these services are enabled in a network, actors can use spoofing, poisoning, and relay techniques [T1557.001(link is external)] to obtain domain hashes, system access, and potential administrative system sessions. Malicious actors frequently exploit these protocols to compromise entire Windows’ environments.
+
+Malicious actors can spoof an authoritative source for name resolution on a target network by responding to passing traffic, effectively poisoning the service so that target computers will communicate with an actor-controlled system instead of the intended one. If the requested system requires identification/authentication, the target computer will send the user’s username and hash to the actor-controlled system. The actors then collect the hash and crack it offline to obtain the plain text password [T1110.002(link is external)].
+
+##### Insecure Server Message Block (SMB) service
+
+The Server Message Block service is a Windows component primarily for file sharing. Its default configuration, including in the latest version of Windows, does not require signing network messages to ensure authenticity and integrity. If SMB servers do not enforce SMB signing, malicious actors can use machine-in-the-middle techniques, such as NTLM relay. Further, malicious actors can combine a lack of SMB signing with the name resolution poisoning issue (see above) to gain access to remote systems [T1021.002(link is external)] without needing to capture and crack any hashes.
+
+#### 2. Improper Separation of User/Administrator Privilege
+
+Administrators often assign multiple roles to one account. These accounts have access to a wide range of devices and services, allowing malicious actors to move through a network quickly with one compromised account without triggering lateral movement and/or privilege escalation detection measures.
+
+Assessment teams have observed the following common account separation misconfigurations:
+
+Excessive account privileges
+
+Elevated service account permissions
+
+Non-essential use of elevated accounts
+
+##### Excessive Account Privileges
+
+Account privileges are intended to control user access to host or application resources to limit access to sensitive information or enforce a least-privilege security model. When account privileges are overly permissive, users can see and/or do things they should not be able to, which becomes a security issue as it increases risk exposure and attack surface.
+
+Expanding organizations can undergo numerous changes in account management, personnel, and access requirements. These changes commonly lead to privilege creep—the granting of excessive access and unnecessary account privileges. Through the analysis of topical and nested AD groups, a malicious actor can find a user account [T1078(link is external)] that has been granted account privileges that exceed their need-to-know or least-privilege function. Extraneous access can lead to easy avenues for unauthorized access to data and resources and escalation of privileges in the targeted domain.
+
+##### Elevated Service Account Permissions
+
+Applications often operate using user accounts to access resources. These user accounts, which are known as service accounts, often require elevated privileges. When a malicious actor compromises an application or service using a service account, they will have the same privileges and access as the service account.
+
+Malicious actors can exploit elevated service permissions within a domain to gain unauthorized access and control over critical systems. Service accounts are enticing targets for malicious actors because such accounts are often granted elevated permissions within the domain due to the nature of the service, and because access to use the service can be requested by any valid domain user. Due to these factors, kerberoasting—a form of credential access achieved by cracking service account credentials—is a common technique used to gain control over service account targets [T1558.003(link is external)].
+
+##### Non-Essential Use of Elevated Accounts
+
+IT personnel use domain administrator and other administrator accounts for system and network management due to their inherent elevated privileges. When an administrator account is logged into a compromised host, a malicious actor can steal and use the account's credentials and an AD-generated authentication token [T1528(link is external)] to move, using the elevated permissions, throughout the domain [T1550.001(link is external)]. Using an elevated account for normal day-to-day, non-administrative tasks increases the account’s exposure and, therefore, its risk of compromise and its risk to the network.
+
+Malicious actors prioritize obtaining valid domain credentials upon gaining access to a network. Authentication using valid domain credentials allows the execution of secondary enumeration techniques to gain visibility into the target domain and AD structure, including discovery of elevated accounts and where the elevated accounts are used [T1087(link is external)].
+
+Targeting elevated accounts (such as domain administrator or system administrators) performing day-to-day activities provides the most direct path to achieve domain escalation. Systems or applications accessed by the targeted elevated accounts significantly increase the attack surface available to adversaries, providing additional paths and escalation options.
+
+After obtaining initial access via an account with administrative permissions, an assessment team compromised a domain in under a business day. The team first gained initial access to the system through phishing [T1566(link is external)], by which they enticed the end user to download [T1204(link is external)] and execute malicious payloads. The targeted end-user account had administrative permissions, enabling the team to quickly compromise the entire domain.
+
+#### 3. Insufficient Internal Network Monitoring
+
+Some organizations do not optimally configure host and network sensors for traffic collection and end-host logging. These insufficient configurations could lead to undetected adversarial compromise. Additionally, improper sensor configurations limit the traffic collection capability needed for enhanced baseline development and detract from timely detection of anomalous activity.
+
+Assessment teams have exploited insufficient monitoring to gain access to assessed networks. For example:
+
+An assessment team observed an organization with host-based monitoring, but no network monitoring. Host-based monitoring informs defensive teams about adverse activities on singular hosts and network monitoring informs about adverse activities traversing hosts [TA0008(link is external)]. In this example, the organization could identify infected hosts but could not identify where the infection was coming from, and thus could not stop future lateral movement and infections.
+
+An assessment team gained persistent deep access to a large organization with a mature cyber posture. The organization did not detect the assessment team’s lateral movement, persistence, and command and control (C2) activity, including when the team attempted noisy activities to trigger a security response. For more information on this activity, see CSA CISA Red Team Shares Key Findings to Improve Monitoring and Hardening of Networks.[13]
+
+#### 4. Lack of Network Segmentation
+
+Network segmentation separates portions of the network with security boundaries. Lack of network segmentation leaves no security boundaries between the user, production, and critical system networks. Insufficient network segmentation allows an actor who has compromised a resource on the network to move laterally across a variety of systems uncontested. Lack of network segregation additionally leaves organizations significantly more vulnerable to potential ransomware attacks and post-exploitation techniques.
+
+Lack of segmentation between IT and operational technology (OT) environments places OT environments at risk. For example, assessment teams have often gained access to OT networks—despite prior assurance that the networks were fully air gapped, with no possible connection to the IT network—by finding special purpose, forgotten, or even accidental network connections [T1199(link is external)].
+
+#### 5. Poor Patch Management
+
+Vendors release patches and updates to address security vulnerabilities. Poor patch management and network hygiene practices often enable adversaries to discover open attack vectors and exploit critical vulnerabilities. Poor patch management includes:
+
+Lack of regular patching
+
+Use of unsupported operating systems (OSs) and outdated firmware
+
+##### Lack of Regular Patching
+
+Failure to apply the latest patches can leave a system open to compromise from publicly available exploits. Due to their ease of discovery—via vulnerability scanning [T1595.002(link is external)] and open source research [T1592(link is external)]—and exploitation, these systems are immediate targets for adversaries. Allowing critical vulnerabilities to remain on production systems without applying their corresponding patches significantly increases the attack surface. Organizations should prioritize patching known exploited vulnerabilities in their environments.[2]
+
+Assessment teams have observed threat actors exploiting many CVEs in public-facing applications [T1190(link is external)], including:
+
+CVE-2019-18935 in an unpatched instance of Telerik® UI for ASP.NET running on a Microsoft IIS server.[14]
+
+CVE-2021-44228 (Log4Shell) in an unpatched VMware® Horizon server.[15]
+
+CVE-2022-24682, CVE-2022-27924, and CVE-2022-27925 chained with CVE-2022-37042, or CVE-2022-30333 in an unpatched Zimbra® Collaboration Suite.[16]
+
+##### Use of Unsupported OSs and Outdated Firmware
+
+Using software or hardware that is no longer supported by the vendor poses a significant security risk because new and existing vulnerabilities are no longer patched. Malicious actors can exploit vulnerabilities in these systems to gain unauthorized access, compromise sensitive data, and disrupt operations [T1210(link is external)].
+
+Assessment teams frequently observe organizations using unsupported Windows operating systems without updates MS17-010(link is external) and MS08-67(link is external). These updates, released years ago, address critical remote code execution vulnerabilities.[17],[18]
+
+#### 6. Bypass of System Access Controls
+
+A malicious actor can bypass system access controls by compromising alternate authentication methods in an environment. If a malicious actor can collect hashes in a network, they can use the hashes to authenticate using non-standard means, such as pass-the-hash (PtH) [T1550.002(link is external)]. By mimicking accounts without the clear-text password, an actor can expand and fortify their access without detection. Kerberoasting is also one of the most time-efficient ways to elevate privileges and move laterally throughout an organization’s network.
+
+#### 7. Weak or Misconfigured MFA Methods
+
+##### Misconfigured Smart Cards or Tokens
+
+Some networks (generally government or DoD networks) require accounts to use smart cards or tokens. Multifactor requirements can be misconfigured so the password hashes for accounts never change. Even though the password itself is no longer used—because the smart card or token is required instead—there is still a password hash for the account that can be used as an alternative credential for authentication. If the password hash never changes, once a malicious actor has an account’s password hash [T1111(link is external)], the actor can use it indefinitely, via the PtH technique for as long as that account exists.
+
+##### Lack of Phishing-Resistant MFA
+
+Some forms of MFA are vulnerable to phishing, “push bombing” [T1621(link is external)], exploitation of Signaling System 7 (SS7) protocol vulnerabilities, and/or “SIM swap” techniques. These attempts, if successful, may allow a threat actor to gain access to MFA authentication credentials or bypass MFA and access the MFA-protected systems. (See CISA’s Fact Sheet Implementing Phishing-Resistant MFA for more information.)[3]
+
+For example, assessment teams have used voice phishing to convince users to provide missing MFA information [T1598(link is external)]. In one instance, an assessment team knew a user’s main credentials, but their login attempts were blocked by MFA requirements. The team then masqueraded as IT staff and convinced the user to provide the MFA code over the phone, allowing the team to complete their login attempt and gain access to the user’s email and other organizational resources.
+
+#### 8. Insufficient ACLs on Network Shares and Services
+
+Data shares and repositories are primary targets for malicious actors. Network administrators may improperly configure ACLs to allow for unauthorized users to access sensitive or administrative data on shared drives.
+
+Actors can use commands, open source tools, or custom malware to look for shared folders and drives [T1135(link is external)].
+
+In one compromise, a team observed actors use the net share command—which displays information about shared resources on the local computer—and the ntfsinfo command to search network shares on compromised computers. In the same compromise, the actors used a custom tool, CovalentStealer, which is designed to identify file shares on a system, categorize the files [T1083(link is external)], and upload the files to a remote server [TA0010(link is external)].[19],[20]
+
+Ransomware actors have used the SoftPerfect® Network Scanner, netscan.exe—which can ping computers [T1018(link is external)], scan ports [T1046(link is external)], and discover shared folders—and SharpShares to enumerate accessible network shares in a domain.[21],[22]
+
+Malicious actors can then collect and exfiltrate the data from the shared drives and folders. They can then use the data for a variety of purposes, such as extortion of the organization or as intelligence when formulating intrusion plans for further network compromise. Assessment teams routinely find sensitive information on network shares [T1039(link is external)] that could facilitate follow-on activity or provide opportunities for extortion. Teams regularly find drives containing cleartext credentials [T1552(link is external)] for service accounts, web applications, and even domain administrators.
+
+Even when further access is not directly obtained from credentials in file shares, there can be a treasure trove of information for improving situational awareness of the target network, including the network’s topology, service tickets, or vulnerability scan data. In addition, teams regularly identify sensitive data and PII on shared drives (e.g., scanned documents, social security numbers, and tax returns) that could be used for extortion or social engineering of the organization or individuals.
+
+#### 9. Poor Credential Hygiene
+
+Poor credential hygiene facilitates threat actors in obtaining credentials for initial access, persistence, lateral movement, and other follow-on activity, especially if phishing-resistant MFA is not enabled. Poor credential hygiene includes:
+
+Easily crackable passwords
+
+Cleartext password disclosure
+
+##### Easily Crackable Passwords
+
+Easily crackable passwords are passwords that a malicious actor can guess within a short time using relatively inexpensive computing resources. The presence of easily crackable passwords on a network generally stems from a lack of password length (i.e., shorter than 15 characters) and randomness (i.e., is not unique or can be guessed). This is often due to lax requirements for passwords in organizational policies and user training. A policy that only requires short and simple passwords leaves user passwords susceptible to password cracking. Organizations should provide or allow employee use of password managers to enable the generation and easy use of secure, random passwords for each account.
+
+Often, when a credential is obtained, it is a hash (one-way encryption) of the password and not the password itself. Although some hashes can be used directly with PtH techniques, many hashes need to be cracked to obtain usable credentials. The cracking process takes the captured hash of the user’s plaintext password and leverages dictionary wordlists and rulesets, often using a database of billions of previously compromised passwords, in an attempt to find the matching plaintext password [T1110.002(link is external)].
+
+One of the primary ways to crack passwords is with the open source tool, Hashcat, combined with password lists obtained from publicly released password breaches. Once a malicious actor has access to a plaintext password, they are usually limited only by the account’s permissions. In some cases, the actor may be restricted or detected by advanced defense-in-depth and zero trust implementations as well, but this has been a rare finding in assessments thus far.
+
+Assessment teams have cracked password hashes for NTLM users, Kerberos service account tickets, NetNTLMv2, and PFX stores [T1555(link is external)], enabling the team to elevate privileges and move laterally within networks. In 12 hours, one team cracked over 80% of all users' passwords in an Active Directory, resulting in hundreds of valid credentials.
+
+##### Cleartext Password Disclosure
+
+Storing passwords in cleartext is a serious security risk. A malicious actor with access to files containing cleartext passwords [T1552.001(link is external)] could use these credentials to log into the affected applications or systems under the guise of a legitimate user. Accountability is lost in this situation as any system logs would record valid user accounts accessing applications or systems.
+
+Malicious actors search for text files, spreadsheets, documents, and configuration files in hopes of obtaining cleartext passwords. Assessment teams frequently discover cleartext passwords, allowing them to quickly escalate the emulated intrusion from the compromise of a regular domain user account to that of a privileged account, such as a Domain or Enterprise Administrator. A common tool used for locating cleartext passwords is the open source tool, Snaffler(link is external).[23]
+
+#### 10. Unrestricted Code Execution
+
+If unverified programs are allowed to execute on hosts, a threat actor can run arbitrary, malicious payloads within a network.
+
+Malicious actors often execute code after gaining initial access to a system. For example, after a user falls for a phishing scam, the actor usually convinces the victim to run code on their workstation to gain remote access to the internal network. This code is usually an unverified program that has no legitimate purpose or business reason for running on the network.
+
+Assessment teams and malicious actors frequently leverage unrestricted code execution in the form of executables, dynamic link libraries (DLLs), HTML applications, and macros (scripts used in office automation documents) [T1059.005(link is external)] to establish initial access, persistence, and lateral movement. In addition, actors often use scripting languages [T1059(link is external)] to obscure their actions [T1027.010(link is external)] and bypass allowlisting—where organizations restrict applications and other forms of code by default and only allow those that are known and trusted. Further, actors may load vulnerable drivers and then exploit the drivers’ known vulnerabilities to execute code in the kernel with the highest level of system privileges to completely compromise the device [T1068(link is external)].
+
+### MITIGATIONS
+
+#### Network Defenders
+
+NSA and CISA recommend network defenders implement the recommendations that follow to mitigate the issues identified in this advisory. These mitigations align with the Cross-Sector Cybersecurity Performance Goals (CPGs) developed by CISA and the National Institute of Standards and Technology (NIST) as well as with the MITRE ATT&CK Enterprise Mitigations(link is external) and MITRE D3FEND(link is external) frameworks.
+
+The CPGs provide a minimum set of practices and protections that CISA and NIST recommend all organizations implement. CISA and NIST based the CPGs on existing cybersecurity frameworks and guidance to protect against the most common and impactful threats, tactics, techniques, and procedures. Visit CISA’s Cross-Sector Cybersecurity Performance Goals for more information on the CPGs, including additional recommended baseline protections.[24]
+
+##### Mitigate Default Configurations of Software and Applications
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Default configurations of software and applications Recommendations for Network Defenders Modify the default configuration of applications and appliances before deployment in a production environment [M1013(link is external)],[D3-ACH(link is external)]. Refer to hardening guidelines provided by the vendor and related cybersecurity guidance (e.g., DISA's Security Technical Implementation Guides (STIGs) and configuration guides).[25],[26],[27]
+
+Misconfiguration Default configurations of software and applications | Recommendations for Network Defenders Modify the default configuration of applications and appliances before deployment in a production environment [M1013(link is external)],[D3-ACH(link is external)]. Refer to hardening guidelines provided by the vendor and related cybersecurity guidance (e.g., DISA's Security Technical Implementation Guides (STIGs) and configuration guides).[25],[26],[27]
+
+Misconfiguration Default configurations of software and applications: Default Credentials Recommendations for Network Defenders Change or disable vendor-supplied default usernames and passwords of services, software, and equipment when installing or commissioning [CPG 2.A]. When resetting passwords, enforce the use of “strong” passwords (i.e., passwords that are more than 15 characters and random [CPG 2.B]) and follow hardening guidelines provided by the vendor, STIGs, NSA, and/or NIST [M1027(link is external)],[D3-SPP(link is external)].[25],[26],[28],[29]
+
+Misconfiguration Default configurations of software and applications: Default Credentials | Recommendations for Network Defenders Change or disable vendor-supplied default usernames and passwords of services, software, and equipment when installing or commissioning [CPG 2.A]. When resetting passwords, enforce the use of “strong” passwords (i.e., passwords that are more than 15 characters and random [CPG 2.B]) and follow hardening guidelines provided by the vendor, STIGs, NSA, and/or NIST [M1027(link is external)],[D3-SPP(link is external)].[25],[26],[28],[29]
+
+Misconfiguration Default service permissions and configuration settings: Insecure Active Directory Certificate Services Recommendations for Network Defenders Ensure the secure configuration of ADCS implementations. Regularly update and patch the controlling infrastructure (e.g., for CVE-2021-36942), employ monitoring and auditing mechanisms, and implement strong access controls to protect the infrastructure. If not needed, disable web-enrollment in ADCS servers. See Microsoft: Uninstall-AdcsWebEnrollment (ADCSDeployment)(link is external) for guidance.[30]
+
+If web enrollment is needed on ADCS servers: Enable Extended Protection for Authentication (EPA) for Client Authority Web Enrollment. This is done by choosing the “Required” option. For guidance, see Microsoft: KB5021989: Extended Protection for Authentication(link is external).[31]
+
+Enable “Require SSL” on the ADCS server.
+
+Disable NTLM on all ADCS servers. For guidance, see Microsoft: Network security Restrict NTLM in this domain - Windows Security | Microsoft Learn(link is external) and Network security Restrict NTLM Incoming NTLM traffic - Windows Security(link is external).[32],[33]
+
+Disable SAN for UPN Mapping. For guidance see, Microsoft: How to disable the SAN for UPN mapping - Windows Server(link is external). Instead, smart card authentication can use the altSecurityIdentities attribute for explicit mapping of certificates to accounts more securely.[34]
+
+Review all permissions on the ADCS templates on applicable servers. Restrict enrollment rights to only those users or groups that require it. Disable the CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT flag from templates to prevent users from supplying and editing sensitive security settings within these templates. Enforce manager approval for requested certificates. Remove FullControl, WriteDacl, and Write property permissions from low-privileged groups, such as domain users, to certificate template objects.
+
+Misconfiguration Default service permissions and configuration settings: Insecure Active Directory Certificate Services | Recommendations for Network Defenders Ensure the secure configuration of ADCS implementations. Regularly update and patch the controlling infrastructure (e.g., for CVE-2021-36942), employ monitoring and auditing mechanisms, and implement strong access controls to protect the infrastructure. If not needed, disable web-enrollment in ADCS servers. See Microsoft: Uninstall-AdcsWebEnrollment (ADCSDeployment)(link is external) for guidance.[30] If web enrollment is needed on ADCS servers: Enable Extended Protection for Authentication (EPA) for Client Authority Web Enrollment. This is done by choosing the “Required” option. For guidance, see Microsoft: KB5021989: Extended Protection for Authentication(link is external).[31] Enable “Require SSL” on the ADCS server. Disable NTLM on all ADCS servers. For guidance, see Microsoft: Network security Restrict NTLM in this domain - Windows Security | Microsoft Learn(link is external) and Network security Restrict NTLM Incoming NTLM traffic - Windows Security(link is external).[32],[33] Disable SAN for UPN Mapping. For guidance see, Microsoft: How to disable the SAN for UPN mapping - Windows Server(link is external). Instead, smart card authentication can use the altSecurityIdentities attribute for explicit mapping of certificates to accounts more securely.[34] Review all permissions on the ADCS templates on applicable servers. Restrict enrollment rights to only those users or groups that require it. Disable the CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT flag from templates to prevent users from supplying and editing sensitive security settings within these templates. Enforce manager approval for requested certificates. Remove FullControl, WriteDacl, and Write property permissions from low-privileged groups, such as domain users, to certificate template objects.
+
+Misconfiguration Default service permissions and configuration settings: Insecure legacy protocols/services Recommendations for Network Defenders Determine if LLMNR and NetBIOS are required for essential business operations. If not required, disable LLMNR and NetBIOS in local computer security settings or by group policy.
+
+Misconfiguration Default service permissions and configuration settings: Insecure legacy protocols/services | Recommendations for Network Defenders Determine if LLMNR and NetBIOS are required for essential business operations. If not required, disable LLMNR and NetBIOS in local computer security settings or by group policy.
+
+Misconfiguration Default service permissions and configuration settings: Insecure SMB service Recommendations for Network Defenders Require SMB signing for both SMB client and server on all systems.[25] This should prevent certain adversary-in-the-middle and pass-the-hash techniques. For more information on SMB signing, see Microsoft: Overview of Server Message Block Signing(link is external). [35] Note: Beginning in Microsoft Windows 11 Insider Preview Build 25381(link is external), Windows requires SMB signing for all communications.[36]
+
+Misconfiguration Default service permissions and configuration settings: Insecure SMB service | Recommendations for Network Defenders Require SMB signing for both SMB client and server on all systems.[25] This should prevent certain adversary-in-the-middle and pass-the-hash techniques. For more information on SMB signing, see Microsoft: Overview of Server Message Block Signing(link is external). [35] Note: Beginning in Microsoft Windows 11 Insider Preview Build 25381(link is external), Windows requires SMB signing for all communications.[36]
+
+##### Mitigate Improper Separation of User/Administrator Privilege
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Improper separation of user/administrator privilege:
+
+Excessive account privileges,
+
+Elevated service account permissions, and
+
+Non-essential use of elevated accounts
+
+Recommendations for Network Defenders Implement authentication, authorization, and accounting (AAA) systems [M1018(link is external)] to limit actions users can perform, and review logs of user actions to detect unauthorized use and abuse. Apply least privilege principles to user accounts and groups allowing only the performance of authorized actions.
+
+Audit user accounts and remove those that are inactive or unnecessary on a routine basis [CPG 2.D]. Limit the ability for user accounts to create additional accounts.
+
+Restrict use of privileged accounts to perform general tasks, such as accessing emails and browsing the Internet [CPG 2.E],[D3-UAP(link is external)]. See NSA Cybersecurity Information Sheet (CSI) Defend Privileges and Accounts for more information.[37]
+
+Limit the number of users within the organization with an identity and access management (IAM) role that has administrator privileges. Strive to reduce all permanent privileged role assignments, and conduct periodic entitlement reviews on IAM users, roles, and policies.
+
+Implement time-based access for privileged accounts. For example, the just-in-time access method provisions privileged access when needed and can support enforcement of the principle of least privilege (as well as the Zero Trust model) by setting network-wide policy to automatically disable admin accounts at the Active Directory level. As needed, individual users can submit requests through an automated process that enables access to a system for a set timeframe. In cloud environments, just-in-time elevation is also appropriate and may be implemented using per-session federated claims or privileged access management tools.
+
+Restrict domain users from being in the local administrator group on multiple systems.
+
+Run daemonized applications (services) with non-administrator accounts when possible.
+
+Only configure service accounts with the permissions necessary for the services they control to operate.
+
+Disable unused services and implement ACLs to protect services.
+
+Misconfiguration Improper separation of user/administrator privilege: Excessive account privileges, Elevated service account permissions, and Non-essential use of elevated accounts | Recommendations for Network Defenders Implement authentication, authorization, and accounting (AAA) systems [M1018(link is external)] to limit actions users can perform, and review logs of user actions to detect unauthorized use and abuse. Apply least privilege principles to user accounts and groups allowing only the performance of authorized actions. Audit user accounts and remove those that are inactive or unnecessary on a routine basis [CPG 2.D]. Limit the ability for user accounts to create additional accounts. Restrict use of privileged accounts to perform general tasks, such as accessing emails and browsing the Internet [CPG 2.E],[D3-UAP(link is external)]. See NSA Cybersecurity Information Sheet (CSI) Defend Privileges and Accounts for more information.[37] Limit the number of users within the organization with an identity and access management (IAM) role that has administrator privileges. Strive to reduce all permanent privileged role assignments, and conduct periodic entitlement reviews on IAM users, roles, and policies. Implement time-based access for privileged accounts. For example, the just-in-time access method provisions privileged access when needed and can support enforcement of the principle of least privilege (as well as the Zero Trust model) by setting network-wide policy to automatically disable admin accounts at the Active Directory level. As needed, individual users can submit requests through an automated process that enables access to a system for a set timeframe. In cloud environments, just-in-time elevation is also appropriate and may be implemented using per-session federated claims or privileged access management tools. Restrict domain users from being in the local administrator group on multiple systems. Run daemonized applications (services) with non-administrator accounts when possible. Only configure service accounts with the permissions necessary for the services they control to operate. Disable unused services and implement ACLs to protect services.
+
+##### Mitigate Insufficient Internal Network Monitoring
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Insufficient internal network monitoring Recommendations for Network Defenders Establish a baseline of applications and services, and routinely audit their access and use, especially for administrative activity [D3-ANAA(link is external)]. For instance, administrators should routinely audit the access lists and permissions for of all web applications and services [CPG 2.O],[M1047(link is external)]. Look for suspicious accounts, investigate them, and remove accounts and credentials, as appropriate, such as accounts of former staff.[39]
+
+Establish a baseline that represents an organization’s normal traffic activity, network performance, host application activity, and user behavior; investigate any deviations from that baseline [D3-NTCD(link is external)],[D3-CSPP(link is external)],[D3-UBA(link is external)].[40]
+
+Use auditing tools capable of detecting privilege and service abuse opportunities on systems within an enterprise and correct them [M1047(link is external)].
+
+Implement a security information and event management (SIEM) system to provide log aggregation, correlation, querying, visualization, and alerting from network endpoints, logging systems, endpoint and detection response (EDR) systems and intrusion detection systems (IDS) [CPG 2.T],[D3-NTA(link is external)].
+
+Misconfiguration Insufficient internal network monitoring | Recommendations for Network Defenders Establish a baseline of applications and services, and routinely audit their access and use, especially for administrative activity [D3-ANAA(link is external)]. For instance, administrators should routinely audit the access lists and permissions for of all web applications and services [CPG 2.O],[M1047(link is external)]. Look for suspicious accounts, investigate them, and remove accounts and credentials, as appropriate, such as accounts of former staff.[39] Establish a baseline that represents an organization’s normal traffic activity, network performance, host application activity, and user behavior; investigate any deviations from that baseline [D3-NTCD(link is external)],[D3-CSPP(link is external)],[D3-UBA(link is external)].[40] Use auditing tools capable of detecting privilege and service abuse opportunities on systems within an enterprise and correct them [M1047(link is external)]. Implement a security information and event management (SIEM) system to provide log aggregation, correlation, querying, visualization, and alerting from network endpoints, logging systems, endpoint and detection response (EDR) systems and intrusion detection systems (IDS) [CPG 2.T],[D3-NTA(link is external)].
+
+##### Mitigate Lack of Network Segmentation
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Lack of network segmentation Recommendations for Network Defenders Implement next-generation firewalls to perform deep packet filtering, stateful inspection, and application-level packet inspection [D3-NTF(link is external)]. Deny or drop improperly formatted traffic that is incongruent with application-specific traffic permitted on the network. This practice limits an actor’s ability to abuse allowed application protocols. The practice of allowlisting network applications does not rely on generic ports as filtering criteria, enhancing filtering fidelity. For more information on application-aware defenses, see NSA CSI Segment Networks and Deploy Application-Aware Defenses.[41]
+
+Engineer network segments to isolate critical systems, functions, and resources [CPG 2.F],[D3-NI(link is external)]. Establish physical and logical segmentation controls, such as virtual local area network (VLAN) configurations and properly configured access control lists (ACLs) on infrastructure devices [M1030(link is external)]. These devices should be baselined and audited to prevent access to potentially sensitive systems and information. Leverage properly configured Demilitarized Zones (DMZs) to reduce service exposure to the Internet.[42],[43],[44]
+
+Implement separate Virtual Private Cloud (VPC) instances to isolate essential cloud systems. Where possible, implement Virtual Machines (VM) and Network Function Virtualization (NFV) to enable micro-segmentation of networks in virtualized environments and cloud data centers. Employ secure VM firewall configurations in tandem with macro segmentation.
+
+Misconfiguration Lack of network segmentation | Recommendations for Network Defenders Implement next-generation firewalls to perform deep packet filtering, stateful inspection, and application-level packet inspection [D3-NTF(link is external)]. Deny or drop improperly formatted traffic that is incongruent with application-specific traffic permitted on the network. This practice limits an actor’s ability to abuse allowed application protocols. The practice of allowlisting network applications does not rely on generic ports as filtering criteria, enhancing filtering fidelity. For more information on application-aware defenses, see NSA CSI Segment Networks and Deploy Application-Aware Defenses.[41] Engineer network segments to isolate critical systems, functions, and resources [CPG 2.F],[D3-NI(link is external)]. Establish physical and logical segmentation controls, such as virtual local area network (VLAN) configurations and properly configured access control lists (ACLs) on infrastructure devices [M1030(link is external)]. These devices should be baselined and audited to prevent access to potentially sensitive systems and information. Leverage properly configured Demilitarized Zones (DMZs) to reduce service exposure to the Internet.[42],[43],[44] Implement separate Virtual Private Cloud (VPC) instances to isolate essential cloud systems. Where possible, implement Virtual Machines (VM) and Network Function Virtualization (NFV) to enable micro-segmentation of networks in virtualized environments and cloud data centers. Employ secure VM firewall configurations in tandem with macro segmentation.
+
+##### Mitigate Poor Patch Management
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Poor patch management: Lack of regular patching Recommendations for Network Defenders Ensure organizations implement and maintain an efficient patch management process that enforces the use of up-to-date, stable versions of OSs, browsers, and software [M1051(link is external)],[D3-SU(link is external)].[45]
+
+Update software regularly by employing patch management for externally exposed applications, internal enterprise endpoints, and servers. Prioritize patching known exploited vulnerabilities.[2]
+
+Automate the update process as much as possible and use vendor-provided updates. Consider using automated patch management tools and software update tools.
+
+Where patching is not possible due to limitations, segment networks to limit exposure of the vulnerable system or host.
+
+Misconfiguration Poor patch management: Lack of regular patching | Recommendations for Network Defenders Ensure organizations implement and maintain an efficient patch management process that enforces the use of up-to-date, stable versions of OSs, browsers, and software [M1051(link is external)],[D3-SU(link is external)].[45] Update software regularly by employing patch management for externally exposed applications, internal enterprise endpoints, and servers. Prioritize patching known exploited vulnerabilities.[2] Automate the update process as much as possible and use vendor-provided updates. Consider using automated patch management tools and software update tools. Where patching is not possible due to limitations, segment networks to limit exposure of the vulnerable system or host.
+
+Misconfiguration Poor patch management: Use of unsupported OSs and outdated firmware Recommendations for Network Defenders Evaluate the use of unsupported hardware and software and discontinue use as soon as possible. If discontinuing is not possible, implement additional network protections to mitigate the risk.[45]
+
+Patch the Basic Input/Output System (BIOS) and other firmware to prevent exploitation of known vulnerabilities.
+
+Misconfiguration Poor patch management: Use of unsupported OSs and outdated firmware | Recommendations for Network Defenders Evaluate the use of unsupported hardware and software and discontinue use as soon as possible. If discontinuing is not possible, implement additional network protections to mitigate the risk.[45] Patch the Basic Input/Output System (BIOS) and other firmware to prevent exploitation of known vulnerabilities.
+
+##### Mitigate Bypass of System Access Controls
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Bypass of system access controls Recommendations for Network Defenders Limit credential overlap across systems to prevent credential compromise and reduce a malicious actor's ability to move laterally between systems [M1026(link is external)],[D3-CH(link is external)]. Implement a method for monitoring non-standard logon events through host log monitoring [CPG 2.G].
+
+Implement an effective and routine patch management process. Mitigate PtH techniques by applying patch KB2871997(link is external) to Windows 7 and newer versions to limit default access of accounts in the local administrator group [M1051(link is external)],[D3-SU(link is external)].[46]
+
+Enable the PtH mitigations to apply User Account Control (UAC) restrictions to local accounts upon network logon [M1052(link is external)],[D3-UAP(link is external)].
+
+Deny domain users the ability to be in the local administrator group on multiple systems [M1018(link is external)],[D3-UAP(link is external)].
+
+Limit workstation-to-workstation communications. All workstation communications should occur through a server to prevent lateral movement [M1018(link is external)],[D3-UAP(link is external)].
+
+Use privileged accounts only on systems requiring those privileges [M1018(link is external)],[D3-UAP(link is external)]. Consider using dedicated Privileged Access Workstations for privileged accounts to better isolate and protect them.[37]
+
+Misconfiguration Bypass of system access controls | Recommendations for Network Defenders Limit credential overlap across systems to prevent credential compromise and reduce a malicious actor's ability to move laterally between systems [M1026(link is external)],[D3-CH(link is external)]. Implement a method for monitoring non-standard logon events through host log monitoring [CPG 2.G]. Implement an effective and routine patch management process. Mitigate PtH techniques by applying patch KB2871997(link is external) to Windows 7 and newer versions to limit default access of accounts in the local administrator group [M1051(link is external)],[D3-SU(link is external)].[46] Enable the PtH mitigations to apply User Account Control (UAC) restrictions to local accounts upon network logon [M1052(link is external)],[D3-UAP(link is external)]. Deny domain users the ability to be in the local administrator group on multiple systems [M1018(link is external)],[D3-UAP(link is external)]. Limit workstation-to-workstation communications. All workstation communications should occur through a server to prevent lateral movement [M1018(link is external)],[D3-UAP(link is external)]. Use privileged accounts only on systems requiring those privileges [M1018(link is external)],[D3-UAP(link is external)]. Consider using dedicated Privileged Access Workstations for privileged accounts to better isolate and protect them.[37]
+
+##### Mitigate Weak or Misconfigured MFA Methods
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Weak or misconfigured MFA methods: Misconfigured smart cards or tokens
+
+Recommendations for Network Defenders In Windows environments: Disable the use of New Technology LAN Manager (NTLM) and other legacy authentication protocols that are susceptible to PtH due to their use of password hashes [M1032(link is external)],[D3-MFA(link is external)]. For guidance, see Microsoft: Network security Restrict NTLM in this domain - Windows Security | Microsoft Learn(link is external) and Network security Restrict NTLM Incoming NTLM traffic - Windows Security(link is external).[32],[33]
+
+Use built-in functionality via Windows Hello for Business or Group Policy Objects (GPOs) to regularly re-randomize password hashes associated with smartcard-required accounts. Ensure that the hashes are changed at least as often as organizational policy requires passwords to be changed [M1027(link is external)],[D3-CRO(link is external)]. Prioritize upgrading any environments that cannot utilize this built-in functionality.
+
+As a longer-term effort, implement cloud-primary authentication solution using modern open standards. See CISA’s Secure Cloud Business Applications (SCuBA) Hybrid Identity Solutions Architecture for more information.[47] Note: this document is part of CISA’s Secure Cloud Business Applications (SCuBA) project, which provides guidance for FCEB agencies to secure their cloud business application environments and to protect federal information that is created, accessed, shared, and stored in those environments. Although tailored to FCEB agencies, the project’s guidance is applicable to all organizations.[48]
+
+Misconfiguration Weak or misconfigured MFA methods: Misconfigured smart cards or tokens | Recommendations for Network Defenders In Windows environments: Disable the use of New Technology LAN Manager (NTLM) and other legacy authentication protocols that are susceptible to PtH due to their use of password hashes [M1032(link is external)],[D3-MFA(link is external)]. For guidance, see Microsoft: Network security Restrict NTLM in this domain - Windows Security | Microsoft Learn(link is external) and Network security Restrict NTLM Incoming NTLM traffic - Windows Security(link is external).[32],[33] Use built-in functionality via Windows Hello for Business or Group Policy Objects (GPOs) to regularly re-randomize password hashes associated with smartcard-required accounts. Ensure that the hashes are changed at least as often as organizational policy requires passwords to be changed [M1027(link is external)],[D3-CRO(link is external)]. Prioritize upgrading any environments that cannot utilize this built-in functionality. As a longer-term effort, implement cloud-primary authentication solution using modern open standards. See CISA’s Secure Cloud Business Applications (SCuBA) Hybrid Identity Solutions Architecture for more information.[47] Note: this document is part of CISA’s Secure Cloud Business Applications (SCuBA) project, which provides guidance for FCEB agencies to secure their cloud business application environments and to protect federal information that is created, accessed, shared, and stored in those environments. Although tailored to FCEB agencies, the project’s guidance is applicable to all organizations.[48]
+
+Misconfiguration Weak or misconfigured MFA methods: Lack of phishing-resistant MFA Recommendations for Network Defenders Enforce phishing-resistant MFA universally for access to sensitive data and on as many other resources and services as possible [CPG 2.H].[3],[49]
+
+Misconfiguration Weak or misconfigured MFA methods: Lack of phishing-resistant MFA | Recommendations for Network Defenders Enforce phishing-resistant MFA universally for access to sensitive data and on as many other resources and services as possible [CPG 2.H].[3],[49]
+
+##### Mitigate Insufficient ACLs on Network Shares and Services
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Insufficient ACLs on network shares and services Recommendations for Network Defenders Implement secure configurations for all storage devices and network shares that grant access to authorized users only.
+
+Apply the principal of least privilege to important information resources to reduce risk of unauthorized data access and manipulation.
+
+Apply restrictive permissions to files and directories, and prevent adversaries from modifying ACLs [M1022(link is external)],[D3-LFP(link is external)].
+
+Set restrictive permissions on files and folders containing sensitive private keys to prevent unintended access [M1022(link is external)],[D3-LFP(link is external)].
+
+Enable the Windows Group Policy security setting, "Do Not Allow Anonymous Enumeration of Security Account Manager (SAM) Accounts and Shares," to limit users who can enumerate network shares.
+
+Misconfiguration Insufficient ACLs on network shares and services | Recommendations for Network Defenders Implement secure configurations for all storage devices and network shares that grant access to authorized users only. Apply the principal of least privilege to important information resources to reduce risk of unauthorized data access and manipulation. Apply restrictive permissions to files and directories, and prevent adversaries from modifying ACLs [M1022(link is external)],[D3-LFP(link is external)]. Set restrictive permissions on files and folders containing sensitive private keys to prevent unintended access [M1022(link is external)],[D3-LFP(link is external)]. Enable the Windows Group Policy security setting, "Do Not Allow Anonymous Enumeration of Security Account Manager (SAM) Accounts and Shares," to limit users who can enumerate network shares.
+
+##### Mitigate Poor Credential Hygiene
+
+Misconfiguration | Recommendations for Network Defenders
+
+Misconfiguration Poor credential hygiene: easily crackable passwords
+
+Recommendations for Network Defenders Follow National Institute of Standards and Technologies (NIST) guidelines when creating password policies to enforce use of “strong” passwords that cannot be cracked [M1027(link is external)],[D3-SPP(link is external)].[29] Consider using password managers to generate and store passwords.
+
+Do not reuse local administrator account passwords across systems. Ensure that passwords are “strong” and unique [CPG 2.B],[M1027(link is external)],[D3-SPP(link is external)].
+
+Use “strong” passphrases for private keys to make cracking resource intensive. Do not store credentials within the registry in Windows systems. Establish an organizational policy that prohibits password storage in files.
+
+Ensure adequate password length (ideally 25+ characters) and complexity requirements for Windows service accounts and implement passwords with periodic expiration on these accounts [CPG 2.B],[M1027(link is external)],[D3-SPP(link is external)]. Use Managed Service Accounts, when possible, to manage service account passwords automatically.
+
+Misconfiguration Poor credential hygiene: easily crackable passwords | Recommendations for Network Defenders Follow National Institute of Standards and Technologies (NIST) guidelines when creating password policies to enforce use of “strong” passwords that cannot be cracked [M1027(link is external)],[D3-SPP(link is external)].[29] Consider using password managers to generate and store passwords. Do not reuse local administrator account passwords across systems. Ensure that passwords are “strong” and unique [CPG 2.B],[M1027(link is external)],[D3-SPP(link is external)]. Use “strong” passphrases for private keys to make cracking resource intensive. Do not store credentials within the registry in Windows systems. Establish an organizational policy that prohibits password storage in files. Ensure adequate password length (ideally 25+ characters) and complexity requirements for Windows service accounts and implement passwords with periodic expiration on these accounts [CPG 2.B],[M1027(link is external)],[D3-SPP(link is external)]. Use Managed Service Accounts, when possible, to manage service account passwords automatically.
+
+Misconfiguration Poor credential hygiene: cleartext password disclosure
+
+Recommendations for Network Defenders Implement a review process for files and systems to look for cleartext account credentials. When credentials are found, remove, change, or encrypt them [D3-FE(link is external)]. Conduct periodic scans of server machines using automated tools to determine whether sensitive data (e.g., personally identifiable information, protected health information) or credentials are stored. Weigh the risk of storing credentials in password stores and web browsers. If system, software, or web browser credential disclosure is of significant concern, technical controls, policy, and user training may prevent storage of credentials in improper locations.
+
+Store hashed passwords using Committee on National Security Systems Policy (CNSSP)-15 and Commercial National Security Algorithm Suite (CNSA) approved algorithms.[50],[51]
+
+Consider using group Managed Service Accounts (gMSAs) or third-party software to implement secure password-storage applications.
+
+Misconfiguration Poor credential hygiene: cleartext password disclosure | Recommendations for Network Defenders Implement a review process for files and systems to look for cleartext account credentials. When credentials are found, remove, change, or encrypt them [D3-FE(link is external)]. Conduct periodic scans of server machines using automated tools to determine whether sensitive data (e.g., personally identifiable information, protected health information) or credentials are stored. Weigh the risk of storing credentials in password stores and web browsers. If system, software, or web browser credential disclosure is of significant concern, technical controls, policy, and user training may prevent storage of credentials in improper locations. Store hashed passwords using Committee on National Security Systems Policy (CNSSP)-15 and Commercial National Security Algorithm Suite (CNSA) approved algorithms.[50],[51] Consider using group Managed Service Accounts (gMSAs) or third-party software to implement secure password-storage applications.
+
+##### Mitigate Unrestricted Code Execution
+
+Misconfiguration | Recommendations for Network Defenders

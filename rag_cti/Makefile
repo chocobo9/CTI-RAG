@@ -1,7 +1,7 @@
 .PHONY: install install-dev test test-fast lint fmt fmt-check type-check ci \
         qdrant-up qdrant-down qdrant-logs \
-        seed-mitre seed-relationships seed-pdfs fetch-otx fetch-whois ingest ingest-all \
-        refetch-otx-raw rebuild-otx \
+        seed-mitre seed-relationships seed-pdfs fetch-otx fetch-otx-mitre-actor-raw fetch-whois ingest ingest-all \
+        rebuild-otx \
         eval-attribution eval-capabilities eval-techniquerag certify render-results \
         eval-all clean
 
@@ -52,7 +52,10 @@ seed-pdfs:
 	python scripts/seed_pdfs.py
 
 fetch-otx:
-	python scripts/fetch_otx.py
+	python scripts/fetch_otx_mitre_actor_raw.py
+
+fetch-otx-mitre-actor-raw:
+	python scripts/fetch_otx_mitre_actor_raw.py
 
 # Requires WHOXY_API_KEY and a domains file: make fetch-whois DOMAINS=domains.txt
 fetch-whois:
@@ -64,10 +67,6 @@ ingest:
 # Full corpus rebuild: seed every source then embed+upsert into Qdrant.
 ingest-all: seed-mitre seed-relationships seed-pdfs fetch-otx
 	python scripts/ingest.py --sources mitre mitre_relationships otx pdfs
-
-# Re-fetch raw OTX pulse JSON (full API responses) into data/raw/otx/.
-refetch-otx-raw:
-	python scripts/refetch_otx_raw.py
 
 # Rebuild data/processed/otx.jsonl from data/raw/otx/ with the canonical
 # connector rendering (no API calls). Ingest into a NEW collection for A/B:

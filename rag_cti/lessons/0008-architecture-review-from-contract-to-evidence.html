@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architecture Review：从设计合同读到证据</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 08 · Architecture Review</p>
+    <h1>Architecture Review：从设计合同读到证据</h1>
+    <p class="lead">最后一课把前七课合起来：你要学会评价 CTI-RAG，不是只看某个函数写得好不好，而是看 runtime contract 是否清楚、代码是否守住边界、测试和 eval 是否证明关键行为、trace 是否能解释失败、残余风险是否被诚实暴露。</p>
+  </header>
+
+  <section>
+    <h2>先看全局：本课在地图哪里</h2>
+    <p>这节课对应思维导图里的 Product/Ops 和 Cross-cutting 区域，也回到整个 Agentic RAG 系统。现在你已经知道 runtime harness、state、tool boundary、ledger、citation、supervisor、eval 各自是什么；最后要练的是架构评价：这些概念在一个真实项目里是否对齐。</p>
+    <div class="grid">
+      <article class="card">
+        <h3>Design Intent</h3>
+        <p>ADR、phase control doc、public API 说明系统想成为什么样。</p>
+      </article>
+      <article class="card">
+        <h3>Runtime Contract</h3>
+        <p>入口、path selection、state、tool boundary、ledger、stop policy、trace 是系统对调用方的承诺。</p>
+      </article>
+      <article class="card">
+        <h3>Implementation Evidence</h3>
+        <p>代码是否真的把模型 proposal、runtime observation、evidence authority、composer/citation guard 分开。</p>
+      </article>
+      <article class="card">
+        <h3>Verification Evidence</h3>
+        <p>unit tests、integration tests、eval、golden sets、trace 是否覆盖关键风险。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课核心胜利：</strong>你能拿一套明确 rubric 评价 CTI-RAG：不是“我感觉架构不错”，而是“入口合同清楚吗？状态权威在哪？工具边界硬吗？证据链闭合吗？supervisor 是否越权？eval 是否分层？trace 是否能诊断？”</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：从读懂到评价</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能把 ADR/设计文档中的 intent 映射到 runtime harness、state、tool、ledger、supervisor 和 eval 代码。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能用 contract-first 方法检查边界是否深：公开 API 简洁，内部运行细节完整可追踪。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能写出一份架构评价：strengths、evidence、gaps、tests/eval coverage、residual risks、next improvements。</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>评价一个 Agentic RAG 项目时，我不会先从“这个类写得优雅吗”开始。我会先问这五个问题：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>为什么重要</th><th>CTI-RAG 里看哪里</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>公开 API 承诺什么？</td>
+          <td>外部调用方应该面对稳定、简单的入口，而不是内部模式泄漏。</td>
+          <td><code>__init__.py</code>、ADR 中的 <code>answer()</code> contract。</td>
+        </tr>
+        <tr>
+          <td>runtime truth 在哪里？</td>
+          <td>如果 truth 藏在 prompt transcript 或模型文本里，系统不可审计。</td>
+          <td>runtime state、observations、events、ledger、trace。</td>
+        </tr>
+        <tr>
+          <td>模型能否越过边界？</td>
+          <td>Agentic 系统最怕 probabilistic proposal 直接变成 action 或 evidence。</td>
+          <td>tool validation、execution boundary、citation guard。</td>
+        </tr>
+        <tr>
+          <td>复杂路径是否被限制？</td>
+          <td>supervisor、多分支、parallel dispatch 都需要入场条件和 fallback。</td>
+          <td>supervisor admission、validated branch plan、legacy metadata。</td>
+        </tr>
+        <tr>
+          <td>失败是否可诊断？</td>
+          <td>没有 trace 和分层 eval，质量下降时不知道修哪层。</td>
+          <td>trace metadata、stop reason、events、eval metrics、tests。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一张图：从 contract 到证据</h2>
+    <p>这张图表达 architecture review 的路线：先读设计意图，再找运行合同，再看代码证据，再看测试和 eval，最后写残余风险。</p>
+    <div class="flow">
+      <div>Design Intent<br>ADR/Docs</div>
+      <div>Runtime Contract<br>API/Trace</div>
+      <div>Code Evidence<br>边界实现</div>
+      <div>Verification<br>Tests/Eval</div>
+      <div>Residual Risk<br>下一步</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>层</th><th>你要找什么</th><th>不够时的风险</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Design Intent</td>
+          <td>系统明确说哪些路径是生产、哪些是 debug/baseline。</td>
+          <td>团队会把 legacy capability 误认为 production architecture。</td>
+        </tr>
+        <tr>
+          <td>Runtime Contract</td>
+          <td>入口、输出 shape、trace、fallback reason、stop reason 稳定。</td>
+          <td>调用方无法知道系统为什么这样回答。</td>
+        </tr>
+        <tr>
+          <td>Code Evidence</td>
+          <td>工具边界、state reducer、ledger、composer、citation guard 都有清晰所有权。</td>
+          <td>模型文本和系统 truth 混在一起，难以测试。</td>
+        </tr>
+        <tr>
+          <td>Verification</td>
+          <td>关键行为有 unit/contract tests，质量层有 eval/golden sets。</td>
+          <td>重构时很容易破坏边界却不自知。</td>
+        </tr>
+        <tr>
+          <td>Residual Risk</td>
+          <td>诚实列出未覆盖风险和下一步验证。</td>
+          <td>架构评价变成宣传稿，不能指导工程决策。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Rubric 一：Public API 与 runtime contract</h2>
+    <p>好的 Agentic RAG 架构应该对外简单、对内可追踪。调用方不应该被迫理解 single vs supervisor 的内部细节，但 trace 又要能说明系统为什么选择某条路。</p>
+    <table>
+      <thead>
+        <tr><th>检查项</th><th>好设计的信号</th><th>危险信号</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Production entry</td>
+          <td><code>answer()</code> 是主入口，内部决定 path。</td>
+          <td>调用方必须手动选 single/supervisor 才能正常使用。</td>
+        </tr>
+        <tr>
+          <td>Debug/baseline modes</td>
+          <td>force single/supervisor 明确标成 debug/eval/baseline。</td>
+          <td>debug path 与 production path 混用，trace 不可区分。</td>
+        </tr>
+        <tr>
+          <td>Stable output shape</td>
+          <td>single 和 supervised 返回兼容 shape，含 citations、trace、telemetry。</td>
+          <td>不同 path 输出字段差异大，调用方很难处理。</td>
+        </tr>
+        <tr>
+          <td>Fallback reasons</td>
+          <td>supervisor disabled、low confidence、dependent chain 等原因进入 trace。</td>
+          <td>系统 silently fallback，无法评估 admission policy。</td>
+        </tr>
+        <tr>
+          <td>RuntimeDeps</td>
+          <td>保存可复用 services/policy，不保存 per-run state。</td>
+          <td>依赖和运行状态混在一起，影响并发和复现。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Rubric 二：state、tool、ledger 的权威边界</h2>
+    <p>这一组检查来自前四课。它决定系统是否可审计。</p>
+    <table>
+      <thead>
+        <tr><th>边界</th><th>应该成立的 contract</th><th>代码证据</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>State</td>
+          <td>per-run control state 记录进度、observations、events、stop reason。</td>
+          <td>RuntimeInvestigationState、RuntimeObservation、RuntimeEvent。</td>
+        </tr>
+        <tr>
+          <td>Tool boundary</td>
+          <td>模型 proposal 必须经过 validation、normalization、budget、deadline、policy。</td>
+          <td><code>_validate_runtime_tool_args</code>、<code>_execute_action_proposal</code>。</td>
+        </tr>
+        <tr>
+          <td>Observation</td>
+          <td>工具结果以结构化 observation 进入 reducer，不从 ToolMessage 文本反推 truth。</td>
+          <td>runtime_harness tests around replay and ToolMessage boundary。</td>
+        </tr>
+        <tr>
+          <td>Ledger</td>
+          <td>本次 run 的 evidence authority，保存 chunks/facts/outlines/actions。</td>
+          <td><code>EvidenceLedger</code>、<code>real_id_set</code>、merge tests。</td>
+        </tr>
+        <tr>
+          <td>Context</td>
+          <td>prompt 是 state/ledger 的 working-set projection。</td>
+          <td>rendered action log、bounded evidence view、synthesis top-k。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Rubric 三：trust gates 与 supervisor</h2>
+    <p>这一组检查来自第五、六课。它决定系统在复杂问题上是否仍然保持证据链闭合。</p>
+    <table>
+      <thead>
+        <tr><th>检查项</th><th>好设计的信号</th><th>危险信号</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Citation guard</td>
+          <td>引用 ID 与 merged ledger <code>real_id_set</code> 做确定性检查。</td>
+          <td>只要求模型“请不要编 citation”。</td>
+        </tr>
+        <tr>
+          <td>Grounding/Faithfulness</td>
+          <td>明确承认 deterministic guard 不等于 claim-level support。</td>
+          <td>把 dropped citation count 当总质量分。</td>
+        </tr>
+        <tr>
+          <td>Sufficiency</td>
+          <td>judge 给 coverage gaps 和 next_action，runtime 结合 stop policy。</td>
+          <td>模型一句“够了”直接停止，不看预算/进度/轮数。</td>
+        </tr>
+        <tr>
+          <td>Supervisor admission</td>
+          <td>只对 independent gatherable branches 进入 supervisor，并有 fallback reason。</td>
+          <td>复杂问题一律多 agent。</td>
+        </tr>
+        <tr>
+          <td>Composer</td>
+          <td>no-tool synthesis，基于 branch reports 和 merged ledger。</td>
+          <td>Composer 再检索或引入新证据。</td>
+        </tr>
+        <tr>
+          <td>Branch failure</td>
+          <td>partial/empty/failed surfaced 给 report、trace 和 final gaps。</td>
+          <td>失败分支被静默吞掉。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Rubric 四：tests、eval、observability</h2>
+    <p>架构不是写在 ADR 里就算完成，必须有验证证据。</p>
+    <table>
+      <thead>
+        <tr><th>验证层</th><th>应该覆盖什么</th><th>CTI-RAG 例子</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Unit/contract tests</td>
+          <td>tool validation、invalid/rejected/error、ledger merge、citation guard、supervisor entrypoint。</td>
+          <td><code>test_runtime_harness.py</code>、<code>test_evidence_ledger.py</code>、<code>test_supervisor_graph.py</code>。</td>
+        </tr>
+        <tr>
+          <td>Harness-level tests</td>
+          <td>query-understanding fallback、valid branches admitted、dependent decomposition fallback、public answer shape。</td>
+          <td>ADR 里列出的 runtime harness tests。</td>
+        </tr>
+        <tr>
+          <td>Retrieval eval</td>
+          <td>top-k、MRR、category/per-query metrics。</td>
+          <td><code>retrieval_metrics.py</code>。</td>
+        </tr>
+        <tr>
+          <td>Answer/faithfulness eval</td>
+          <td>RAGAS dataset conversion、faithfulness、answer relevancy、contexts。</td>
+          <td><code>ragas_eval.py</code>。</td>
+        </tr>
+        <tr>
+          <td>Trace/observability</td>
+          <td>path selected、admission reason、branch statuses、stop reason、tool counts、citation drops。</td>
+          <td><code>observability/tracing.py</code> and trace metadata tests。</td>
+        </tr>
+        <tr>
+          <td>Regression/golden set</td>
+          <td>核心 CTI questions 在 code/model/prompt 改动后保持行为。</td>
+          <td>dataset version、config、per-query reports。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>如何写一份架构评价</h2>
+    <p>下面这个结构可以直接作为你以后 review CTI-RAG 的模板：</p>
+    <table>
+      <thead>
+        <tr><th>章节</th><th>要写什么</th><th>注意</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1. Scope</td>
+          <td>本次评价覆盖 runtime harness、state、tools、ledger、supervisor、citation/eval 哪些部分。</td>
+          <td>不要把没读过的区域写成结论。</td>
+        </tr>
+        <tr>
+          <td>2. Intended architecture</td>
+          <td>从 ADR/docs 摘出设计意图和生产路径。</td>
+          <td>区分 production、debug、legacy。</td>
+        </tr>
+        <tr>
+          <td>3. Runtime contract</td>
+          <td>入口、输出、trace、state、ledger、stop reason 对调用方和维护者承诺什么。</td>
+          <td>contract 要可观察。</td>
+        </tr>
+        <tr>
+          <td>4. Code evidence</td>
+          <td>列出关键实现点如何支撑或违背 contract。</td>
+          <td>引用具体文件/函数，而不是泛泛夸赞。</td>
+        </tr>
+        <tr>
+          <td>5. Verification</td>
+          <td>哪些 tests/eval 覆盖关键行为，哪些还缺。</td>
+          <td>把 deterministic tests 和 quality eval 分开。</td>
+        </tr>
+        <tr>
+          <td>6. Risks and next steps</td>
+          <td>残余风险、优先级、建议补的 tests/eval/docs。</td>
+          <td>风险要可行动，不要写空话。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>为什么不对</th><th>更好的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“架构评价就是看代码是否整洁。”</td>
+          <td>整洁很重要，但 Agentic RAG 的核心风险在边界、证据链、可诊断性。</td>
+          <td>用 contract + evidence + verification 的框架。</td>
+        </tr>
+        <tr>
+          <td>“ADR 写了就代表实现了。”</td>
+          <td>设计意图需要代码和测试证据支撑。</td>
+          <td>每条 design claim 都要找 implementation/test anchor。</td>
+        </tr>
+        <tr>
+          <td>“测试多就够。”</td>
+          <td>测试可能只覆盖数据结构，不覆盖 runtime contract 或质量表现。</td>
+          <td>看测试是否覆盖关键 failure modes。</td>
+        </tr>
+        <tr>
+          <td>“eval 高就说明架构好。”</td>
+          <td>分数高可能来自数据集窄、judge 偏差或未测 ops 风险。</td>
+          <td>分层 eval + trace + residual risk 一起看。</td>
+        </tr>
+        <tr>
+          <td>“supervisor 很强，所以系统一定高级。”</td>
+          <td>复杂机制如果没有 admission 和 boundary，反而更不可控。</td>
+          <td>看 supervisor 是否被限制在协调职责内。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>读代码时问什么</h2>
+    <table>
+      <thead>
+        <tr><th>审计问题</th><th>你在找什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>这段代码属于 control plane 还是 data plane？</td>
+          <td>runtime decision、state、policy vs evidence content、retrieval result。</td>
+        </tr>
+        <tr>
+          <td>这里的 truth source 是什么？</td>
+          <td>state、observation、ledger、trace、prompt 之间有没有混乱。</td>
+        </tr>
+        <tr>
+          <td>模型输出在哪里被降级成 proposal？</td>
+          <td>tool call、sufficiency suggestion、citation text 是否经过 runtime guard。</td>
+        </tr>
+        <tr>
+          <td>失败是否有 typed reason？</td>
+          <td>invalid/rejected/error、stop_reason、fallback_reason、branch status。</td>
+        </tr>
+        <tr>
+          <td>证据链是否闭合？</td>
+          <td>tool result -> ledger -> synthesis context -> citation guard -> final answer。</td>
+        </tr>
+        <tr>
+          <td>测试是否证明 contract？</td>
+          <td>有没有覆盖边界，而不是只测 happy path。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：做一次小型架构 review</h2>
+    <div class="quiz-grid">
+      <div class="quiz quiz-question">
+        <p><strong>1. 架构评价的第一步更应该看什么？</strong></p>
+        <button data-correct="true" data-feedback="对。先读 design intent 和 runtime contract，才知道代码应该证明什么。否则容易陷入孤立函数审美。">设计意图和 runtime contract。</button>
+        <button data-correct="false" data-feedback="代码风格重要，但不是第一层。你需要先知道系统承诺的边界和路径，否则只能评价局部写法，无法判断实现是否守住 runtime contract。">变量名是否漂亮。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>2. Public API 好设计的信号是什么？</strong></p>
+        <button data-correct="false" data-feedback="这会把内部策略泄漏给调用方。debug/force modes 可以存在，但 production 应该有主入口。">用户必须手动选择 single 或 supervisor。</button>
+        <button data-correct="true" data-feedback="对。production 主入口应该稳定，内部可以根据 admission 选择 path，并在 trace 里解释。">有稳定 <code>answer()</code> 主入口，内部选择 path 并暴露 trace。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>3. RuntimeDeps 里混入 per-run state 的风险是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。deps 应该是可复用服务和 policy。per-run state 混进去会破坏并发隔离、复现和测试。">并发隔离和复现变差。</button>
+        <button data-correct="false" data-feedback="混入 state 不会让设计更清楚，反而让服务依赖和运行过程纠缠。">让代码更简单且没有代价。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>4. “模型建议 stop”在 contract-first 视角下是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。模型或 judge 的 stop/next_action 是语义输入，最终是否停止由 runtime stop policy 结合预算、进度、轮数、timeout 决定。">runtime stop policy 的输入之一，不是最终权威。</button>
+        <button data-correct="false" data-feedback="如果模型能直接决定 stop，就绕过了 runtime control plane。">最终停止权威。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>5. 证据链闭合需要哪条路径成立？</strong></p>
+        <button data-correct="true" data-feedback="对。这条链把前几课串起来：工具边界承认结果，ledger 保存证据，synthesis 使用 ledger view，citation guard 验证 final citations。">tool result -> ledger -> synthesis context -> citation guard -> final answer。</button>
+        <button data-correct="false" data-feedback="prompt 可以展示 evidence，但不能替代 ledger 和 citation guard。">prompt text -> final answer 就够。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>6. 看到 legacy autonomous supervisor 代码时，评价时应该怎么做？</strong></p>
+        <button data-correct="false" data-feedback="这会误读项目。需要看 ADR 和 entrypoint metadata 判断它是否生产路径。">直接认为它是 production 默认。</button>
+        <button data-correct="true" data-feedback="对。先确认它的定位：debug/eval/manual baseline 还是 production validated path。架构评价要按实际入口分层。">区分它是 debug/eval 还是 production path。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>7. 测试覆盖多但仍可能有风险，为什么？</strong></p>
+        <button data-correct="true" data-feedback="对。测试如果只测数据结构或 happy path，可能没覆盖 admission fallback、citation hallucination、branch failures、timeout/budget 等关键 failure modes。">因为测试可能没覆盖关键 contract 和 failure modes。</button>
+        <button data-correct="false" data-feedback="测试数量本身不是保障。要看覆盖的风险种类：有没有测 invalid/rejected/error、fallback、branch failures、citation drops，而不只是 happy path。">测试数量越多，风险一定越低。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>8. trace 里最应该暴露哪些信息？</strong></p>
+        <button data-correct="false" data-feedback="只记录最终答案无法诊断运行路径。Agentic RAG 需要 path、events、stop reasons、branch statuses 等。">只需要最终答案文本。</button>
+        <button data-correct="true" data-feedback="对。path selected、admission/fallback reason、tool events、stop reason、branch status、citation drops 等都是调试和 eval 的关键。">path、admission/fallback、tool events、stop reason、branch status、citation drops。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>9. 分层 eval 的架构价值是什么？</strong></p>
+        <button data-correct="true" data-feedback="对。分层 eval 能告诉你失败属于 retriever、gather、ledger、synthesis、citation、faithfulness 还是 ops，从而指导工程修复。">把质量退化定位到具体系统层。</button>
+        <button data-correct="false" data-feedback="隐藏复杂性不是 eval 的目标。eval 应帮助解释复杂性，而不是掩盖它。">让所有指标变成一个不可解释的总分。</button>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz quiz-question">
+        <p><strong>10. 一份诚实的架构评价最后应该包含什么？</strong></p>
+        <button data-correct="false" data-feedback="只写优点像宣传，不像 review。工程评价要能指导下一步风险控制，所以必须说明证据、缺口、未覆盖测试和残余风险。">只列 strengths。</button>
+        <button data-correct="true" data-feedback="对。要列 strengths、code evidence、verification coverage、gaps、residual risks 和可行动 next steps。">strengths、evidence、coverage、gaps、residual risks、next steps。</button>
+        <div class="feedback"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>课程收束：你现在应该能评价什么</h2>
+    <p>完成八课后，你应该能读懂并评价 CTI-RAG 的关键 runtime 架构：入口如何做 path selection，state 如何记录运行，工具边界如何把 proposal 变成 observation，ledger 如何成为证据权威，citation/grounding/eval 如何分层，supervisor 如何只做协调，最终架构如何用 tests、eval、trace 证明自己的 contract。</p>
+    <p>更重要的是，你现在有一套语言：control plane vs data plane、action vs observation、state vs memory、context vs prompt、ledger vs trace、validated plan vs legacy autonomous、citation validation vs grounding vs faithfulness、eval layer vs total score。以后读任何 Agentic RAG 项目，都可以先拿这些边界定位。</p>
+  </section>
+
+  <section>
+    <h2>继续学习</h2>
+    <p><a href="0007-eval-harness-measures-layers.html">上一课：Eval Harness</a> · <a href="../reference/0001-learning-route.html">学习路线</a> · <a href="../reference/0002-core-terms.html">核心术语表</a></p>
+  </section>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

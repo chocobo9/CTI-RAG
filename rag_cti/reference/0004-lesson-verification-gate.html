@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson Quality Gate</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Teaching QA</p>
+    <h1>Lesson Quality Gate</h1>
+    <p class="lead">每节课交付前，用这张 gate 同时做 TDD-style 行为验收和 grill-with-docs 教学审查。目标是验证学习效果，而不是只验证 HTML 没坏。</p>
+  </header>
+
+  <section>
+    <h2>使用顺序</h2>
+    <div class="flow">
+      <div>Read Notes<br>教学偏好</div>
+      <div>TDD Gate<br>行为验收</div>
+      <div>Grill Pass<br>追问质量</div>
+      <div>Fix Gaps<br>更新课件</div>
+      <div>Report<br>说明通过项</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>目标模式运行契约</h2>
+    <p>目标模式下，agent 应该把自己当成课程负责人，而不是 HTML 生成器。每一课都必须围绕一个可验收的学习胜利推进。</p>
+    <table>
+      <thead>
+        <tr><th>责任</th><th>具体要求</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>校准学习者位置</td>
+          <td>开始前读取 <code>MISSION.md</code>、<code>NOTES.md</code>、learning records、学习路线和上一课反馈，判断学习者当前缺的是系统地图、概念边界、代码定位还是评价能力。</td>
+        </tr>
+        <tr>
+          <td>定义单一学习胜利</td>
+          <td>每课只承诺一个核心能力，例如“区分 state / ledger / context”或“评价 tool boundary 是否可靠”。不把一节课写成术语堆叠。</td>
+        </tr>
+        <tr>
+          <td>保持概念先行</td>
+          <td>章节顺序应是全局位置、概念边界、具体场景、误解、代码映射、练习。代码事实是辅助证据，不是课程主体。</td>
+        </tr>
+        <tr>
+          <td>设计可迁移练习</td>
+          <td>练习题训练判断能力，而不是字段记忆。反馈必须解释概念原因，并指出错误答案会破坏哪条工程边界。</td>
+        </tr>
+        <tr>
+          <td>维护学习资产</td>
+          <td>每课按需同步 lesson、reference、glossary、learning records 和路线链接，让学习状态可持续，而不是只交付一页内容。</td>
+        </tr>
+        <tr>
+          <td>交付前自我修正</td>
+          <td>先跑 TDD-style 行为验收，再做 grill-with-docs 追问；发现缺口直接修课件，再报告通过项和残余风险。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>TDD-style 行为验收</h2>
+    <p>把课件当成学习产品，验收 observable learner outcomes，不测内部写作过程。</p>
+    <table>
+      <thead>
+        <tr><th>行为</th><th>验收方式</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>学习者先获得全局定位。</td>
+          <td>课件必须先说明它在 Agentic RAG 地图中的位置，以及和前后课程的关系。</td>
+        </tr>
+        <tr>
+          <td>学习目标是概念能力，不是代码浏览任务。</td>
+          <td>目标必须描述“能判断/解释/评价什么”，代码对象只能作为辅助锚点。</td>
+        </tr>
+        <tr>
+          <td>核心术语边界清楚。</td>
+          <td>关键对象必须说明“负责什么 / 不负责什么 / 常见误解”。</td>
+        </tr>
+        <tr>
+          <td>图或流程不会悬空。</td>
+          <td>每张图必须解释 abstraction、what it is not、why useful，并配具体例子。</td>
+        </tr>
+        <tr>
+          <td>练习覆盖足够宽。</td>
+          <td>概念面足够大时至少 10 题，且覆盖主要判断边界。</td>
+        </tr>
+        <tr>
+          <td>反馈解释概念。</td>
+          <td>每个正确/错误反馈都要解释为什么，不只复述答案。</td>
+        </tr>
+        <tr>
+          <td>代码事实是辅助证据。</td>
+          <td>代码映射应该在概念讲完后出现，并明确“读代码时问什么”。</td>
+        </tr>
+        <tr>
+          <td>课后复习可持续。</td>
+          <td>必须链接路线、术语表、相关速查页或下一课，并记录新学习偏好。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Grill-with-docs 追问</h2>
+    <p>这组问题专门防止课件看起来完整、但没有站在学习者的位置。</p>
+    <table>
+      <thead>
+        <tr><th>追问</th><th>不通过信号</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>如果我是当前学习者，第一屏会知道“我正在学整张图的哪一块”吗？</td>
+          <td>直接进入代码对象或术语定义。</td>
+        </tr>
+        <tr>
+          <td>这节课有没有把概念和 CTI-RAG 当前实现分开说？</td>
+          <td>把项目里的函数名当成概念本身。</td>
+        </tr>
+        <tr>
+          <td>有没有把容易混的相邻概念放在同一张边界表里？</td>
+          <td>只解释单个术语，不说明它和邻居的区别。</td>
+        </tr>
+        <tr>
+          <td>有没有具体场景让抽象概念落地？</td>
+          <td>只有定义，没有 CTI 查询例子或运行时例子。</td>
+        </tr>
+        <tr>
+          <td>练习题是否真的训练判断能力？</td>
+          <td>题目只是问“某字段叫什么”或反馈只是答案改写。</td>
+        </tr>
+        <tr>
+          <td>课件是否会让代码重新成为主体？</td>
+          <td>章节顺序先列代码路径，再补概念。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>交付报告格式</h2>
+    <p>最终回复至少说明：</p>
+    <table>
+      <thead>
+        <tr><th>项目</th><th>要报告什么</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>教学偏好 gate</td><td>哪些关键偏好被检查，是否有修复。</td></tr>
+        <tr><td>结构 gate</td><td>练习数量、反馈数量、链接、核心章节。</td></tr>
+        <tr><td>Grill 结果</td><td>站在学习者视角发现的缺口和处理结果。</td></tr>
+        <tr><td>残余风险</td><td>还有哪些点可能需要用户反馈后继续改。</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

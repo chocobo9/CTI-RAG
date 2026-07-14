@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>State 与 Observation：一次运行的控制记录</title>
+  <link rel="stylesheet" href="../assets/teach.css">
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">Lesson 02 · State Management</p>
+    <h1>State 与 Observation：一次运行的控制记录</h1>
+    <p class="lead">第二课接在 runtime harness 后面：入口已经决定了走哪条路，接下来要问的是，一次 agent run 如何知道自己刚做过什么、还缺什么、能不能继续、为什么停止。</p>
+  </header>
+
+  <section>
+    <h2>先看全局：本课在地图哪里</h2>
+    <p>整张 Agentic RAG 工程地图里，state 管理横跨“运行控制”和“证据与上下文”。这也是它容易混的原因：它既接近控制平面，又会引用证据 ledger，还会被渲染进 prompt/context 给模型看。</p>
+    <div class="grid">
+      <article class="card">
+        <h3>运行控制</h3>
+        <p>iteration、tokens、stop reason、provider error、tool budget、deadline。它们回答：这次运行有没有继续的资格。</p>
+      </article>
+      <article class="card">
+        <h3>边界记录</h3>
+        <p>action proposal、validation、RuntimeObservation、RuntimeEvent。它们回答：模型提出了什么，runtime 实际允许了什么。</p>
+      </article>
+      <article class="card">
+        <h3>证据权威</h3>
+        <p>EvidenceLedger 保存 chunks、facts、outlines、actions 和可引用 ID。它回答：答案能引用什么证据。</p>
+      </article>
+      <article class="card">
+        <h3>模型可见上下文</h3>
+        <p>每轮 prompt 里渲染的是 state/ledger 的视图，不等于 state 本身。它回答：模型这一轮需要看到哪些摘要。</p>
+      </article>
+    </div>
+    <div class="callout">
+      <p><strong>本课的位置：</strong>第一课讲“谁决定 runtime path”；第二课讲“进入 single-agent gather loop 后，runtime 怎样记录过程”。如果这一层没分清，后面学 tool calling、ledger、citation、supervisor 时会把“运行记录”“证据权威”“模型上下文”混成一团。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>学习目标：不是背字段</h2>
+    <div class="grid three">
+      <article class="checkpoint"><span class="tag">1</span><p>能解释 runtime state、memory、prompt/context、EvidenceLedger 的区别：state 管控制进度，ledger 管证据权威，context 是给模型看的当前视图。</p></article>
+      <article class="checkpoint"><span class="tag">2</span><p>能读懂一次工具边界如何从 action proposal 变成 RuntimeObservation，再经 reducer 更新 state/ledger，并形成 RuntimeEvent。</p></article>
+      <article class="checkpoint"><span class="tag">3</span><p>能评价一个 state 设计是否支持审计：是否记录无动作、拒绝、无效参数、工具错误、provider error、ledger delta 和 stop reason。</p></article>
+    </div>
+    <p>这节课的主要能力不是“知道 <code>RuntimeInvestigationState</code> 有哪些字段”，而是看到任何 Agentic RAG 的 run loop 时，都能判断：<strong>哪些东西是控制状态，哪些东西是证据，哪些只是模型可见文本。</strong></p>
+  </section>
+
+  <section>
+    <h2>如果我是你，我会先问什么</h2>
+    <p>还没有系统概念时，state 很容易被理解成“agent 的记忆”。我会先问四个更工程化的问题：</p>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>短答案</th><th>为什么重要</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>模型下一轮为什么不会重复做同一件事？</td>
+          <td>不是因为模型真的记住了，而是 runtime 从 ledger/actions/observations 渲染出“已做过什么”。</td>
+          <td>这把“记忆”从模型内部移到可审计的系统记录里。</td>
+        </tr>
+        <tr>
+          <td><code>ToolMessage.content</code> 是真相来源吗？</td>
+          <td>不是。它是协议文本，给模型看；runtime truth 应该在结构化 observation 和 reducer 后的 state/ledger 里。</td>
+          <td>如果靠文本回放状态，截断、格式变化、并发顺序都会让系统不可复现。</td>
+        </tr>
+        <tr>
+          <td>没有新增 chunk/fact 就一定 no_progress 吗？</td>
+          <td>不一定。成功 resolve entity 或 graph outline 可能是 setup progress。</td>
+          <td>否则系统会在“刚完成准备工作、还没开始拿证据”时过早停止。</td>
+        </tr>
+        <tr>
+          <td>为什么不把所有东西都放进 EvidenceLedger？</td>
+          <td>因为 ledger 是证据权威，不是所有控制状态的垃圾桶。</td>
+          <td>把 provider error、stop reason、proposal validation 都塞进 ledger，会污染 citation/grounding 的概念边界。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一张图：一次 gather turn 的责任链</h2>
+    <p>这张图不是在背 CTI-RAG 的函数调用顺序，而是在看一条工程责任链：模型可以建议行动，但每个行动必须变成 runtime 能审计、能回放、能影响 stop policy 的结构化事实。</p>
+    <div class="flow">
+      <div>Action Proposal<br>模型建议</div>
+      <div>Validate + Execute<br>runtime 边界</div>
+      <div>RuntimeObservation<br>结构化结果</div>
+      <div>Reducer<br>更新 state/ledger</div>
+      <div>Stop Decision<br>继续或合成</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>格子</th><th>它表示什么</th><th>它不是什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Action Proposal</td>
+          <td>模型提出“我想调用某个工具和参数”。</td>
+          <td>它还不是执行事实，也不应该直接进入 ledger。</td>
+        </tr>
+        <tr>
+          <td>Validate + Execute</td>
+          <td>runtime 检查工具名、参数、预算、deadline、重复调用，再决定是否执行。</td>
+          <td>它不是只靠 prompt 约束模型“不要乱来”。</td>
+        </tr>
+        <tr>
+          <td>RuntimeObservation</td>
+          <td>一次工具边界的收据：status、error、summary、structured payload、ledger delta、model-visible content。</td>
+          <td>它不是单纯的日志字符串，也不是 ToolMessage 本身。</td>
+        </tr>
+        <tr>
+          <td>Reducer</td>
+          <td>确定性地把 observation 影响应用到 state 和 EvidenceLedger。</td>
+          <td>它不让模型自由决定哪些状态被保存。</td>
+        </tr>
+        <tr>
+          <td>Stop Decision</td>
+          <td>根据 sufficiency、new evidence、setup progress、预算、时间、错误等决定继续或 synthesize。</td>
+          <td>它不等于模型说“我觉得够了”。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>核心概念拆开看</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>Runtime State</h3>
+        <p>一次运行的控制仪表盘。它保存 iteration、token、progress、sufficiency、stop reason、observations、events 等，让 runtime 能解释“现在走到哪一步”。</p>
+      </article>
+      <article class="card">
+        <h3>Observation</h3>
+        <p>一次边界结果。它把工具成功、工具错误、无效调用、拒绝调用、无动作、provider error 都统一成结构化记录。</p>
+      </article>
+      <article class="card">
+        <h3>Event</h3>
+        <p>从 observation 派生出的 trace-friendly envelope。它更适合统计和观测，例如 tool_result、invalid_tool_call、provider_error。</p>
+      </article>
+      <article class="card">
+        <h3>Reducer</h3>
+        <p>确定性合并器。它决定 observation 怎样改变 state 和 ledger，所以它是可复现、可测试、可审计的关键边界。</p>
+      </article>
+      <article class="card">
+        <h3>EvidenceLedger</h3>
+        <p>证据权威。它保存完整 chunks/facts/outlines/actions 和真实可引用 ID，不是 provider 状态、prompt 文本或全部运行日志。</p>
+      </article>
+      <article class="card">
+        <h3>Working-Set Context</h3>
+        <p>每轮重新构造给模型看的工作视图：已经收集了什么、已做过哪些 action、还缺什么。它是 state/ledger 的投影，不是长期记忆本体。</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>状态边界：六个东西别混</h2>
+    <p>读 Agentic RAG 代码时，最有用的不是问“这个变量叫什么”，而是问：它承载的是能力、过程、证据、模型输入、观测事件，还是最终输出？</p>
+    <table>
+      <thead>
+        <tr><th>对象</th><th>应该保存什么</th><th>不应该保存什么</th><th>CTI-RAG 例子</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>RuntimeDeps</td>
+          <td>可复用服务和 provider policy。</td>
+          <td>本次运行的 reasoning state。</td>
+          <td>settings、retriever、fact_store、models、judge、composer。</td>
+        </tr>
+        <tr>
+          <td>RuntimeInvestigationState</td>
+          <td>本次运行的控制变量和边界记录。</td>
+          <td>长期记忆、共享缓存、可复用 provider client。</td>
+          <td>iteration_count、tokens_used、sufficiency、stop_reason、observations。</td>
+        </tr>
+        <tr>
+          <td>RuntimeObservation</td>
+          <td>某个 action/tool boundary 的结构化结果。</td>
+          <td>最终答案、全局路线选择。</td>
+          <td>status、tool_name、ledger_delta、structured_payload、model_visible_content。</td>
+        </tr>
+        <tr>
+          <td>RuntimeEvent</td>
+          <td>可统计、可 trace 的事件摘要。</td>
+          <td>完整证据正文。</td>
+          <td>tool_result、tool_error、invalid_tool_call、no_tool_call。</td>
+        </tr>
+        <tr>
+          <td>EvidenceLedger</td>
+          <td>本次运行收集到的证据权威。</td>
+          <td>provider error、route decision、prompt transcript。</td>
+          <td>chunks、facts、outlines、actions、real_id_set。</td>
+        </tr>
+        <tr>
+          <td>Prompt / Context</td>
+          <td>给模型看的当前工作视图。</td>
+          <td>系统的唯一状态源。</td>
+          <td>render_state_view、render_action_log、resolved entity setup state。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>一个具体例子：为什么 setup progress 不是 evidence</h2>
+    <p>假设用户问：“APT29 和 Lazarus Group 共同使用了哪些 techniques？”模型第一轮可能先调用 <code>resolve_entity</code>，把 APT29/Lazarus 映射到 graph entity id。这个动作没有新增 chunk，也没有新增 fact，所以 <code>new_evidence = 0</code>。</p>
+    <p>但这不代表它毫无进展。它完成的是 <strong>setup progress</strong>：后续 <code>graph_outline</code> 或 <code>graph_query</code> 需要这些 entity id 才能拿到真正证据。如果 runtime 只看 <code>new_evidence == 0</code>，它会误判 no_progress，刚热身就宣布结束。</p>
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>发生了什么</th><th>应该进入哪里</th><th>为什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Turn 1</td>
+          <td><code>resolve_entity(name=APT29)</code> 成功。</td>
+          <td><code>RuntimeObservation.structured_payload</code> + state observations。</td>
+          <td>这是未来工具调用需要的 setup state，不是可引用证据。</td>
+        </tr>
+        <tr>
+          <td>Reducer</td>
+          <td>记录 observation/event，计算 setup progress。</td>
+          <td><code>RuntimeInvestigationState</code>。</td>
+          <td>stop policy 需要知道这轮虽然没拿证据，但仍然推进了任务。</td>
+        </tr>
+        <tr>
+          <td>Turn 2</td>
+          <td>runtime 渲染 resolved entity state 给模型。</td>
+          <td>Prompt/context。</td>
+          <td>模型看到 entity id 后，才能继续 graph_outline 或 graph_query。</td>
+        </tr>
+        <tr>
+          <td>后续证据</td>
+          <td><code>graph_query</code> 或 <code>retrieve</code> 拿到 facts/chunks。</td>
+          <td><code>EvidenceLedger</code>。</td>
+          <td>这些才可能成为 citation/grounding 的证据来源。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>概念重点：</strong>setup state 可以帮助系统继续工作，但它不等于 evidence。把它和 evidence 分开，stop policy 才不会过早停止，citation guard 也不会把不可引用的准备信息当成证据。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>项目里的实际位置</h2>
+    <p>到这里再看代码，才是在用代码验证概念边界，而不是从字段开始背概念。</p>
+    <table>
+      <thead>
+        <tr><th>代码对象</th><th>概念职责</th><th>阅读时问什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src/rag_cti/runtime_harness.py::RuntimeInvestigationState</code></td>
+          <td>本次 investigation 的控制状态。</td>
+          <td>这些字段是否足够解释下一步、停止原因、错误和 trace？有没有混入可复用 deps？</td>
+        </tr>
+        <tr>
+          <td><code>RuntimeObservation</code></td>
+          <td>工具边界的结构化收据。</td>
+          <td>它是否能表示 ok/error/rejected/invalid/no_action？是否保留 structured_payload，而不是依赖显示文本？</td>
+        </tr>
+        <tr>
+          <td><code>RuntimeEvent.from_observation()</code></td>
+          <td>把边界结果转成可统计事件。</td>
+          <td>trace/eval 能否从事件里看出 tool_result、tool_error、invalid_tool_call、provider_error？</td>
+        </tr>
+        <tr>
+          <td><code>apply_observation_to_state()</code></td>
+          <td>reducer：把 observation 应用到 state/ledger。</td>
+          <td>ledger mutation 是否由结构化 payload 重放？并发 observation 的 delta 是否能保持原子？</td>
+        </tr>
+        <tr>
+          <td><code>RuntimeTurnAdapter.run_turn()</code></td>
+          <td>一轮 gather 的适配层：模型调用、proposal batch、执行、observation 收集。</td>
+          <td>它是否只负责一轮，而不是拥有整个重复 loop？</td>
+        </tr>
+        <tr>
+          <td><code>agentic_nodes.decide_next()</code></td>
+          <td>stop policy 决策函数。</td>
+          <td>它使用的是结构化状态信号，还是模型一句话？</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>常见误解</h2>
+    <table>
+      <thead>
+        <tr><th>误解</th><th>更准确的理解</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>State 就是 agent 的长期记忆。</td>
+          <td>不是。这里的 state 是一次 run 的控制状态。长期知识在语料库、索引、图数据库或外部 memory 系统里；本课讲的是运行中的短期控制记录。</td>
+        </tr>
+        <tr>
+          <td>只要 prompt 里有历史，系统就有状态。</td>
+          <td>prompt 历史是模型输入，不是可靠状态源。可靠状态要能被代码读取、测试、回放、统计。</td>
+        </tr>
+        <tr>
+          <td>Observation 就是 ToolMessage。</td>
+          <td>不是。ToolMessage 是 provider 协议文本；Observation 是 runtime 自己的结构化边界结果。前者给模型看，后者给系统审计和 reducer 使用。</td>
+        </tr>
+        <tr>
+          <td>EvidenceLedger 可以保存所有运行过程。</td>
+          <td>不该这样。ledger 是证据权威，尤其服务 citation/grounding；控制状态、错误、proposal validation 应该有自己的 state/event 边界。</td>
+        </tr>
+        <tr>
+          <td>new_evidence 为 0 就应该停。</td>
+          <td>要看是否有 setup progress、是否还有明确 gap、是否预算耗尽。resolve_entity 这类准备动作可能不产生 citation evidence，但仍能推进任务。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>读代码时的审查清单</h2>
+    <p>这不是背诵口号，而是一组架构判断问题。以后看任何 Agentic RAG state 设计，都可以沿着这组问题审：</p>
+    <table>
+      <thead>
+        <tr><th>检查点</th><th>为什么重要</th><th>危险信号</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Per-run state 是否和 RuntimeDeps 分离？</td>
+          <td>一次运行的状态不能污染可复用服务。</td>
+          <td>deps 里出现 branch reports、ledgers、final answer。</td>
+        </tr>
+        <tr>
+          <td>工具边界是否产生结构化 observation？</td>
+          <td>只有结构化结果才能被 reducer、trace、tests 稳定消费。</td>
+          <td>只把工具输出拼成字符串塞回模型。</td>
+        </tr>
+        <tr>
+          <td>reducer 是否拥有 state/ledger mutation？</td>
+          <td>这决定系统能否回放和审计。</td>
+          <td>工具函数到处直接修改 ledger，外层 state 只能猜 delta。</td>
+        </tr>
+        <tr>
+          <td>状态是否区分 invalid、rejected、error、no_action？</td>
+          <td>这些结果对调试、eval、stop policy 的含义完全不同。</td>
+          <td>所有失败都叫 exception 或空结果。</td>
+        </tr>
+        <tr>
+          <td>stop policy 是否基于结构化信号？</td>
+          <td>停止原因需要能被解释和测试。</td>
+          <td>模型说“够了”就直接 synthesize。</td>
+        </tr>
+        <tr>
+          <td>model-visible content 是否只是投影？</td>
+          <td>模型可见文本会被截断或重写，不能成为唯一 truth。</td>
+          <td>系统从显示摘要里 parse 回关键状态。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>练习：判断状态边界</h2>
+    <p>每题都在训练同一个能力：看到一个字段、对象或行为，判断它属于控制状态、证据权威、模型可见上下文，还是观测/trace。</p>
+    <div class="quiz-grid">
+      <div class="quiz" data-answer="0">
+        <p><strong>1. <code>RuntimeInvestigationState</code> 主要保存什么？</strong></p>
+        <button>控制状态</button>
+        <button>复用依赖</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>它保存的是一次 run 中会变化的控制信息：已经迭代几轮、用了多少 token、上一轮有没有新增证据、当前 sufficiency verdict、为什么停止、有哪些 observations/events。可复用依赖应该放在 deps，而不是 per-run state。</p></template>
+        <template class="wrong-feedback"><strong>再分一下边界。</strong><p>复用依赖是 settings、retriever、fact store、models、judge、composer 这类服务或 policy。它们跨 run 复用；state 则描述某一次 run 的过程。如果混在一起，系统很难并发、安全复用和复现。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <p><strong>2. <code>ToolMessage.content</code> 是 runtime truth 吗？</strong></p>
+        <button>是真相源</button>
+        <button>不是源头</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p><code>ToolMessage.content</code> 是给模型看的协议文本。它可以包含 observation 的可见摘要，但不应该成为系统状态的唯一来源。可靠的 truth 应该是结构化 <code>RuntimeObservation</code>、reducer 后的 state 和 ledger。</p></template>
+        <template class="wrong-feedback"><strong>这里很关键。</strong><p>如果从 ToolMessage 文本反推状态，截断、格式变化、模型供应商协议差异都会影响系统行为。工程上要让文本只是投影，让结构化 observation 承担事实边界。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="0">
+        <p><strong>3. 无效工具参数应该如何处理？</strong></p>
+        <button>记录 invalid</button>
+        <button>先执行再说</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>无效参数应该在 runtime validation 阶段被挡住，并产生 <code>status="invalid"</code> 的 observation/event。这样工具不会带着坏参数执行，trace 也能说明这是 invalid_tool_call，而不是工具本身失败。</p></template>
+        <template class="wrong-feedback"><strong>这会越过边界。</strong><p>让坏参数进入工具，会把 validation bug 伪装成 tool error，还可能污染 ledger。runtime harness 的职责就是在工具执行前把工具名、参数类型、预算和 deadline 检查清楚。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <p><strong>4. <code>EvidenceLedger</code> 主要服务什么？</strong></p>
+        <button>路由裁决</button>
+        <button>证据权威</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>ledger 保存本次运行收集到的 chunks、facts、outlines、actions 和真实可引用 ID。后面的 synthesis、citation validation、grounding 都依赖它。路由裁决属于 runtime harness 和 admission/state，不应塞进 ledger。</p></template>
+        <template class="wrong-feedback"><strong>不要把 ledger 当万能箱。</strong><p>路由裁决、provider error、stop reason 是控制平面状态；ledger 是证据平面权威。把两者混在一起，会让 citation/grounding 的含义变浑：哪些东西是真证据，哪些只是运行过程？</p></template>
+      </div>
+
+      <div class="quiz" data-answer="0">
+        <p><strong>5. <code>resolve_entity</code> 成功但新增证据为 0，应该立刻 no_progress 吗？</strong></p>
+        <button>不应立停</button>
+        <button>应该立停</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>entity resolution 可能是 setup progress：它让后续 graph_outline 或 graph_query 有正确 entity id 可用。它不产生 citable chunk/fact，但能推进任务。stop policy 需要把 setup progress 和 evidence growth 分开看。</p></template>
+        <template class="wrong-feedback"><strong>这会过早停止。</strong><p><code>new_evidence == 0</code> 只说明没有新增可引用证据，不等于没有推进。很多 agent run 先准备后取证；如果第一步准备动作就触发 no_progress，系统会在真正 gather 前结束。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="0">
+        <p><strong>6. <code>RuntimeEvent</code> 更适合承担什么？</strong></p>
+        <button>观测统计</button>
+        <button>完整证据</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>event 是从 observation 派生出的观测 envelope，适合 trace 和统计，例如 tool_result、tool_error、invalid_tool_call、provider_error。完整证据正文应该留在 ledger，不要塞进事件。</p></template>
+        <template class="wrong-feedback"><strong>证据和事件不同。</strong><p>完整证据需要保留 provenance、chunk/fact ID、内容和可引用集合；event 只需要足够解释边界发生了什么。把证据正文塞进 event 会让 trace 臃肿，也会模糊证据权威的位置。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <p><strong>7. <code>ledger_delta</code> 应该来自哪里？</strong></p>
+        <button>显示摘要</button>
+        <button>结构回放</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>更可靠的做法是由 structured payload 经过 reducer 应用后得到 delta。显示摘要是给人或模型看的，可能被截断或改写；结构化回放才能保证并发、测试和 trace 中的 delta 对得上。</p></template>
+        <template class="wrong-feedback"><strong>摘要不是状态源。</strong><p>从 <code>result_summary</code> 或 model-visible 文本里 parse 回 delta，等于让显示层控制状态。状态管理要把“展示给模型看的文本”和“系统内部可回放的结构化结果”分开。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="0">
+        <p><strong>8. 每轮重新构造 prompt 是否等于丢失状态？</strong></p>
+        <button>不等于</button>
+        <button>等于丢</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>working-set pattern 的思想是：不要无限携带旧 transcript，而是从 ledger/state 重新渲染当前必要视图。状态仍在系统结构里，只是每轮给模型看的 context 被重新构造，避免上下文膨胀和旧消息噪音。</p></template>
+        <template class="wrong-feedback"><strong>这里要分清保存和投影。</strong><p>重新构造 prompt 不是丢状态，而是把状态从 provider transcript 移回系统控制。只要 ledger/state 保留了事实和进度，prompt 可以是一个新的、压缩的、当前相关的投影。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <p><strong>9. provider 调用失败和工具执行失败应不应该区分？</strong></p>
+        <button>不用区分</button>
+        <button>应该区分</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>provider error 表示模型调用层失败，工具错误表示工具执行层失败。它们的修复方向、重试策略、trace 意义都不同。CTI-RAG 里 observation/event 会把 provider_error 和 tool_error 分开表达。</p></template>
+        <template class="wrong-feedback"><strong>这会让诊断变难。</strong><p>如果所有失败都叫“error”，你无法知道是 LLM provider 掉了、工具参数坏了、工具内部异常，还是 runtime 拒绝执行。好的 state/event 设计要让失败类型带上工程含义。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="0">
+        <p><strong>10. action log 的主要用途是什么？</strong></p>
+        <button>防止重复</button>
+        <button>生成答案</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>action log 记录已经执行过的工具调用，让后续 turn 能看到“不要重复相同 call”。它也帮助工具计数和审计。最终答案应从 evidence ledger 的证据生成，而不是从 action log 编答案。</p></template>
+        <template class="wrong-feedback"><strong>action 不是 evidence claim。</strong><p>action log 能说明系统做过什么，但不能直接证明 CTI 事实。比如“调用过 retrieve(APT29)”不是“APT29 使用了 T1059”的证据；后者需要 chunk/fact 支持。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <p><strong>11. <code>sufficiency</code> 判断的核心是什么？</strong></p>
+        <button>答案顺滑</button>
+        <button>覆盖问题</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p>sufficiency 关心证据是否覆盖了用户问题所需的关键面。一个答案可以写得顺，但证据不够；也可以有若干证据，但缺少关键 facet。stop policy 需要 sufficiency 来决定是否继续 gather。</p></template>
+        <template class="wrong-feedback"><strong>流畅不是充分。</strong><p>LLM 很擅长把不完整证据写得像完整答案。Agentic RAG 需要一个 sufficiency gate 去判断 coverage gap，而不是只凭答案文本顺不顺。</p></template>
+      </div>
+
+      <div class="quiz" data-answer="0">
+        <p><strong>12. <code>stop_reason</code> 的价值是什么？</strong></p>
+        <button>解释收束</button>
+        <button>替代证据</button>
+        <div class="feedback"></div>
+        <template class="correct-feedback"><strong>对。</strong><p><code>stop_reason</code> 说明 runtime 为什么结束：sufficient、no_progress、budget、timeout、provider_error 等。它是调试、eval 和回归测试的重要信号，但它不替代 evidence ledger，也不证明答案正确。</p></template>
+        <template class="wrong-feedback"><strong>停止原因不是证据。</strong><p>stop_reason 告诉你系统为什么收束，不告诉你 CTI claim 是否被支持。答案是否 grounded/faithful 还要看 ledger、citation validation 和后续 eval。</p></template>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>课后阅读</h2>
+    <p>主读：<code>docs/runtime_harness_phase_control.md</code> 的 “Architecture Invariants” 和 “State / observation normalization”。</p>
+    <p>辅读：<code>src/rag_cti/runtime_harness.py</code> 里的 <code>RuntimeInvestigationState</code>、<code>RuntimeObservation</code>、<code>RuntimeEvent</code>、<code>apply_observation_to_state()</code>。</p>
+    <p>复习路径：<a href="./0001-runtime-harness-as-control-plane.html">上一课：Runtime Harness</a>，<a href="../reference/0001-learning-route.html">学习路线</a>，<a href="../reference/0002-core-terms.html">核心术语表</a>，<a href="../reference/0003-state-observation-boundaries.html">State / Observation 边界速查</a>，<a href="./0003-tool-boundary-as-trust-boundary.html">下一课：Tool Boundary</a>。</p>
+    <p class="small">复习时可以问 agent：请让我用自己的话解释 state、observation、event、ledger、context 的区别，并指出我哪里混了边界。</p>
+  </section>
+</main>
+
+<script>
+  for (const quiz of document.querySelectorAll(".quiz")) {
+    const answer = Number(quiz.dataset.answer);
+    const feedback = quiz.querySelector(".feedback");
+    quiz.querySelectorAll("button").forEach((button, index) => {
+      button.addEventListener("click", () => {
+        const ok = index === answer;
+        feedback.className = "feedback " + (ok ? "good" : "bad");
+        const template = quiz.querySelector(ok ? ".correct-feedback" : ".wrong-feedback");
+        feedback.innerHTML = template ? template.innerHTML : "";
+      });
+    });
+  }
+</script>
+</body>
+</html>

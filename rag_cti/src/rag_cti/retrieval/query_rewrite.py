@@ -117,7 +117,7 @@ class LLMQueryRewriter:
                     "ollama" if getattr(settings, "ollama_enabled", False) else "groq"
                 )
             else:
-                self._llm_provider = "anthropic"
+                self._llm_provider = "groq"
 
     def rewrite(self, query: str, history: list[str] | None = None) -> list[str]:
         """Return one or more clean standalone queries. Falls back to ``[query]``.
@@ -227,32 +227,22 @@ class LLMQueryRewriter:
     def _generate_raw(self, system: str, user: str, max_tokens: int | None = None) -> str | None:
         output_tokens = max_tokens or getattr(self._settings, "query_rewrite_max_tokens", 300)
         try:
-            if self._llm_provider in ("groq", "ollama"):
-                model = (
-                    self._settings.ollama_model
-                    if self._llm_provider == "ollama"
-                    else self._settings.groq_query_model
-                )
-                resp = self._llm.chat.completions.create(
-                    model=model,
-                    max_tokens=output_tokens,
-                    temperature=_TEMPERATURE,
-                    messages=[
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": user},
-                    ],
-                )
-                text: str = (resp.choices[0].message.content or "").strip()
-                return text or None
-            response = self._llm.messages.create(
-                model=self._settings.llm_routing_model,
+            model = (
+                self._settings.ollama_model
+                if self._llm_provider == "ollama"
+                else self._settings.groq_query_model
+            )
+            resp = self._llm.chat.completions.create(
+                model=model,
                 max_tokens=output_tokens,
                 temperature=_TEMPERATURE,
-                system=system,
-                messages=[{"role": "user", "content": user}],
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
             )
-            doc: str = response.content[0].text.strip()
-            return doc or None
+            text: str = (resp.choices[0].message.content or "").strip()
+            return text or None
         except Exception as exc:
             logger.warning("query rewrite llm call failed, falling back", error=str(exc))
             return None

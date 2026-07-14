@@ -217,7 +217,7 @@ class _RetryingOllamaCompletions:
 
 
 # ---------------------------------------------------------------------------
-# Provider factory — when OLLAMA_ENABLED: Ollama; else Groq if key; else Anthropic
+# Provider factory — when OLLAMA_ENABLED: Ollama; else Groq if key
 # ---------------------------------------------------------------------------
 
 
@@ -273,10 +273,10 @@ def _is_empty_chat_response(response: Any) -> bool:
 
 
 def build_llm_client(settings: Any) -> tuple[str, Any]:
-    """Select LLM client: local Ollama if enabled, else Groq (API), else Anthropic.
+    """Select LLM client: local Ollama if enabled, else Groq (API).
 
     Returns (provider_name, client) where provider_name is one of
-    "ollama", "groq", or "anthropic".
+    "ollama" or "groq".
     """
     if settings.ollama_enabled:
         logger.info(
@@ -300,14 +300,7 @@ def build_llm_client(settings: Any) -> tuple[str, Any]:
             limiter=get_limiter("groq", settings),
         )
 
-    anthropic_key = settings.anthropic_api_key.get_secret_value()
-    if anthropic_key:
-        import anthropic
-
-        logger.info("llm provider: anthropic")
-        return "anthropic", anthropic.Anthropic(api_key=anthropic_key)
-
     raise RuntimeError(
         "No LLM provider configured. "
-        "Set GROQ_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_ENABLED=true for local Ollama."
+        "Set GROQ_API_KEY or OLLAMA_ENABLED=true for local Ollama."
     )

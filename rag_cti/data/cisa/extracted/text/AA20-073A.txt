@@ -1,0 +1,73 @@
+### Archived Content
+
+In an effort to keep CISA.gov current, the archive contains outdated information that may not reflect current policy or programs.
+
+Cybersecurity Advisory
+
+# Enterprise VPN Security
+
+Last Revised
+
+April 15, 2020
+
+Alert Code
+
+AA20-073A
+
+### Summary
+
+As organizations prepare for possible impacts of Coronavirus Disease 2019 (COVID-19), many may consider alternate workplace options for their employees. Remote work options—or telework—require an enterprise virtual private network (VPN) solution to connect employees to an organization’s information technology (IT) network. As organizations elect to implement telework, the Cybersecurity and Infrastructure Security Agency (CISA) encourages organizations to adopt a heightened state of cybersecurity.
+
+### Technical Details
+
+The following are cybersecurity considerations regarding telework.
+
+As organizations use VPNs for telework, more vulnerabilities are being found and targeted by malicious cyber actors.
+
+As VPNs are 24/7, organizations are less likely to keep them updated with the latest security updates and patches.
+
+Malicious cyber actors may increase phishing emails targeting teleworkers to steal their usernames and passwords.
+
+Organizations that do not use multi-factor authentication (MFA) for remote access are more susceptible to phishing attacks.
+
+Organizations may have a limited number of VPN connections, after which point no other employee can telework. With decreased availability, critical business operations may suffer, including IT security personnel’s ability to perform cybersecurity tasks.
+
+### Mitigations
+
+CISA encourages organizations to review the following recommendations when considering alternate workplace options.
+
+Update VPNs, network infrastructure devices, and devices being used to remote into work environments with the latest software patches and security configurations. See CISA Tips Understanding Patches and Securing Network Infrastructure Devices.
+
+Alert employees to an expected increase in phishing attempts. See CISA Tip Avoiding Social Engineering and Phishing Attacks.
+
+Ensure IT security personnel are prepared to ramp up the following remote access cybersecurity tasks: log review, attack detection, and incident response and recovery. Per the National Institute of Standards and Technology (NIST) Special Publication 800-46 v.2, Guide to Enterprise Telework, Remote Access, and Bring Your Own Device (BYOD) Security, these tasks should be documented in the configuration management policy.
+
+Implement MFA on all VPN connections to increase security. If MFA is not implemented, require teleworkers to use strong passwords. (See CISA Tips Choosing and Protecting Passwords and Supplementing Passwords for more information.)
+
+Ensure IT security personnel test VPN limitations to prepare for mass usage and, if possible, implement modifications—such as rate limiting—to prioritize users that will require higher bandwidths.
+
+Contact CISA to report incidents, phishing, malware, and other cybersecurity concerns.
+
+### References
+
+NIST Special Publication 800-46 v.2, Guide to Enterprise Telework, Remote Access, and Bring Your Own Device (BYOD) Security
+
+CISA Cyber Essentials
+
+CERT/CC: VPN - A Gateway for Vulnerabilities(link is external)
+
+National Security Agency Cybersecurity Advisory: Mitigating Recent VPN Vulnerabilities
+
+CISA Insights: Risk Management for Novel Coronavirus (COVID-19)
+
+Telework.gov Guidance
+
+### Revisions
+
+March 13, 2020: Initial Version
+
+This product is provided subject to this Notification and this Privacy & Use policy.
+
+## Please share your thoughts
+
+We recently updated our anonymous product survey; we welcome your feedback.

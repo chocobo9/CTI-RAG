@@ -13,21 +13,13 @@ class TaskType(Enum):
 
 
 class ModelRouter(Protocol):
-    """Anything that maps a task to a model name: LLMRouter (Groq tiers) or
-    bootstrap.FixedRouter (single pinned model, e.g. DeepSeek generation)."""
+    """Anything that maps a task to a model name."""
 
     def model_for(self, task: TaskType) -> str: ...
 
 
 class LLMRouter:
-    """Config-driven model selector.
-
-    When ``ollama_enabled``: one ``ollama_model`` for all tasks.
-    When ``provider == "anthropic"``: ``llm_routing_model`` for all tasks —
-    the Groq tier fields hold Groq model names an Anthropic client cannot use.
-    Otherwise (Groq): tiered — HyDE uses ``groq_query_model`` (default
-    ``llama-3.1-8b-instant``).
-    """
+    """Config-driven model selector for Ollama and Groq."""
 
     def __init__(self, settings: SettingsProto, provider: str = "") -> None:
         self._settings = settings
@@ -36,8 +28,6 @@ class LLMRouter:
     def model_for(self, task: TaskType) -> str:
         if self._settings.ollama_enabled:
             return self._settings.ollama_model
-        if self._provider == "anthropic":
-            return self._settings.llm_routing_model
         if task == TaskType.HYDE:
             return self._settings.groq_query_model
         if task == TaskType.ANALYSIS:

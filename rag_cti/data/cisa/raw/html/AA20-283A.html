@@ -1,0 +1,1866 @@
+<html lang="en" dir="ltr" prefix="og: https://ogp.me/ns#" class="no-js js tablesaw-enhanced" data-once="tablesaw-create"><head>
+    <meta charset="utf-8">
+<meta name="description" content="CISA has observed advanced persistent threat actors exploiting multiple legacy vulnerabilities in combination with a newer privilege escalation vulnerability in">
+<link rel="canonical" href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-283a">
+<meta property="og:site_name" content="Cybersecurity and Infrastructure Security Agency CISA">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-283a">
+<meta property="og:title" content="APT Actors Chaining Vulnerabilities Against SLTT, Critical Infrastructure, and Elections Organizations | CISA">
+<meta property="og:description" content="CISA has observed advanced persistent threat actors exploiting multiple legacy vulnerabilities in combination with a newer privilege escalation vulnerability in Windows Netlogon. &quot;Vulnerability chaining&quot; exploits multiple vulnerabilities in the course of a single intrusion.">
+<meta name="Generator" content="Drupal 11 (https://www.drupal.org)">
+<meta name="MobileOptimized" content="width">
+<meta name="HandheldFriendly" content="true">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/profiles/cisad8_gov/themes/custom/gesso/favicon.png" type="image/png">
+
+    <title>APT Actors Chaining Vulnerabilities Against SLTT, Critical Infrastructure, and Elections Organizations | CISA</title>
+    <link rel="stylesheet" media="all" href="/sites/default/files/css/css_7KrsyxBhz_zZfm18qN3x0zbsZmmdUx4x0mfIHGlKUMw.css?delta=0&amp;language=en&amp;theme=guswds&amp;include=eJxFjlsOwzAIBC9E4yNZOCaJG2oswEl7-1p9_iBmtCttInfSaDIX5GgbaqlrTN1dqgXzBw-GeadcXDTiPIvmIjX8vmlRqU41wxAUsvaGPOEV70B3H_X96z4Ia7czW1hZEjI0VFwV22bf3N9MvbaeuNhGGZSsjVHloOiYmCwuhcf48CY8L28Ge5jTLSQ0AhfhhDoatlv4EByFTguvO90kd6YnUF5omA">
+<link rel="stylesheet" media="all" href="//fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" media="all" href="/sites/default/files/css/css_jk_CWFYM4WdjrPM5q5Hf9_Omlqm8rWHMdHt5LbS-EMY.css?delta=2&amp;language=en&amp;theme=guswds&amp;include=eJxFjlsOwzAIBC9E4yNZOCaJG2oswEl7-1p9_iBmtCttInfSaDIX5GgbaqlrTN1dqgXzBw-GeadcXDTiPIvmIjX8vmlRqU41wxAUsvaGPOEV70B3H_X96z4Ia7czW1hZEjI0VFwV22bf3N9MvbaeuNhGGZSsjVHloOiYmCwuhcf48CY8L28Ge5jTLSQ0AhfhhDoatlv4EByFTguvO90kd6YnUF5omA">
+
+    <script type="text/javascript" id="www-widgetapi-script" src="https://www.youtube.com/s/player/66a6ea83/www-widgetapi.vflset/www-widgetapi.js" async=""></script><script async="" src="//cse.google.com/adsense/search/async-ads.js"></script><script src="https://www.youtube.com/iframe_api"></script><script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-CSLL4ZEK4L&amp;cx=c&amp;gtm=4e6781"></script><script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-9MDR73GM0K&amp;cx=c&amp;gtm=4e6781"></script><script type="application/json" data-drupal-selector="drupal-settings-json">{"path":{"baseUrl":"\/","pathPrefix":"","currentPath":"node\/8366","currentPathIsAdmin":false,"isFront":false,"currentLanguage":"en"},"pluralDelimiter":"\u0003","suppressDeprecationErrors":true,"gtag":{"tagId":"","consentMode":false,"otherIds":[],"events":[],"additionalConfigInfo":[]},"ajaxPageState":{"libraries":"eJx1kOFuxSAIhV_I1UcyqNTrSqUBbG_ffm633bIl-0P4DpADRDRDCcqpAgV9gNRWQuxm3NSrnTTYpQVzNZYAKbHkys1_Z9Ms3Axbdvi00b34LH0Dmi50hbkQBoPiywh_eYJ3eP4WV1e6Hlk95L0qy3lzFIScpK_xVgpxBHIbCBSB7aG3-48y9bb1SFUfmJ2gbuOyun96RUINc6XxAf8iON5e7PRUw9VHUHTGTBFkTOii_iLXdcZceA_X7tCATqtJ_b-VKeXm9oqH-q84rZw74Qc8EZn1","theme":"guswds","theme_token":null},"ajaxTrustedUrl":[],"gtm":{"tagId":null,"settings":{"data_layer":"dataLayer","include_classes":false,"allowlist_classes":"","blocklist_classes":"","include_environment":false,"environment_id":"","environment_token":""},"tagIds":["GTM-53QLXSL9"]},"data":{"extlink":{"extTarget":false,"extTargetAppendNewWindowDisplay":false,"extTargetAppendNewWindowLabel":"(opens in a new window)","extTargetNoOverride":false,"extNofollow":false,"extTitleNoOverride":false,"extNoreferrer":false,"extFollowNoOverride":false,"extClass":"ext","extLabel":"(link is external)","extImgClass":false,"extSubdomains":true,"extExclude":"(.\\.gov$)|(.\\.mil$)|(.\\.mil\/)|(.\\.gov\/)","extInclude":"","extCssExclude":".c-menu--social,.c-menu--footer,.c-social-links,.c-text-cta--button,.usa-footer__contact-info","extCssInclude":"","extCssExplicit":"","extAlert":true,"extAlertText":"You are now leaving an official website of the United State Government (USG), the Department of Homeland Security (DHS) and the Cybersecurity and Infrastructure Security Agency (CISA). Links to non-USG, non-DHS and non-CISA sites are provided for the visitor\u0027s convenience and do not represent an endorsement by USG, DHS or CISA of any commercial or private issues, products or services. Note that the privacy policy of the linked site may differ from that of USG, DHS and CISA.","extHideIcons":false,"mailtoClass":"mailto","telClass":"0","mailtoLabel":"(link sends email)","telLabel":"(link is a phone number)","extUseFontAwesome":false,"extIconPlacement":"append","extPreventOrphan":false,"extFaLinkClasses":"fa fa-external-link","extFaMailtoClasses":"fa fa-envelope-o","extAdditionalLinkClasses":"","extAdditionalMailtoClasses":"","extAdditionalTelClasses":"","extFaTelClasses":"fa fa-phone","allowedDomains":[],"extExcludeNoreferrer":""}},"ckeditorAccordion":{"accordionStyle":{"collapseAll":1,"keepRowsOpen":0,"animateAccordionOpenAndClose":1,"openTabsWithHash":1,"allowHtmlInTitles":0}},"user":{"uid":0,"permissionsHash":"0f75d40308887aebba0d5b0d2671305b73c9431902f86e672380a6dc6ab97d07"}}</script>
+<script src="/sites/default/files/js/js_kKZTUKGNMaMbgVFEXVH_lQCflnC8iUTgDL4fmnVnOog.js?scope=header&amp;delta=0&amp;language=en&amp;theme=guswds&amp;include=eJx1zesKwzAIBeAXyppHCibakM3Gokkvb7-NtoMN9kf8zgFND8LSRAOkJIpFqv9sw6hSG1V0tDUu9eFR-ww8nHRZJDOFBtnn1_j1AHfYvsPJ5W4rmgdcionul6MSYNI-xSvJLBHYKdks1cryPhGZLIyFG6k_BOvtsOs2EmZZwvkQKvDeSjL_txkS1ifbg2V3"></script>
+<script src="/modules/contrib/google_tag/js/gtag.js?thx9hh"></script>
+<script src="/modules/contrib/google_tag/js/gtm.js?thx9hh"></script><script async="" src="https://www.googletagmanager.com/gtm.js?id=GTM-53QLXSL9" type="text/javascript"></script>
+<script src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=DHS&amp;subagency=CISA&amp;siteplatform=Drupal&amp;yt=true" id="_fed_an_ua_tag" async=""></script>
+
+  <script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-CSLL4ZEK4L"></script><script src="https://www.google.com/cse/static/element/d4d17fc91fc77275/cse_element__en.js?usqp=CAM%3D" type="text/javascript"></script><link type="text/css" href="https://www.google.com/cse/static/element/d4d17fc91fc77275/default_v6+en.css" rel="stylesheet"><link type="text/css" href="https://www.google.com/cse/static/style/look/v6/default.css" rel="stylesheet"><script src="https://www.google.com/cse/static/element/d4d17fc91fc77275/cse_element__en.js?usqp=CAM%3D" type="text/javascript"></script><link type="text/css" href="https://www.google.com/cse/static/element/d4d17fc91fc77275/default_v6+en.css" rel="stylesheet"><link type="text/css" href="https://www.google.com/cse/static/style/look/v6/default.css" rel="stylesheet"><style type="text/css">.gsc-control-cse{font-family:arial, sans-serif}.gsc-control-cse .gsc-table-result{font-family:arial, sans-serif}.gsc-refinementsGradient{background:linear-gradient(to left,rgba(255,255,255,1),rgba(255,255,255,0))}.gsc-control-cse{border-color:#FFFFFF;background-color:#FFFFFF}.gsc-results-wrapper-overlay{background-color:#FFFFFF}input.gsc-input,.gsc-input-box,.gsc-input-box-hover,.gsc-input-box-focus{border-color:#D2D2D2}.gsc-search-button-v2,.gsc-search-button-v2:hover,.gsc-search-button-v2:focus{border-color:#000000;background-color:#005288;background-image:none;filter:none}.gsc-search-button-v2 svg{fill:}.gsc-tabHeader.gsc-tabhActive,.gsc-refinementHeader.gsc-refinementhActive{color:#1A0DAB;border-color:#1A0DAB;background-color:#FFFFFF}.gsc-tabHeader.gsc-tabhInactive,.gsc-refinementHeader.gsc-refinementhInactive{color:#4D5156;border-color:#4D5156;background-color:#FFFFFF}.gsc-webResult.gsc-result,.gsc-results .gsc-imageResult{border-color:#FFFFFF;background-color:#FFFFFF}.gsc-webResult.gsc-result:hover{border-color:#FFFFFF;background-color:#FFFFFF}.gs-webResult.gs-result a.gs-title:link,.gs-webResult.gs-result a.gs-title:link b,.gs-imageResult a.gs-title:link,.gs-imageResult a.gs-title:link b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:visited,.gs-webResult.gs-result a.gs-title:visited b,.gs-imageResult a.gs-title:visited,.gs-imageResult a.gs-title:visited b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:hover,.gs-webResult.gs-result a.gs-title:hover b,.gs-imageResult a.gs-title:hover,.gs-imageResult a.gs-title:hover b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:active,.gs-webResult.gs-result a.gs-title:active b,.gs-imageResult a.gs-title:active,.gs-imageResult a.gs-title:active b{color:#1A0DAB}.gsc-cursor-page{color:#1A0DAB}a.gsc-trailing-more-results:link{color:#1A0DAB}.gs-webResult:not(.gs-no-results-result):not(.gs-error-result) .gs-snippet,.gs-fileFormatType{color:#4D5156}.gs-webResult div.gs-visibleUrl{color:#202124}.gs-webResult div.gs-visibleUrl-short{color:#202124}.gs-webResult div.gs-visibleUrl-short{display:none}.gs-webResult div.gs-visibleUrl-long{display:block}.gs-webResult div.gs-visibleUrl-breadcrumb{display:none}.gs-promotion div.gs-visibleUrl-short{display:none}.gs-promotion div.gs-visibleUrl-long{display:block}.gs-promotion div.gs-visibleUrl-breadcrumb{display:none}.gsc-cursor-box{border-color:#FFFFFF}.gsc-results .gsc-cursor-box .gsc-cursor-page{border-color:#4D5156;background-color:#FFFFFF;color:#4D5156}.gsc-results .gsc-cursor-box .gsc-cursor-current-page{border-color:#1A0DAB;background-color:#FFFFFF;color:#1A0DAB}.gsc-webResult.gsc-result.gsc-promotion{border-color:#FFFFFF;background-color:#F6F6F6}.gsc-completion-container{border-color:#D2D2D2}.gsc-completion-title{color:#1A0DAB}.gsc-completion-snippet{color:#4D5156}.gs-promotion a.gs-title:link,.gs-promotion a.gs-title:link *,.gs-promotion .gs-snippet a:link{color:#1A0DAB}.gs-promotion a.gs-title:visited,.gs-promotion a.gs-title:visited *,.gs-promotion .gs-snippet a:visited{color:#1A0DAB}.gs-promotion a.gs-title:hover,.gs-promotion a.gs-title:hover *,.gs-promotion .gs-snippet a:hover{color:#1A0DAB}.gs-promotion a.gs-title:active,.gs-promotion a.gs-title:active *,.gs-promotion .gs-snippet a:active{color:#1A0DAB}.gs-promotion .gs-snippet,.gs-promotion .gs-title .gs-promotion-title-right,.gs-promotion .gs-title .gs-promotion-title-right *{color:#4D5156}.gs-promotion .gs-visibleUrl,.gs-promotion .gs-visibleUrl-short{color:#202124}.gcsc-find-more-on-google{color:#1A0DAB}.gcsc-find-more-on-google-magnifier{fill:#1A0DAB}</style><style type="text/css">.gscb_a{display:inline-block;font:27px/13px arial,sans-serif}.gsst_a .gscb_a{color:#a1b9ed;cursor:pointer}.gsst_a:hover .gscb_a,.gsst_a:focus .gscb_a{color:#36c}.gsst_a{display:inline-block}.gsst_a{cursor:pointer;padding:0 4px}.gsst_a:hover{text-decoration:none!important}.gsst_b{font-size:16px;padding:0 2px;position:relative;user-select:none;-webkit-user-select:none;white-space:nowrap}.gsst_e{vertical-align:middle;opacity:0.55;}.gsst_a:hover .gsst_e,.gsst_a:focus .gsst_e{opacity:0.72;}.gsst_a:active .gsst_e{opacity:1;}.gsst_f{background:white;text-align:left}.gsst_g{background-color:white;border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);margin:-1px -3px;padding:0 6px}.gsst_h{background-color:white;height:1px;margin-bottom:-1px;position:relative;top:-1px}.gsib_a{width:100%;padding:4px 6px 0}.gsib_a,.gsib_b{vertical-align:top}.gssb_c{border:0;position:absolute;z-index:989}.gssb_e{border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);cursor:default}.gssb_f{visibility:hidden;white-space:nowrap}.gssb_k{border:0;display:block;position:absolute;top:0;z-index:988}.gsdd_a{border:none!important}.gsq_a{padding:0}.gssb_a{padding:0 7px}.gssb_a,.gssb_a td{white-space:nowrap;overflow:hidden;line-height:22px}#gssb_b{font-size:11px;color:#36c;text-decoration:none}#gssb_b:hover{font-size:11px;color:#36c;text-decoration:underline}.gssb_g{text-align:center;padding:8px 0 7px;position:relative}.gssb_h{font-size:15px;height:28px;margin:0.2em;-webkit-appearance:button}.gssb_i{background:#eee}.gss_ifl{visibility:hidden;padding-left:5px}.gssb_i .gss_ifl{visibility:visible}a.gssb_j{font-size:13px;color:#36c;text-decoration:none;line-height:100%}a.gssb_j:hover{text-decoration:underline}.gssb_l{height:1px;background-color:#e5e5e5}.gssb_m{color:#000;background:#fff}.gssb_a{padding:8px 16px}.gsib_a{padding:4px 10px 4px 56px}.gscb_a{line-height:27px}.gssb_e{border:0}.gssb_l{margin:5px 0}input.gsc-input::-webkit-input-placeholder{font-size:14px}input.gsc-input:-moz-placeholder{font-size:14px}input.gsc-input::-moz-placeholder{font-size:14px}input.gsc-input:-ms-input-placeholder{font-size:14px}input.gsc-input:focus::-webkit-input-placeholder{color:transparent}input.gsc-input:focus:-moz-placeholder{color:transparent}input.gsc-input:focus::-moz-placeholder{color:transparent}input.gsc-input:focus:-ms-input-placeholder{color:transparent}.gssb_c .gsc-completion-container{position:static}.gssb_c{z-index:5000}.gsc-completion-container table{background:transparent;font-size:inherit;font-family:inherit}.gssb_c > tbody > tr,.gssb_c > tbody > tr > td,.gssb_d,.gssb_d > tbody > tr,.gssb_d > tbody > tr > td,.gssb_e,.gssb_e > tbody > tr,.gssb_e > tbody > tr > td{padding:0;margin:0;border:0}.gssb_a table,.gssb_a table tr,.gssb_a table tr td{padding:0;margin:0;border:0}.gssb_a,.gssb_a td{line-height:24px}</style><style type="text/css">.gscb_a{display:inline-block;font:27px/13px arial,sans-serif}.gsst_a .gscb_a{color:#a1b9ed;cursor:pointer}.gsst_a:hover .gscb_a,.gsst_a:focus .gscb_a{color:#36c}.gsst_a{display:inline-block}.gsst_a{cursor:pointer;padding:0 4px}.gsst_a:hover{text-decoration:none!important}.gsst_b{font-size:16px;padding:0 2px;position:relative;user-select:none;-webkit-user-select:none;white-space:nowrap}.gsst_e{vertical-align:middle;opacity:0.55;}.gsst_a:hover .gsst_e,.gsst_a:focus .gsst_e{opacity:0.72;}.gsst_a:active .gsst_e{opacity:1;}.gsst_f{background:white;text-align:left}.gsst_g{background-color:white;border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);margin:-1px -3px;padding:0 6px}.gsst_h{background-color:white;height:1px;margin-bottom:-1px;position:relative;top:-1px}.gsib_a{width:100%;padding:4px 6px 0}.gsib_a,.gsib_b{vertical-align:top}.gssb_c{border:0;position:absolute;z-index:989}.gssb_e{border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);cursor:default}.gssb_f{visibility:hidden;white-space:nowrap}.gssb_k{border:0;display:block;position:absolute;top:0;z-index:988}.gsdd_a{border:none!important}.gsq_a{padding:0}.gssb_a{padding:0 7px}.gssb_a,.gssb_a td{white-space:nowrap;overflow:hidden;line-height:22px}#gssb_b{font-size:11px;color:#36c;text-decoration:none}#gssb_b:hover{font-size:11px;color:#36c;text-decoration:underline}.gssb_g{text-align:center;padding:8px 0 7px;position:relative}.gssb_h{font-size:15px;height:28px;margin:0.2em;-webkit-appearance:button}.gssb_i{background:#eee}.gss_ifl{visibility:hidden;padding-left:5px}.gssb_i .gss_ifl{visibility:visible}a.gssb_j{font-size:13px;color:#36c;text-decoration:none;line-height:100%}a.gssb_j:hover{text-decoration:underline}.gssb_l{height:1px;background-color:#e5e5e5}.gssb_m{color:#000;background:#fff}.gssb_a{padding:8px 16px}.gsib_a{padding:4px 10px 4px 56px}.gscb_a{line-height:27px}.gssb_e{border:0}.gssb_l{margin:5px 0}input.gsc-input::-webkit-input-placeholder{font-size:14px}input.gsc-input:-moz-placeholder{font-size:14px}input.gsc-input::-moz-placeholder{font-size:14px}input.gsc-input:-ms-input-placeholder{font-size:14px}input.gsc-input:focus::-webkit-input-placeholder{color:transparent}input.gsc-input:focus:-moz-placeholder{color:transparent}input.gsc-input:focus::-moz-placeholder{color:transparent}input.gsc-input:focus:-ms-input-placeholder{color:transparent}.gssb_c .gsc-completion-container{position:static}.gssb_c{z-index:5000}.gsc-completion-container table{background:transparent;font-size:inherit;font-family:inherit}.gssb_c > tbody > tr,.gssb_c > tbody > tr > td,.gssb_d,.gssb_d > tbody > tr,.gssb_d > tbody > tr > td,.gssb_e,.gssb_e > tbody > tr,.gssb_e > tbody > tr > td{padding:0;margin:0;border:0}.gssb_a table,.gssb_a table tr,.gssb_a table tr td{padding:0;margin:0;border:0}.gssb_a,.gssb_a td{line-height:24px}</style><style type="text/css">.gsc-control-cse{font-family:arial, sans-serif}.gsc-control-cse .gsc-table-result{font-family:arial, sans-serif}.gsc-refinementsGradient{background:linear-gradient(to left,rgba(255,255,255,1),rgba(255,255,255,0))}.gsc-control-cse{border-color:#FFFFFF;background-color:#FFFFFF}.gsc-results-wrapper-overlay{background-color:#FFFFFF}input.gsc-input,.gsc-input-box,.gsc-input-box-hover,.gsc-input-box-focus{border-color:#D2D2D2}.gsc-search-button-v2,.gsc-search-button-v2:hover,.gsc-search-button-v2:focus{border-color:#000000;background-color:#005288;background-image:none;filter:none}.gsc-search-button-v2 svg{fill:}.gsc-tabHeader.gsc-tabhActive,.gsc-refinementHeader.gsc-refinementhActive{color:#1A0DAB;border-color:#1A0DAB;background-color:#FFFFFF}.gsc-tabHeader.gsc-tabhInactive,.gsc-refinementHeader.gsc-refinementhInactive{color:#4D5156;border-color:#4D5156;background-color:#FFFFFF}.gsc-webResult.gsc-result,.gsc-results .gsc-imageResult{border-color:#FFFFFF;background-color:#FFFFFF}.gsc-webResult.gsc-result:hover{border-color:#FFFFFF;background-color:#FFFFFF}.gs-webResult.gs-result a.gs-title:link,.gs-webResult.gs-result a.gs-title:link b,.gs-imageResult a.gs-title:link,.gs-imageResult a.gs-title:link b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:visited,.gs-webResult.gs-result a.gs-title:visited b,.gs-imageResult a.gs-title:visited,.gs-imageResult a.gs-title:visited b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:hover,.gs-webResult.gs-result a.gs-title:hover b,.gs-imageResult a.gs-title:hover,.gs-imageResult a.gs-title:hover b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:active,.gs-webResult.gs-result a.gs-title:active b,.gs-imageResult a.gs-title:active,.gs-imageResult a.gs-title:active b{color:#1A0DAB}.gsc-cursor-page{color:#1A0DAB}a.gsc-trailing-more-results:link{color:#1A0DAB}.gs-webResult:not(.gs-no-results-result):not(.gs-error-result) .gs-snippet,.gs-fileFormatType{color:#4D5156}.gs-webResult div.gs-visibleUrl{color:#202124}.gs-webResult div.gs-visibleUrl-short{color:#202124}.gs-webResult div.gs-visibleUrl-short{display:none}.gs-webResult div.gs-visibleUrl-long{display:block}.gs-webResult div.gs-visibleUrl-breadcrumb{display:none}.gs-promotion div.gs-visibleUrl-short{display:none}.gs-promotion div.gs-visibleUrl-long{display:block}.gs-promotion div.gs-visibleUrl-breadcrumb{display:none}.gsc-cursor-box{border-color:#FFFFFF}.gsc-results .gsc-cursor-box .gsc-cursor-page{border-color:#4D5156;background-color:#FFFFFF;color:#4D5156}.gsc-results .gsc-cursor-box .gsc-cursor-current-page{border-color:#1A0DAB;background-color:#FFFFFF;color:#1A0DAB}.gsc-webResult.gsc-result.gsc-promotion{border-color:#FFFFFF;background-color:#F6F6F6}.gsc-completion-container{border-color:#D2D2D2}.gsc-completion-title{color:#1A0DAB}.gsc-completion-snippet{color:#4D5156}.gs-promotion a.gs-title:link,.gs-promotion a.gs-title:link *,.gs-promotion .gs-snippet a:link{color:#1A0DAB}.gs-promotion a.gs-title:visited,.gs-promotion a.gs-title:visited *,.gs-promotion .gs-snippet a:visited{color:#1A0DAB}.gs-promotion a.gs-title:hover,.gs-promotion a.gs-title:hover *,.gs-promotion .gs-snippet a:hover{color:#1A0DAB}.gs-promotion a.gs-title:active,.gs-promotion a.gs-title:active *,.gs-promotion .gs-snippet a:active{color:#1A0DAB}.gs-promotion .gs-snippet,.gs-promotion .gs-title .gs-promotion-title-right,.gs-promotion .gs-title .gs-promotion-title-right *{color:#4D5156}.gs-promotion .gs-visibleUrl,.gs-promotion .gs-visibleUrl-short{color:#202124}.gcsc-find-more-on-google{color:#1A0DAB}.gcsc-find-more-on-google-magnifier{fill:#1A0DAB}</style></head>
+  <body class="path-node not-front node-page node-page--node-type-advisory" id="top">
+    
+<div class="c-skiplinks">
+  <a href="#main" class="c-skiplinks__link u-visually-hidden u-focusable">Skip to main content</a>
+</div>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-53QLXSL9"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+      <div class="dialog-off-canvas-main-canvas" data-off-canvas-main-canvas="">
+    
+
+<div class="l-site-container">
+    
+      
+<section class="usa-banner" aria-label="Official government website">
+  <div class="usa-accordion">  <header class="usa-banner__header">
+    <div class="usa-banner__inner">
+      <div class="grid-col-auto">
+        <img class="usa-banner__header-flag" src="/profiles/cisad8_gov/themes/custom/gesso/dist/images/us_flag_small.png" alt="U.S. flag">
+      </div>
+      <div class="grid-col-fill tablet:grid-col-auto">
+        <p class="usa-banner__header-text">An official website of the United States government</p>
+              <p class="usa-banner__header-action" aria-hidden="true">Here’s how you know</p></div>
+        <button class="usa-accordion__button usa-banner__button" aria-expanded="false" aria-controls="gov-banner">
+          <span class="usa-banner__button-text">Here’s how you know</span>
+        </button>
+          </div>
+  </header>
+      <div class="usa-banner__content usa-accordion__content" id="gov-banner" hidden="">
+      <div class="grid-row grid-gap-lg">
+                  <div class="usa-banner__guidance tablet:grid-col-6">
+            <img class="usa-banner__icon usa-media-block__img" src="/profiles/cisad8_gov/themes/custom/gesso/dist/images/icon-dot-gov.svg" alt="Dot gov">
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Official websites use .gov</strong>
+                <br> A <strong>.gov</strong> website belongs to an official government organization in the United States.
+              </p>
+            </div>
+          </div>
+                  <div class="usa-banner__guidance tablet:grid-col-6">
+            <img class="usa-banner__icon usa-media-block__img" src="/profiles/cisad8_gov/themes/custom/gesso/dist/images/icon-https.svg" alt="HTTPS">
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Secure .gov websites use HTTPS</strong>
+                <br> A <strong>lock</strong> (<span class="icon-lock"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="64" viewBox="0 0 52 64" class="usa-banner__lock-image" role="img" aria-labelledby="banner-lock-title banner-lock-description"><title id="banner-lock-title">Lock</title><desc id="banner-lock-description">A locked padlock</desc><path fill="#000000" fill-rule="evenodd" d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"></path></svg></span>) or <strong>https://</strong> means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.
+              </p>
+            </div>
+          </div>
+              </div>
+    </div>
+  </div>
+  </section>
+  
+  
+
+
+
+  <div class="c-block c-global-header-btns c-global-btns">
+
+      <div class="l-constrain l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-globalbuttons" class="c-block c-block--provider-block-content c-block--id-block-content83069f9f-34fc-4d54-86ec-936a204f8088">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p><a class="c-button c-button--basic c-button--gray" href="/staying-secure-large-scale-events">Staying Secure at Events</a><a class="c-button c-button--basic c-button--blue" href="/resources-tools/resources/free-cybersecurity-services-and-tools" title="Free Cyber Services">no-cost Cyber Services</a><a class="c-button c-button--basic c-button--green60" href="/securebydesign">Secure by design&nbsp;</a><a class="c-button c-button--basic c-button--teal" href="/secureyourbusiness">Secure Your Business</a><a class="c-button c-button--report" href="/report">Report A Cyber Issue</a>&nbsp;</p></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+  
+  
+
+
+<div class="usa-overlay"></div>
+<header class="usa-header usa-header--extended" role="banner">
+        
+<div class="usa-navbar">
+  <div class="l-constrain">
+    <div class="usa-navbar__row">
+                                    
+
+
+
+  <div class="c-block c-site-header">
+
+      <div class="l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-guswds-cisaheaderblock" class="c-block c-block--provider-block-content c-block--id-block-contentbc4e6844-86b4-4e20-b163-a73bda3d1d76">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><a href="/"><img src="/sites/default/files/images/SVG/header_logo_tagline_update.svg" alt="Cybersecurity &amp; Infrastructure Security Agency logo America’s Cyber Security Defense Agency National Coordinator For Critical Infrastructure Security and Resilience"><img class="print-only" src="/sites/default/files/images/SVG/header_logo_tagline_update.png" alt="Cybersecurity &amp; Infrastructure Security Agency logo America’s Cyber Security Defense Agency National Coordinator For Critical Infrastructure Security and Resilience"></a></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+
+        
+
+
+
+  <div class="c-block c-site-header-mobile">
+
+      <div class="l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-guswds-cisaheaderblockmobile" class="c-block c-block--provider-block-content c-block--id-block-content283396c9-cd36-4ce3-b1e2-9b5576ab4f50">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><a href="/"><img src="/sites/default/files/images/SVG/mobile_logo_wordmark.svg" alt="CISA Logo"></a></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+            <div class="usa-navbar__search">
+        <div class="usa-navbar__search-header">
+          <p>Search</p>
+        </div>
+        
+<div class="usa-search">
+  <script async="" src="https://cse.google.com/cse.js?cx=ffc4c79e29d5b3a8c"></script>
+  <div id="___gcse_0"><div class="gsc-control-searchbox-only gsc-control-searchbox-only-en" dir="ltr"><form class="gsc-search-box gsc-search-box-tools" accept-charset="utf-8"><table cellspacing="0" cellpadding="0" role="presentation" class="gsc-search-box"><tbody><tr><td class="gsc-input"><div class="gsc-input-box" id="gsc-iw-id1"><table cellspacing="0" cellpadding="0" role="presentation" id="gs_id50" class="gstl_50 gsc-input" style="width: 100%; padding: 0px;"><tbody><tr><td id="gs_tti50" class="gsib_a"><input autocomplete="off" type="text" size="10" class="gsc-input" name="search" title="search" aria-label="search" id="gsc-i-id1" dir="ltr" spellcheck="false" style="width: 100%; padding: 0px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; margin: 0px; height: auto; outline: none;"></td><td class="gsib_b"><div class="gsst_b" id="gs_st50" dir="ltr"><a class="gsst_a" href="javascript:void(0)" title="Clear search box" role="button" style="display: none;"><span class="gscb_a" id="gs_cb50" aria-hidden="true">×</span></a></div></td></tr></tbody></table></div></td><td class="gsc-search-button"><button class="gsc-search-button gsc-search-button-v2"><svg width="13" height="13" viewBox="0 0 13 13"><title>search</title><path d="m4.8495 7.8226c0.82666 0 1.5262-0.29146 2.0985-0.87438 0.57232-0.58292 0.86378-1.2877 0.87438-2.1144 0.010599-0.82666-0.28086-1.5262-0.87438-2.0985-0.59352-0.57232-1.293-0.86378-2.0985-0.87438-0.8055-0.010599-1.5103 0.28086-2.1144 0.87438-0.60414 0.59352-0.8956 1.293-0.87438 2.0985 0.021197 0.8055 0.31266 1.5103 0.87438 2.1144 0.56172 0.60414 1.2665 0.8956 2.1144 0.87438zm4.4695 0.2115 3.681 3.6819-1.259 1.284-3.6817-3.7 0.0019784-0.69479-0.090043-0.098846c-0.87973 0.76087-1.92 1.1413-3.1207 1.1413-1.3553 0-2.5025-0.46363-3.4417-1.3909s-1.4088-2.0686-1.4088-3.4239c0-1.3553 0.4696-2.4966 1.4088-3.4239 0.9392-0.92727 2.0864-1.3969 3.4417-1.4088 1.3553-0.011889 2.4906 0.45771 3.406 1.4088 0.9154 0.95107 1.379 2.0924 1.3909 3.4239 0 1.2126-0.38043 2.2588-1.1413 3.1385l0.098834 0.090049z"></path></svg></button></td><td class="gsc-clear-button"><div class="gsc-clear-button" title="clear results">&nbsp;</div></td></tr></tbody></table></form></div></div>
+</div>
+      </div>
+      <button class="mobile-menu-button usa-menu-btn">Menu</button>
+    </div>
+  </div>
+</div>
+    
+
+
+
+  <div class="c-block c-tagline-mobile">
+
+      <div class="l-constrain">
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-guswds-mobiletaglinecontainer" class="c-block c-block--provider-block-content c-block--id-block-contentc8d12e9d-7e48-4708-90c1-563609c4b566">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p></p><center><img src="/sites/default/files/images/SVG/header_tagline_mobile_update.svg" alt="America's Cyber Defense Agency"></center></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+      </div>
+  
+  </div>
+    
+
+<nav class="usa-nav" role="navigation" aria-label="Primary navigation">
+  <div class="usa-nav__inner l-constrain">
+    <div class="usa-nav__row">
+      <button class="usa-nav__close">Close</button>
+      
+<div class="usa-search">
+  <script async="" src="https://cse.google.com/cse.js?cx=ffc4c79e29d5b3a8c"></script>
+  <div id="___gcse_1"><div class="gsc-control-searchbox-only gsc-control-searchbox-only-en" dir="ltr"><form class="gsc-search-box gsc-search-box-tools" accept-charset="utf-8"><table cellspacing="0" cellpadding="0" role="presentation" class="gsc-search-box"><tbody><tr><td class="gsc-input"><div class="gsc-input-box" id="gsc-iw-id2"><table cellspacing="0" cellpadding="0" role="presentation" id="gs_id51" class="gstl_51 gsc-input" style="width: 100%; padding: 0px;"><tbody><tr><td id="gs_tti51" class="gsib_a"><input autocomplete="off" type="text" size="10" class="gsc-input" name="search" title="search" aria-label="search" id="gsc-i-id2" dir="ltr" spellcheck="false" style="width: 100%; padding: 0px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; margin: 0px; height: auto; outline: none;"></td><td class="gsib_b"><div class="gsst_b" id="gs_st51" dir="ltr"><a class="gsst_a" href="javascript:void(0)" title="Clear search box" role="button" style="display: none;"><span class="gscb_a" id="gs_cb51" aria-hidden="true">×</span></a></div></td></tr></tbody></table></div></td><td class="gsc-search-button"><button class="gsc-search-button gsc-search-button-v2"><svg width="13" height="13" viewBox="0 0 13 13"><title>search</title><path d="m4.8495 7.8226c0.82666 0 1.5262-0.29146 2.0985-0.87438 0.57232-0.58292 0.86378-1.2877 0.87438-2.1144 0.010599-0.82666-0.28086-1.5262-0.87438-2.0985-0.59352-0.57232-1.293-0.86378-2.0985-0.87438-0.8055-0.010599-1.5103 0.28086-2.1144 0.87438-0.60414 0.59352-0.8956 1.293-0.87438 2.0985 0.021197 0.8055 0.31266 1.5103 0.87438 2.1144 0.56172 0.60414 1.2665 0.8956 2.1144 0.87438zm4.4695 0.2115 3.681 3.6819-1.259 1.284-3.6817-3.7 0.0019784-0.69479-0.090043-0.098846c-0.87973 0.76087-1.92 1.1413-3.1207 1.1413-1.3553 0-2.5025-0.46363-3.4417-1.3909s-1.4088-2.0686-1.4088-3.4239c0-1.3553 0.4696-2.4966 1.4088-3.4239 0.9392-0.92727 2.0864-1.3969 3.4417-1.4088 1.3553-0.011889 2.4906 0.45771 3.406 1.4088 0.9154 0.95107 1.379 2.0924 1.3909 3.4239 0 1.2126-0.38043 2.2588-1.1413 3.1385l0.098834 0.090049z"></path></svg></button></td><td class="gsc-clear-button"><div class="gsc-clear-button" title="clear results">&nbsp;</div></td></tr></tbody></table></form></div></div>
+</div>
+                
+  
+          <ul class="usa-nav__primary usa-accordion">
+    
+    
+              <li class="usa-nav__primary-item topics">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-1">
+          <span>Topics</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-1" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/topics">Topics</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/cybersecurity-best-practices">
+          <span>Cybersecurity Best Practices</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/cyber-threats-and-response">
+          <span>Cyber Threats and Response</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/critical-infrastructure-security-and-resilience">
+          <span>Critical Infrastructure Security and Resilience</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/election-security">
+          <span>Election Security</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/emergency-communications">
+          <span>Emergency Communications</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/industrial-control-systems">
+          <span>Industrial Control Systems</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/information-communications-technology-supply-chain-security">
+          <span>Information and Communications Technology Supply Chain Security</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/partnerships-and-collaboration">
+          <span>Partnerships and Collaboration</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/physical-security">
+          <span>Physical Security</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/topics/risk-management">
+          <span>Risk Management</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+
+<div class="c-menu-feature-links">
+      <div class="c-menu-feature-links__title">
+      <a href="/audiences">        How can we help?
+      </a>    </div>
+        <div class="c-menu-feature-links__content"><a href="/topics/government">Government</a><a href="/topics/educational-institutions">Educational Institutions</a><a href="/topics/industry">Industry</a><a href="/topics/state-local-tribal-and-territorial">State, Local, Tribal, and Territorial</a><a href="/topics/individuals-and-families">Individuals and Families</a><a href="/topics/small-and-medium-businesses">Small and Medium Businesses</a><a href="/audiences/find-help-locally">Find Help Locally</a><a href="/audiences/faith-based-community">Faith-Based Community</a><a href="/audiences/executives">Executives</a><a href="/audiences/high-risk-communities">High-Risk Communities</a></div>
+  </div>
+
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item spotlight">
+      
+      
+                      <a href="/spotlight" class="usa-nav__link">
+          <span>Spotlight</span>
+        </a>
+              
+              </li>
+          
+              <li class="usa-nav__primary-item resources--tools">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-3">
+          <span>Resources &amp; Tools</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-3" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/resources-tools">Resources &amp; Tools</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/all-resources-tools">
+          <span>All Resources &amp; Tools</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/services">
+          <span>Services</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/programs">
+          <span>Programs</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/resources">
+          <span>Resources</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/training">
+          <span>Training</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/resources-tools/groups">
+          <span>Groups</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item news--events">
+      
+              <button class="usa-accordion__button usa-nav__link usa-current" aria-expanded="false" aria-controls="basic-mega-nav-section-4">
+          <span>News &amp; Events</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-4" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/news-events">News &amp; Events</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/directives">
+          <span>Directives</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/news">
+          <span>News</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/events">
+          <span>Events</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/cybersecurity-advisories">
+          <span>Cybersecurity Alerts &amp; Advisories</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/request-speaker">
+          <span>Request a CISA Speaker</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/congressional-testimony">
+          <span>Congressional Testimony</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/news-events/cisa-conferences">
+          <span>CISA Conferences</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/cisa-live">
+          <span>CISA Live!</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item careers">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-5">
+          <span>Careers</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-5" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/careers">Careers</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/benefits-perks">
+          <span>Benefits &amp; Perks</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/hiring-and-recruitment">
+          <span>Hiring and Recruitment</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/new-employee-orientation-and-onboarding">
+          <span>New Employee Orientation &amp; Onboarding</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/students-recent-graduates-employment-opportunities">
+          <span>Students &amp; Recent Graduates</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/careers/veteran-and-military-spouse-employment-opportunities">
+          <span>Veteran and Military Spouses</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+              <li class="usa-nav__primary-item about">
+      
+              <button class="usa-accordion__button usa-nav__link " aria-expanded="false" aria-controls="basic-mega-nav-section-6">
+          <span>About</span>
+        </button>
+      
+                
+  
+          <div id="basic-mega-nav-section-6" class="usa-nav__submenu usa-megamenu" hidden="">
+
+              <div class="usa-megamenu__parent-link">
+          <a href="/about">About</a>
+        </div>
+              <div class="usa-megamenu__menu-items">
+    
+    
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/divisions-offices">
+          <span>Divisions &amp; Offices</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/regions">
+          <span>Regions</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/leadership">
+          <span>Leadership</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/doing-business-cisa">
+          <span>Doing Business with CISA</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/site-links">
+          <span>Site Links</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/cisa-github">
+          <span>CISA GitHub</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/cisa-central">
+          <span>CISA Central</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/contact-us">
+          <span>Contact Us </span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/contact-us/subscribe-updates-cisa">
+          <span>Subscribe</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/transparency-and-accountability">
+          <span>Transparency and Accountability</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+              <div class="usa-col">
+
+              
+      
+                        <div class="usa-nav__submenu-item">
+                <a href="/about/policies-plans">
+          <span>Policies &amp; Plans</span>
+        </a>
+                  </div>
+              
+              </div>
+          
+            </div>
+                          
+              </div>
+    
+  
+      
+              </li>
+          
+    
+      </ul>
+    
+  
+
+
+            
+
+
+
+  <div class="c-block c-global-menu-btns c-global-btns">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+
+  <div id="block-globalbuttons" class="c-block c-block--provider-block-content c-block--id-block-content83069f9f-34fc-4d54-86ec-936a204f8088">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p><a class="c-button c-button--basic c-button--gray" href="/staying-secure-large-scale-events">Staying Secure at Events</a><a class="c-button c-button--basic c-button--blue" href="/resources-tools/resources/free-cybersecurity-services-and-tools" title="Free Cyber Services">no-cost Cyber Services</a><a class="c-button c-button--basic c-button--green60" href="/securebydesign">Secure by design&nbsp;</a><a class="c-button c-button--basic c-button--teal" href="/secureyourbusiness">Secure Your Business</a><a class="c-button c-button--report" href="/report">Report A Cyber Issue</a>&nbsp;</p></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+  
+      </div>
+  
+  
+  </div>
+    </div>
+  </div>
+</nav>
+    </header>
+
+
+  
+  
+  
+<div class="l-breadcrumb">
+  <div class="l-constrain">
+    <div class="l-breadcrumb__row">
+      
+
+
+
+
+
+
+
+  
+  
+    
+
+  
+              
+
+
+
+
+<nav aria-labelledby="breadcrumb-label" class="c-breadcrumb" role="navigation">
+  <div class="l-constrain">
+    <div id="breadcrumb-label" class="c-breadcrumb__title  u-visually-hidden">Breadcrumb</div>
+    <ol class="c-breadcrumb__list">
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/">Home</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/news-events">News &amp; Events</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/news-events/cybersecurity-advisories">Cybersecurity Advisories</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <a class="c-breadcrumb__link" href="/news-events/cybersecurity-advisories?f%5B0%5D=advisory_type%3A94">Cybersecurity Advisory</a>
+                  </li>
+              <li class="c-breadcrumb__item">
+                      <span aria-current="page">
+              APT Actors Chaining Vulnerabilities Against SLTT, Critical Infrastructure, and Elections Organizations
+            </span>
+                  </li>
+          </ol>
+  </div>
+</nav>
+
+  
+  
+  
+  
+
+
+
+
+
+
+  <div id="block-bettersocialsharingbuttons" class="c-block c-block--social-share c-block--provider-better-social-sharing-buttons c-block--id-social-sharing-buttons-block">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      <div class="c-block__row">
+      <span>Share:</span>
+      
+
+<div style="display: none"><link rel="preload" href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg" as="image" type="image/svg+xml" crossorigin="anonymous"></div>
+
+<div class="social-sharing-buttons">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-283a&amp;title=APT%20Actors%20Chaining%20Vulnerabilities%20Against%20SLTT%2C%20Critical%20Infrastructure%2C%20and%20Elections%20Organizations" target="_blank" title="Share to Facebook" aria-label="Share to Facebook" class="social-sharing-buttons-button share-facebook" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#facebook"></use>
+            </svg>
+        </a>
+    
+                <a href="https://twitter.com/intent/tweet?text=APT%20Actors%20Chaining%20Vulnerabilities%20Against%20SLTT%2C%20Critical%20Infrastructure%2C%20and%20Elections%20Organizations+https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-283a" target="_blank" title="Share to X" aria-label="Share to X" class="social-sharing-buttons-button share-x" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#x"></use>
+            </svg>
+        </a>
+    
+        
+        
+        
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-283a" target="_blank" title="Share to Linkedin" aria-label="Share to Linkedin" class="social-sharing-buttons-button share-linkedin" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#linkedin"></use>
+            </svg>
+        </a>
+    
+    
+    
+        
+        
+        
+        
+                <a href="mailto:?subject=APT%20Actors%20Chaining%20Vulnerabilities%20Against%20SLTT%2C%20Critical%20Infrastructure%2C%20and%20Elections%20Organizations&amp;body=https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-283a" title="Share to Email" aria-label="Share to Email" class="social-sharing-buttons-button share-email" target="_blank" rel="noopener">
+            <svg aria-hidden="true" width="18px" height="18px" style="border-radius:3px;">
+                <use href="/modules/contrib/better_social_sharing_buttons/assets/dist/sprites/social-icons--no-color.svg#email"></use>
+            </svg>
+        </a>
+    
+        
+    </div>
+
+    </div>
+  
+      </div>
+  
+  
+  </div>
+
+    </div>
+  </div>
+</div>
+
+  
+  
+
+  <main id="main" class="c-main" role="main" tabindex="-1">
+              <div class="l-constrain">
+        
+<div class="usa-alert usa-alert--warning">
+  <div class="usa-alert__body">
+    <h3 class="usa-alert__heading">Archived Content</h3>    In an effort to keep CISA.gov current, the archive contains outdated information that may not reflect current policy or programs.
+  </div>
+</div>
+
+      </div>
+    
+      
+    
+
+
+<div class="l-content">
+          
+
+
+
+
+
+
+
+  
+  
+    
+
+  
+            
+
+
+
+
+
+
+
+
+<div class="is-promoted l-full">
+    <div class="l-full__header">
+        
+<div class="c-page-title">
+	<div class="c-page-title__inner l-constrain">
+		<div class="c-page-title__row">
+			<div>
+				<div class="c-page-title__content">
+											<div class="c-page-title__meta">Cybersecurity Advisory</div>
+										<h1 class="c-page-title__title">
+<span>APT Actors Chaining Vulnerabilities Against SLTT, Critical Infrastructure, and Elections Organizations</span>
+</h1>
+																																				<div class="c-page-title__fields">  
+
+
+
+
+<div class="c-field c-field--name-field-last-updated c-field--type-datetime c-field--label-above">
+  <div class="c-field__label">Last Revised</div><div class="c-field__content"><time datetime="2020-10-24T12:00:00Z">October 24, 2020</time></div></div>
+
+  
+
+
+
+
+<div class="c-field c-field--name-field-alert-code c-field--type-string c-field--label-above">
+  <div class="c-field__label">Alert Code</div><div class="c-field__content">AA20-283A</div></div>
+
+</div>
+																								</div>
+				<div class="c-page-title__decoration"></div>
+			</div>
+					</div>
+	</div>
+</div>
+    </div>
+    <div class="l-full__main">
+                      
+
+<div class="l-page-section l-page-section--rich-text csaf-imported">
+      <div class="l-constrain">
+  
+  
+  <div class="l-page-section__content">
+          <div>
+<h3>Summary</h3>
+</div>
+<p><em>This joint cybersecurity advisory uses the MITRE Adversarial Tactics, Techniques, and Common Knowledge (ATT&amp;CK®) framework. See the </em><a href="https://attack.mitre.org/versions/v7/matrices/enterprise/" class="ext" data-extlink=""><em>ATT&amp;CK for Enterprise</em><svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a><em> framework for all referenced threat actor techniques.</em></p>
+<p><strong>Note:</strong> the analysis in this joint cybersecurity advisory is ongoing, and the information provided should not be considered comprehensive. The Cybersecurity and Infrastructure&nbsp;Security Agency (CISA) will update this advisory as new information is available.</p>
+<p>This joint cybersecurity advisory was written by CISA with contributions from the Federal Bureau of Investigation (FBI).&nbsp;</p>
+<p>CISA has recently observed advanced persistent threat (APT) actors exploiting multiple legacy vulnerabilities in combination with a newer privilege escalation vulnerability—<a href="https://nvd.nist.gov/vuln/detail/CVE-2020-1472">CVE-2020-1472</a>—in Windows Netlogon. The commonly used tactic, known as vulnerability chaining, exploits multiple vulnerabilities in the course of a single intrusion to compromise a network or application.&nbsp;</p>
+<p>This recent malicious activity has often, but not exclusively, been directed at federal and state, local, tribal, and territorial (SLTT) government networks. Although it does not appear these targets are being selected because of their proximity to elections information, there may be some risk to elections information housed on government networks.</p>
+<p>CISA is aware of some instances where this activity resulted in unauthorized access to elections support systems; however, CISA has no evidence to date that integrity of elections data has been compromised. There are steps that election officials, their supporting SLTT IT staff, and vendors can take to help defend against this malicious cyber activity.</p>
+<p>Some common tactics, techniques, and procedures (TTPs) used by APT actors include leveraging legacy network access and virtual private network (VPN) vulnerabilities in association with the recent critical <a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">CVE-2020-1472<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> Netlogon vulnerability. CISA is aware of multiple cases where the Fortinet FortiOS Secure Socket Layer (SSL) VPN vulnerability <a href="https://nvd.nist.gov/vuln/detail/CVE-2018-13379">CVE-2018-13379</a> has been exploited to gain access to networks. To a lesser extent, CISA has also observed threat actors exploiting the MobileIron vulnerability <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-15505">CVE-2020-15505</a>. While these exploits have been observed recently, this activity is ongoing and still unfolding.</p>
+<p>After gaining initial access, the actors exploit <a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">CVE-2020-1472<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> to compromise all Active Directory (AD) identity services. Actors have then been observed using legitimate remote access tools, such as VPN and Remote Desktop Protocol (RDP), to access the environment with the compromised credentials. Observed activity targets multiple sectors and is not limited to SLTT entities.</p>
+<p>CISA recommends network staff and administrators review internet-facing infrastructure for these and similar vulnerabilities that have or could be exploited to a similar effect, including Juniper <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-1631">CVE-2020-1631</a>, Pulse Secure <a href="https://nvd.nist.gov/vuln/detail/CVE-2019-11510">CVE-2019-11510</a>, Citrix NetScaler <a href="https://nvd.nist.gov/vuln/detail/CVE-2019-19781">CVE-2019-19781</a>, and Palo Alto Networks <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-2021">CVE-2020-2021</a> (this list is not considered exhaustive).</p>
+<p><a href="/sites/default/files/publications/AA20-283A-APT_Actors_Chaining_Vulnerabilities.pdf">Click here</a> for a PDF version of this report.</p>
+<div>
+<h3>Technical Details</h3>
+</div>
+<h3>Initial Access</h3>
+<p>APT threat actors are actively leveraging legacy vulnerabilities in internet-facing infrastructure (<em>Exploit Public-Facing Application</em> [<a href="https://attack.mitre.org/versions/v7/techniques/T1190/" class="ext" data-extlink="">T1190<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>], <em>External Remote Services</em> [<a href="https://attack.mitre.org/versions/v7/techniques/T1133/" class="ext" data-extlink="">T1133<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]) to gain initial access into systems. The APT actors appear to have predominately gained initial access via the Fortinet FortiOS VPN vulnerability <a href="https://nvd.nist.gov/vuln/detail/CVE-2018-13379">CVE-2018-13379</a>.</p>
+<p>Although not observed in this campaign, other vulnerabilities, listed below, could be used to gain network access (as analysis is evolving, these listed vulnerabilities should not be considered comprehensive). As a best practice, it is critical to patch all known vulnerabilities within internet-facing infrastructure.</p>
+<ul>
+<li>Citrix NetScaler <a href="https://nvd.nist.gov/vuln/detail/CVE-2019-19781">CVE-2019-19781</a></li>
+<li>MobileIron <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-15505">CVE-2020-15505</a></li>
+<li>Pulse Secure <a href="https://nvd.nist.gov/vuln/detail/CVE-2019-11510">CVE-2019-11510</a></li>
+<li>Palo Alto Networks <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-2021">CVE-2020-2021</a></li>
+<li>F5 BIG-IP <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-5902">CVE-2020-5902</a></li>
+</ul>
+<h4>Fortinet FortiOS SSL VPN CVE-2018-13379</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2018-13379">CVE-2018-13379</a> is a path traversal vulnerability in the FortiOS SSL VPN web portal. An unauthenticated attacker could exploit this vulnerability to download FortiOS system files through specially crafted HTTP resource requests.[<a href="https://www.fortiguard.com/psirt/FG-IR-18-384" class="ext" data-extlink="">1<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]</p>
+<h3>MobileIron Core &amp; Connector Vulnerability CVE-2020-15505</h3>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-15505">CVE-2020-15505</a> is a remote code execution vulnerability in MobileIron Core &amp; Connector versions 10.3 and earlier.[<a href="https://www.mobileiron.com/en/blog/mobileiron-security-updates-available" class="ext" data-extlink="">2<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>] This vulnerability allows an external attacker, with no privileges, to execute code of their choice on the vulnerable system. As mobile device management (MDM) systems are critical to configuration management for external devices, they are usually highly permissioned and make a valuable target for threat actors.</p>
+<h3>Privilege Escalation</h3>
+<p>Post initial access, the APT actors use multiple techniques to expand access to the environment. The actors are leveraging <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-1472">CVE-2020-1472</a> in Windows Netlogon to escalate privileges and obtain access to Windows AD servers. Actors are also leveraging the opensource tools such as Mimikatz and the CrackMapExec tool to obtain valid account credentials from AD servers (<em>Valid Accounts</em> [<a href="https://attack.mitre.org/versions/v7/techniques/T1078/" class="ext" data-extlink="">T1078<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]).</p>
+<h4>Microsoft Netlogon Remote Protocol Vulnerability: CVE-2020-1472</h4>
+<p><a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">CVE-2020-1472<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> is a vulnerability in Microsoft Windows Netlogon Remote Protocol (MS-NRPC), a core authentication component of Active Directory.[<a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">3<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>] This vulnerability could allow an unauthenticated attacker with network access to a domain controller to completely compromise all AD identity services (<em>Valid Accounts: Domain Accounts</em> [<a href="https://attack.mitre.org/versions/v7/techniques/T1078/002/" class="ext" data-extlink="">T1078.002<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]). Malicious actors can leverage this vulnerability to compromise other devices on the network (<em>Lateral Movement</em> [<a href="https://attack.mitre.org/versions/v7/tactics/TA0008/" class="ext" data-extlink="">TA0008<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]).</p>
+<h3>Persistence</h3>
+<p>Once system access has been achieved, the APT actors use abuse of legitimate credentials (<em>Valid Accounts </em>[<a href="https://attack.mitre.org/versions/v7/techniques/T1078/" class="ext" data-extlink="">T1078<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]) to log in via VPN or remote access services <em>(External Remote Services</em> [<a href="https://attack.mitre.org/versions/v7/techniques/T1133/" class="ext" data-extlink="">T1133<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]) to maintain persistence.</p>
+<div>
+<h3>Mitigations</h3>
+</div>
+<p>Organizations with externally facing infrastructure devices that have the vulnerabilities listed in this joint cybersecurity advisory, or other vulnerabilities, should move forward with an “assume breach” mentality. As initial exploitation and escalation may be the only observable exploitation activity, most mitigations will need to focus on more traditional network hygiene and user management activities.</p>
+<h3>Keep Systems Up to Date</h3>
+<p>Patch systems and equipment promptly and diligently. Establishing and consistently maintaining a thorough patching cycle continues to be the best defense against adversary TTPs. See table 1 for patch information on CVEs mentioned in this report.</p>
+<p><em>Table 1: Patch information for CVEs</em></p>
+<div class="tablesaw-bar tablesaw-mode-stack"></div><table class="tablesaw tablesaw-stack" data-tablesaw-mode="stack" data-tablesaw-minimap="" id="tablesaw-3474">
+<thead>
+<tr>
+<th scope="col" role="columnheader" data-tablesaw-priority="persist"><strong>Vulnerability</strong></th>
+<th scope="col" role="columnheader"><strong>Vulnerable Products</strong></th>
+<th scope="col" role="columnheader"><strong>Patch Information</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2018-13379">CVE-2018-13379</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>FortiOS 6.0: 6.0.0 to 6.0.4</li>
+<li>FortiOS 5.6: 5.6.3 to 5.6.7</li>
+<li>FortiOS 5.4: 5.4.6 to 5.4.12</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://www.fortiguard.com/psirt/FG-IR-18-384" class="ext" data-extlink="">Fortinet Security Advisory: FG-IR-18-384<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2019-19781">CVE-2019-19781</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>Citrix Application Delivery Controller</li>
+<li>Citrix Gateway</li>
+<li>Citrix SDWAN WANOP</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://www.citrix.com/blogs/2020/01/19/vulnerability-update-first-permanent-fixes-available-timeline-accelerated/" class="ext" data-extlink="">Citrix blog post: firmware updates for Citrix ADC and Citrix Gateway versions 11.1 and 12.0 &nbsp;<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+<li><a href="https://www.citrix.com/blogs/2020/01/22/update-on-cve-2019-19781-fixes-now-available-for-citrix-sd-wan-wanop/" class="ext" data-extlink="">Citrix blog post: security updates for Citrix SD-WAN WANOP release 10.2.6 and 11.0.3<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+<li><a href="https://www.citrix.com/blogs/2020/01/23/fixes-now-available-for-citrix-adc-citrix-gateway-versions-12-1-and-13-0/" class="ext" data-extlink="">Citrix blog post: firmware updates for Citrix ADC and Citrix Gateway versions 12.1 and 13.0<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+<li><a href="https://www.citrix.com/blogs/2020/01/24/citrix-releases-final-fixes-for-cve-2019-19781/" class="ext" data-extlink="">Citrix blog post: firmware updates for Citrix ADC and Citrix Gateway version 10.5<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-5902">CVE-2020-5902</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>Big-IP devices (LTM, AAM, Advanced WAF, AFM, Analytics, APM, ASM, DDHD, DNS, FPS, GTM, Link Controller, PEM, SSLO, CGNAT)</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://support.f5.com/csp/article/K52145254" class="ext" data-extlink="">F5 Security Advisory: K52145254: TMUI RCE vulnerability CVE-2020-5902<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2019-11510">CVE-2019-11510</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>Pulse Connect Secure 9.0R1 - 9.0R3.3, 8.3R1 - 8.3R7, 8.2R1 - 8.2R12, 8.1R1 - 8.1R15</li>
+<li>Pulse Policy Secure 9.0R1 - 9.0R3.1, 5.4R1 - 5.4R7, 5.3R1 - 5.3R12, 5.2R1 - 5.2R12, 5.1R1 - 5.1R15</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://kb.pulsesecure.net/articles/Pulse_Security_Advisories/SA44101" class="ext" data-extlink="">Pulse Secure Out-of-Cycle Advisory: Multiple vulnerabilities resolved in Pulse Connect Secure / Pulse Policy Secure 9.0RX<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-15505">CVE-2020-15505</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>MobileIron Core &amp; Connector versions 10.3.0.3 and earlier, 10.4.0.0, 10.4.0.1, 10.4.0.2, 10.4.0.3, 10.5.1.0, 10.5.2.0 and 10.6.0.0 &nbsp;</li>
+<li>Sentry versions 9.7.2 and earlier, and 9.8.0; &nbsp;</li>
+<li>Monitor and Reporting Database (RDB) version 2.0.0.1 and earlier</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://www.mobileiron.com/en/blog/mobileiron-security-updates-available" class="ext" data-extlink="">MobileIron Blog: MobileIron Security Updates Available<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-1631">CVE-2020-1631</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>Junos OS 12.3, 12.3X48, 14.1X53, 15.1, 15.1X49, 15.1X53, 17.2, 17.3, 17.4, 18.1, 18.2, 18.3, 18.4, 19.1, 19.2, 19.3, 19.4, 20.1</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://kb.juniper.net/InfoCenter/index?page=content&amp;id=JSA11021" class="ext" data-extlink="">Juniper Security Advisory JSA11021<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-2021">CVE-2020-2021</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>PAN-OS 9.1 versions earlier than PAN-OS 9.1.3; PAN-OS 9.0 versions earlier than PAN-OS 9.0.9; PAN-OS 8.1 versions earlier than PAN-OS 8.1.15, and all versions of PAN-OS 8.0 (EOL)</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://security.paloaltonetworks.com/CVE-2020-2021" class="ext" data-extlink="">Palo Alto Networks Security Advisory for CVE-2020-2021<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+<tr>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerability</strong></strong> <span class="tablesaw-cell-content"><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-1472">CVE-2020-1472</a></span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Vulnerable Products</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li>Windows Server 2008 R2 for x64-based Systems Service Pack 1</li>
+<li>Windows Server 2008 R2 for x64-based Systems Service Pack 1 (Server Core installation)</li>
+<li>Windows Server 2012</li>
+<li>Windows Server 2012 (Server Core installation)</li>
+<li>Windows Server 2012 R2</li>
+<li>Windows Server 2016</li>
+<li>Windows Server 2019</li>
+<li>Windows Server 2019 (Server Core installation)</li>
+<li>Windows Server, version 1903&nbsp; (Server Core installation)</li>
+<li>Windows Server, version 1909&nbsp; (Server Core installation)</li>
+<li>Windows Server, version 2004&nbsp;&nbsp; (Server Core installation)</li>
+</ul>
+</span></td>
+<td><strong class="tablesaw-cell-label" aria-hidden="true"><strong>Patch Information</strong></strong> <span class="tablesaw-cell-content">
+<ul>
+<li><a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">Microsoft Security Advisory for CVE-2020-1472<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+</span></td>
+</tr>
+</tbody>
+</table>
+<h3>Comprehensive Account Resets</h3>
+<p>If there is an observation of <a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">CVE-2020-1472<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> Netlogon activity or other indications of valid credential abuse detected, it should be assumed the APT actors have compromised AD administrative accounts, the AD forest should not be fully trusted, and, therefore, a new forest should be deployed. Existing hosts from the old compromised forest cannot be migrated in without being rebuilt and rejoined to the new domain, but migration may be done through “creative destruction,” wherein as endpoints in the legacy forest are decommissioned, new ones can be built in the new forest. This will need to be completed on on-premise as well as Azure-hosted AD instances.</p>
+<p>Note that fully resetting an AD forest is difficult and complex; it is best done with the assistance of personnel who have successfully completed the task previously.</p>
+<p>It is critical to perform a full password reset on all user and computer accounts in the AD forest. Use the following steps as a guide.</p>
+<ol>
+<li>Create a temporary administrator account, and use this account only for all administrative actions</li>
+<li>Reset the Kerberos Ticket Granting Ticket (<code>krbtgt</code>) password [<a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/ad-forest-recovery-resetting-the-krbtgt-password" class="ext" data-extlink="">4<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>]; this must be completed before any additional actions (a second reset will take place in step 5)</li>
+<li>Wait for the krbtgt reset to propagate to all domain controllers (time may vary)</li>
+<li>Reset all account passwords (passwords should be 15 characters or more and randomly assigned):<br>
+<ol type="a">
+<li>User accounts (forced reset with no legacy password reuse)</li>
+<li>Local accounts on hosts (including local accounts not covered by Local Administrator Password Solution [LAPS])</li>
+<li>Service accounts</li>
+<li>Directory Services Restore Mode (DSRM) account</li>
+<li>Domain Controller machine account</li>
+<li>Application passwords</li>
+</ol>
+</li>
+<li>Reset the <code>krbtgt</code> password again</li>
+<li>Wait for the <code>krbtgt</code> reset to propagate to all domain controllers (time may vary)</li>
+<li>Reboot domain controllers</li>
+<li>Reboot all endpoints</li>
+</ol>
+<p>The following accounts should be reset:</p>
+<ul>
+<li>AD Kerberos Authentication Master (2x)</li>
+<li>All Active Directory Accounts</li>
+<li>All Active Directory Admin Accounts</li>
+<li>All Active Directory Service Accounts</li>
+<li>All Active Directory User Accounts</li>
+<li>DSRM Account on Domain Controllers</li>
+<li>Non-AD Privileged Application Accounts</li>
+<li>Non-AD Unprivileged Application Accounts</li>
+<li>Non-Windows Privileged Accounts</li>
+<li>Non-Windows User Accounts</li>
+<li>Windows Computer Accounts</li>
+<li>Windows Local Admin</li>
+</ul>
+<h3>CVE-2020-1472</h3>
+<p>To secure your organization’s Netlogon channel connections:</p>
+<ul>
+<li><strong>Update all Domain Controllers and Read Only Domain Controllers</strong>. On August 11, 2020, Microsoft released <a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">software updates<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> to mitigate CVE-2020-1472. Applying this update to domain controllers is currently the only mitigation to this vulnerability (aside from removing affected domain controllers from the network).</li>
+<li><strong>Monitor for new events, and address non-compliant devices</strong> that are using vulnerable Netlogon secure channel connections.</li>
+<li><strong>Block public access to potentially vulnerable ports</strong>, such as 445 (Server Message Block [SMB]) and 135 (Remote Procedure Call [RPC]).</li>
+</ul>
+<p>To protect your organization against this CVE, follow <a href="https://support.microsoft.com/en-us/help/4557222/how-to-manage-the-changes-in-netlogon-secure-channel-connections-assoc" class="ext" data-extlink="">advice from Microsoft<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a>, including:</p>
+<ul>
+<li>Update your domain controllers with an update released August 11, 2020, or later.</li>
+<li>Find which devices are making vulnerable connections by monitoring event logs.</li>
+<li>Address non-compliant devices making vulnerable connections.</li>
+<li>Enable enforcement mode to address <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-1472">CVE-2020-1472</a> in your environment.</li>
+</ul>
+<h3>VPN Vulnerabilities</h3>
+<p>Implement the following recommendations to secure your organization’s VPNs:</p>
+<ul>
+<li><strong>Update VPNs, network infrastructure devices, and devices </strong>being used to remote into work environments with the latest software patches and security configurations. See CISA Tips <a href="https://us-cert.cisa.gov/ncas/tips/ST04-006">Understanding Patches and Software Updates</a> and <a href="https://us-cert.cisa.gov/ncas/tips/ST18-001">Securing Network Infrastructure Devices</a>. Wherever possible, enable automatic updates. See table 1 for patch information on VPN-related CVEs mentioned in this report.</li>
+<li><strong>Implement multi-factor authentication (MFA) on all VPN connections to increase security</strong>. Physical security tokens are the most secure form of MFA, followed by authenticator app-based MFA. SMS and email-based MFA should only be used when no other forms are available. If MFA is not implemented, require teleworkers to use strong passwords. See CISA Tips <a href="https://us-cert.cisa.gov/ncas/tips/ST04-002">Choosing and Protecting Passwords</a> and <a href="https://us-cert.cisa.gov/ncas/tips/ST05-012">Supplementing Passwords</a> for more information.</li>
+</ul>
+<p>Discontinue unused VPN servers. Reduce your organization’s attack surface by discontinuing unused VPN servers, which may act as a point of entry for attackers. To protect your organization against VPN vulnerabilities:</p>
+<ul>
+<li><strong>Audit </strong>configuration and patch management programs.</li>
+<li><strong>Monitor</strong> network traffic for unexpected and unapproved protocols, especially outbound to the internet (e.g., Secure Shell [SSH], SMB, RDP).</li>
+<li><strong>Implement </strong>MFA, especially for privileged accounts.</li>
+<li><strong>Use </strong>separate administrative accounts on separate administration workstations.</li>
+<li><strong>Keep </strong><a href="https://us-cert.cisa.gov/ncas/tips/ST04-006">software up to date</a>. Enable automatic updates, if available.&nbsp;</li>
+</ul>
+<h3>How to uncover and mitigate malicious activity</h3>
+<ul>
+<li><strong>Collect and remove</strong> for further analysis:
+<ul>
+<li>Relevant artifacts, logs, and data.</li>
+</ul>
+</li>
+<li><strong>Implement </strong>mitigation steps that avoid tipping off the adversary that their presence in the network has been discovered.</li>
+<li><strong>Consider </strong>soliciting incident response support from a third-party IT security organization to:
+<ul>
+<li>Provide subject matter expertise and technical support to the incident response.</li>
+<li>Ensure that the actor is eradicated from the network.</li>
+<li>Avoid residual issues that could result in follow-up compromises once the incident is closed.</li>
+</ul>
+</li>
+</ul>
+<h3>Resources</h3>
+<ul>
+<li><a href="https://www.cisa.gov/vpn-related-guidance">CISA VPN-Related Guidance</a></li>
+<li>CISA Infographic: <a href="https://www.cisa.gov/sites/default/files/publications/Risk%20and%20Vulnerability%20Assessment%20%28RVA%29%20Mapped%20to%20the%20MITRE%20ATT%26amp%3BCK%20Framework%20Infographic_v6-100620_%20508.pdf">Risk Vulnerability And Assessment (RVA) Mapped to the MITRE ATT&amp;CK FRAMEWORK</a></li>
+<li>National Security Agency InfoSheet: <a href="https://media.defense.gov/2020/Jul/02/2002355501/-1/-1/0/CONFIGURING_IPSEC_VIRTUAL_PRIVATE_NETWORKS_2020_07_01_FINAL_RELEASE.PDF">Configuring IPsec Virtual Private Networks</a></li>
+<li>CISA Joint Advisory: <a href="https://us-cert.cisa.gov/ncas/alerts/aa20-245a">AA20-245A: Technical Approaches to Uncovering and Remediating Malicious Activity</a></li>
+<li>CISA Activity Alert: <a href="https://us-cert.cisa.gov/ncas/alerts/aa20-073a">AA20-073A: Enterprise VPN Security</a></li>
+<li>CISA Activity Alert: <a href="https://us-cert.cisa.gov/ncas/alerts/aa20-031a">AA20-031A: Detecting Citrix CVE-2019-19781</a></li>
+<li>CISA Activity Alert: <a href="https://us-cert.cisa.gov/ncas/alerts/aa20-010a">AA20-010A: Continued Exploitation of Pulse Secure VPN Vulnerability</a></li>
+<li><strong>Cybersecurity Alerts and Advisories</strong>: Subscriptions to <a href="https://public.govdelivery.com/accounts/USDHSUSCERT/subscriber/new" class="ext" data-extlink="">CISA Alerts<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a> and <a href="https://learn.cisecurity.org/ms-isac-subscription" class="ext" data-extlink="">MS-ISAC Advisories<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></li>
+</ul>
+<div>
+<h3>Contact Information</h3>
+</div>
+<p>Recipients of this report are encouraged to contribute any additional information that they may have related to this threat.</p>
+<p>For any questions related to this report or to report an intrusion and request resources for incident response or technical assistance, please contact:</p>
+<ul>
+<li>CISA (1-844-Say-CISA or <a href="mailto:Central@cisa.dhs.gov" class="mailto" data-extlink="">Central@cisa.dhs.gov<svg focusable="false" width="1em" height="1em" class="mailto" data-extlink-placement="append" aria-label="(link sends email)" viewBox="0 10 70 20" role="img" aria-hidden="false"><title>(link sends email)</title><path d="M56 14H8c-1.1 0-2 0.9-2 2v32c0 1.1 0.9 2 2 2h48c1.1 0 2-0.9 2-2V16C58 14.9 57.1 14 56 14zM50.5 18L32 33.4 13.5 18H50.5zM10 46V20.3l20.7 17.3C31.1 37.8 31.5 38 32 38s0.9-0.2 1.3-0.5L54 20.3V46H10z"></path></svg></a>), or</li>
+<li>The FBI through the FBI Cyber Division (855-292-3937 or <a href="mailto:CyWatch@fbi.gov" class="mailto" data-extlink="">CyWatch@fbi.gov<svg focusable="false" width="1em" height="1em" class="mailto" data-extlink-placement="append" aria-label="(link sends email)" viewBox="0 10 70 20" role="img" aria-hidden="false"><title>(link sends email)</title><path d="M56 14H8c-1.1 0-2 0.9-2 2v32c0 1.1 0.9 2 2 2h48c1.1 0 2-0.9 2-2V16C58 14.9 57.1 14 56 14zM50.5 18L32 33.4 13.5 18H50.5zM10 46V20.3l20.7 17.3C31.1 37.8 31.5 38 32 38s0.9-0.2 1.3-0.5L54 20.3V46H10z"></path></svg></a>) or a <a href="https://www.fbi.gov/contact-us/field-offices/field-offices">local field office</a></li>
+</ul>
+<div class="special_container text-align-center">&nbsp;</div>
+<div class="special_container text-align-center"><em><strong>DISCLAIMER</strong></em></div>
+<div class="special_container">&nbsp;</div>
+<div class="special_container">
+<p><em>This information is provided "as is" for informational purposes only. The United States Government does not provide any warranties of any kind regarding this information. In no event shall the United States Government or its contractors or subcontractors be liable for any damages, including but not limited to, direct, indirect, special or consequential damages, arising out of, resulting from, or in any way connected with this information, whether or not based upon warranty, contract, tort, or otherwise, whether or not arising out of negligence, and whether or not injury was sustained from, or arose out of the results of, or reliance upon the information.</em></p>
+<p><em>The United States Government does not endorse any commercial product or service, including any subjects of analysis. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation, or favoring by the United States Government.</em></p>
+</div>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<div>
+<h3>References</h3>
+</div>
+<div class="field--item"><a href="https://www.fortiguard.com/psirt/FG-IR-18-384" class="ext" data-extlink="">[1] Fortinet Advisory: FG-IR-18-384<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></div>
+<div class="field--item"><a href="https://www.mobileiron.com/en/blog/mobileiron-security-updates-available" class="ext" data-extlink="">[2] MobileIron Blog: MobileIron Security Updates Available<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></div>
+<div class="field--item"><a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-1472" class="ext" data-extlink="">[3] Microsoft Security Advisory for CVE-2020-1472<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></div>
+<div class="field--item"><a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/ad-forest-recovery-resetting-the-krbtgt-password" class="ext" data-extlink="">[4] Microsoft: AD Forest Recovery - Resetting the krbtgt password<svg focusable="false" width="1em" height="1em" class="ext" data-extlink-placement="append" aria-label="(link is external)" viewBox="0 0 80 40" role="img" aria-hidden="false"><title>(link is external)</title><path d="M48 26c-1.1 0-2 0.9-2 2v26H10V18h26c1.1 0 2-0.9 2-2s-0.9-2-2-2H8c-1.1 0-2 0.9-2 2v40c0 1.1 0.9 2 2 2h40c1.1 0 2-0.9 2-2V28C50 26.9 49.1 26 48 26z"></path><path d="M56 6H44c-1.1 0-2 0.9-2 2s0.9 2 2 2h7.2L30.6 30.6c-0.8 0.8-0.8 2 0 2.8C31 33.8 31.5 34 32 34s1-0.2 1.4-0.6L54 12.8V20c0 1.1 0.9 2 2 2s2-0.9 2-2V8C58 6.9 57.1 6 56 6z"></path></svg></a></div>
+<div>
+<h3>Revisions</h3>
+</div>
+<p>October 9, 2020: Initial Version|October 11, 2020: Updated Summary|October 12, 2020: Added Additional Links</p>
+
+      </div>
+
+  
+      </div>
+  </div>
+      <div class="l-constrain l-page-section--rich-text">
+        <div class="l-page-section__content">
+          
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><p>This product is provided subject to this&nbsp;<a href="/notification" rel="nofollow noopener" target="_blank" title="Follow link">Notification</a>&nbsp;and this&nbsp;<a href="/privacy-policy" rel="nofollow noopener" target="_blank" title="Follow link">Privacy &amp; Use</a>&nbsp;policy.</p></div></div>
+
+        </div>
+      </div>
+            </div>
+        <div class="l-full__footer">
+                              
+<div class="l-constrain">
+  <div class="l-page-section--rich-text">
+    <div class="l-page-section__content">
+      <div class="c-product-survey l-page-section--tags l-page-section--rich-text">
+        <div class="c-product-survey__top-bar"></div>
+        <div class="c-product-survey__content-area">
+          <div class="c-product-survey__icon"></div>
+          <div class="c-product-survey__text-area">
+            <h2>Please share your thoughts</h2>
+            <p>We recently updated our anonymous <a href="https://cisasurvey.gov1.qualtrics.com/jfe/form/SV_9n4TtB8uttUPaM6?product=https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-283a" target="_blank">product survey</a>; we welcome your feedback.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+
+          </div>
+  </div>
+  
+  
+  
+  
+
+      </div>
+
+  
+  </main>
+
+  
+<footer class="usa-footer usa-footer--slim" role="contentinfo">
+    <div class="usa-footer__return-to-top">
+    <div class="l-constrain">
+      <a href="#top">Return to top</a>
+    </div>
+  </div>
+    <div class="usa-footer__upper">
+    <div class="l-constrain">
+      
+
+
+
+
+
+
+
+  
+  
+    
+
+  
+            
+
+                                <ul class="c-menu c-menu--footer-main">
+        
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/topics" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7329">Topics</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/spotlight" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7330">Spotlight</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/resources-tools" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7331">Resources &amp; Tools</a>
+                        </li>
+    
+                                            
+                                                    
+      
+      
+      <li class="c-menu__item is-active-trail">
+                              <a href="/news-events" class="c-menu__link js-top-level is-active-trail" aria-current="false" data-drupal-link-system-path="node/7332">News &amp; Events</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/careers" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/7323">Careers</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/about" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/6944">About</a>
+                        </li>
+        </ul>
+  
+
+  
+  
+  
+  
+
+    </div>
+  </div>
+    <div class="usa-footer__main">
+    <div class="l-constrain">
+      <div class="usa-footer__main-row">
+        <div class="usa-footer__brand">
+          
+<a class="c-site-name c-site-name--footer" href="/" rel="home" title="Go to the Cybersecurity &amp; Infrastructure Security Agency homepage">
+  <span class="c-site-name__text">Cybersecurity &amp; Infrastructure Security Agency</span>
+</a>        </div>
+        <div class="usa-footer__contact">
+                      
+
+                                <ul class="c-menu c-menu--social">
+        
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.facebook.com/CISA" class="c-menu__link--facebook c-menu__link js-top-level" aria-current="false">Facebook</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://x.com/CISAgov" class="c-menu__link--twitter c-menu__link js-top-level" aria-current="false">X</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.linkedin.com/company/cybersecurity-and-infrastructure-security-agency" class="c-menu__link--linkedin c-menu__link js-top-level" aria-current="false">LinkedIn</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.youtube.com/@cisagov" class="c-menu__link--youtube c-menu__link js-top-level" aria-current="false">YouTube</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.instagram.com/cisagov" class="c-menu__link--instagram c-menu__link js-top-level" aria-current="false">Instagram</a>
+                        </li>
+    
+                                            
+                                                            
+      
+      
+      <li class="c-menu__item">
+                              <a href="/subscribe-updates-cisa" class="c-menu__link--rss c-menu__link js-top-level" aria-current="false">RSS</a>
+                        </li>
+        </ul>
+  
+
+                    <div class="usa-footer__contact-info">
+            <span>CISA Central</span>
+            <a href="tel:1-844-Say-CISA">1-844-Say-CISA</a>
+            <a href="mailto:contact@cisa.dhs.gov">contact@cisa.dhs.gov</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="usa-footer__lower">
+    <div class="l-constrain">
+      <div class="usa-footer__lower-row">
+        <div class="usa-footer__lower-left">
+          
+<div class="c-dhs-logo">
+  <div class="c-dhs-logo__seal">DHS Seal</div>
+  <div class="c-dhs-logo__content">
+    <div class="c-dhs-logo__url">CISA.gov</div>
+    <div class="c-dhs-logo__text">An official website of the U.S. Department of Homeland Security</div>
+  </div>
+</div>                      
+
+
+                                <ul class="c-menu c-menu--footer">
+        
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/about" title="About CISA" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/6944">About CISA</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.dhs.gov/performance-financial-reports" class="c-menu__link js-top-level" title="Budget and Performance" aria-current="false">Budget and Performance</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.dhs.gov" title="Department of Homeland Security" class="c-menu__link js-top-level" aria-current="false">DHS.gov</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.dhs.gov/foia" class="c-menu__link js-top-level" title="FOIA Requests" aria-current="false">FOIA Requests</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/no-fear-act" title="No FEAR Act Reporting" class="c-menu__link js-top-level" aria-current="false">No FEAR Act</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.oig.dhs.gov/" class="c-menu__link js-top-level" title="Office of Inspector General" aria-current="false">Office of Inspector General</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/privacy-policy" title="Privacy Policy" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="node/16115">Privacy Policy</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://public.govdelivery.com/accounts/USDHSCISA/subscriber/new?topic_id=USDHSCISA_138" title="Subscribe to Email Updates" class="c-menu__link js-top-level" aria-current="false">Subscribe</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.whitehouse.gov/" class="c-menu__link js-top-level" title="The White House" aria-current="false">The White House</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="https://www.usa.gov/" class="c-menu__link js-top-level" title="USA.gov" aria-current="false">USA.gov</a>
+                        </li>
+    
+                                            
+                              
+      
+      
+      <li class="c-menu__item">
+                              <a href="/forms/feedback" title="Website Feedback" class="c-menu__link js-top-level" aria-current="false" data-drupal-link-system-path="forms/feedback">Website Feedback</a>
+                        </li>
+        </ul>
+  
+
+                  </div>
+        <div class="usa-footer__lower-right">
+          <iframe src="https://www.dhs.gov/ntas/" name="National Terrorism Advisory System" title="National Terrorism Advisory System" width="170" height="180" scrolling="no" frameborder="0" seamless="" border="0" data-gtm-yt-inspected-27="true"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+  <script async="" src="https://siteimproveanalytics.com/js/siteanalyze_6342107.js"></script> 
+
+  
+
+
+
+
+
+  <div id="block-guswds-productfeedbackinterceptsurvey" class="visually-hidden c-block c-block--provider-block-content c-block--id-block-contentc577ef7a-dd93-4594-a89d-2db092b50b82">
+
+  
+  
+    
+
+      <div class="c-block__content">
+  
+      
+
+
+
+
+<div class="c-field c-field--name-body c-field--type-text-with-summary c-field--label-hidden">
+  <div class="c-field__content"><!--BEGIN QUALTRICS WEBSITE FEEDBACK SNIPPET--><script type="text/javascript">
+
+(function(){var g=function(g){
+
+this.go=function(){var a=document.createElement("script");a.type="text/javascript";a.src=g;document.body&&document.body.appendChild(a)};
+
+this.start=function(){var t=this;"complete"!==document.readyState?window.addEventListener?window.addEventListener("load",function(){t.go()},!1):window.attachEvent&&window.attachEvent("onload",function(){t.go()}):t.go()};};
+
+try{(new g("https://zn279ys5rg3kpfewc-cisasurvey.gov1.siteintercept.qualtrics.com/SIE/?Q_ZID=ZN_279yS5Rg3KpfeWC")).start()}catch(i){}})();
+
+</script><div id="ZN_279yS5Rg3KpfeWC"><!--DO NOT REMOVE-CONTENTS PLACED HERE--></div><!--END WEBSITE FEEDBACK SNIPPET--></div></div>
+
+  
+      </div>
+  
+  
+  </div>
+
+
+
+</div>
+
+  </div>
+
+    
+        <script src="/core/assets/vendor/jquery/jquery.min.js?v=4.0.0"></script>
+<script src="/sites/default/files/js/js_qcZcGdXOa4bio9YZbYPKpsVm4g6n1Y8laN6CKrskEHQ.js?scope=footer&amp;delta=1&amp;language=en&amp;theme=guswds&amp;include=eJx1zesKwzAIBeAXyppHCibakM3Gokkvb7-NtoMN9kf8zgFND8LSRAOkJIpFqv9sw6hSG1V0tDUu9eFR-ww8nHRZJDOFBtnn1_j1AHfYvsPJ5W4rmgdcionul6MSYNI-xSvJLBHYKdks1cryPhGZLIyFG6k_BOvtsOs2EmZZwvkQKvDeSjL_txkS1ifbg2V3"></script>
+<script src="/modules/contrib/ckeditor_accordion/js/accordion.frontend.min.js?thx9hh"></script>
+<script src="/sites/default/files/js/js_9XutrPA5r_VMt5yA0YLbed17ZOzwXD57XmVr8PRALKY.js?scope=footer&amp;delta=3&amp;language=en&amp;theme=guswds&amp;include=eJx1zesKwzAIBeAXyppHCibakM3Gokkvb7-NtoMN9kf8zgFND8LSRAOkJIpFqv9sw6hSG1V0tDUu9eFR-ww8nHRZJDOFBtnn1_j1AHfYvsPJ5W4rmgdcionul6MSYNI-xSvJLBHYKdks1cryPhGZLIyFG6k_BOvtsOs2EmZZwvkQKvDeSjL_txkS1ifbg2V3"></script>
+<script src="/profiles/cisad8_gov/themes/custom/gesso/dist/js/uswds.es6.js?thx9hh"></script>
+<script src="/sites/default/files/js/js_5IzvA2dbbr6Ce9iq1maE6NWGvSrDJ4RsgFf8W2MIVts.js?scope=footer&amp;delta=5&amp;language=en&amp;theme=guswds&amp;include=eJx1zesKwzAIBeAXyppHCibakM3Gokkvb7-NtoMN9kf8zgFND8LSRAOkJIpFqv9sw6hSG1V0tDUu9eFR-ww8nHRZJDOFBtnn1_j1AHfYvsPJ5W4rmgdcionul6MSYNI-xSvJLBHYKdks1cryPhGZLIyFG6k_BOvtsOs2EmZZwvkQKvDeSjL_txkS1ifbg2V3"></script>
+
+  
+
+<div id="drupal-live-announce" class="visually-hidden" aria-live="polite" aria-busy="false"></div><table cellspacing="0" cellpadding="0" role="presentation" class="gstl_50 gssb_c" style="width: 414px; display: none; top: 188px; left: 771px; position: absolute;"><tbody><tr><td class="gssb_f"></td><td class="gssb_e" style="width: 100%;"></td></tr></tbody></table><table cellspacing="0" cellpadding="0" role="presentation" class="gstl_51 gssb_c" style="width: 2px; display: none; top: 0px; left: -1px; position: absolute;"><tbody><tr><td class="gssb_f"></td><td class="gssb_e" style="width: 100%;"></td></tr></tbody></table></body><div id="codex-browser-sidebar-comments-root" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483647;"></div></html>

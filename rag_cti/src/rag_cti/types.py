@@ -84,7 +84,8 @@ class GeneratedAnswer(BaseModel, frozen=True):
 
 
 # ---------------------------------------------------------------------------
-# M4 consumption layer — graph-query outputs (docs/M4_consumption_design.md §6)
+# M4-era graph-query outputs (historical rationale:
+# docs/archive/runtime/HISTORICAL_M4_consumption_langgraph_design.md §6)
 # ---------------------------------------------------------------------------
 
 
@@ -209,7 +210,6 @@ class SettingsProto(Protocol):
     groq_query_model: str
     groq_analysis_model: str
     groq_report_model: str
-    llm_routing_model: str
     reranker_model: str
 
 

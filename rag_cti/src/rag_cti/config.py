@@ -14,13 +14,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Ollama (local OpenAI-compatible API). Default off — use GROQ_API_KEY / ANTHROPIC_API_KEY for hosted LLMs.
+    # Ollama (local OpenAI-compatible API). Default off — use GROQ_API_KEY for hosted LLMs.
     ollama_enabled: bool = False
     ollama_base_url: str = "http://localhost:11434/v1"
     ollama_model: str = "llama3.1:8b"
-
-    # Anthropic
-    anthropic_api_key: SecretStr = SecretStr("")
 
     # DeepSeek
     deepseek_api_key: SecretStr = SecretStr("")
@@ -61,7 +58,8 @@ class Settings(BaseSettings):
 
     # Neo4j — CTI-RAG's OWN isolated instance (port 7689), NOT the cti-agent graph
     # on 7687. M4 consumption-layer knowledge-graph backend (DM4-1). See
-    # docs/M4_consumption_design.md. Empty password => Neo4j features disabled.
+    # Historical rationale: docs/archive/runtime/HISTORICAL_M4_consumption_langgraph_design.md.
+    # Empty password => Neo4j features disabled.
     neo4j_uri: str = "bolt://localhost:7689"
     neo4j_user: str = "neo4j"
     neo4j_password: SecretStr = SecretStr("")
@@ -99,10 +97,6 @@ class Settings(BaseSettings):
     # dispatch. Tune concurrency/rate; set both to 0 for passthrough (tests only).
     llm_max_global_concurrency: int = 4
     llm_rate_limit_per_sec: float = 0.0
-
-    # Model for the Anthropic provider: HyDE's Anthropic branch (hyde.py) and
-    # LLMRouter when provider == "anthropic". Groq/Ollama use their own fields.
-    llm_routing_model: str = "claude-haiku-4-5-20251001"
 
     # Reranker (hybrid+reranker is the recommended config — see README eval results)
     reranker_enabled: bool = True
@@ -219,7 +213,7 @@ class Settings(BaseSettings):
     # Multi-agent supervisor for compound/parallelizable queries. Kept as an explicit
     # product mode while the single-agent agentic loop remains the default answer path.
     supervisor_enabled: bool = False
-    # Max worker sub-agents (Anthropic's 3-5 subagent guidance). Hard cap on total
+    # Max worker sub-agents. Hard cap on total
     # dispatch_worker calls (over-decomposition backstop) AND the ThreadPoolExecutor
     # max_workers for parallel dispatch.
     supervisor_max_branches: int = 4
@@ -243,12 +237,11 @@ class Settings(BaseSettings):
         if not self.hyde_enabled and not self.query_rewrite_enabled:
             return self
         has_ollama = self.ollama_enabled
-        has_anthropic = bool(self.anthropic_api_key.get_secret_value())
         has_groq = bool(self.groq_api_key.get_secret_value())
-        if not has_ollama and not has_anthropic and not has_groq:
+        if not has_ollama and not has_groq:
             raise ValueError(
                 "HyDE/query-rewrite is enabled but no LLM provider is configured: "
-                "set GROQ_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_ENABLED=true for local Ollama, "
+                "set GROQ_API_KEY or OLLAMA_ENABLED=true for local Ollama, "
                 "or disable HYDE_ENABLED / QUERY_REWRITE_ENABLED for retrieval-only."
             )
         return self
