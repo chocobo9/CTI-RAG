@@ -1,0 +1,22 @@
+{
+  "name": "@cti-rag/pi-cti-harness",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --pool=threads --poolOptions.threads.singleThread"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "0.74.2",
+    "@earendil-works/pi-ai": "0.74.2",
+    "typebox": "1.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21",
+    "typescript": "5.8.3",
+    "vitest": "3.2.7"
+  }
+}
