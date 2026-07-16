@@ -169,7 +169,7 @@ def main() -> None:
             latest_status[str(row["pulse_id"])] = str(row["status"])
 
     valid_existing = {pid for pid in plan.acquire_ids if _valid_existing_detail(store, pid)}
-    # The frozen manifest is the sole population. Retry mode only schedules latest
+    # The snapshot manifest is the sole population. Retry mode only schedules latest
     # retryable errors; a normal resume schedules every still-missing acquire ID.
     if args.retry_only:
         eligible = list(plan.network_ids)

@@ -283,7 +283,7 @@ discovery performance defects were removed:
 - `--phase discovery` no longer scans or JSON-decodes the approximately
   12.9 GB Pulse-detail RawStore to construct indexes used only by later phases.
 
-The frozen input gates passed: MITRE bundle SHA256
+The snapshot input gates passed: MITRE bundle SHA256
 `f857d8f78f2f0c0b7db321a711a39fba98546c1e3076a657684850c83d0962fb`,
 query-list SHA256
 `2140b5d3575d8f355c1c6099833de36071d55af66d2553c0b2a5f8f0d279f477`,

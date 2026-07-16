@@ -6,10 +6,10 @@
 > input when revising the adjustable Intermediate draft; do not treat it as current
 > Runtime, RAG, or storage authority.
 
-> **Current boundary:** collection is frozen. This document specifies the
-> post-collection transformation of the APT reverse-enrichment dataset. The
-> current source scope and counts are maintained in
-> `docs/frozen_postprocessing_baseline.md`.
+> **Current boundary:** collection is represented by a current snapshot. This
+> document specifies the post-collection transformation of the APT
+> reverse-enrichment snapshot. The current source scope and counts are
+> maintained in `docs/snapshot_postprocessing_baseline.md`.
 
 ## **Stage 1: Data Collection and Graph-Ready Preparation**
 
@@ -17,7 +17,7 @@ The goal of Stage 1 is to build a reusable CTI dataset before Neo4j graph constr
 
 ### **1\. Source Selection**
 
-The frozen source set should be described by role rather than by a new
+The current snapshot source set should be described by role rather than by a new
 collection plan. Sources should be separated into:
 
 * **APT/taxonomy references:** MITRE ATT\&CK and Malpedia.
@@ -36,7 +36,7 @@ Records without reliable timestamps should be marked rather than silently discar
 
 All selected CTI data should first be stored as raw or near-raw JSON. At this stage, the pipeline should not remove ambiguous records, should not perform graph construction, and should not decide final training labels.
 
-For the frozen OTX input, the post-processing layer must consume and reference:
+For the current OTX snapshot, the post-processing layer must consume and reference:
 
 * raw search responses;  
 * raw pulse detail responses;  

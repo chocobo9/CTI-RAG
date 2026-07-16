@@ -46,14 +46,14 @@ fixed field set (`otx.pulse_metadata`, `whois_connector` keeps
 registrar/iana_id/created/expires/registrant_email/name_servers, etc.). Anything
 not literally listed is dropped. With no raw kept, the whitelist is destructive.
 
-**(d) Frozen source stores.** The current collection baseline is documented in
-`docs/frozen_postprocessing_baseline.md`. OTX actor/name/alias discovery and
+**(d) Snapshot source stores.** The current collection snapshot is documented in
+`docs/snapshot_postprocessing_baseline.md`. OTX actor/name/alias discovery and
 actor-evidenced Pulse-detail gathering are phase-complete. CIRCL MISP Events and
 Malpedia metadata are also stored with manifests, hashes and normalized source
 views. Query-only OTX candidates remain auditable but are not expanded into
 Event detail. The remaining work in this phase is read-only post-processing;
 the collectors are not reopened. VT, WHOIS and pDNS are optional downstream
-enrichment inputs and are not part of the frozen attribution-aware core.
+enrichment inputs and are not part of the current snapshot's attribution-aware core.
 
 ### Full hardcode / drop-risk inventory
 
@@ -98,10 +98,10 @@ Every source produces **two separate things**, and they must not be conflated:
    - candidate `Entity` / `Fact` / `relations[]` — see knowledge doc
 
 If a projection is wrong or the schema changes, re-run projection over the raw.
-The frozen OTX, CIRCL MISP and Malpedia stores are the inputs to the current
+The current OTX, CIRCL MISP and Malpedia snapshot stores are the inputs to the current
 projection seam. The post-processing implementation must consume their existing
 raw or normalized views without issuing network requests. Any future VT/WHOIS/
-pDNS collection is a separate explicit scope and must not change this frozen
+pDNS collection is a separate explicit scope and must not change this snapshot
 baseline.
 
 ---

@@ -1,21 +1,21 @@
-# Frozen CTI Post-processing Baseline
+# Current CTI Snapshot Post-processing Baseline
 
 Status: **current post-collection baseline**  
-Freeze boundary: **2026-07-12**  
-Scope: consume frozen raw and source-normalized data; do not recollect or modify
-the collection logic.
+Collection snapshot: **2026-07-12**
+Scope: consume the current raw and source-normalized snapshot; do not recollect
+or modify the collection logic.
 
 ## Processing boundary
 
 The collection phase is closed for this dataset. The post-collection pipeline
-starts from the following frozen inputs:
+starts from the following snapshot inputs:
 
 ```text
 APT/MITRE seed taxonomy
         ↓
-frozen OTX actor-evidenced Events and source claims
-frozen CIRCL MISP OSINT Events, attributes, objects and actor-like tags
-frozen Malpedia actors, families, aliases and actor-family links
+snapshot OTX actor-evidenced Events and source claims
+snapshot CIRCL MISP OSINT Events, attributes, objects and actor-like tags
+snapshot Malpedia actors, families, aliases and actor-family links
         ↓
 source adapters
         ↓
@@ -37,7 +37,7 @@ The pipeline must not:
 - treat Malpedia taxonomy links or infrastructure enrichment as incident attribution;
 - calculate final source reliability or attribution confidence during normalization.
 
-## Frozen source roles
+## Snapshot source roles
 
 | Source | Current role | Primary post-processing inputs | Attribution interpretation |
 |---|---|---|---|
@@ -47,7 +47,7 @@ The pipeline must not:
 | Malpedia | actor/malware taxonomy bridge | actors, aliases, families, references and actor-family links | taxonomy and alias evidence; not incident attribution by itself |
 | VT / pDNS / WHOIS | optional later enrichment | only when an explicit downstream enrichment task is opened | infrastructure evidence; never direct actor attribution |
 
-## Current frozen populations
+## Current snapshot populations
 
 - OTX: 5,558 actor-evidenced Events, 5,867 source-claim rows and
   12,155,056 embedded indicator occurrences. Query-only candidates remain
@@ -70,7 +70,7 @@ exact hashes and collection audit details:
 
 The current Stage 1 delivery is complete only when it contains:
 
-1. a frozen source manifest and source capability matrix;
+1. a snapshot source manifest and source capability matrix;
 2. unified intermediate records with raw references;
 3. entity mentions and canonical/candidate alias mappings;
 4. candidate relationships and source attribution claims;
@@ -89,7 +89,7 @@ original claims.
 ## Strict Stage 1 output contract
 
 The current implementation materializes the Stage 1 package at
-`data/processed/intermediate_frozen_v1_20260716/`. The required fields from the
+`data/processed/intermediate_snapshot_v1_20260716/`. The required fields from the
 teammate reference are present in the corresponding JSONL artifacts, including
 when the source does not provide a value:
 

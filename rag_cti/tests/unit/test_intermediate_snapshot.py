@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from rag_cti.intermediate.frozen import build_frozen_intermediate_package
+from rag_cti.intermediate.snapshot import build_snapshot_intermediate_package
 
 
 def _jsonl(path: Path, rows: list[dict]) -> None:
@@ -11,7 +11,7 @@ def _jsonl(path: Path, rows: list[dict]) -> None:
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
 
 
-def test_frozen_processor_preserves_multi_actor_and_source_provenance(tmp_path: Path) -> None:
+def test_snapshot_processor_preserves_multi_actor_and_source_provenance(tmp_path: Path) -> None:
     otx = tmp_path / "data" / "processed" / "otx_actor_event_dataset_routeA_20260712"
     raw_otx = tmp_path / "data" / "raw" / "otx" / "pulse-1" / "pulse.json"
     raw_otx.parent.mkdir(parents=True)
@@ -70,7 +70,7 @@ def test_frozen_processor_preserves_multi_actor_and_source_provenance(tmp_path: 
     _jsonl(malpedia / "families.jsonl", [{"family_id": "malpedia:family:rat", "primary_name": "Example RAT", "aliases_raw": [], "references_raw": [], "raw_ref": "raw/families/families.json", "fetched_at": "2026-01-05T00:00:00Z"}])
     _jsonl(malpedia / "actor_family_links.jsonl", [{"link_id": "link-1", "actor_id": "malpedia:actor:example", "actor_source_id_raw": "Example Panda", "family_id": "malpedia:family:rat", "family_source_id_raw": "Example RAT", "raw_ref": "raw/families/families.json"}])
 
-    result = build_frozen_intermediate_package(repository_root=tmp_path, output_dir=tmp_path / "out", temporal_cutoff="2026-01-02T00:00:00Z", generated_at="2026-01-06T00:00:00Z")
+    result = build_snapshot_intermediate_package(repository_root=tmp_path, output_dir=tmp_path / "out", temporal_cutoff="2026-01-02T00:00:00Z", generated_at="2026-01-06T00:00:00Z")
 
     assert result.counts["otx_records"] == 1
     assert result.counts["circl_misp_records"] == 1

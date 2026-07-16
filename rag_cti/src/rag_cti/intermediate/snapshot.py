@@ -1,4 +1,4 @@
-"""Post-collection processing for the frozen APT reverse-enrichment dataset.
+"""Post-collection processing for the current APT reverse-enrichment snapshot.
 
 This module is deliberately read-only with respect to source collection.  Its
 public seam accepts a repository root and an output directory, then adapts the
@@ -70,8 +70,8 @@ _IDENTITY_ENTITY_TYPES = {"actor", "campaign", "family", "malware", "tool"}
 
 
 @dataclass
-class FrozenBuildResult:
-    """Summary returned after a frozen package is written."""
+class SnapshotBuildResult:
+    """Summary returned after a snapshot package is written."""
 
     output_dir: Path
     counts: Counter[str] = field(default_factory=Counter)
@@ -192,16 +192,16 @@ class AliasRegistry:
                 }
 
 
-def build_frozen_intermediate_package(
+def build_snapshot_intermediate_package(
     *,
     repository_root: Path,
     output_dir: Path,
-    dataset_id: str = "cti_rag_frozen_reverse_enrichment",
+    dataset_id: str = "cti_rag_snapshot_reverse_enrichment",
     dataset_version: str = "2026-07-12-v1",
     generated_at: str | None = None,
     temporal_cutoff: str | None = None,
-) -> FrozenBuildResult:
-    """Build the unified post-collection package from local frozen inputs.
+) -> SnapshotBuildResult:
+    """Build the unified post-collection package from the current snapshot.
 
     The interface is intentionally small.  ``repository_root`` must contain
     ``data/processed/otx_actor_event_dataset_routeA_20260712``,
@@ -223,7 +223,7 @@ def build_frozen_intermediate_package(
         aliases=_JsonlWriter(intermediate / "alias_mappings.jsonl"),
         features=_JsonlWriter(intermediate / "record_features.jsonl"),
     )
-    result = FrozenBuildResult(output_dir=output)
+    result = SnapshotBuildResult(output_dir=output)
     registry = _build_alias_registry(root)
     for mapping in registry.mappings():
         artifacts.aliases.write(mapping)
@@ -288,7 +288,7 @@ def _process_otx(
     root: Path,
     artifacts: _Artifacts,
     registry: AliasRegistry,
-    result: FrozenBuildResult,
+    result: SnapshotBuildResult,
     temporal_cutoff: str | None,
 ) -> None:
     base = root / "data" / "processed" / "otx_actor_event_dataset_routeA_20260712"
@@ -372,7 +372,7 @@ def _process_misp(
     root: Path,
     artifacts: _Artifacts,
     registry: AliasRegistry,
-    result: FrozenBuildResult,
+    result: SnapshotBuildResult,
     temporal_cutoff: str | None,
 ) -> None:
     base = root / "data" / "raw" / "circl_misp"
@@ -456,7 +456,7 @@ def _process_malpedia(
     root: Path,
     artifacts: _Artifacts,
     registry: AliasRegistry,
-    result: FrozenBuildResult,
+    result: SnapshotBuildResult,
     temporal_cutoff: str | None,
 ) -> None:
     base = root / "data" / "raw" / "malpedia" / "normalized"
@@ -633,7 +633,7 @@ def _record(
 
 def _write_rows(
     artifacts: _Artifacts,
-    result: FrozenBuildResult,
+    result: SnapshotBuildResult,
     record: Mapping[str, Any],
     entities: Iterable[Mapping[str, Any]],
     relations: Iterable[Mapping[str, Any]],
@@ -852,7 +852,7 @@ def _write_metadata(
     dataset_id: str,
     dataset_version: str,
     generated_at: str,
-    result: FrozenBuildResult,
+    result: SnapshotBuildResult,
     temporal_cutoff: str | None,
 ) -> None:
     intermediate = output / "intermediate"
@@ -861,8 +861,8 @@ def _write_metadata(
         "dataset_version": dataset_version,
         "schema_version": _SCHEMA_VERSION,
         "generated_at": generated_at,
-        "collection_frozen_at": "2026-07-12",
-        "post_collection_only": True,
+        "collection_snapshot_at": "2026-07-12",
+        "snapshot_post_processing_only": True,
         "sources": [
             {"connector_source": "circl_misp", "source_name": _SOURCE_NAMES["circl_misp"], "source_class": _SOURCE_CLASS["circl_misp"], "publisher_category": _PUBLISHER_CATEGORY["circl_misp"], "raw_collection": "data/raw/circl_misp", "record_count": result.counts.get("circl_misp_records", 0), "provides": {"labels": True, "enrichment": False, "timestamps": True, "actor_aliases": False, "campaign_names": True, "malware_names": True, "tools": True, "techniques": True, "indicators": True}},
             {"connector_source": "malpedia", "source_name": _SOURCE_NAMES["malpedia"], "source_class": _SOURCE_CLASS["malpedia"], "publisher_category": _PUBLISHER_CATEGORY["malpedia"], "raw_collection": "data/raw/malpedia", "record_count": result.counts.get("malpedia_records", 0), "provides": {"labels": False, "enrichment": False, "timestamps": True, "actor_aliases": True, "campaign_names": False, "malware_names": True, "tools": False, "techniques": False, "indicators": False}},

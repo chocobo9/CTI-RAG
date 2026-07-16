@@ -32,13 +32,13 @@ The earlier v0.1 package below is a schema dry run, not the current dataset:
 `data/deliveries/intermediate_v0_1_2026-06-28/`.
 
 The current source scope is defined by
-`docs/frozen_postprocessing_baseline.md`:
+`docs/snapshot_postprocessing_baseline.md`:
 
 - OTX: 5,558 actor-evidenced Events and 5,867 source claims;
 - CIRCL MISP OSINT: 1,855 Events, 741,836 attributes and 43,656 objects;
 - Malpedia: 1,017 actors, 3,781 families, 2,743 aliases and 1,343 links;
 - MITRE: APT seed and ontology reference;
-- VT/pDNS/WHOIS: optional enrichment, outside the frozen attribution-aware core.
+- VT/pDNS/WHOIS: optional enrichment, outside the current snapshot's attribution-aware core.
 
 The current implementation target is a full read-only post-collection delivery,
 not another sampled package. It is not allowed to replace source claims with
@@ -164,7 +164,7 @@ current raw data should remain null or deferred rather than fabricated.
 | PDF reports | Raw PDF blob manifests: filename, sha256, size, content type; processed chunks have filename/page/section fields | Raw preservation and RAG text source; possible EntityMention/RelationMention only if a parser extracts entities/relations from text with provenance. | Publication date, author, organization, report identifier, and section identity are deferred unless extracted with provenance. |
 | WHOIS | Script support exists, local raw missing in current package | If collected, likely infrastructure metadata for domain, registrar, dates, registrant, nameservers. | Local raw missing; cannot map coverage until collected/present. |
 
-This mapping is the source-backed basis for the frozen post-processing adapter.
+This mapping is the source-backed basis for the current snapshot post-processing adapter.
 The important boundary is that source fields drive extraction. The schema should tolerate
 nulls and missing source-specific fields rather than forcing all sources into the
 same populated shape.
@@ -283,7 +283,7 @@ Why this default:
   reports, campaigns, or chunks;
 - it avoids making RAG chunking decisions part of the reusable dataset.
 
-Current decision: preserve one IntermediateRecord per frozen source record
+Current decision: preserve one IntermediateRecord per current snapshot source record
 version. An OTX Pulse, MISP Event, Malpedia actor and Malpedia family are
 different source record kinds. A projection may expose MISP Events as Reports
 and OTX Pulses as Events, but these consumer labels must not replace the source
@@ -292,7 +292,7 @@ record identity or provenance.
 ## Core Artifact Set
 
 The artifact names below prioritize the source document's terminology. The
-current frozen delivery contains `intermediate_records.jsonl`,
+current snapshot delivery contains `intermediate_records.jsonl`,
 `entity_mentions.jsonl`, `relation_mentions.jsonl`, `attribution_claims.jsonl`,
 `attribution_signals.jsonl`, `alias_mappings.jsonl`, `record_features.jsonl`,
 entity/relation inventories, temporal split metadata and Neo4j projections.
@@ -307,7 +307,7 @@ or `unmapped` according to the field type.
 
 Schema v0.1 was stress-tested with 10 representative processed records in
 `docs/intermediate/SNAPSHOT_20260628_schema_dry_run_10_records.md`. That dry run should be treated
-as evidence for schema refinement, not as the current frozen-data output. The
+as evidence for schema refinement, not as the current snapshot output. The
 current implementation uses schema `v1.0` and adds explicit source claims,
 multi-actor flags, discovery provenance and alias mappings.
 
