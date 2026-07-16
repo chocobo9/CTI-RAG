@@ -85,3 +85,35 @@ The current Stage 1 delivery is complete only when it contains:
 Supporting-source counts, conflicting-source counts and fused confidence are
 computed only after these source-backed rows exist. They must not overwrite the
 original claims.
+
+## Strict Stage 1 output contract
+
+The current implementation materializes the Stage 1 package at
+`data/processed/intermediate_frozen_v1_20260716/`. The required fields from the
+teammate reference are present in the corresponding JSONL artifacts, including
+when the source does not provide a value:
+
+- `intermediate_records.jsonl`: record identity, `source_name`, `source_type`,
+  `report_identifier`, `raw_object_reference`, `timestamps`/`timestamp`, actor
+  matches, aliases, tags, references, indicators, attribution metadata,
+  ambiguity, extracted entity and candidate relation references, and processing
+  status;
+- `entity_mentions.jsonl`: raw and canonical values, entity type, source field,
+  extraction method, confidence availability, resolution candidates and
+  ambiguity;
+- `relation_mentions.jsonl`: subject/object, raw and canonical predicate,
+  mapping status, extraction/source provenance, label availability and
+  ambiguity;
+- `attribution_claims.jsonl` and `attribution_signals.jsonl`: label
+  availability, source-provided attribution confidence (or `null`), supporting
+  and conflicting source counts (currently `null`, deferred to fusion), evidence
+  count/types, and ambiguity;
+- `record_features.jsonl`, entity/relation inventories, temporal split metadata,
+  processing report, and `neo4j/nodes.jsonl` plus `neo4j/relationships.jsonl`.
+
+The current generated counts are 13,554 records, 960,541 entity mentions,
+944,244 relation mentions, 6,436 attribution claims/signals, and 13,787 alias
+mappings. The relation inventory is source-backed and currently contains
+`uses`, `attributed-to`, `targets`, `associated-with`, `has-indicator`,
+`has-tag`, `mentions`, and `references`. Cross-source synonym collapse and
+support/conflict aggregation remain the subsequent data-fusion stage.

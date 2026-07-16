@@ -82,6 +82,19 @@ def test_frozen_processor_preserves_multi_actor_and_source_provenance(tmp_path: 
     assert otx_record["indicators"]["occurrence_count"] == 2
     assert otx_record["raw_ref"]["raw_path"].startswith("data/raw/otx/")
     assert otx_record["temporal_split"] == "train"
+    assert otx_record["source"]["report_identifier"] == "pulse-1"
+    assert otx_record["source"]["source_type"] == "threat_intelligence_platform"
+    assert otx_record["raw_object_reference"] == otx_record["raw_ref"]
+    assert otx_record["timestamps"]["report_publication_date"] == "2026-01-01T00:00:00Z"
+    assert set(("first_seen", "last_seen", "campaign_start", "campaign_end")) <= set(otx_record["timestamps"])
+    assert otx_record["attribution"]["attribution_confidence"] is None
+    assert otx_record["attribution"]["supporting_sources_count"] is None
+    assert "evidence_count" in otx_record["attribution"]
+    assert set(("actor_aliases", "campaign_aliases", "malware_aliases")) <= set(otx_record["aliases"])
+    entities = [json.loads(line) for line in (tmp_path / "out" / "intermediate" / "entity_mentions.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert all({"raw_value", "canonical_value", "entity_type", "source_field", "extraction_method", "confidence", "ambiguity"} <= set(entity) for entity in entities)
+    relations = [json.loads(line) for line in (tmp_path / "out" / "intermediate" / "relation_mentions.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert all({"subject", "predicate", "object", "derivation", "ambiguity"} <= set(relation) for relation in relations)
     assert (tmp_path / "out" / "intermediate" / "alias_mappings.jsonl").is_file()
     assert (tmp_path / "out" / "neo4j" / "nodes.jsonl").is_file()
     assert (tmp_path / "out" / "neo4j" / "relationships.jsonl").is_file()
