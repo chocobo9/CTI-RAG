@@ -270,7 +270,7 @@ def test_broken_record_id_join_fails(tmp_path: Path) -> None:
 
 def test_invalid_controlled_vocabulary_value_fails(tmp_path: Path) -> None:
     rows = _tiny_delivery(tmp_path)["relation_mentions"]
-    rows[0]["predicate"] = {**rows[0]["predicate"], "mapped_value": "associated-with"}
+    rows[0]["predicate"] = {**rows[0]["predicate"], "mapped_value": "related-to"}
     write_jsonl(tmp_path / "intermediate" / "relation_mentions.jsonl", rows)
 
     result = validate_delivery(tmp_path)

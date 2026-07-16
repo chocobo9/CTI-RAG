@@ -6,16 +6,23 @@
 > input when revising the adjustable Intermediate draft; do not treat it as current
 > Runtime, RAG, or storage authority.
 
+> **Current boundary:** collection is frozen. This document specifies the
+> post-collection transformation of the APT reverse-enrichment dataset. The
+> current source scope and counts are maintained in
+> `docs/frozen_postprocessing_baseline.md`.
+
 ## **Stage 1: Data Collection and Graph-Ready Preparation**
 
 The goal of Stage 1 is to build a reusable CTI dataset before Neo4j graph construction and model training. Instead of directly writing collected data into Neo4j, raw CTI records are first preserved in JSON format. Then entities, relationships, aliases, metadata, and features are extracted in a separate processing step. This makes the dataset reusable and allows the graph schema to be revised without recollecting the original data.
 
 ### **1\. Source Selection**
 
-The first step is to decide which CTI sources should be included. Sources should be separated into two categories:
+The frozen source set should be described by role rather than by a new
+collection plan. Sources should be separated into:
 
-* **Attribution-aware sources**, such as OTX pulses, MITRE ATT\&CK, MISP Galaxy, vendor reports, or CTI feeds that mention actors, campaigns, malware, tools, techniques, or attribution labels.  
-* **Enrichment-only sources**, such as passive DNS, ASN, WHOIS, GeoIP, URL parsing, and domain/IP metadata sources.
+* **APT/taxonomy references:** MITRE ATT\&CK and Malpedia.
+* **Attribution-aware/event sources:** actor-evidenced OTX Events and CIRCL MISP OSINT Events.
+* **Enrichment-only sources:** passive DNS, ASN, WHOIS, GeoIP, URL parsing, and domain/IP metadata sources when a later enrichment task explicitly enables them.
 
 For each source, the pipeline should record whether it provides labels, enrichment, timestamps, actor aliases, campaign names, malware names, tools, techniques, or only indicators.
 
@@ -29,18 +36,19 @@ Records without reliable timestamps should be marked rather than silently discar
 
 All selected CTI data should first be stored as raw or near-raw JSON. At this stage, the pipeline should not remove ambiguous records, should not perform graph construction, and should not decide final training labels.
 
-For OTX for example, the raw collection should preserve:
+For the frozen OTX input, the post-processing layer must consume and reference:
 
 * raw search responses;  
 * raw pulse detail responses;  
 * raw indicator responses;  
-* query aliases that discovered each pulse;  
+* query aliases and discovery paths that discovered each pulse;
 * source metadata;  
 * publication and collection timestamps;  
-* ambiguity metadata;  
+* source-claim status, multi-actor labels, ambiguity metadata and deferred-query status;
 * duplicate discovery metadata.
 
-The goal is to preserve evidence first and decide later which records are used for training, analysis, enrichment, or graph construction.
+The goal is to preserve evidence first and decide later which records are used for training, analysis, enrichment, or graph construction. No new
+network collection is part of this stage.
 
 ### **4\. Unified Intermediate JSON Schema**
 
@@ -62,7 +70,8 @@ Each intermediate record should include:
 * candidate relationships;  
 * processing status.
 
-This intermediate format should be ready for later conversion into Neo4j.
+This intermediate format should be ready for later conversion into Neo4j, but
+Neo4j projection must not be the place where source claims are collapsed.
 
 ### **5\. Entity Resolution and Alias Mapping**
 

@@ -46,23 +46,14 @@ fixed field set (`otx.pulse_metadata`, `whois_connector` keeps
 registrar/iana_id/created/expires/registrant_email/name_servers, etc.). Anything
 not literally listed is dropped. With no raw kept, the whitelist is destructive.
 
-**(d) Render-and-discard — *partial* raw store, not unified.** Correction to an
-earlier draft of this doc: a raw store **does exist**. The canonical OTX
-collector stores raw `/search/pulses`, `/pulses/{pulse_id}`, and
-`/pulses/{pulse_id}/indicators` responses through RawStore, versioned by
-`(source_id, fetched_at)`, and records collection audit artifacts under
-`data/raw/otx_collection_runs/<run_id>/`. `data/raw/mitre/enterprise-attack.json`
-is the MITRE bundle; `scripts/rebuild_otx_jsonl.py` rebuilds processed OTX from
-raw. The remaining problems are narrower: (i) raw exists only for OTX and MITRE
-— **VT / WHOIS / pDNS have none**; (ii) OTX raw collection is a side script,
-**not wired through the connector pipeline**; (iii) the processed corpus may
-still be rebuilt by older connector assumptions, so processed and current code
-can drift (see table). The current actor-centric OTX collection is recorded in
-`docs/otx_raw_collection_status.md`: actor/name/alias discovery and
-actor-evidenced Pulse-detail gathering are phase-complete, with query-only
-candidates preserved and explicitly deferred from detail expansion. Indicator
-endpoint backfill is a separate optional downstream scope, not an open raw
-gathering requirement for this phase.
+**(d) Frozen source stores.** The current collection baseline is documented in
+`docs/frozen_postprocessing_baseline.md`. OTX actor/name/alias discovery and
+actor-evidenced Pulse-detail gathering are phase-complete. CIRCL MISP Events and
+Malpedia metadata are also stored with manifests, hashes and normalized source
+views. Query-only OTX candidates remain auditable but are not expanded into
+Event detail. The remaining work in this phase is read-only post-processing;
+the collectors are not reopened. VT, WHOIS and pDNS are optional downstream
+enrichment inputs and are not part of the frozen attribution-aware core.
 
 ### Full hardcode / drop-risk inventory
 
@@ -107,18 +98,15 @@ Every source produces **two separate things**, and they must not be conflated:
    - candidate `Entity` / `Fact` / `relations[]` — see knowledge doc
 
 If a projection is wrong or the schema changes, re-run projection over the raw.
-Today this works only partially: OTX and MITRE have raw records
-(`scripts/fetch_otx_mitre_actor_raw.py`, `data/raw/`), and OTX collection now
-uses RawStore append-only/versioned writes plus run-level audit artifacts. See
-`docs/otx_raw_collection_status.md` for its final scoped population and
-coverage.
-VT/WHOIS/pDNS still have no equivalent raw store, and raw collection is not yet
-wired through a unified connector pipeline. **[change]** — extend raw collection
-to all sources and route projection through it.
+The frozen OTX, CIRCL MISP and Malpedia stores are the inputs to the current
+projection seam. The post-processing implementation must consume their existing
+raw or normalized views without issuing network requests. Any future VT/WHOIS/
+pDNS collection is a separate explicit scope and must not change this frozen
+baseline.
 
 ---
 
-## 4. Collection control loop across sources **[change]**
+## 4. Collection control loop across sources (historical collection contract)
 
 Raw preservation does not require indiscriminately expanding every search hit.
 Every seeded or linked collection should declare four populations:
@@ -142,6 +130,8 @@ the seed that found a record into a source claim.
 | narrative reports | known actor/report index → document IDs | document metadata, publisher labels, or an explicit in-document claim preserved as evidence | search-engine query match or generated summary |
 | infrastructure (pDNS/WHOIS) | selected domain/IP → resolution or registration records | an explicit Event-IOC support gap and a joinable typed indicator | expanding every IOC merely because it exists |
 | file intelligence (VT) | selected hash → file report | typed hash from an in-scope Event and an explicit support-evidence need | unrelated similar files or graph-neighbour expansion without a bound |
+| CIRCL MISP OSINT | feed Event identity → Event detail | preserved Event tags, Galaxy context, attributes and objects | generic tag text alone as a resolved actor |
+| Malpedia | APT/taxonomy reference → actor/family metadata | canonical names, aliases, references and explicit actor-family links | treating a taxonomy link as incident attribution |
 
 For each source, record candidate identity, discovery provenance, routing
 decision/reason, raw reference, terminal status, retryability, and declared

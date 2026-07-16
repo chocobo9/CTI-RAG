@@ -14,6 +14,7 @@ from rag_cti.intermediate.delivery import (
     assemble_intermediate_delivery_package,
     build_intermediate_delivery_package,
 )
+from rag_cti.intermediate.frozen import AliasRegistry, FrozenBuildResult, build_frozen_intermediate_package
 from rag_cti.intermediate.infrastructure import (
     InfrastructureRawRef,
     InfrastructureRows,
@@ -52,6 +53,8 @@ __all__ = [
     "DeliveryAssemblyError",
     "DeliveryBuildResult",
     "DeliveryRows",
+    "AliasRegistry",
+    "FrozenBuildResult",
     "InfrastructureRawRef",
     "InfrastructureRows",
     "MITRERawRef",
@@ -64,6 +67,7 @@ __all__ = [
     "assemble_intermediate_delivery_package",
     "build_intermediate_delivery_package",
     "build_infrastructure_intermediate_package",
+    "build_frozen_intermediate_package",
     "build_mitre_intermediate_package",
     "build_otx_intermediate_package",
     "build_otx_downstream_projection",

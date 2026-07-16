@@ -14,7 +14,17 @@ _ID_DELIMITER = "\x1f"
 CONTROLLED_VOCABULARIES: Mapping[str, frozenset[str]] = MappingProxyType(
     {
         "connector_source": frozenset(
-            {"otx", "mitre", "pdns", "vt", "whois", "pdf", "unknown"}
+            {
+                "otx",
+                "mitre",
+                "circl_misp",
+                "malpedia",
+                "pdns",
+                "vt",
+                "whois",
+                "pdf",
+                "unknown",
+            }
         ),
         "source_class": frozenset(
             {
@@ -41,6 +51,9 @@ CONTROLLED_VOCABULARIES: Mapping[str, frozenset[str]] = MappingProxyType(
                 "actor",
                 "campaign",
                 "family",
+                "malware",
+                "software",
+                "tool",
                 "technique",
                 "tactic",
                 "indicator",
@@ -56,6 +69,8 @@ CONTROLLED_VOCABULARIES: Mapping[str, frozenset[str]] = MappingProxyType(
                 "cve",
                 "tag",
                 "external_reference",
+                "report",
+                "reference",
                 "source",
                 "source_contributor",
                 "timestamp",
@@ -74,6 +89,14 @@ CONTROLLED_VOCABULARIES: Mapping[str, frozenset[str]] = MappingProxyType(
                 "located-in",
                 "uses-nameserver",
                 "has-subdomain",
+                "has-indicator",
+                "mentions",
+                "references",
+                "associated-with",
+                "part-of",
+                "observed-in",
+                "supports",
+                "contradicts",
                 "mitigates",
                 "detects",
                 "unmapped",

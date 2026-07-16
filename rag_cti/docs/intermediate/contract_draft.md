@@ -28,23 +28,21 @@ Repro/audit runner:
 
 - `scripts/build_intermediate_v0_1_delivery.py`
 
-Delivered source scope:
+The earlier v0.1 package below is a schema dry run, not the current dataset:
+`data/deliveries/intermediate_v0_1_2026-06-28/`.
 
-- OTX: 20 real `data/raw/otx` samples.
-- pDNS: 20 real `data/raw/pdns` RawStore wrapper samples.
-- VirusTotal: 20 real `data/raw/vt` RawStore wrapper samples.
-- MITRE: full local ATT&CK bundle records supported by the v0.1 exporter.
+The current source scope is defined by
+`docs/frozen_postprocessing_baseline.md`:
 
-Delivered source counts: `{"mitre": 22125, "otx": 20, "pdns": 20, "vt": 20}`.
-Delivered artifact counts: `intermediate_records=22185`,
-`entity_mentions=45981`, `relation_mentions=24751`,
-`attribution_signals=45`, `record_features=22185`.
+- OTX: 5,558 actor-evidenced Events and 5,867 source claims;
+- CIRCL MISP OSINT: 1,855 Events, 741,836 attributes and 43,656 objects;
+- Malpedia: 1,017 actors, 3,781 families, 2,743 aliases and 1,343 links;
+- MITRE: APT seed and ontology reference;
+- VT/pDNS/WHOIS: optional enrichment, outside the frozen attribution-aware core.
 
-The final acceptance audit passed. `validate_delivery(...)` passed with 0
-failures and 54 pDNS publisher-category warnings.
-
-This is not a full OTX/pDNS/VT corpus export, not a production RAG/GNN/Neo4j
-exporter, and not final labelling/confidence/source-reliability output.
+The current implementation target is a full read-only post-collection delivery,
+not another sampled package. It is not allowed to replace source claims with
+final labels or to calculate source reliability during normalization.
 
 As of this v0.1 checkpoint, no existing RAG index is rebuilt from the
 intermediate package. Existing RAG chunk ids, vector payloads, Qdrant writes,
@@ -157,15 +155,17 @@ current raw data should remain null or deferred rather than fabricated.
 
 | Source | Source-backed fields available now | Contract mapping | Notes / deferred |
 | --- | --- | --- | --- |
-| OTX | `id`, `name`, `description`, `created`, `modified`, `author`, `author_name`, `adversary`, `attack_ids`, `malware_families`, `targeted_countries`, `industries`, `indicators`, `references`, `tags`, `TLP` | IntermediateRecord source/timestamps; EntityMention for actor, technique, malware/family, country, industry/sector if used, indicators, tags, references; source contributor metadata for `author` / `author_name`; RelationMention for source-backed adversary-to-technique/family/country candidate relations; AttributionSignal for `adversary`. | `author` stays metadata-first; OTX `adversary` maps to `weak_direct_attribution`; exact downstream use of `industries` as sector remains deferred. |
+| OTX | Events, source claims, actor label status, attack IDs, malware families, targeted countries, indicator summaries, references and raw provenance | IntermediateRecord; EntityMention for actor, technique, family, location, indicator and reference; RelationMention for source-backed candidate relations; AttributionClaim/AttributionSignal for each source claim | query actor is discovery provenance; multi-actor, ambiguous and unmapped claims remain separate |
+| CIRCL MISP OSINT | Event metadata, tags, Galaxy context, attributes, objects, EventReports, source claims and observation summaries | Event-centered IntermediateRecord; EntityMention for actor, campaign, malware, technique, indicator and tags; `has-indicator` candidate relations; AttributionClaim for actor-like Galaxy/tag context | explicit source context is evidence, not a final incident label; generic tags remain unresolved |
+| Malpedia | actor/family metadata, aliases, references and actor-family links | actor/family IntermediateRecords; alias mappings; `associated-with` taxonomy relations; references | taxonomy bridge only; do not promote actor-family association to incident attribution |
 | MITRE ATT&CK | STIX object `id`, `type`, `name`, `description`, `created`, `modified`, aliases, external references, kill-chain phases, relationship `relationship_type`, `source_ref`, `target_ref` | Ontology/source metadata; EntityMention for groups, software, campaigns, techniques, tactics, mitigations, detection strategies; RelationMention for source-backed STIX relationships (`uses`, `attributed-to`, `mitigates`, `detects`) and ontology edges. | Publisher category is `knowledge_base`; do not fabricate target relationships absent from ATT&CK bundle. Only `attributed-to` is a direct attribution/labelling cue; `uses`, `mitigates`, and `detects` remain source-backed relations with `label_availability=none`. |
 | pDNS | Raw `passive_dns` records; projected `domain`, `first_seen`, `last_seen`, `resolutions`, `subdomains`, `ip_addresses`, `asns` | Infrastructure EntityMention for domain, IP, ASN, country, subdomain; RelationMention for `resolves-to`, `belongs-to`, `located-in`, `uses-nameserver`, `has-subdomain`; timestamps from observed first/last. | No direct attribution; any attribution is later inherited via joins, not source-provided. |
 | VirusTotal | Raw domain response `data.id`, attributes such as `creation_date`, `expiration_date`, `last_modification_date`, `last_dns_records`, `last_analysis_stats`, `categories`, `tags`, `registrar`, `whois`, `rdap`, certificate fields | Infrastructure/enrichment metadata; EntityMention for domain, nameservers, IPs if extracted, tags/categories if used; RelationMention for DNS-derived `resolves-to` and `uses-nameserver`; timestamp candidates from VT attributes. | Treat as enrichment/source evidence, not attribution; preserve VT fields as metadata/features first, graph-node promotion deferred. |
 | PDF reports | Raw PDF blob manifests: filename, sha256, size, content type; processed chunks have filename/page/section fields | Raw preservation and RAG text source; possible EntityMention/RelationMention only if a parser extracts entities/relations from text with provenance. | Publication date, author, organization, report identifier, and section identity are deferred unless extracted with provenance. |
 | WHOIS | Script support exists, local raw missing in current package | If collected, likely infrastructure metadata for domain, registrar, dates, registrant, nameservers. | Local raw missing; cannot map coverage until collected/present. |
 
-This mapping should be refined before implementation, but it already sets the
-important boundary: source fields drive extraction. The schema should tolerate
+This mapping is the source-backed basis for the frozen post-processing adapter.
+The important boundary is that source fields drive extraction. The schema should tolerate
 nulls and missing source-specific fields rather than forcing all sources into the
 same populated shape.
 
@@ -268,6 +268,8 @@ V0.1 publisher category defaults:
 - `pdns`: `unknown`
 - `whois`: `unknown`
 - `pdf`: `unknown` unless a report publisher is extracted with provenance
+- `circl_misp`: `community`
+- `malpedia`: `knowledge_base`
 
 ## Record Unit
 
@@ -281,17 +283,21 @@ Why this default:
   reports, campaigns, or chunks;
 - it avoids making RAG chunking decisions part of the reusable dataset.
 
-V0.1 decision: do not materialize Report/Event as a base artifact. If added
-later, it should link to one or more IntermediateRecords rather than replace
-them.
+Current decision: preserve one IntermediateRecord per frozen source record
+version. An OTX Pulse, MISP Event, Malpedia actor and Malpedia family are
+different source record kinds. A projection may expose MISP Events as Reports
+and OTX Pulses as Events, but these consumer labels must not replace the source
+record identity or provenance.
 
 ## Core Artifact Set
 
-The artifact names below prioritize the source document's terminology. In
-particular, "Metadata and Attribution Signals" is represented as
-`attribution_signals.jsonl`, not a generic label table.
+The artifact names below prioritize the source document's terminology. The
+current frozen delivery contains `intermediate_records.jsonl`,
+`entity_mentions.jsonl`, `relation_mentions.jsonl`, `attribution_claims.jsonl`,
+`attribution_signals.jsonl`, `alias_mappings.jsonl`, `record_features.jsonl`,
+entity/relation inventories, temporal split metadata and Neo4j projections.
 
-## Schema Contract v0.1
+## Historical Schema Contract v0.1
 
 This section defines the first schema pass. It is intentionally conservative:
 required fields are the fields needed for joins, traceability, validation, and
@@ -301,7 +307,9 @@ or `unmapped` according to the field type.
 
 Schema v0.1 was stress-tested with 10 representative processed records in
 `docs/intermediate/SNAPSHOT_20260628_schema_dry_run_10_records.md`. That dry run should be treated
-as evidence for schema refinement, not as an implementation output.
+as evidence for schema refinement, not as the current frozen-data output. The
+current implementation uses schema `v1.0` and adds explicit source claims,
+multi-actor flags, discovery provenance and alias mappings.
 
 ## Schema v0.1 Decision Close-Out
 
