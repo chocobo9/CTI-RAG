@@ -5,6 +5,10 @@ public seam accepts a repository root and an output directory, then adapts the
 already persisted OTX, CIRCL MISP and Malpedia views into one graph-ready
 intermediate package.  Source claims are kept as claims; resolution only adds
 canonical and candidate identities.
+
+The snapshot layer stops before cross-source fusion: it records what each
+source said, keeps uncertainty visible, and leaves support/conflict aggregation
+to the next stage.
 """
 
 from __future__ import annotations
@@ -214,6 +218,8 @@ def build_snapshot_intermediate_package(
     generated = generated_at or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     output.mkdir(parents=True, exist_ok=True)
     intermediate = output / "intermediate"
+    # Keep each artifact independently consumable.  A downstream graph, model,
+    # or audit tool can use only the rows it needs without reparsing records.
     artifacts = _Artifacts(
         records=_JsonlWriter(intermediate / "intermediate_records.jsonl"),
         entities=_JsonlWriter(intermediate / "entity_mentions.jsonl"),
@@ -224,11 +230,14 @@ def build_snapshot_intermediate_package(
         features=_JsonlWriter(intermediate / "record_features.jsonl"),
     )
     result = SnapshotBuildResult(output_dir=output)
+    # Build the registry once from MITRE and Malpedia.  Collisions are retained
+    # as candidate mappings instead of being resolved by a fuzzy guess.
     registry = _build_alias_registry(root)
     for mapping in registry.mappings():
         artifacts.aliases.write(mapping)
         result.counts["alias_mappings"] += 1
 
+    # Adapters append source-backed rows only; none of them makes network calls.
     try:
         _process_otx(root, artifacts, registry, result, temporal_cutoff)
         _process_misp(root, artifacts, registry, result, temporal_cutoff)
@@ -236,6 +245,8 @@ def build_snapshot_intermediate_package(
     finally:
         artifacts.close()
 
+    # The Neo4j files are a projection of the intermediate rows, not a second
+    # source of truth.  Rebuilding them never changes the source claims.
     _write_projection(output, root, dataset_version)
     _write_metadata(
         output,
@@ -304,6 +315,8 @@ def _process_otx(
         claims: list[dict[str, Any]] = []
         event_mention = _mention(record_id, event_id, "event", "event_id", "source_field", "not_applicable")
         entities.append(event_mention)
+        # OTX adversary fields are preserved as weak direct attribution cues.
+        # Query terms and discovery paths are provenance, never new claims.
         for claim in claims_by_event.get(event_id, []):
             raw_label = _text(claim.get("raw_label") or claim.get("raw_field_value"))
             if not raw_label:
@@ -348,6 +361,8 @@ def _process_otx(
             entities.append(target)
             relations.append(_relation(record_id, event_mention, "references", target, "source_field", "none"))
 
+        # The current OTX processed snapshot exposes indicator counts/types;
+        # it intentionally does not materialize every indicator as a new row.
         summary = summaries.get(event_id, {})
         record = _record(
             record_id=record_id,
@@ -391,6 +406,8 @@ def _process_misp(
         event_mention = _mention(record_id, event_id, "event", "event_id", "source_field", "not_applicable")
         entities.append(event_mention)
         tags = _tag_values(event.get("tags_raw", []))
+        # MISP tags are retained as tag entities.  Only explicitly parsed
+        # actor-like context becomes an attribution claim.
         for tag in filter(None, tags):
             tag_entity = _mention(record_id, tag, "tag", "Event.Tag[].name", "source_field", "not_applicable")
             entities.append(tag_entity)
@@ -554,10 +571,14 @@ def _record(
     temporal_cutoff: str | None,
 ) -> dict[str, Any]:
     normalized_timestamps = _normalize_timestamps(timestamps)
+    # Enrich claims before writing either the record or its claim/signal tables;
+    # this prevents the inline and standalone representations from diverging.
     enriched_claims = _enrich_claims(claims, entities, relations, references)
     label_availability = _record_label_availability(enriched_claims)
     attribution_confidence = _single_claim_value(enriched_claims, "attribution_confidence")
     aliases = _alias_bundle(entities, enriched_claims)
+    # These counts are intentionally null until data fusion compares claims
+    # across records and sources.  Stage 1 preserves the fields, not the answer.
     attribution = {
         "label_availability": label_availability,
         "attribution_confidence": attribution_confidence,
@@ -644,6 +665,8 @@ def _write_rows(
     result.counts["intermediate_records"] += 1
     source = record.get("source", {}).get("connector_source", "unknown")
     result.counts[f"{source}_records"] += 1
+    # Prefer the enriched claims embedded in the record so every artifact has
+    # identical evidence and ambiguity metadata.
     claim_rows = list(record.get("attribution_claims", claims))
     claim_by_id = {claim.get("attribution_claim_id"): claim for claim in claim_rows}
     signal_rows = []
@@ -879,6 +902,8 @@ def _write_metadata(
     relation_mapping_counts: Counter[str] = Counter()
     claim_counts: Counter[str] = Counter()
     claim_label_counts: Counter[str] = Counter()
+    # Inventories are derived after all adapters finish, ensuring their counts
+    # describe the actual output rather than adapter-local estimates.
     for row in _read_jsonl(intermediate / "entity_mentions.jsonl"):
         entity_counts[_text(row.get("entity_type")) or "unknown"] += 1
         entity_id = _text(row.get("resolution", {}).get("entity_id"))
@@ -909,6 +934,8 @@ def _write_projection(output: Path, root: Path, dataset_version: str) -> None:
     try:
         seen_nodes: set[str] = set()
         mention_to_node: dict[str, str] = {}
+        # Relations reference mention IDs, while Neo4j nodes use resolved IDs
+        # where available.  This map keeps graph endpoints consistent.
         for mention in _read_jsonl(output / "intermediate" / "entity_mentions.jsonl"):
             entity_id = mention.get("resolution", {}).get("entity_id") or mention.get("entity_mention_id")
             mention_to_node[mention.get("entity_mention_id")] = entity_id
