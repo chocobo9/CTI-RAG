@@ -486,8 +486,14 @@ def test_discovery_uses_legacy_limit_for_touched_queries_and_new_limit_for_untou
     assert collector.run(args) == 0
     assert sorted(limits) == [20, 100]
     rows = _jsonl(args.run_dir / "search_pages.jsonl")
-    assert rows[-2]["search_page_limit"] == 20
-    assert rows[-1]["search_page_limit"] == 100
+    assert {
+        row["query_normalized"]: row["search_page_limit"]
+        for row in rows
+        if "search_page_limit" in row
+    } == {
+        "actor one": 20,
+        "shared alias": 100,
+    }
     terminal = _jsonl(args.run_dir / "query_terminal_states.jsonl")
     assert {row["query_normalized"]: row["search_page_limit"] for row in terminal} == {
         "actor one": 20,
