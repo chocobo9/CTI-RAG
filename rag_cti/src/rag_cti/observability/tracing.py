@@ -112,12 +112,13 @@ def traced(
         try:
             from langsmith import traceable
 
-            @traceable(run_type=run_type, name=name)
+            trace_decorator = cast(Callable[[F], F], traceable(run_type=run_type, name=name))
+
             @functools.wraps(fn)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
                 return fn(*args, **kwargs)
 
-            return cast(F, wrapper)
+            return trace_decorator(cast(F, wrapper))
         except Exception as exc:
             logger.warning(
                 "langsmith traceable setup failed — tracing disabled for this function",

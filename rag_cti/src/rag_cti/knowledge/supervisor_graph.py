@@ -23,9 +23,9 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import Any, TypeVar, cast
 
 from rag_cti.config import Settings
 from rag_cti.knowledge.agent_tools import RunRetrieve
@@ -43,6 +43,8 @@ from rag_cti.knowledge.supervisor_nodes import (
 from rag_cti.observability.tracing import add_trace_metadata, traced
 from rag_cti.runtime_harness import ProposedBranch, run_agentic_gather_investigation
 from rag_cti.types import GeneratedAnswer
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 _SUPERVISOR_SYSTEM = """You are a CTI ORCHESTRATOR. You do NOT answer questions yourself and \
 you do NOT gather evidence yourself — you only coordinate worker sub-agents via tools.
@@ -150,6 +152,8 @@ def run_supervised_answer(
     """
     from langchain_core.tools import tool
 
+    typed_tool = cast(Callable[[F], Any], tool)
+
     reports: list[BranchReport] = []
     ledgers: list[EvidenceLedger] = []
     reports_lock = threading.Lock()
@@ -210,10 +214,12 @@ def run_supervised_answer(
                 facet=branch.facet,
             )
 
-        with ThreadPoolExecutor(max_workers=max(1, min(len(branches), settings.supervisor_max_branches))) as ex:
+        with ThreadPoolExecutor(
+            max_workers=max(1, min(len(branches), settings.supervisor_max_branches))
+        ) as ex:
             list(ex.map(_one, branches))
 
-    @tool
+    @typed_tool
     def dispatch_worker(sub_question: str, focus_entity: str | None = None) -> dict[str, Any]:
         """Assign one self-contained sub-question to a worker sub-agent; it gathers and
         returns a report. Returns a bounded summary (entity, technique count, answer preview)."""
@@ -231,7 +237,7 @@ def run_supervised_answer(
             "stop_reason": report.stop_reason,
         }
 
-    @tool
+    @typed_tool
     def compose_answer() -> str:
         """Combine all gathered branch reports into the final answer (call once, at the end)."""
         if not reports:
@@ -286,9 +292,7 @@ def run_supervised_answer(
     with reports_lock:
         report_snapshot = list(reports)
         ledger_snapshot = list(ledgers)
-    answer_text = composed.get("text") or compose(
-        composer, query, report_snapshot, history=history
-    )
+    answer_text = composed.get("text") or compose(composer, query, report_snapshot, history=history)
 
     master = merge_branch_ledgers(ledger_snapshot)
     gen_answer = GeneratedAnswer(
@@ -320,4 +324,6 @@ def run_supervised_answer(
         cited_ids=list(answer.cited_ids),
         dropped_citation_count=answer.dropped_citation_count,
     )
-    return answer.model_copy(update={"branch_count": len(report_snapshot), "decomposed": decomposed})
+    return answer.model_copy(
+        update={"branch_count": len(report_snapshot), "decomposed": decomposed}
+    )

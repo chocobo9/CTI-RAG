@@ -15,10 +15,17 @@ from collections import Counter
 from collections.abc import Callable, Iterable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from rag_cti.retrieval.constraint_extract import ExtractedEntity, build_constraint
 from rag_cti.types import PayloadConstraint, QueryResult
+
+if TYPE_CHECKING:
+    from rag_cti.config import Settings
+    from rag_cti.knowledge.agentic_nodes import GeneratorProto, JudgeFn
+    from rag_cti.knowledge.agentic_state import AgenticAnswer
+    from rag_cti.knowledge.composer import ComposeFn
+    from rag_cti.knowledge.fact_store import FactStoreProto
 
 AdmissionDecision = Literal["single_agent", "supervisor"]
 UnderstandingStatus = Literal["ok", "fallback", "parse_error"]
@@ -102,16 +109,16 @@ class RuntimeDeps:
     branch reports, and answers intentionally does not live here.
     """
 
-    settings: object
+    settings: Settings
     retrieval_pipeline: object
     run_retrieve: Callable[[str, int], QueryResult]
-    fact_store: object | None
+    fact_store: FactStoreProto | None
     ontology_nodes: list[dict[str, object]]
     query_understanding: Callable[[str, list[str] | None], RuntimeQueryUnderstanding]
     gather_model: object
-    generator: object
-    judge: object
-    composer: object
+    generator: GeneratorProto
+    judge: JudgeFn
+    composer: ComposeFn
 
 
 @dataclass
@@ -400,9 +407,8 @@ def _count_setup_progress(observations: Iterable[RuntimeObservation]) -> int:
             continue
         if observation.event_metadata.get("duplicate") is True:
             continue
-        if (
-            observation.tool_name == "resolve_entity"
-            and not _resolved_entities_from_observations((observation,))
+        if observation.tool_name == "resolve_entity" and not _resolved_entities_from_observations(
+            (observation,)
         ):
             continue
         delta = observation.ledger_delta
@@ -422,7 +428,7 @@ class RuntimeInvestigationResult:
     """Internal result for runtime-owned investigations that need the ledger."""
 
     ledger: Any
-    answer: Any
+    answer: AgenticAnswer
 
 
 _RUNTIME_GATHER_SYSTEM = """You are a CTI analyst GATHERING evidence for a question. Your ONLY job is to call \
@@ -538,11 +544,11 @@ class RuntimeTurnAdapter:
     def __init__(
         self,
         *,
-        settings: object,
+        settings: Settings,
         query: str,
         history: list[str] | None,
         run_retrieve: Callable[[str, int], QueryResult],
-        fact_store: object | None,
+        fact_store: FactStoreProto | None,
         ontology_nodes: list[dict[str, Any]],
         chat_model: Any,
         ledger: Any,
@@ -582,7 +588,9 @@ class RuntimeTurnAdapter:
         return _ledger_snapshot(ledger)
 
     @staticmethod
-    def _ledger_delta(before: dict[str, set[str] | int], after: dict[str, set[str] | int]) -> dict[str, Any]:
+    def _ledger_delta(
+        before: dict[str, set[str] | int], after: dict[str, set[str] | int]
+    ) -> dict[str, Any]:
         return _ledger_delta(before, after)
 
     @staticmethod
@@ -623,7 +631,9 @@ class RuntimeTurnAdapter:
         elif status == "rejected":
             model_visible_content = result_summary or f"Tool call rejected: {tool_name}"
         elif status == "error":
-            model_visible_content = result_summary or f"{tool_name or 'provider'} failed: {error_message}"
+            model_visible_content = (
+                result_summary or f"{tool_name or 'provider'} failed: {error_message}"
+            )
         else:
             model_visible_content = result_summary
         return RuntimeObservation(
@@ -698,9 +708,7 @@ class RuntimeTurnAdapter:
         proposal = self.extract_action_proposals((call,))[0]
         return self._record_skipped_action_proposal(proposal, reason)
 
-    def _record_skipped_action_proposal(
-        self, proposal: RuntimeActionProposal, reason: str
-    ) -> str:
+    def _record_skipped_action_proposal(self, proposal: RuntimeActionProposal, reason: str) -> str:
         before = self._ledger_snapshot(self._ledger)
         result = {"error": f"tool call skipped: {reason}", "reason": reason}
         observation = self._make_observation(
@@ -717,9 +725,7 @@ class RuntimeTurnAdapter:
         self._record_observation(observation)
         return observation.model_visible_content
 
-    def _invoke_graph_outline(
-        self, subject_id: str
-    ) -> tuple[dict[str, Any], dict[str, Any]]:
+    def _invoke_graph_outline(self, subject_id: str) -> tuple[dict[str, Any], dict[str, Any]]:
         from rag_cti.knowledge import agent_tools
 
         if self._fact_store is None:
@@ -742,7 +748,7 @@ class RuntimeTurnAdapter:
         from rag_cti.knowledge import agent_tools
 
         if self._fact_store is None:
-            rows = ()
+            rows: tuple[Any, ...] = ()
         else:
             rows = self._fact_store.graph_query(
                 subject_id=subject_id,
@@ -762,23 +768,17 @@ class RuntimeTurnAdapter:
                 "composing the answer - this is the complete set; do not query this "
                 "category again."
             ),
-        }, {
-            "graph_query": {"facts": [row.model_dump(mode="python") for row in rows]}
-        }
+        }, {"graph_query": {"facts": [row.model_dump(mode="python") for row in rows]}}
 
-    def _invoke_facts_for_evidence(
-        self, chunk_id: str
-    ) -> tuple[dict[str, Any], dict[str, Any]]:
+    def _invoke_facts_for_evidence(self, chunk_id: str) -> tuple[dict[str, Any], dict[str, Any]]:
         from rag_cti.knowledge import agent_tools
 
         if self._fact_store is None:
-            rows = ()
+            rows: tuple[Any, ...] = ()
         else:
             rows = self._fact_store.facts_for_evidence(chunk_id)
         return agent_tools.summarize_facts_for_evidence(rows), {
-            "facts_for_evidence": {
-                "facts": [row.model_dump(mode="python") for row in rows]
-            }
+            "facts_for_evidence": {"facts": [row.model_dump(mode="python") for row in rows]}
         }
 
     def _invoke_retrieve(self, query: str, top_k: int) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -791,7 +791,7 @@ class RuntimeTurnAdapter:
 
     @staticmethod
     def _build_tools(
-        fact_store: object | None,
+        fact_store: FactStoreProto | None,
         ontology_nodes: list[dict[str, Any]],
         run_retrieve: Callable[[str, int], QueryResult],
     ) -> list[Any]:
@@ -799,22 +799,19 @@ class RuntimeTurnAdapter:
 
         from rag_cti.knowledge import agent_tools
 
-        @tool
         def resolve_entity(name: str) -> list[dict[str, str]]:
             """Resolve a threat-intel name (e.g. 'APT29') to entity_id candidates."""
             if fact_store is None:
                 return []
             return agent_tools.resolve_entity_candidates(name, ontology_nodes)
 
-        @tool
         def graph_outline(subject_id: str) -> dict[str, Any]:
             """Coverage map for a subject_id: which relation categories exist and how many."""
             if fact_store is None:
                 return {"found": False, "entity_id": subject_id}
-            outline = fact_store.graph_outline(subject_id)  # type: ignore[attr-defined]
+            outline = fact_store.graph_outline(subject_id)
             return agent_tools.summarize_outline(outline, subject_id)
 
-        @tool
         def graph_query(
             subject_id: str,
             predicate: str | None = None,
@@ -824,7 +821,7 @@ class RuntimeTurnAdapter:
             """Enumerate the exact facts for (subject_id[, predicate, object_type])."""
             if fact_store is None:
                 return {"total": 0, "shown": 0, "truncated": False, "objects": []}
-            rows = fact_store.graph_query(  # type: ignore[attr-defined]
+            rows = fact_store.graph_query(
                 subject_id=subject_id,
                 predicate=predicate,
                 object_type=object_type,
@@ -844,20 +841,24 @@ class RuntimeTurnAdapter:
                 ),
             }
 
-        @tool
         def facts_for_evidence(chunk_id: str) -> dict[str, Any]:
             """Which facts a given evidence chunk_id supports (reverse provenance bridge)."""
             if fact_store is None:
                 return {"count": 0, "facts": []}
-            rows = fact_store.facts_for_evidence(chunk_id)  # type: ignore[attr-defined]
+            rows = fact_store.facts_for_evidence(chunk_id)
             return agent_tools.summarize_facts_for_evidence(rows)
 
-        @tool
         def retrieve(query: str, top_k: int = 10) -> dict[str, Any]:
             """Semantic search over source prose; returns chunk snippets."""
             return agent_tools.summarize_chunks(run_retrieve(query, top_k).results)
 
-        return [resolve_entity, graph_outline, graph_query, facts_for_evidence, retrieve]
+        return [
+            tool(resolve_entity),
+            tool(graph_outline),
+            tool(graph_query),
+            tool(facts_for_evidence),
+            tool(retrieve),
+        ]
 
     def _dispatch(self, name: str, args: dict[str, Any]) -> Any:
         proposal = self._make_action_proposal(
@@ -909,6 +910,7 @@ class RuntimeTurnAdapter:
         args = proposal.args
         before = self._ledger_snapshot(self._ledger)
         ledger_delta: dict[str, Any] | None = None
+        result: Any
         tool = self._tools_by_name.get(name)
         if tool is None:
             result = {"error": f"unknown tool {name}"}
@@ -1004,7 +1006,7 @@ class RuntimeTurnAdapter:
                     "resolve_entity": {
                         "name": str(args.get("name") or ""),
                         "candidates": hit,
-                    }
+                    },
                 }
             observation = self._make_observation(
                 tool_name=name,
@@ -1020,47 +1022,47 @@ class RuntimeTurnAdapter:
             self._record_observation(observation)
             return observation.model_visible_content
         try:
-            structured_payload: dict[str, Any] | None = None
+            runtime_payload: dict[str, Any] | None = None
             if name == "graph_outline":
-                result, structured_payload = self._invoke_graph_outline(
+                result, runtime_payload = self._invoke_graph_outline(
                     str(args.get("subject_id", "") or "")
                 )
-                structured_payload["action"] = {
+                runtime_payload["action"] = {
                     "tool_name": name,
                     "args": dict(args),
                 }
             elif name == "graph_query":
-                result, structured_payload = self._invoke_graph_query(
+                result, runtime_payload = self._invoke_graph_query(
                     subject_id=str(args.get("subject_id", "") or ""),
                     predicate=args.get("predicate"),
                     object_type=args.get("object_type"),
                     min_credibility=float(args.get("min_credibility", 0.0)),
                 )
-                structured_payload["action"] = {
+                runtime_payload["action"] = {
                     "tool_name": name,
                     "args": dict(args),
                 }
             elif name == "facts_for_evidence":
-                result, structured_payload = self._invoke_facts_for_evidence(
+                result, runtime_payload = self._invoke_facts_for_evidence(
                     str(args.get("chunk_id", "") or "")
                 )
-                structured_payload["action"] = {
+                runtime_payload["action"] = {
                     "tool_name": name,
                     "args": dict(args),
                 }
             elif name == "retrieve":
-                result, structured_payload = self._invoke_retrieve(
+                result, runtime_payload = self._invoke_retrieve(
                     str(args.get("query", "") or ""),
                     int(args.get("top_k", 10)),
                 )
-                structured_payload["action"] = {
+                runtime_payload["action"] = {
                     "tool_name": name,
                     "args": dict(args),
                 }
             else:
                 result = tool.invoke(args)
                 if name == "resolve_entity" and isinstance(result, list):
-                    structured_payload = {
+                    runtime_payload = {
                         "action": {
                             "tool_name": name,
                             "args": dict(args),
@@ -1068,7 +1070,7 @@ class RuntimeTurnAdapter:
                         "resolve_entity": {
                             "name": str(args.get("name") or ""),
                             "candidates": result,
-                        }
+                        },
                     }
         except Exception as exc:
             result = {"error": f"{name} failed: {exc}"}
@@ -1095,7 +1097,7 @@ class RuntimeTurnAdapter:
             result=result,
             before=before,
             ledger_delta=ledger_delta,
-            structured_payload=structured_payload,
+            structured_payload=runtime_payload,
             event_metadata=self._proposal_event_metadata(proposal, {"duplicate": False}),
         )
         self._record_observation(observation)
@@ -1182,14 +1184,14 @@ class RuntimeTurnAdapter:
 def _run_agentic_investigation_result(
     query: str,
     *,
-    settings: object,
+    settings: Settings,
     history: list[str] | None = None,
     run_retrieve: Callable[[str, int], QueryResult],
-    fact_store: object | None,
+    fact_store: FactStoreProto | None,
     ontology_nodes: list[dict[str, Any]],
-    generator: Any,
+    generator: GeneratorProto,
     chat_model: Any,
-    judge: Callable[[str, str], str],
+    judge: JudgeFn,
     gather_only: bool,
 ) -> RuntimeInvestigationResult:
     """Run the runtime-owned investigation loop and keep the evidence ledger.
@@ -1389,15 +1391,15 @@ def _run_agentic_investigation_result(
 def run_agentic_investigation(
     query: str,
     *,
-    settings: object,
+    settings: Settings,
     history: list[str] | None = None,
     run_retrieve: Callable[[str, int], QueryResult],
-    fact_store: object | None,
+    fact_store: FactStoreProto | None,
     ontology_nodes: list[dict[str, Any]],
-    generator: Any,
+    generator: GeneratorProto,
     chat_model: Any,
-    judge: Callable[[str, str], str],
-) -> Any:
+    judge: JudgeFn,
+) -> AgenticAnswer:
     """Run the production/public single-agent investigation loop."""
 
     return _run_agentic_investigation_result(
@@ -1417,14 +1419,14 @@ def run_agentic_investigation(
 def run_agentic_gather_investigation(
     query: str,
     *,
-    settings: object,
+    settings: Settings,
     history: list[str] | None = None,
     run_retrieve: Callable[[str, int], QueryResult],
-    fact_store: object | None,
+    fact_store: FactStoreProto | None,
     ontology_nodes: list[dict[str, Any]],
-    generator: Any,
+    generator: GeneratorProto,
     chat_model: Any,
-    judge: Callable[[str, str], str],
+    judge: JudgeFn,
 ) -> RuntimeInvestigationResult:
     """Run a runtime-owned gather-only investigation for supervisor branch workers."""
 
@@ -1549,11 +1551,11 @@ def _retrieval_understanding(
     try:
         retriever = getattr(pipeline, "_retriever", None)
         rewriter = getattr(retriever, "_rewriter", None)
-        if hasattr(rewriter, "rewrite_with_entities"):
+        if rewriter is not None and hasattr(rewriter, "rewrite_with_entities"):
             out = rewriter.rewrite_with_entities(query, history)
             retrieval_queries = out.queries
             entities = out.entities
-        elif hasattr(rewriter, "rewrite"):
+        elif rewriter is not None and hasattr(rewriter, "rewrite"):
             retrieval_queries = tuple(rewriter.rewrite(query, history))
             entities = ()
         else:
@@ -1583,13 +1585,17 @@ def _generate_runtime_understanding(
         return None
     max_tokens = max(1200, int(getattr(settings, "query_rewrite_max_tokens", 300)) * 4)
     try:
-        return generate(
+        raw = generate(
             _RUNTIME_UNDERSTANDING_SYSTEM,
             _runtime_understanding_user_prompt(query, history),
             max_tokens=max_tokens,
         )
+        return raw if isinstance(raw, str) else None
     except TypeError:
-        return generate(_RUNTIME_UNDERSTANDING_SYSTEM, _runtime_understanding_user_prompt(query, history))
+        raw = generate(
+            _RUNTIME_UNDERSTANDING_SYSTEM, _runtime_understanding_user_prompt(query, history)
+        )
+        return raw if isinstance(raw, str) else None
 
 
 def _runtime_understanding_user_prompt(query: str, history: list[str] | None) -> str:
@@ -1676,6 +1682,8 @@ def _parse_optional_string(raw: object) -> str | None:
 
 
 def _parse_confidence(raw: object) -> float:
+    if not isinstance(raw, str | int | float):
+        return 0.0
     try:
         value = float(raw)
     except (TypeError, ValueError):
@@ -1718,9 +1726,7 @@ def evaluate_supervisor_admission(
     branches = tuple(
         b
         for b in proposal.branches
-        if b.sub_question.strip()
-        and b.independent_reason.strip()
-        and (b.focus_entity or b.facet)
+        if b.sub_question.strip() and b.independent_reason.strip() and (b.focus_entity or b.facet)
     )
     if len(branches) < 2:
         return AdmissionResult("single_agent", "fewer_than_two_valid_branches", branches)

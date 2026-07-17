@@ -15,6 +15,7 @@ from rag_cti.observability.tracing import traced
 from rag_cti.retrieval import Pipeline, build_pipeline
 from rag_cti.runtime_harness import (
     RuntimeDeps,
+    RuntimeQueryUnderstanding,
     build_runtime_query_understanding,
     evaluate_supervisor_admission,
     run_agentic_investigation,
@@ -60,7 +61,7 @@ def _default_pipeline() -> Pipeline:
     encoder = load_sparse_encoder(vocab_path_for(settings.qdrant_collection))
 
     llm_client = None
-    llm_provider = "groq"
+    llm_provider = "anthropic"
     if settings.hyde_enabled or settings.query_rewrite_enabled:
         from rag_cti.generation.client import build_llm_client
 
@@ -123,9 +124,6 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
     API. ``k`` is kept for API compatibility and still applies to single-shot callers,
     but the agentic path sizes its own retrieval tools.
     """
-    from typing import cast
-
-    from rag_cti.knowledge.agentic_nodes import GeneratorProto
     from rag_cti.knowledge.supervisor_graph import run_supervised_answer
     from rag_cti.observability.tracing import add_trace_metadata
 
@@ -165,7 +163,7 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
             run_retrieve=deps.run_retrieve,
             fact_store=deps.fact_store,
             ontology_nodes=deps.ontology_nodes,
-            generator=cast(GeneratorProto, deps.generator),
+            generator=deps.generator,
             chat_model=deps.gather_model,
             judge=deps.judge,
             composer=deps.composer,
@@ -186,7 +184,7 @@ def answer(text: str, k: int = 10, history: list[str] | None = None) -> Generate
         run_retrieve=deps.run_retrieve,
         fact_store=deps.fact_store,
         ontology_nodes=deps.ontology_nodes,
-        generator=cast(GeneratorProto, deps.generator),
+        generator=deps.generator,
         chat_model=deps.gather_model,
         judge=deps.judge,
     )
@@ -228,10 +226,6 @@ def agentic_answer(text: str, history: list[str] | None = None) -> AgenticAnswer
     graph as graph tools; citations are validated against the gathered evidence and
     conflicts are surfaced. Graph tools degrade to no-ops when Neo4j is disabled
     (empty NEO4J_PASSWORD) so the loop still runs vector-only."""
-    from typing import cast
-
-    from rag_cti.knowledge.agentic_nodes import GeneratorProto
-
     deps = _build_runtime_deps(history)
     return run_agentic_investigation(
         text,
@@ -240,7 +234,7 @@ def agentic_answer(text: str, history: list[str] | None = None) -> AgenticAnswer
         run_retrieve=deps.run_retrieve,
         fact_store=deps.fact_store,
         ontology_nodes=deps.ontology_nodes,
-        generator=cast(GeneratorProto, deps.generator),
+        generator=deps.generator,
         chat_model=deps.gather_model,
         judge=deps.judge,
     )
@@ -256,9 +250,6 @@ def supervised_answer(text: str, history: list[str] | None = None) -> AgenticAns
     a deterministic citation guard validates the answer against the union of branch evidence.
     Simple / dependent questions degrade to a single worker (no regression). Builds the same
     deps as the agentic loop plus a composer (which reuses the verifier client)."""
-    from typing import cast
-
-    from rag_cti.knowledge.agentic_nodes import GeneratorProto
     from rag_cti.knowledge.supervisor_graph import run_supervised_answer
 
     deps = _build_runtime_deps(history)
@@ -269,7 +260,7 @@ def supervised_answer(text: str, history: list[str] | None = None) -> AgenticAns
         run_retrieve=deps.run_retrieve,
         fact_store=deps.fact_store,
         ontology_nodes=deps.ontology_nodes,
-        generator=cast(GeneratorProto, deps.generator),
+        generator=deps.generator,
         chat_model=deps.gather_model,
         judge=deps.judge,
         composer=deps.composer,
@@ -294,7 +285,9 @@ def _build_runtime_deps(history: list[str] | None = None) -> RuntimeDeps:
     def run_retrieve(query_text: str, top_k: int) -> QueryResult:
         return pipeline.run(query_text, top_k=top_k, history=history)
 
-    def query_understanding(query_text: str, query_history: list[str] | None = None) -> Any:
+    def query_understanding(
+        query_text: str, query_history: list[str] | None = None
+    ) -> RuntimeQueryUnderstanding:
         return build_runtime_query_understanding(
             query_text,
             query_history,

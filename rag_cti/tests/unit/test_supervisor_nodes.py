@@ -240,4 +240,6 @@ def test_supervisor_loop_catches_model_error_and_reports_callback() -> None:
 
     assert model.invocations == 1
     assert len(errors) == 1
-    assert any("supervisor model failed: provider down" in str(getattr(m, "content", "")) for m in convo)
+    assert any(
+        "supervisor model failed: provider down" in str(getattr(m, "content", "")) for m in convo
+    )

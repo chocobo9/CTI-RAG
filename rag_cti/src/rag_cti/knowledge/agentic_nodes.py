@@ -354,7 +354,7 @@ def _repeated_gap_without_new_facts(ctx: _StopContext) -> bool:
     return (
         ctx.verdict is not None
         and ctx.new_facts == 0
-        and ctx.prev_gaps
+        and bool(ctx.prev_gaps)
         and tuple(ctx.verdict.coverage_gaps) == ctx.prev_gaps
     )
 

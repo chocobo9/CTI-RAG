@@ -89,6 +89,7 @@ demo = [
 # pip install -e ".[all]"  →  full install
 all = [
     "rag-cti[generation]",
+    "rag-cti[agentic]",
     "rag-cti[pdf]",
     "rag-cti[connectors]",
     "rag-cti[eval]",

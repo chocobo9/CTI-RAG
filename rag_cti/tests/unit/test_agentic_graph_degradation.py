@@ -133,7 +133,11 @@ def _complete_uses_outline(entity_id: str, entity_name: str, count: int) -> Grap
         entity_id=entity_id,
         entity_name=entity_name,
         entity_type="threat-actor",
-        outgoing=(OutlineEntry(predicate="uses", other_type="technique", count=count, max_credibility=0.9),),
+        outgoing=(
+            OutlineEntry(
+                predicate="uses", other_type="technique", count=count, max_credibility=0.9
+            ),
+        ),
     )
 
 

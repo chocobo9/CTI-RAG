@@ -22,7 +22,8 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Any, TypedDict
+from collections.abc import Callable
+from typing import Any, TypedDict, TypeVar, cast
 
 from rag_cti.config import Settings
 from rag_cti.knowledge import agent_tools, agentic_effort, agentic_nodes, tool_cache
@@ -37,6 +38,7 @@ from rag_cti.types import GeneratedAnswer
 
 # (query, top_k) -> QueryResult. Injected so this file never imports rag_cti.__init__.
 RunRetrieve = agent_tools.RunRetrieve
+F = TypeVar("F", bound=Callable[..., Any])
 
 _GATHER_SYSTEM = """You are a CTI analyst GATHERING evidence for a question. Your ONLY job is to call \
 tools to collect the facts and prose needed to answer it. Another step writes the final answer, so do \
@@ -119,21 +121,23 @@ def _build_tools(
     """
     from langchain_core.tools import tool
 
-    @tool
+    typed_tool = cast(Callable[[F], F], tool)
+
+    @typed_tool
     def resolve_entity(name: str) -> list[dict[str, str]]:
         """Resolve a threat-intel name (e.g. 'APT29') to entity_id candidates."""
         if fact_store is None:
             return []
         return agent_tools.resolve_entity_candidates(name, ontology_nodes)
 
-    @tool
+    @typed_tool
     def graph_outline(subject_id: str) -> dict[str, Any]:
         """Coverage map for a subject_id: which relation categories exist and how many."""
         if fact_store is None:
             return {"found": False, "entity_id": subject_id}
         return agent_tools.outline_to_ledger(fact_store, ledger, subject_id)
 
-    @tool
+    @typed_tool
     def graph_query(
         subject_id: str,
         predicate: str | None = None,
@@ -152,14 +156,14 @@ def _build_tools(
             min_credibility=min_credibility,
         )
 
-    @tool
+    @typed_tool
     def facts_for_evidence(chunk_id: str) -> dict[str, Any]:
         """Which facts a given evidence chunk_id supports (reverse provenance bridge)."""
         if fact_store is None:
             return {"count": 0, "facts": []}
         return agent_tools.facts_for_evidence_to_ledger(fact_store, ledger, chunk_id)
 
-    @tool
+    @typed_tool
     def retrieve(query: str, top_k: int = 10) -> dict[str, Any]:
         """Semantic search over source prose; returns chunk snippets."""
         return agent_tools.retrieve_to_ledger(run_retrieve, ledger, query, top_k)
