@@ -8,11 +8,13 @@ from pathlib import Path
 
 from rag_cti.connectors.malpedia_collection import MalpediaCollector
 
+DEFAULT_ROOT = Path("data/raw/malpedia")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("collect", "rebuild", "validate", "report", "run"))
-    parser.add_argument("--root", type=Path, default=Path("data/malpedia"))
+    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--rate-delay", type=float, default=0.15)
     parser.add_argument("--retries", type=int, default=3)

@@ -38,7 +38,7 @@ logger = get_logger(__name__)
 
 _DEFAULT_PROCESSED_DIR = Path("data/processed")
 _DEFAULT_SOURCES = ("mitre", "otx", "pdfs")
-_DEFAULT_SPARSE_VOCAB = Path("data/sparse_vocab.json")
+_DEFAULT_SPARSE_VOCAB = Path("data/processed/sparse_vocab/sparse_vocab.json")
 
 
 def _load_chunks(jsonl_path: Path, embedding_model: str) -> list[Chunk]:
@@ -219,7 +219,8 @@ def main() -> None:
         type=Path,
         default=None,
         help="BM25 vocab path (loaded if it exists, else fitted+saved here). Defaults to "
-        "data/sparse_vocab.json. Pass a per-collection path when building a new collection.",
+        "data/processed/sparse_vocab/sparse_vocab.json. Pass a per-collection path when "
+        "building a new collection.",
     )
     args = parser.parse_args()
 

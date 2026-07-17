@@ -1,6 +1,6 @@
 """BM25 sparse encoder with an IOC-preserving tokenizer.
 
-Vocabulary and IDF weights are persisted to data/sparse_vocab.json after
+Vocabulary and IDF weights are persisted under data/processed/sparse_vocab/ after
 fitting; load at query time via BM25SparseEncoder.load(path).
 """
 
@@ -109,7 +109,7 @@ class BM25SparseEncoder:
     fit()              -- first pass: build vocab + IDF from a corpus list
     encode_document()  -- BM25 weights for a single document
     encode_query()     -- IDF-weighted sparse vector for a query string
-    save() / load()    -- persist to / restore from data/sparse_vocab.json
+    save() / load()    -- persist to / restore from data/processed/sparse_vocab/
     """
 
     def __init__(self) -> None:

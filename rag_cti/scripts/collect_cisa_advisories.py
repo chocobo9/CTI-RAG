@@ -5,8 +5,11 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 from rag_cti.connectors.cisa_collection import CisaCollector
+
+DEFAULT_ROOT = Path("data/raw/cisa")
 
 
 def main() -> int:
@@ -14,7 +17,7 @@ def main() -> int:
     parser.add_argument(
         "command", choices=("enumerate", "collect", "rebuild", "validate", "report", "run")
     )
-    parser.add_argument("--root", type=Path, default=Path("data/cisa"))
+    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--limit", type=int)
     parser.add_argument(
         "--spool", type=Path, help="Browser capture responses.jsonl or its directory"
@@ -30,6 +33,7 @@ def main() -> int:
         retries=args.retries,
         timeout=args.timeout,
     )
+    result: dict[str, Any]
     if args.command == "enumerate":
         result = {"entries": len(collector.enumerate(limit=args.limit))}
     elif args.command == "collect":

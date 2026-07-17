@@ -7,11 +7,13 @@ from pathlib import Path
 
 from rag_cti.connectors.abuse_export_collection import AbuseExportCollector
 
+DEFAULT_ROOT = Path("data/raw/threatfox")
+
 
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("command", choices=("collect", "rebuild", "report", "validate", "blocked"))
-    p.add_argument("--root", type=Path, default=Path("data/threatfox"))
+    p.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     p.add_argument("--reuse-archive", type=Path)
     a = p.parse_args()
     c = AbuseExportCollector("threatfox", a.root)

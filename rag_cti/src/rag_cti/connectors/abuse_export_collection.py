@@ -27,12 +27,13 @@ from rag_cti.connectors.source_collection_common import (
 )
 
 SourceName = Literal["urlhaus", "threatfox"]
+DEFAULT_RAW_DATA_ROOT = Path("data/raw")
 
 
 class AbuseExportCollector:
     def __init__(self, source: SourceName, root: Path | None = None) -> None:
         self.source = source
-        self.root = root or Path("data") / source
+        self.root = root or DEFAULT_RAW_DATA_ROOT / source
         for path in (
             "raw/exports",
             "raw/inventories",

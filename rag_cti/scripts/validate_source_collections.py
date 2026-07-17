@@ -9,9 +9,17 @@ from rag_cti.connectors.abuse_export_collection import AbuseExportCollector
 from rag_cti.connectors.orkl_collection import OrklCollector
 from rag_cti.connectors.source_collection_common import atomic_write, now_utc, write_json
 
+RAW_DATA_ROOT = Path("data/raw")
+SOURCE_ROOTS = {
+    "orkl": RAW_DATA_ROOT / "orkl",
+    "urlhaus": RAW_DATA_ROOT / "urlhaus",
+    "threatfox": RAW_DATA_ROOT / "threatfox",
+}
+REPORT_DIR = RAW_DATA_ROOT / "reports"
+
 
 def main() -> int:
-    roots = {"orkl": Path("data/orkl"), "urlhaus": Path("data/urlhaus"), "threatfox": Path("data/threatfox")}
+    roots = SOURCE_ROOTS
     validations: dict[str, Any] = {
         "orkl": OrklCollector(roots["orkl"]).validate(),
         "urlhaus": AbuseExportCollector("urlhaus", roots["urlhaus"]).validate(),
@@ -65,9 +73,9 @@ def main() -> int:
             "No cross-source actor attribution was generated during this task.",
         ],
     }
-    write_json(Path("data/collection_report.json"), combined)
+    write_json(REPORT_DIR / "collection_report.json", combined)
     markdown = "# Source Collection Summary\n\n" + "\n".join(f"- **{key}**: `{json.dumps(value, ensure_ascii=False)}`" for key, value in combined.items()) + "\n"
-    atomic_write(Path("data/collection_report.md"), markdown.encode())
+    atomic_write(REPORT_DIR / "collection_report.md", markdown.encode())
     print(json.dumps(combined, ensure_ascii=False, indent=2))
     return 0 if all(result["valid"] for result in validations.values()) else 1
 

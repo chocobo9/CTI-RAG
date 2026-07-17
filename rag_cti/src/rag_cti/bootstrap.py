@@ -20,7 +20,8 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 EVAL_DIR = DATA_DIR / "eval"
-VOCAB_PATH = DATA_DIR / "sparse_vocab.json"
+VOCAB_DIR = DATA_DIR / "processed" / "sparse_vocab"
+VOCAB_PATH = VOCAB_DIR / "sparse_vocab.json"
 ONTOLOGY_NODES_PATH = DATA_DIR / "processed" / "ontology_nodes.jsonl"
 
 # Retriever config name -> dense weight in the weighted-RRF fusion.
@@ -77,13 +78,13 @@ def load_ontology_nodes(path: Path = ONTOLOGY_NODES_PATH) -> list[dict[str, Any]
         return [json.loads(line) for line in fh if line.strip()]
 
 
-def vocab_path_for(collection: str, base: Path = DATA_DIR) -> Path:
+def vocab_path_for(collection: str, base: Path = VOCAB_DIR) -> Path:
     """The BM25 vocab paired with a collection.
 
-    Returns ``data/sparse_vocab_{collection}.json`` when present — so a
+    Returns ``data/processed/sparse_vocab/sparse_vocab_{collection}.json`` when present — so a
     collection's doc and query sparse vectors share one vocab space — else the
-    shared default (``data/sparse_vocab.json``). ingest writes a per-collection
-    vocab; eval/query auto-pair on it via this function.
+    shared default (``data/processed/sparse_vocab/sparse_vocab.json``). Ingest
+    writes a per-collection vocab; eval/query auto-pair on it via this function.
     """
     specific = base / f"sparse_vocab_{collection}.json"
     return specific if specific.exists() else VOCAB_PATH

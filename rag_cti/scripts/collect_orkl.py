@@ -7,13 +7,15 @@ from pathlib import Path
 
 from rag_cti.connectors.orkl_collection import OrklCollector
 
+DEFAULT_ROOT = Path("data/raw/orkl")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "command", choices=("collect", "documents", "rebuild", "validate", "report", "finalize")
     )
-    parser.add_argument("--root", type=Path, default=Path("data/orkl"))
+    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--document-limit", type=int)
     parser.add_argument("--max-document-bytes", type=int)

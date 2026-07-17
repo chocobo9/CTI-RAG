@@ -25,6 +25,7 @@ from rag_cti.connectors.source_collection_common import (
 )
 
 BASE_URL = "https://orkl.eu/api/v1"
+DEFAULT_ROOT = Path("data/raw/orkl")
 
 
 class Transport(Protocol):
@@ -33,7 +34,7 @@ class Transport(Protocol):
 
 class OrklCollector:
     def __init__(
-        self, root: Path = Path("data/orkl"), *, transport: Transport | None = None
+        self, root: Path = DEFAULT_ROOT, *, transport: Transport | None = None
     ) -> None:
         self.root = root
         self.transport = transport or SafeHttpClient()

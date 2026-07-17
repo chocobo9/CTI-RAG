@@ -7,6 +7,7 @@ from rag_cti.bootstrap import (
     DATA_DIR,
     EVAL_DIR,
     PROJECT_ROOT,
+    VOCAB_DIR,
     VOCAB_PATH,
     FixedRouter,
     build_deepseek_client,
@@ -25,7 +26,8 @@ def test_paths_anchor_at_project_root() -> None:
     assert (PROJECT_ROOT / "src" / "rag_cti" / "bootstrap.py").exists()
     assert DATA_DIR == PROJECT_ROOT / "data"
     assert EVAL_DIR == DATA_DIR / "eval"
-    assert VOCAB_PATH == DATA_DIR / "sparse_vocab.json"
+    assert VOCAB_DIR == DATA_DIR / "processed" / "sparse_vocab"
+    assert VOCAB_PATH == VOCAB_DIR / "sparse_vocab.json"
 
 
 def test_fixed_router_returns_same_model_for_every_task() -> None:
