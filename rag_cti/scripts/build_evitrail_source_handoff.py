@@ -14,16 +14,19 @@ from rag_cti.evitrail_delivery.source_handoff import (  # noqa: E402
 )
 
 
-def require_data_collection_path(path: Path) -> Path:
-    """Resolve a large-build path and require the designated F: data root."""
+def resolve_storage_path(path: Path, required_root: Path | None = None) -> Path:
+    """Resolve a build path and optionally require it to stay under a storage root."""
 
     resolved = path.resolve()
-    collection_root = Path(r"F:\DATA_COLLECTION").resolve()
+    if required_root is None:
+        return resolved
+
+    storage_root = required_root.resolve()
     try:
-        resolved.relative_to(collection_root)
+        resolved.relative_to(storage_root)
     except ValueError as exc:
         raise ValueError(
-            f"large handoff output/work must be under {collection_root}: {resolved}"
+            f"large handoff output/work must be under {storage_root}: {resolved}"
         ) from exc
     return resolved
 
@@ -37,12 +40,20 @@ def main() -> None:
         "--work-dir",
         type=Path,
         required=True,
-        help="Fresh staging directory; place large runs under F:\\DATA_COLLECTION.",
+        help="Fresh staging directory.",
+    )
+    parser.add_argument(
+        "--required-storage-root",
+        type=Path,
+        help=(
+            "Optional root that --output-dir and --work-dir must stay under; "
+            "for example F:\\DATA_COLLECTION."
+        ),
     )
     args = parser.parse_args()
     try:
-        output_dir = require_data_collection_path(args.output_dir)
-        work_dir = require_data_collection_path(args.work_dir)
+        output_dir = resolve_storage_path(args.output_dir, args.required_storage_root)
+        work_dir = resolve_storage_path(args.work_dir, args.required_storage_root)
     except ValueError as exc:
         parser.error(str(exc))
     result = build_source_handoff(

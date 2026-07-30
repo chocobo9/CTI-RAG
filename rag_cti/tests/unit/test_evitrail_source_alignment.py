@@ -11,7 +11,7 @@ from rag_cti.evitrail_delivery.sources import (
     iter_jsonl_evidence,
 )
 from scripts.build_evitrail_source_handoff import (
-    require_data_collection_path,
+    resolve_storage_path,
 )
 
 
@@ -570,10 +570,17 @@ def test_source_roots_build_a_strict_five_file_handoff(tmp_path: Path) -> None:
     }
 
 
-def test_large_build_cli_rejects_paths_outside_f_data_collection() -> None:
-    assert require_data_collection_path(Path(r"F:\DATA_COLLECTION\evitrail\handoff")) == Path(
-        r"F:\DATA_COLLECTION\evitrail\handoff"
-    )
+def test_large_build_cli_allows_any_storage_root_by_default(tmp_path: Path) -> None:
+    handoff_dir = tmp_path / "handoff"
 
-    with pytest.raises(ValueError, match=r"F:\\DATA_COLLECTION"):
-        require_data_collection_path(Path(r"D:\temp\handoff"))
+    assert resolve_storage_path(handoff_dir) == handoff_dir.resolve()
+
+
+def test_large_build_cli_enforces_explicit_storage_root(tmp_path: Path) -> None:
+    storage_root = tmp_path / "data_collection"
+    handoff_dir = storage_root / "evitrail" / "handoff"
+
+    assert resolve_storage_path(handoff_dir, storage_root) == handoff_dir.resolve()
+
+    with pytest.raises(ValueError, match="large handoff output/work must be under"):
+        resolve_storage_path(tmp_path / "outside" / "handoff", storage_root)

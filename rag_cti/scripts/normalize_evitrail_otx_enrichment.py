@@ -15,15 +15,21 @@ from rag_cti.evitrail_delivery.enrichment import (  # noqa: E402
 )
 
 
-def validate_output_paths(output_path: Path, manifest_path: Path) -> None:
-    """Keep generated data artifacts off the nearly-full project drive."""
-    data_root = Path(r"F:\DATA_COLLECTION").resolve()
+def validate_output_paths(
+    output_path: Path,
+    manifest_path: Path,
+    required_output_root: Path | None = None,
+) -> None:
+    """Require output paths to remain under an explicitly selected root."""
+    if required_output_root is None:
+        return
+    data_root = required_output_root.resolve()
     for path in (output_path, manifest_path):
         try:
             path.resolve().relative_to(data_root)
         except ValueError:
             raise ValueError(
-                f"large outputs must be under {data_root}: {path}"
+                f"outputs must be under {data_root}: {path}"
             ) from None
 
 
@@ -32,6 +38,14 @@ def main() -> None:
     parser.add_argument("--ledger", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument(
+        "--required-output-root",
+        type=Path,
+        help=(
+            "optional safety guard requiring output and manifest paths to remain "
+            "under this root"
+        ),
+    )
     parser.add_argument(
         "--evitrail-root",
         type=Path,
@@ -50,7 +64,11 @@ def main() -> None:
         default=DEFAULT_SNAPSHOT_PULSE_COUNT,
     )
     args = parser.parse_args()
-    validate_output_paths(args.output, args.manifest)
+    validate_output_paths(
+        args.output,
+        args.manifest,
+        required_output_root=args.required_output_root,
+    )
     report = normalize_otx_enrichment_ledger(
         ledger_path=args.ledger,
         output_path=args.output,

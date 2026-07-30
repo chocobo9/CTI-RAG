@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from rag_cti.evitrail_delivery.enrichment import normalize_otx_enrichment_ledger
-from scripts.normalize_evitrail_otx_enrichment import validate_output_paths
 
 
 def _write_json(path: Path, value: dict) -> None:
@@ -249,11 +250,81 @@ def test_normalizer_refuses_to_overwrite_versioned_artifacts(
     assert not manifest.exists()
 
 
-def test_cli_rejects_large_outputs_outside_f_data_collection(
+def test_cli_allows_output_paths_without_a_required_root(
     tmp_path: Path,
 ) -> None:
-    with pytest.raises(ValueError, match=r"F:\\DATA_COLLECTION"):
-        validate_output_paths(
-            tmp_path / "normalized.jsonl",
-            tmp_path / "manifest.json",
-        )
+    ledger = tmp_path / "enrichment_terminal_states.jsonl"
+    _write_json(
+        ledger,
+        {
+            "endpoint": "domain_pdns",
+            "seed_type": "domain",
+            "status": "retry_exhausted",
+            "task_id": "retry-task",
+            "value": "adobe.io",
+        },
+    )
+    output = tmp_path / "portable-output" / "normalized.jsonl"
+    manifest = tmp_path / "portable-output" / "manifest.json"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/normalize_evitrail_otx_enrichment.py",
+            "--ledger",
+            str(ledger),
+            "--output",
+            str(output),
+            "--manifest",
+            str(manifest),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output.exists()
+    assert manifest.exists()
+
+
+def test_cli_rejects_output_paths_outside_an_explicit_required_root(
+    tmp_path: Path,
+) -> None:
+    ledger = tmp_path / "enrichment_terminal_states.jsonl"
+    _write_json(
+        ledger,
+        {
+            "endpoint": "domain_pdns",
+            "seed_type": "domain",
+            "status": "retry_exhausted",
+            "task_id": "retry-task",
+            "value": "adobe.io",
+        },
+    )
+    output = tmp_path / "outside" / "normalized.jsonl"
+    manifest = tmp_path / "outside" / "manifest.json"
+    required_root = tmp_path / "required-root"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/normalize_evitrail_otx_enrichment.py",
+            "--ledger",
+            str(ledger),
+            "--output",
+            str(output),
+            "--manifest",
+            str(manifest),
+            "--required-output-root",
+            str(required_root),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert f"outputs must be under {required_root.resolve()}" in result.stderr
+    assert not output.exists()
+    assert not manifest.exists()
