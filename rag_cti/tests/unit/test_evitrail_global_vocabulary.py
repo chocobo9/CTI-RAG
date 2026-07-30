@@ -1,13 +1,34 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+
+import pytest
 
 from rag_cti.evitrail_delivery.vocabulary import (
     build_global_vocabulary,
     build_incremental_vocabulary,
     write_global_vocabulary,
 )
+
+
+def _evitrail_root() -> Path:
+    configured = os.environ.get("EVITRAIL_ROOT")
+    root = (
+        Path(configured).resolve()
+        if configured
+        else (
+            Path(__file__).resolve().parents[2]
+            / "tmp"
+            / "evitrial-delivery-builder-20260727"
+        )
+    )
+    if not (root / "evitrail").is_dir():
+        pytest.skip(
+            "set EVITRAIL_ROOT to run exact-current-consumer integration checks"
+        )
+    return root
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -87,11 +108,7 @@ def test_global_vocabulary_uses_factual_cross_source_support_only(
         },
     )
 
-    evitrail_root = (
-        Path(__file__).resolve().parents[2]
-        / "tmp"
-        / "evitrial-delivery-builder-20260727"
-    )
+    evitrail_root = _evitrail_root()
     result = build_global_vocabulary(
         claim_paths=[claims],
         evitrail_root=evitrail_root,
@@ -211,11 +228,7 @@ def test_incremental_vocabulary_combines_frozen_and_delta_claims_only(
             ]
         },
     )
-    evitrail_root = (
-        Path(__file__).resolve().parents[2]
-        / "tmp"
-        / "evitrial-delivery-builder-20260727"
-    )
+    evitrail_root = _evitrail_root()
 
     result = build_incremental_vocabulary(
         frozen_vocabulary_path=frozen_vocabulary,

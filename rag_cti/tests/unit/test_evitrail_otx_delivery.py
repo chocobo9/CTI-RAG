@@ -3,12 +3,31 @@ from __future__ import annotations
 import hashlib
 import importlib
 import json
+import os
 import sys
 from pathlib import Path
 
 import pytest
 
 from rag_cti.evitrail_delivery.otx import build_otx_delivery
+
+
+def _evitrail_root() -> Path:
+    configured = os.environ.get("EVITRAIL_ROOT")
+    root = (
+        Path(configured).resolve()
+        if configured
+        else (
+            Path(__file__).resolve().parents[2]
+            / "tmp"
+            / "evitrial-delivery-builder-20260727"
+        )
+    )
+    if not (root / "evitrail").is_dir():
+        pytest.skip(
+            "set EVITRAIL_ROOT to run exact-current-consumer integration checks"
+        )
+    return root
 
 
 def _write_wrapper(root: Path, pulse_id: str, fetched_at: str, payload: dict) -> Path:
@@ -243,11 +262,7 @@ def test_delivery_uses_portable_deterministic_shards_readable_by_current_consume
             "rejected_records.jsonl",
         } == {path.name for path in handoff.iterdir()}
 
-    consumer_checkout = (
-        Path(__file__).resolve().parents[2]
-        / "tmp"
-        / "evitrial-delivery-builder-20260727"
-    )
+    consumer_checkout = _evitrail_root()
     sys.path.insert(0, str(consumer_checkout))
     try:
         read_handoff = importlib.import_module(
@@ -299,11 +314,7 @@ def test_delivery_rejects_hosts_the_current_consumer_cannot_parse(
         if row["type"] == "url"
     ) == "http://good.example/path.part"
 
-    consumer_checkout = (
-        Path(__file__).resolve().parents[2]
-        / "tmp"
-        / "evitrial-delivery-builder-20260727"
-    )
+    consumer_checkout = _evitrail_root()
     sys.path.insert(0, str(consumer_checkout))
     try:
         read_handoff = importlib.import_module(
