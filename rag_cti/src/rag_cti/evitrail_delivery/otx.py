@@ -311,57 +311,94 @@ def _index_wrappers(
     raw_root: Path,
     include_source_ids: set[str] | None = None,
 ) -> None:
+    if include_source_ids is not None:
+        for pulse_id in sorted(include_source_ids):
+            pulse_root = raw_root / pulse_id
+            paths = (
+                sorted(pulse_root.rglob("*.json"))
+                if pulse_root.is_dir()
+                else []
+            )
+            if len(paths) == 1:
+                path = paths[0]
+                _insert_snapshot(
+                    connection,
+                    event_id=f"event:otx:{pulse_id}",
+                    fetched_at="",
+                    path=path,
+                    raw_root=raw_root,
+                )
+                continue
+            for path in paths:
+                _index_wrapper(connection, path, raw_root)
+        return
+
     for path in sorted(raw_root.rglob("*.json")):
-        pulse_id = path.relative_to(raw_root).parts[0]
-        if (
-            include_source_ids is not None
-            and pulse_id not in include_source_ids
-        ):
-            continue
-        raw_path = path.resolve().as_posix()
-        raw_ref = _portable_otx_ref(path, raw_root)
-        try:
-            wrapper = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-            _reject(
-                connection,
-                {
-                    "source": "otx",
-                    "raw_ref": raw_ref,
-                    "record_path": "wrapper",
-                    "reason": "invalid_json",
-                    "error": str(exc),
-                },
-            )
-            continue
-        if not isinstance(wrapper, Mapping):
-            continue
-        payload = wrapper.get("payload", wrapper)
-        if not isinstance(payload, Mapping) or not isinstance(
-            payload.get("indicators"), list
-        ):
-            continue
-        source_id = str(payload.get("id") or wrapper.get("source_id") or "").strip()
-        if not source_id:
-            _reject(
-                connection,
-                {
-                    "source": "otx",
-                    "raw_ref": raw_ref,
-                    "record_path": "payload.id",
-                    "reason": "missing_event_id",
-                },
-            )
-            continue
-        connection.execute(
-            "INSERT OR IGNORE INTO snapshots VALUES(?,?,?,?)",
-            (
-                f"event:otx:{source_id}",
-                str(wrapper.get("fetched_at") or ""),
-                raw_path,
-                raw_ref,
-            ),
+        _index_wrapper(connection, path, raw_root)
+
+
+def _index_wrapper(
+    connection: sqlite3.Connection,
+    path: Path,
+    raw_root: Path,
+) -> None:
+    raw_ref = _portable_otx_ref(path, raw_root)
+    try:
+        wrapper = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        _reject(
+            connection,
+            {
+                "source": "otx",
+                "raw_ref": raw_ref,
+                "record_path": "wrapper",
+                "reason": "invalid_json",
+                "error": str(exc),
+            },
         )
+        return
+    if not isinstance(wrapper, Mapping):
+        return
+    payload = wrapper.get("payload", wrapper)
+    if not isinstance(payload, Mapping) or not isinstance(
+        payload.get("indicators"), list
+    ):
+        return
+    source_id = str(payload.get("id") or wrapper.get("source_id") or "").strip()
+    if not source_id:
+        _reject(
+            connection,
+            {
+                "source": "otx",
+                "raw_ref": raw_ref,
+                "record_path": "payload.id",
+                "reason": "missing_event_id",
+            },
+        )
+        return
+    _insert_snapshot(
+        connection,
+        event_id=f"event:otx:{source_id}",
+        fetched_at=str(wrapper.get("fetched_at") or ""),
+        path=path,
+        raw_root=raw_root,
+    )
+
+
+def _insert_snapshot(
+    connection: sqlite3.Connection,
+    *,
+    event_id: str,
+    fetched_at: str,
+    path: Path,
+    raw_root: Path,
+) -> None:
+    raw_path = path.resolve().as_posix()
+    raw_ref = _portable_otx_ref(path, raw_root)
+    connection.execute(
+        "INSERT OR IGNORE INTO snapshots VALUES(?,?,?,?)",
+        (event_id, fetched_at, raw_path, raw_ref),
+    )
 
 
 def _index_discovery(connection: sqlite3.Connection, path: Path) -> None:
@@ -402,8 +439,31 @@ def _project_latest_wrappers(
     shard_event_count = 0
     shard_indicator_count = 0
     for event_id, raw_path, raw_ref in connection.execute(query):
-        wrapper = json.loads(Path(raw_path).read_text(encoding="utf-8"))
+        try:
+            wrapper = json.loads(
+                Path(raw_path).read_text(encoding="utf-8")
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            _reject(
+                connection,
+                {
+                    "source": "otx",
+                    "event_id": event_id,
+                    "raw_ref": raw_ref,
+                    "record_path": "wrapper",
+                    "reason": "invalid_json",
+                    "error": str(exc),
+                },
+                shard_id,
+            )
+            continue
+        if not isinstance(wrapper, Mapping):
+            continue
         payload = wrapper.get("payload", wrapper)
+        if not isinstance(payload, Mapping) or not isinstance(
+            payload.get("indicators"), list
+        ):
+            continue
         indicators = payload.get("indicators")
         occurrence_count = len(indicators) if isinstance(indicators, list) else 0
         if shard_event_count and (

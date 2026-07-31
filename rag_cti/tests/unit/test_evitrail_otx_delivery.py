@@ -422,6 +422,44 @@ def test_delivery_include_source_ids_projects_only_selected_pulses(
     assert snapshot_expectation["full_latest_snapshot"] is False
 
 
+def test_delivery_reads_allowlisted_single_wrapper_only_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    raw_root = tmp_path / "raw" / "otx"
+    raw_path = _write_wrapper(
+        raw_root,
+        "pulse-1",
+        "2026-01-01T00:00:00+00:00",
+        {
+            "created": "2024-01-01",
+            "indicators": [
+                {"type": "domain", "indicator": "pulse-1.example"}
+            ],
+        },
+    ).resolve()
+    original_read_text = Path.read_text
+    raw_read_count = 0
+
+    def count_raw_reads(path: Path, *args: object, **kwargs: object) -> str:
+        nonlocal raw_read_count
+        if path.resolve() == raw_path:
+            raw_read_count += 1
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", count_raw_reads)
+
+    result = build_otx_delivery(
+        raw_root,
+        tmp_path / "delivery",
+        include_source_ids={"pulse-1"},
+        expected_event_count=1,
+    )
+
+    assert result.event_count == 1
+    assert raw_read_count == 1
+
+
 def test_delivery_does_not_read_excluded_invalid_wrapper(
     tmp_path: Path,
 ) -> None:
@@ -450,6 +488,28 @@ def test_delivery_does_not_read_excluded_invalid_wrapper(
     assert result.event_count == 1
     assert result.rejected_count == 0
     assert _rows(result.handoff_dirs[0] / "rejected_records.jsonl") == []
+
+
+def test_delivery_rejects_allowlisted_invalid_wrapper_without_rereading(
+    tmp_path: Path,
+) -> None:
+    raw_root = tmp_path / "raw" / "otx"
+    invalid = raw_root / "selected" / "invalid.json"
+    invalid.parent.mkdir(parents=True)
+    invalid.write_text("{not json", encoding="utf-8")
+
+    result = build_otx_delivery(
+        raw_root,
+        tmp_path / "delivery",
+        include_source_ids={"selected"},
+    )
+
+    assert result.event_count == 0
+    assert result.rejected_count == 1
+    rejected = _rows(
+        result.handoff_dirs[0] / "rejected_records.jsonl"
+    )
+    assert rejected[0]["reason"] == "invalid_json"
 
 
 def test_delivery_normalizes_and_deduplicates_prefixed_include_source_ids(
