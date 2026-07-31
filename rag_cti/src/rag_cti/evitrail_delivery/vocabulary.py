@@ -150,6 +150,8 @@ def _build_vocabulary(
         str(malpedia_path) if malpedia_path else None,
         str(mitre_path) if mitre_path else None,
     )
+    if malpedia_path:
+        _add_malpedia_meta_synonyms(aliases, malpedia_path)
     changes = vocabulary.process_claims(
         claims,
         aliases,
@@ -162,6 +164,39 @@ def _build_vocabulary(
         "vocabulary": vocabulary.to_dict(),
         "changes": changes,
     }
+
+
+def _add_malpedia_meta_synonyms(aliases: Any, path: Path) -> None:
+    """Add aliases stored in Malpedia's native ``meta.synonyms`` field.
+
+    The pinned EviTRAIL consumer reads only top-level alias fields.  Current
+    Malpedia actor snapshots keep their synonyms one level deeper, so bridge
+    that schema gap while retaining EviTRAIL's own collision handling.
+    """
+
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if isinstance(payload, dict) and isinstance(payload.get("actors"), (dict, list)):
+        payload = payload["actors"]
+    items = payload.values() if isinstance(payload, dict) else payload
+    if not isinstance(items, list) and not hasattr(items, "__iter__"):
+        return
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        canonical = str(
+            item.get("value")
+            or item.get("common_name")
+            or item.get("name")
+            or ""
+        ).strip()
+        meta = item.get("meta")
+        synonyms = meta.get("synonyms") if isinstance(meta, dict) else None
+        if canonical and isinstance(synonyms, list):
+            aliases.add_actor(
+                canonical,
+                [str(name) for name in synonyms if name],
+                "malpedia",
+            )
 
 
 def write_global_vocabulary(

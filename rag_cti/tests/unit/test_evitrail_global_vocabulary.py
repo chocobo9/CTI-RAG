@@ -138,6 +138,42 @@ def test_global_vocabulary_uses_factual_cross_source_support_only(
     ]
 
 
+def test_global_vocabulary_reads_native_malpedia_meta_synonyms(
+    tmp_path: Path,
+) -> None:
+    claims = tmp_path / "source_claims.jsonl"
+    _write_jsonl(
+        claims,
+        [
+            _claim("event:otx:1", "otx", "Nested Alias"),
+            _claim("event:circl_misp:2", "circl_misp", "Nested Alias"),
+        ],
+    )
+    malpedia = tmp_path / "actors.json"
+    _write_json(
+        malpedia,
+        {
+            "native-key": {
+                "value": "Malpedia Canonical",
+                "meta": {"synonyms": ["Nested Alias"]},
+            }
+        },
+    )
+
+    result = build_global_vocabulary(
+        claim_paths=[claims],
+        evitrail_root=_evitrail_root(),
+        initial_actors=["APT28"],
+        mitre_path=None,
+        malpedia_path=malpedia,
+        min_events=2,
+        min_sources=2,
+    )
+
+    assert result["actors"] == ["APT28", "Malpedia Canonical"]
+    assert result["changes"]["added"] == ["Malpedia Canonical"]
+
+
 def test_incremental_vocabulary_combines_frozen_and_delta_claims_only(
     tmp_path: Path,
 ) -> None:

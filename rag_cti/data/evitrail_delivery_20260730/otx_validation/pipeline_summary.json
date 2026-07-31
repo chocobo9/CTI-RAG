@@ -1,0 +1,7411 @@
+{
+  "alias_resolution": {
+    "ambiguous": {},
+    "ambiguous_names": 0,
+    "raw_names": 1375,
+    "resolved": {
+      "APT29": {
+        "canonical_actor": "APT29",
+        "count": 3
+      },
+      "DNSPIONAGE": {
+        "canonical_actor": "DNSpionage",
+        "count": 3
+      },
+      "Diamond Sleet": {
+        "canonical_actor": "Lazarus Group",
+        "count": 1
+      },
+      "KIMSUKY": {
+        "canonical_actor": "Kimsuky",
+        "count": 3
+      },
+      "KINSING": {
+        "canonical_actor": "Kinsing",
+        "count": 4
+      },
+      "LAZARUS": {
+        "canonical_actor": "Lazarus Group",
+        "count": 6
+      },
+      "Lazarus": {
+        "canonical_actor": "Lazarus Group",
+        "count": 2
+      },
+      "MUDDYWATER": {
+        "canonical_actor": "MuddyWater",
+        "count": 1
+      },
+      "NOBELIUM": {
+        "canonical_actor": "APT29",
+        "count": 2
+      },
+      "SEDNIT": {
+        "canonical_actor": "APT28",
+        "count": 1
+      },
+      "ZINC": {
+        "canonical_actor": "Lazarus Group",
+        "count": 5
+      },
+      "apt29": {
+        "canonical_actor": "APT29",
+        "count": 2
+      },
+      "diamond sleet": {
+        "canonical_actor": "Lazarus Group",
+        "count": 5
+      },
+      "dnspionage": {
+        "canonical_actor": "DNSpionage",
+        "count": 3
+      },
+      "kimsuky": {
+        "canonical_actor": "Kimsuky",
+        "count": 3
+      },
+      "kinsing": {
+        "canonical_actor": "Kinsing",
+        "count": 4
+      },
+      "lazarus": {
+        "canonical_actor": "Lazarus Group",
+        "count": 6
+      },
+      "muddywater": {
+        "canonical_actor": "MuddyWater",
+        "count": 1
+      },
+      "sednit": {
+        "canonical_actor": "APT28",
+        "count": 1
+      },
+      "zinc": {
+        "canonical_actor": "Lazarus Group",
+        "count": 5
+      }
+    },
+    "resolved_names": 20,
+    "unresolved": {
+      "0x308d49": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "0xeae6b5": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "1122": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "114.114.114.114": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "1168": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1220": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1225": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1231": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1234": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "1602192580242": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1602192586217": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1602192588844": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1602192624796": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1682": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "1885": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "2023": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "2709": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "2764": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "303300": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "32": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "32-bit": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "320700": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "3276": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "3278": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "3289": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "3305": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "368600": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "3691": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "3701": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "3939": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "5621": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "5674": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "5687": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "6056": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "64": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "6512": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "7845": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "83500": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ANDARIEL": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "APT": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "APT2": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "ATTOR": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "AgentTesla": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Amadey": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "Andariel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "AsyncRAT": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "BLUENOROFF": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "C2": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CANDIRU": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CNC": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CRON": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "CVE-2011-0611": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2014-3153": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2016-0189": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2017-0147": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2017-0199": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2017-11882": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2017-8570": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2018-4893": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2018-8174": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2020-0601": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CVE-2023-22518": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Coin Miner": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "CoinMiner": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "DARK HALO": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "DEMO": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "DUCKTAIL": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Dropbox": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "EMOTET": {
+        "canonical_actor": null,
+        "count": 15
+      },
+      "Encoded": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "FRANKENSTEIN": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Formbook": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "Frankenstein": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "GAZA CYBERGANG": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "GOP": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "Gaza Cybergang": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "GuLoader": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "Hall Render Law Firm": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Hive0133": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "IMPERIAL KITTEN": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "INFY": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "IRATA": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "ITA": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "IcedID": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "Imperial Kitten": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "IronWind": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "KONNI": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Konni": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "LOCKY": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Loki": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "MOLERATS": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Macro": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Malicious Document": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Mark Brian Sabey": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Molerats": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Mozi": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "NITRO": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "NONAME057": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "NSO": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "NSO GROUP": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "NanoCore": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "PPAM": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Password-protected": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "PayPal": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "PowerShellDiscordKeyLogger": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "PowerShellDiscordScreenGrabber": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "PowerShellDropboxKeylogger": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "PowerShellDropboxScreenStealer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "PowerShellMeterpreterReverseTCPx64": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Qbot": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "RAR": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ROMCOM": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "RecordBreaker": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "RedLine": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "RedLineStealer": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "RemcosRAT": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "RomCom": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "SAFE": {
+        "canonical_actor": null,
+        "count": 20
+      },
+      "SocGholish": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "Stealc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "TA402": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "TA456": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "TA544": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "TA577": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "TORTOISESHELL": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "TR": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "TRICKBOT": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "TRIDENT": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "TrojanX": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Tulach": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "WANNACRY": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "WIRTE": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "Web generator": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "XLL": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "YELLOW LIDERC": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "Zinc (Diamond Sleet)": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "a about": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "a domains": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "aaaa": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "abuse contact": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "ac32a": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "accept": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "acint": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "active": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "active threat": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "active2": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "adaptivebee": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "address": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "adload": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "adult content": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "adware": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "adwind": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "aead cipher": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "agent": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "agent tesla": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "agenttesla": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "agenziaentrate": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "aids": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "akamaias": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "albania": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "alberta": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "alberta meta": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "alexa": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "alexa top": {
+        "canonical_actor": null,
+        "count": 18
+      },
+      "algorithm": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "alien": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "alinaos": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "all search": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "alliance": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "allusersprofile": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "amadey": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "america": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "analysis": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "analyzed": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "andariel": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "andariel group": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "andariel threat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "android": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "andromeda": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "anonymizer": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "antivirus": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "apache": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "apache activemq": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "apk": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "app store": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "appdata": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "apple": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "apple app store compromise": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "apple computer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "apple ios": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "apple support compromise": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "applenoc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "appleseed": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "applicunwnt": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "april": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "apt": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "arkeistealer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "armenia": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "artemis": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "articles": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "as136907 huawei": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "as16625 akamai": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "as20940": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "as2914 ntt": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "as43350 nforce": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "as6461 zayo": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "as714 apple": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "as7843 charter": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ascii": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ascii text": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "aslr": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "assembly": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "assembly common": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "assembly name": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "astaroth": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "asyncrat": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "attack": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "attacker": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "attacks-breaches": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "attorney": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "august": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "authentihash": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "authority": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "autoit": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "autoit script": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ave maria": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "awful": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "azorult": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "b item": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "babuk": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "back": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "backdoor": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "backup": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bambernek": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "bandoo": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "bank": {
+        "canonical_actor": null,
+        "count": 17
+      },
+      "banker": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "bankerx": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "banking": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "barracuda et": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "base score": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "baseline": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "beginstring": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "behav": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "benjamin": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "best": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "betabot": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "binder": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "bitcoin": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bitminer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bitrep": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "black": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "blackcat": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "blackguard": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "blackievirus.com": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "blacklist": {
+        "canonical_actor": null,
+        "count": 15
+      },
+      "blacklist http": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "blacklist https": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "blacknet": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "blacknet rat": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "blackrat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bladabindi": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "blank": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "bleachgap": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "blockchain": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "blocklist": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "blog": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bluenoroff": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "blustealer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "body": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "body length": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "boost mobile": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bot": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "botnet command": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "botnets": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "br": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bradesco": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "brashears type": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "brian sabey": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "brontok": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "buffer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bundled": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "buttons": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "bypass": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "bz": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "c server": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "c2": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ca g2": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ca id": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "candiru": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "canvas": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "carriers": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "carrotbat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "casur": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "catalog file": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "certificate": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "chaos": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "chase personal": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "checkpoint": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "chi2": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "child pornographer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "childof base": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "china": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "china cobalt": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cins active": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "cis safeguard": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cisa": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cisco": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cisco ios": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cisco umbrella": {
+        "canonical_actor": null,
+        "count": 18
+      },
+      "citadel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "citizen lab": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "city": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "city center": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ck id": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "ck matrix": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "cl0p": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "clasp": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "class": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "cleaner": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "click": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "close": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "close operation": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cloudflare": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "cloudflarenet": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "clr version": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cluster": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cname": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "cnapple ist": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cnapple public": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cnc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cnc feodo": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "cnc server": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "cobalt strike": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "cobaltstrike": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "code": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "code signing": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "coinminer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "collection": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "collections": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "college": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "colorado": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "com laude": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "comment": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "communicating": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "computers": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "conclusion": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "conduit": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "contact phone": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "contacted": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "contacted urls": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "contained": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "content generating": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "conti": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "control panel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "control server": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "cookie": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "copy": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "copyright": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "core": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "count blacklist": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "country": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "country us": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "covid19": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "covid19 scam": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cowboy": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cp": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "crack": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "creation date": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "critical": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "critical risk": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cronup threat": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "crowdstrike": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "crypto": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "cryptocurrencies": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "csc corporate": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "cus cnapple": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cus cnr3": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "customer portal": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cutwail": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "cve list": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cve201711882": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "cve20188453": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cve202336584": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cve202336884": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cve202346604": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "cvss": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cvss v3": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cwe122": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cyber": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "cyber harassment": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cyber threat": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "cybercrime": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "cyberlink": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "cyberstalking": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "d26a": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "d3fend": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "daisy": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "daisy coleman": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dapato": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dark halo": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "darkcomet": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "darknet service": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "data": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "date": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "daum": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "dbatloader": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "dc1542721039132": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dcrat": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "ddos": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ddostf": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "death threats": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "december": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "deepscan": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "defacement": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "defender": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "defense": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "delay": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "delete": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "denial": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "deploys novel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "description": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "detail modified": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "details module": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "detection list": {
+        "canonical_actor": null,
+        "count": 16
+      },
+      "detects": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "detplock": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dev": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "developer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dgs": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "discord": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "discord channel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "discord webhook": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "djin": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "djvu": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "djvu ransomware": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dll": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dllinject": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dns replication": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "dns server": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dnssec": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "doc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dock": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "domain": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "domain name": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "domain status": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "domains": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "domaiq": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "done": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "done adding": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "dot net": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "dotnet_encrypted": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "downer": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "downldr": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "download": {
+        "canonical_actor": null,
+        "count": 17
+      },
+      "download csv": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "download json": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "downloader": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "dr-global": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "driverpack": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "dropped": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "dropped-by-PrivateLoader": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "dropped-by-SmokeLoader": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "dropper": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "dstindex": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ec oid": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ecc ca": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "edition": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "edmonton": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "el blog": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "elf": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "elf collection": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "email": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "emails": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "emailworm": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "emotet": {
+        "canonical_actor": null,
+        "count": 15
+      },
+      "emotet ip": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "encdoc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "encpk": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "encrypt": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "encrypted": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "endpoint": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "engineering": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "enterprise": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "entries": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "entropy chi2": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ermac": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "error": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "eset research": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "esxi": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "esxiargs": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "et": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "et cins": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "et cnc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "et tor": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "eternalblue": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "europe": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "events": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "evil": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "exe": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "execution": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "exif standard": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "exit": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "expiration": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "expirestue": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "exploit": {
+        "canonical_actor": null,
+        "count": 15
+      },
+      "exploits & vulnerabilities": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "explorer": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "fabookie": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "facebook": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "factory": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "faculties": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fakealert": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "fakeinstaller": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "falcon sandbox": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "false": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "fareit": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "fd ff": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "february": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "federal credit": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "feodo": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ff ff": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "figure": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "file": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "file type": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "file version": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "filerepmalware": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "filerepmetagen": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "files": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "filetour": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "final url": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "find": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "findertools": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "firehol": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "firehol et": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "firehol gozi": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "firehol proxy": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "first": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "floxif": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "format": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "formbook": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "former yugoslav": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "fortigate": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fortiguard labs threat research": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fortimail": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fortinet": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "framing": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fraud service": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "free djvu": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fri nov": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fuery": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "fully protected": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "function": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "funshion": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "fusioncore": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "g1 oapple": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "g1 validity": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "galaxy": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "galaxy watch": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "gamer123": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gandcrab": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gandi sas": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "gcleaner": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gear s": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gear s2": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gear s3": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gear sport": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "general": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "generator": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "generic": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "generic malware": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "genericm": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "genkryptik": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "genpack": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "geo": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "geofenced": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "germany": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "getprocaddress": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "ghost rat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "github": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "glupteba": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "google": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "gopher": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "gopuram": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gotitan": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "gpcode": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "graph summary": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "group": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gtmkr32": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "guid": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gwisin": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gwisinlocker": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "gz": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hackers": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hacktool": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "hajime": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "hall render denver": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hallrender": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "happywifehappylife": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hat advanced": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hat enterprise": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hat openshift": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hat summit": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hawkeye": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "header target": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "headers": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "health": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hell": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hellokitty": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "heodo": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "heur": {
+        "canonical_actor": null,
+        "count": 15
+      },
+      "heuristic": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hiddentear": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "highly targeted": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "hijacker": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "historical": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "historical ssl": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "hive0133": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hloader": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "host": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "hostname": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "hostnames": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "hotmail": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "hsbc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hta": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "html": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "html info": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "http attacker": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "http digest": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "http header": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "http response": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "http spammer": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "httponly": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "huntress": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "hwp support": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "hybrid": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "iana id": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "icedid": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "icefire": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "icloud compromise": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "icmp": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "icon": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "id logged": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "identity search": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "iframe": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "ilike search": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "illegal": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "imaploader": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "img": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "impact": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "impact summary": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "imperial kitten": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "indicator": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "indicator role": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "indonesia": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "info": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "infostealer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "infy": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "injector": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "inmortal": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "insert": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "installcore": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "installer": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "installpack": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "intel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "intel malware": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "intelligence": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "internal": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "internal name": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "international": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "internet storm": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "iobit": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "iocs": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "ios": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ip address": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "ip detections": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ip security": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ip summary": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "ip tcp": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "iphone unlocker": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ipstorm": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "iran": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "iso": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "israel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "issuer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "issuer criteria": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ist ca": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "it service": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "iz1h9": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "jamf": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "japan": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "java downloader": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "javascript": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "javascript code": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "jeffrey reimer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "jfif standard": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "jpeg image": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "js": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "json data": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "json sample": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "json url": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "jul jan": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "july": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "june": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "junk data": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kamran": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kandykorn": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "kandykorn rat": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "karkadann": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kb body": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "keitaro": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "key algorithm": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "key identifier": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "key info": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "key usage": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "keybase": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "keygen": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "keylogger": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "keyloggers": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kgs0": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "killav": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "kinsing malware": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kitten": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kls0": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "known exploited": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "known tor": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "korean": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "kraddare": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kraken": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "kryptik": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kuaizip": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "kyriazhs1975": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "lambload": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "later": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "law": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "learn": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "lenovo tablet": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "life": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "lilith rat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "limited": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "link": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "linux": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "lnk file": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "loader": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "loadmoney": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "local": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "localappdata": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "lockbit": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "locky": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "log4shell": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "loki password": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "lookups": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "low risk": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "lsalford": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "lumar": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "lumma stealer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "macedonia": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "machine intel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "macos": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "macro": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "magic pe32": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "magnitude": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mail spammer": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "mailing list": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "major": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "malcert": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "malicious": {
+        "canonical_actor": null,
+        "count": 18
+      },
+      "malicious host": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "malicious site": {
+        "canonical_actor": null,
+        "count": 15
+      },
+      "malicious url": {
+        "canonical_actor": null,
+        "count": 11
+      },
+      "maltiverse": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "maltiverse safe": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "malvertizing": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "malware": {
+        "canonical_actor": null,
+        "count": 25
+      },
+      "malware found": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "malware generic": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "malware host": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "malware hosting": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "malware site": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "malware_win_zgrat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "marc salinas": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "march": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "mark": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mark brian sabey": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mark dowd": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "matsnu": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "mediaget": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "mediamagnet": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "medium": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "medium high": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "medusa": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "memcommit": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "memory": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "memory checks": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "memscan": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "merlin": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "meta": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "metasploit": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "metastealer": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "meterpreter": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "metro": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "metro t-mobile": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "metroby": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "metroby-tmo": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "michael": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "microsoft": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "microsoft excel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "middle": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "middle east": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "middle-east-and-africa": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mile high media": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "million": {
+        "canonical_actor": null,
+        "count": 18
+      },
+      "million alexa": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "mimikatz": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "miner": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "minimal low": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mips": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "mirai": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "misc attack": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "missouri": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mitre att": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "mon sep": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "monitoring": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "monopoly": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "monti": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "motw": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "moved": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mozi": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mozilla": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "mqtt": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ms windows": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "msil": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "mtis": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "multi family rat detection": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "multi scan": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "mywebsearch": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "n64xtx0vpihxzc": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "name servers": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "name verdict": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "nanjing": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "nanocore": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "nanocore rat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "neanderthals": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "netscan": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "netsky": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "network": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "networm": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "neworder.doc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "news": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "next": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "nimda": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "nircmd": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "nist": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "nitro": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "njrat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "no data": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "no expiration": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "no na": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "no no": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "node tcp": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "node traffic": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "noname": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "noname057": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "november": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "nsis installer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "nso group": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "nuclear": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "nukesped": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "null": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "number": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "nymaim": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "nysp": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "objcshellz": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "object": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "occamy": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "ocomodo ca": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "october": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "olet": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "open": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "opencandy": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "opendir": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "openshift data": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "openssl": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "openwire": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "organization": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "orgid": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "orgtechhandle": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "orgtechref": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "original name": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "orkut": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ot security": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "otx octoseek": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "outbreak": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "outbrowse": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "outlook": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "overwrite": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "p155-fmfmobile.icloud.com": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "paexec": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "paexec utility": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "panama": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "passive dns": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "password": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "paste": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "patch https": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "patcher": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "path": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "pattern match": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "paypal": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "pe resource": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pegasus domains": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "period": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "persistence": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "petya": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "phase": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "phi": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "phish": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "phishing": {
+        "canonical_actor": null,
+        "count": 20
+      },
+      "phishing chase": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "phishing google": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "phishing site": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "phishtank": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "pix payment": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pixelrz": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "platform red": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "please": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "png file": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "png image": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "point": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "police": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "poly1305 mac": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ponmocup": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "pony": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "poor reputation": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "possiblecerber": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "postal code": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "powershell": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "pragma": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "prctrl": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "predator": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "prefetch8": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "presenoker": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "prevalence": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "priority": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "privacy admin": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "privacy tech": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "privateloader": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "probe": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "procdump": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "process cis": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "product": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "productidis": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "project": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "protect": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "proxy": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "ps": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "psexec": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "public key": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "public server": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pulse submit": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pulses url": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "push": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "pw-1122": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-1168": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-1220": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-1225": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-123": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-1682": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-1885": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-2023": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-2709": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-2764": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-3276": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-3278": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-3289": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-3305": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-3691": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-3701": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-3939": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-5621": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-5674": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-5687": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-6056": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-6512": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pw-7845": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "pykspa": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "python": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "python infostealer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "qakbot": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "qbot": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "qpyrn6pd": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "qpyrn6pd http": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "quasar": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "quasar rat": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "quasarrat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "qwest": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "raccoon": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "radar ineractive": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ragnar": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ragnar locker": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ramnit": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "random domains": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "random hosts": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ransomexx": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "ransomware": {
+        "canonical_actor": null,
+        "count": 11
+      },
+      "rar": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "raspberry robin": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ratel": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rauschenberg": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rdp wrapper": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "read c": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "recent emotet": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "record type": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "record value": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "red": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "red hat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "red team": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "redacted for": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "redir-302": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "redirector": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "redirme": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "redline": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "redline stealer": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "redlinestealer": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "referrer": {
+        "canonical_actor": null,
+        "count": 11
+      },
+      "refresh": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "registrar": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "registrar abuse": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "registrar url": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "registrar whois": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "registry arin": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "registry domain": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rejected sample": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "relayrouter": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "relic": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "remcos": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "replacement": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "reports": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "reputation ip": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "research": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "resolutions": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "resolver ip": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "restart": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "revenge": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "revengerat": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "reveton": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "revil": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rftrat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rftrat dropper": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rgba": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rhysida": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "riskware": {
+        "canonical_actor": null,
+        "count": 15
+      },
+      "rms": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "roblox": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "romcom": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "root ca": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "rootkits": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rostpay": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "round": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "roundup": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "royal": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rsa cn": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rtechhandle": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rtechref": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "rticon neutral": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "runescape": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "runtime process": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "rust": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "rustbucket": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "rva entry": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ryuk": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "sabey": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "sabey data centers": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "safe site": {
+        "canonical_actor": null,
+        "count": 18
+      },
+      "safebae": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "safebae.org": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "safeguard": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "sality": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "samesitenone": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "sample": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "samples": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "samsug": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "samsung galaxy": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "sap solutions": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "scan endpoints": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "scanning_host": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "screen": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "script": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "search": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "secrisk": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "security": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "security risk": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "sentinel": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "september": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "seraph": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "server": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "server rsa": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "server side": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "servers": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "service": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "services": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "serving ip": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "setcookie geous": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "sha1": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "sha256": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "sha256 hash": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "shell": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "shift": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "show": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "show matching": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "show technique": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "showing": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "siblings": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "simda": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "singapore": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "site": {
+        "canonical_actor": null,
+        "count": 18
+      },
+      "site safe": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "site top": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "sites": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "size": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "size68b type": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "skip": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "skynet": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "slice": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "sliver": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "small": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "smb server": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "smokeloader": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "smsspy": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "sneaky server": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "soc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "soc http": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "soc https": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "social engineering": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "sodinokibi": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "softcnapp": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "softonic": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "solimba": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "sorano": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "south carolina": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "south korea": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "space systems": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "spammer": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "span": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "sparc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "sport": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "spyrixkeylogger": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "spyware": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "squirrelwaffle": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "ssdeep": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ssl certificate": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "stalker": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "startpage": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "static engine": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "status": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "status code": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "stcalifornia": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "stealer": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "steam": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "steam route": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "stego": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "stevens creek": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "stop": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "storageguard": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "story": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "strange": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "streams size": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "strike": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "strings": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "strong": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "subdomains": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "subject public": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "submitters": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "sugarloader": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "sugarrush": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "summary": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "summary iocs": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "supply chain attack": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "suppobox": {
+        "canonical_actor": null,
+        "count": 11
+      },
+      "support": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "suspected": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "suspic": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "suspicious": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "sutra": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "svg scalable": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "swiftloader": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "swrort": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "systweak": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "t": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "t-mobile": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "ta456": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ta544": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tag count": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "tag manager": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tag tag": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "tags": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "target": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "targeting": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tcp traffic": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "team": {
+        "canonical_actor": null,
+        "count": 19
+      },
+      "team alexa": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "team malware": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "team phishing": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "team proxy": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "telefonica": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "telefonica co": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "telegram": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "telekopye": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "temp": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "template": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "threat": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "threat analyzer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "threat report": {
+        "canonical_actor": null,
+        "count": 13
+      },
+      "threat roundup": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "threats et": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "tiff image": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tigerrat": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "tiggre": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "tinba": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "tips": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tld count": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "tofsee": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "tool": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tools": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "tor known": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "tor relayrouter": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "tortoiseshell": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "touchmove": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "tour": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tracker": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "tracker malware": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "trackers google": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tracking": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "traffic": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "trap": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "trend micro": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "trend vision": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "trickbot": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "trid windows": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "trident": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "trim": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "trojan": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "trojan-stealer": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "trojanspy": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "trojanx": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "tsara brashears": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "tsgeneric": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "ttl value": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "tue feb": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tue jan": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "tue mar": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "tulach": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "tulach.cc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "twitter": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "type": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "typelib id": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "uchealth": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ukraine": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "unauthorized": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "unicode text": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "union": {
+        "canonical_actor": null,
+        "count": 12
+      },
+      "unis": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "united": {
+        "canonical_actor": null,
+        "count": 18
+      },
+      "united kingdom": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "university": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "unknown": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "unruy": {
+        "canonical_actor": null,
+        "count": 11
+      },
+      "unsafe": {
+        "canonical_actor": null,
+        "count": 16
+      },
+      "update": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "upgrade": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "upx": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "url analysis": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "url http": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "url https": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "url summary": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "urlhttps": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "urlhxxps": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "urls": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "urls http": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "urls https": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "ursnif": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "usaid": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "utc entry": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "utc submissions": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "utilizar": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "uuid": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "v3 serial": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "valid": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "validity": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "vawtrak": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "vbs": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "verdict": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "version id": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "vhash": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "vidar": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "view details": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "virustotal": {
+        "canonical_actor": null,
+        "count": 11
+      },
+      "virut": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "wacatac": {
+        "canonical_actor": null,
+        "count": 11
+      },
+      "wailingcrab": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "wannacry": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "watch": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "watering hole": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "web compromise": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "webcompanion": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "webshell": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "webtoolbar": {
+        "canonical_actor": null,
+        "count": 6
+      },
+      "wed apr": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "wed sep": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "whatsapp": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "whitelisted": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "whois": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "whois lookup": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "whois lookups": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "whois record": {
+        "canonical_actor": null,
+        "count": 14
+      },
+      "whois sslcert": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "whois whois": {
+        "canonical_actor": null,
+        "count": 9
+      },
+      "win32 exe": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "win64": {
+        "canonical_actor": null,
+        "count": 8
+      },
+      "windir": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "window": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "windows": {
+        "canonical_actor": null,
+        "count": 4
+      },
+      "windows nt": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "winrar": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "winscp": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "write": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "wsf": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "x6a4": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "x86-32": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "xaro": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "xaro payload": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "xdpid1203": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "xmodeargs": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "xmrig": {
+        "canonical_actor": null,
+        "count": 3
+      },
+      "xpubid10839": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "xrat": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "xtrat": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "xtreme": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "xworm": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "y tor": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "yandex": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "yara detections": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "yellow liderc": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "yixun": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "zbot": {
+        "canonical_actor": null,
+        "count": 10
+      },
+      "zeus": {
+        "canonical_actor": null,
+        "count": 7
+      },
+      "zgRAT": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "zimbra": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "zip": {
+        "canonical_actor": null,
+        "count": 2
+      },
+      "zip archive": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "zip file": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "zip swap": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "zombie devices": {
+        "canonical_actor": null,
+        "count": 1
+      },
+      "zpevdo": {
+        "canonical_actor": null,
+        "count": 5
+      },
+      "zt7t3wzz": {
+        "canonical_actor": null,
+        "count": 1
+      }
+    },
+    "unresolved_names": 1355
+  },
+  "base": {
+    "asn_coverage": {
+      "fraction": 0.0,
+      "ips_total": 694,
+      "ips_with_asn": 0
+    },
+    "claim_resolution": {
+      "resolved": 61,
+      "unresolved": 3563
+    },
+    "claims_by_scope": {
+      "attribution": 15,
+      "discovery_only": 115,
+      "report_context": 3494
+    },
+    "claims_by_source": {
+      "otx": 3509,
+      "otx_search": 115
+    },
+    "claims_by_usage": {
+      "out_of_vocabulary": 11,
+      "provenance_only": 3609,
+      "training_candidate": 4
+    },
+    "claims_total": 3624,
+    "conflict_examples": {},
+    "conflicting_events": 0,
+    "dataset": "base",
+    "edges_by_relation": {
+      "event_contains_domain": 59171,
+      "event_contains_url": 102295,
+      "url_hosted_on_domain": 78402,
+      "url_resolves_to_ip": 3206
+    },
+    "edges_total": 243074,
+    "enrichments_by_provider": {},
+    "enrichments_total": 0,
+    "events_by_source": {
+      "otx": 50
+    },
+    "events_in_vocabulary": 21,
+    "events_out_of_vocabulary": 7,
+    "events_total": 50,
+    "events_unlabeled": 0,
+    "events_with_ambiguous_aliases": 0,
+    "events_with_training_candidates": 4,
+    "multi_actor_events": 50,
+    "nodes_by_type": {
+      "Domain": 51878,
+      "Event": 50,
+      "IP": 694,
+      "URL": 81608
+    },
+    "nodes_total": 134230,
+    "rejected_by_raw_type": {
+      "CIDR": 5,
+      "CVE": 269,
+      "FileHash-MD5": 12819,
+      "FileHash-SHA1": 7171,
+      "FileHash-SHA256": 56507,
+      "Mutex": 1,
+      "SSLCertFingerprint": 5,
+      "URI": 8,
+      "URL": 46,
+      "YARA": 10,
+      "email": 37,
+      "hostname": 15
+    },
+    "rejected_by_reason": {
+      "unsupported_or_invalid_indicator": 76893
+    },
+    "rejected_by_source": {
+      "otx": 76893
+    },
+    "rejected_total": 76893,
+    "timestamp_coverage": {
+      "claims": {
+        "available_at": {
+          "count": 3624,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 3624,
+          "fraction": 1.0
+        },
+        "created": {
+          "count": 3509,
+          "fraction": 0.968267
+        },
+        "modified": {
+          "count": 3509,
+          "fraction": 0.968267
+        }
+      },
+      "edges": {
+        "available_at": {
+          "count": 243074,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 243074,
+          "fraction": 1.0
+        },
+        "indicator_created": {
+          "count": 243074,
+          "fraction": 1.0
+        },
+        "observed_at": {
+          "count": 243074,
+          "fraction": 1.0
+        }
+      },
+      "events": {
+        "available_at": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "created": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "event_time": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "modified": {
+          "count": 50,
+          "fraction": 1.0
+        }
+      },
+      "evidence": {
+        "available_at": {
+          "count": 367080,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 367080,
+          "fraction": 1.0
+        },
+        "indicator_created": {
+          "count": 367080,
+          "fraction": 1.0
+        },
+        "observed_at": {
+          "count": 367080,
+          "fraction": 1.0
+        }
+      },
+      "ioc_nodes": {
+        "available_at": {
+          "count": 134180,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 134180,
+          "fraction": 1.0
+        },
+        "indicator_created": {
+          "count": 134180,
+          "fraction": 1.0
+        },
+        "observed_at": {
+          "count": 134180,
+          "fraction": 1.0
+        }
+      }
+    }
+  },
+  "enriched": {
+    "asn_coverage": {
+      "fraction": 0.931856,
+      "ips_total": 13354,
+      "ips_with_asn": 12444
+    },
+    "claim_resolution": {
+      "resolved": 61,
+      "unresolved": 3563
+    },
+    "claims_by_scope": {
+      "attribution": 15,
+      "discovery_only": 115,
+      "report_context": 3494
+    },
+    "claims_by_source": {
+      "otx": 3509,
+      "otx_search": 115
+    },
+    "claims_by_usage": {
+      "out_of_vocabulary": 11,
+      "provenance_only": 3609,
+      "training_candidate": 4
+    },
+    "claims_total": 3624,
+    "conflict_examples": {},
+    "conflicting_events": 0,
+    "dataset": "enriched-otx",
+    "edges_by_relation": {
+      "domain_resolves_to_ip": 22631,
+      "event_contains_domain": 59171,
+      "event_contains_url": 102295,
+      "ip_in_asn": 12444,
+      "url_hosted_on_domain": 78402,
+      "url_resolves_to_ip": 3206
+    },
+    "edges_total": 278149,
+    "enrichments_by_provider": {
+      "otx": 95686
+    },
+    "enrichments_total": 95686,
+    "events_by_source": {
+      "otx": 50
+    },
+    "events_in_vocabulary": 21,
+    "events_out_of_vocabulary": 7,
+    "events_total": 50,
+    "events_unlabeled": 0,
+    "events_with_ambiguous_aliases": 0,
+    "events_with_training_candidates": 4,
+    "multi_actor_events": 50,
+    "nodes_by_type": {
+      "ASN": 731,
+      "Domain": 53331,
+      "Event": 50,
+      "IP": 13354,
+      "URL": 81608
+    },
+    "nodes_total": 149074,
+    "rejected_by_raw_type": {
+      "CIDR": 5,
+      "CVE": 269,
+      "FileHash-MD5": 12819,
+      "FileHash-SHA1": 7171,
+      "FileHash-SHA256": 56507,
+      "Mutex": 1,
+      "SSLCertFingerprint": 5,
+      "URI": 8,
+      "URL": 46,
+      "YARA": 10,
+      "email": 37,
+      "hostname": 15
+    },
+    "rejected_by_reason": {
+      "unsupported_or_invalid_indicator": 76893
+    },
+    "rejected_by_source": {
+      "otx": 76893
+    },
+    "rejected_total": 76893,
+    "timestamp_coverage": {
+      "claims": {
+        "available_at": {
+          "count": 3624,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 3624,
+          "fraction": 1.0
+        },
+        "created": {
+          "count": 3509,
+          "fraction": 0.968267
+        },
+        "modified": {
+          "count": 3509,
+          "fraction": 0.968267
+        }
+      },
+      "edges": {
+        "available_at": {
+          "count": 278149,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 278149,
+          "fraction": 1.0
+        },
+        "first_seen": {
+          "count": 35074,
+          "fraction": 0.126098
+        },
+        "indicator_created": {
+          "count": 243074,
+          "fraction": 0.873899
+        },
+        "last_seen": {
+          "count": 35074,
+          "fraction": 0.126098
+        },
+        "observed_at": {
+          "count": 243074,
+          "fraction": 0.873899
+        }
+      },
+      "events": {
+        "available_at": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "created": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "event_time": {
+          "count": 50,
+          "fraction": 1.0
+        },
+        "modified": {
+          "count": 50,
+          "fraction": 1.0
+        }
+      },
+      "evidence": {
+        "available_at": {
+          "count": 460967,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 460967,
+          "fraction": 1.0
+        },
+        "first_seen": {
+          "count": 93856,
+          "fraction": 0.203607
+        },
+        "indicator_created": {
+          "count": 367080,
+          "fraction": 0.796326
+        },
+        "last_seen": {
+          "count": 93856,
+          "fraction": 0.203607
+        },
+        "observed_at": {
+          "count": 367080,
+          "fraction": 0.796326
+        }
+      },
+      "ioc_nodes": {
+        "available_at": {
+          "count": 149024,
+          "fraction": 1.0
+        },
+        "collected_at": {
+          "count": 149024,
+          "fraction": 1.0
+        },
+        "first_seen": {
+          "count": 15588,
+          "fraction": 0.104601
+        },
+        "indicator_created": {
+          "count": 134180,
+          "fraction": 0.900392
+        },
+        "last_seen": {
+          "count": 15588,
+          "fraction": 0.104601
+        },
+        "observed_at": {
+          "count": 134180,
+          "fraction": 0.900392
+        }
+      }
+    }
+  },
+  "enrichment": {
+    "enrichment_records_added": 95686,
+    "mode": "otx",
+    "nodes_added": 14844,
+    "providers": {
+      "otx_enrichment": {
+        "available": true,
+        "records_added": 95686,
+        "records_unmatched": 434096,
+        "relations_added": 35075,
+        "relations_merged": 82304,
+        "relations_unmatched": 565539
+      }
+    },
+    "relations_added": 35075,
+    "requested_providers": [
+      "otx_enrichment"
+    ]
+  },
+  "event_match_candidates": 0,
+  "neo4j": null,
+  "output_root": "F:\\DATA_COLLECTION\\evitrail_delivery_20260730\\outputs\\representative_acceptance\\pipeline_part01_source00013_otx_partial",
+  "vocabulary_changes": {
+    "actors": [
+      "Kimsuky",
+      "Cobalt Group",
+      "Lazarus Group",
+      "APT28",
+      "Mustang Panda",
+      "Turla",
+      "APT41",
+      "Sandworm",
+      "APT37",
+      "APT29",
+      "Gamaredon",
+      "APT3",
+      "APT30",
+      "APT32",
+      "APT33",
+      "APT39",
+      "Callisto",
+      "Carbanak",
+      "Cobalt",
+      "DNSpionage",
+      "DarkHydrus",
+      "Earth Berberoka",
+      "FIN8",
+      "Kinsing",
+      "MUMMY SPIDER",
+      "MuddyWater",
+      "Operation C-Major",
+      "PROMETHIUM",
+      "Sea Turtle",
+      "SilverTerrier",
+      "TA428",
+      "TA558",
+      "VICEROY TIGER"
+    ],
+    "added": [],
+    "ambiguous_aliases": {},
+    "context_only_candidates": [
+      {
+        "actor": "APT28",
+        "event_count": 1,
+        "source_count": 2,
+        "sources": [
+          "otx",
+          "otx_search"
+        ]
+      },
+      {
+        "actor": "DNSpionage",
+        "event_count": 3,
+        "source_count": 2,
+        "sources": [
+          "otx",
+          "otx_search"
+        ]
+      },
+      {
+        "actor": "Kimsuky",
+        "event_count": 3,
+        "source_count": 2,
+        "sources": [
+          "otx",
+          "otx_search"
+        ]
+      },
+      {
+        "actor": "Kinsing",
+        "event_count": 4,
+        "source_count": 2,
+        "sources": [
+          "otx",
+          "otx_search"
+        ]
+      },
+      {
+        "actor": "MuddyWater",
+        "event_count": 1,
+        "source_count": 2,
+        "sources": [
+          "otx",
+          "otx_search"
+        ]
+      }
+    ],
+    "decisions": [
+      {
+        "actor": "APT29",
+        "decision": "existing",
+        "event_count": 1,
+        "source_count": 1,
+        "sources": [
+          "otx"
+        ]
+      },
+      {
+        "actor": "Lazarus Group",
+        "decision": "existing",
+        "event_count": 3,
+        "source_count": 1,
+        "sources": [
+          "otx"
+        ]
+      }
+    ],
+    "eligible_not_added": [],
+    "insufficient_support": [],
+    "minimum_events": 5,
+    "minimum_sources": 2,
+    "mode": "frozen",
+    "original_actors": [
+      "Kimsuky",
+      "Cobalt Group",
+      "Lazarus Group",
+      "APT28",
+      "Mustang Panda",
+      "Turla",
+      "APT41",
+      "Sandworm",
+      "APT37",
+      "APT29",
+      "Gamaredon",
+      "APT3",
+      "APT30",
+      "APT32",
+      "APT33",
+      "APT39",
+      "Callisto",
+      "Carbanak",
+      "Cobalt",
+      "DNSpionage",
+      "DarkHydrus",
+      "Earth Berberoka",
+      "FIN8",
+      "Kinsing",
+      "MUMMY SPIDER",
+      "MuddyWater",
+      "Operation C-Major",
+      "PROMETHIUM",
+      "Sea Turtle",
+      "SilverTerrier",
+      "TA428",
+      "TA558",
+      "VICEROY TIGER"
+    ],
+    "unresolved": {
+      "0x308d49": 2,
+      "0xeae6b5": 2,
+      "1122": 1,
+      "114.114.114.114": 2,
+      "1168": 1,
+      "1220": 1,
+      "1225": 1,
+      "1231": 1,
+      "1234": 3,
+      "1602192580242": 1,
+      "1602192586217": 1,
+      "1602192588844": 1,
+      "1602192624796": 1,
+      "1682": 1,
+      "1885": 1,
+      "2023": 1,
+      "2709": 1,
+      "2764": 1,
+      "303300": 1,
+      "32": 3,
+      "32-bit": 3,
+      "320700": 1,
+      "3276": 1,
+      "3278": 1,
+      "3289": 1,
+      "3305": 1,
+      "368600": 1,
+      "3691": 1,
+      "3701": 1,
+      "3939": 1,
+      "5621": 1,
+      "5674": 1,
+      "5687": 1,
+      "6056": 1,
+      "64": 2,
+      "6512": 1,
+      "7845": 1,
+      "83500": 1,
+      "ANDARIEL": 3,
+      "APT": 1,
+      "APT2": 2,
+      "ATTOR": 1,
+      "AgentTesla": 1,
+      "Amadey": 2,
+      "Andariel": 1,
+      "AsyncRAT": 1,
+      "BLUENOROFF": 2,
+      "C2": 1,
+      "CANDIRU": 1,
+      "CNC": 1,
+      "CRON": 3,
+      "CVE-2011-0611": 1,
+      "CVE-2014-3153": 1,
+      "CVE-2016-0189": 1,
+      "CVE-2017-0147": 1,
+      "CVE-2017-0199": 1,
+      "CVE-2017-11882": 1,
+      "CVE-2017-8570": 1,
+      "CVE-2018-4893": 1,
+      "CVE-2018-8174": 1,
+      "CVE-2020-0601": 1,
+      "CVE-2023-22518": 1,
+      "Coin Miner": 1,
+      "CoinMiner": 1,
+      "DARK HALO": 1,
+      "DEMO": 1,
+      "DUCKTAIL": 1,
+      "Dropbox": 1,
+      "EMOTET": 15,
+      "Encoded": 1,
+      "FRANKENSTEIN": 1,
+      "Formbook": 2,
+      "Frankenstein": 1,
+      "GAZA CYBERGANG": 1,
+      "GOP": 3,
+      "Gaza Cybergang": 1,
+      "GuLoader": 2,
+      "Hall Render Law Firm": 1,
+      "Hive0133": 1,
+      "IMPERIAL KITTEN": 1,
+      "INFY": 1,
+      "IRATA": 2,
+      "ITA": 3,
+      "IcedID": 2,
+      "Imperial Kitten": 1,
+      "IronWind": 1,
+      "KONNI": 1,
+      "Konni": 2,
+      "LOCKY": 1,
+      "Loki": 1,
+      "MOLERATS": 1,
+      "Macro": 1,
+      "Malicious Document": 1,
+      "Mark Brian Sabey": 1,
+      "Molerats": 1,
+      "Mozi": 3,
+      "NITRO": 1,
+      "NONAME057": 9,
+      "NSO": 2,
+      "NSO GROUP": 2,
+      "NanoCore": 1,
+      "PPAM": 1,
+      "Password-protected": 3,
+      "PayPal": 2,
+      "PowerShellDiscordKeyLogger": 1,
+      "PowerShellDiscordScreenGrabber": 1,
+      "PowerShellDropboxKeylogger": 1,
+      "PowerShellDropboxScreenStealer": 1,
+      "PowerShellMeterpreterReverseTCPx64": 1,
+      "Qbot": 1,
+      "RAR": 1,
+      "ROMCOM": 1,
+      "RecordBreaker": 1,
+      "RedLine": 2,
+      "RedLineStealer": 2,
+      "RemcosRAT": 3,
+      "RomCom": 1,
+      "SAFE": 20,
+      "SocGholish": 3,
+      "Stealc": 1,
+      "TA402": 3,
+      "TA456": 1,
+      "TA544": 3,
+      "TA577": 4,
+      "TORTOISESHELL": 1,
+      "TR": 2,
+      "TRICKBOT": 3,
+      "TRIDENT": 2,
+      "TrojanX": 1,
+      "Tulach": 1,
+      "WANNACRY": 2,
+      "WIRTE": 2,
+      "Web generator": 1,
+      "XLL": 1,
+      "YELLOW LIDERC": 1,
+      "Zinc (Diamond Sleet)": 1,
+      "a about": 1,
+      "a domains": 2,
+      "aaaa": 3,
+      "abuse contact": 2,
+      "ac32a": 1,
+      "accept": 7,
+      "acint": 8,
+      "active": 1,
+      "active threat": 2,
+      "active2": 1,
+      "adaptivebee": 4,
+      "address": 3,
+      "adload": 7,
+      "adult content": 1,
+      "adware": 3,
+      "adwind": 3,
+      "aead cipher": 1,
+      "agent": 14,
+      "agent tesla": 1,
+      "agenttesla": 1,
+      "agenziaentrate": 1,
+      "aids": 1,
+      "akamaias": 2,
+      "albania": 1,
+      "alberta": 1,
+      "alberta meta": 1,
+      "alexa": 13,
+      "alexa top": 18,
+      "algorithm": 3,
+      "alien": 1,
+      "alinaos": 1,
+      "all search": 2,
+      "alliance": 1,
+      "allusersprofile": 1,
+      "amadey": 3,
+      "america": 1,
+      "analysis": 1,
+      "analyzed": 1,
+      "andariel": 3,
+      "andariel group": 2,
+      "andariel threat": 1,
+      "android": 13,
+      "andromeda": 1,
+      "anonymizer": 4,
+      "antivirus": 3,
+      "apache": 4,
+      "apache activemq": 3,
+      "apk": 2,
+      "app store": 1,
+      "appdata": 6,
+      "apple": 8,
+      "apple app store compromise": 1,
+      "apple computer": 1,
+      "apple ios": 4,
+      "apple support compromise": 1,
+      "applenoc": 1,
+      "appleseed": 1,
+      "applicunwnt": 3,
+      "april": 5,
+      "apt": 1,
+      "arkeistealer": 1,
+      "armenia": 1,
+      "artemis": 14,
+      "articles": 1,
+      "as136907 huawei": 1,
+      "as16625 akamai": 3,
+      "as20940": 3,
+      "as2914 ntt": 1,
+      "as43350 nforce": 1,
+      "as6461 zayo": 1,
+      "as714 apple": 1,
+      "as7843 charter": 1,
+      "ascii": 1,
+      "ascii text": 9,
+      "aslr": 1,
+      "assembly": 1,
+      "assembly common": 1,
+      "assembly name": 1,
+      "astaroth": 1,
+      "asyncrat": 8,
+      "attack": 5,
+      "attacker": 3,
+      "attacks-breaches": 1,
+      "attorney": 1,
+      "august": 6,
+      "authentihash": 1,
+      "authority": 2,
+      "autoit": 1,
+      "autoit script": 1,
+      "ave maria": 1,
+      "awful": 1,
+      "azorult": 10,
+      "b item": 2,
+      "babuk": 1,
+      "back": 3,
+      "backdoor": 1,
+      "backup": 1,
+      "bambernek": 2,
+      "bandoo": 4,
+      "bank": 17,
+      "banker": 3,
+      "bankerx": 3,
+      "banking": 1,
+      "barracuda et": 1,
+      "base score": 1,
+      "baseline": 1,
+      "beginstring": 2,
+      "behav": 4,
+      "benjamin": 1,
+      "best": 1,
+      "betabot": 1,
+      "binder": 6,
+      "bitcoin": 1,
+      "bitminer": 1,
+      "bitrep": 1,
+      "black": 1,
+      "blackcat": 2,
+      "blackguard": 1,
+      "blackievirus.com": 1,
+      "blacklist": 15,
+      "blacklist http": 9,
+      "blacklist https": 8,
+      "blacknet": 2,
+      "blacknet rat": 4,
+      "blackrat": 1,
+      "bladabindi": 1,
+      "blank": 2,
+      "bleachgap": 1,
+      "blockchain": 1,
+      "blocklist": 1,
+      "blog": 1,
+      "bluenoroff": 2,
+      "blustealer": 1,
+      "body": 7,
+      "body length": 3,
+      "boost mobile": 1,
+      "bot": 1,
+      "botnet command": 1,
+      "botnets": 2,
+      "br": 1,
+      "bradesco": 8,
+      "brashears type": 2,
+      "brian sabey": 1,
+      "brontok": 5,
+      "buffer": 1,
+      "bundled": 3,
+      "buttons": 1,
+      "bypass": 2,
+      "bz": 1,
+      "c server": 3,
+      "c2": 1,
+      "ca g2": 1,
+      "ca id": 1,
+      "candiru": 1,
+      "canvas": 2,
+      "carriers": 1,
+      "carrotbat": 1,
+      "casur": 1,
+      "catalog file": 2,
+      "certificate": 2,
+      "chaos": 2,
+      "chase personal": 1,
+      "checkpoint": 1,
+      "chi2": 1,
+      "child pornographer": 1,
+      "childof base": 1,
+      "china": 1,
+      "china cobalt": 1,
+      "cins active": 4,
+      "cis safeguard": 1,
+      "cisa": 1,
+      "cisco": 1,
+      "cisco ios": 1,
+      "cisco umbrella": 18,
+      "citadel": 1,
+      "citizen lab": 1,
+      "city": 2,
+      "city center": 1,
+      "ck id": 3,
+      "ck matrix": 2,
+      "cl0p": 3,
+      "clasp": 1,
+      "class": 10,
+      "cleaner": 10,
+      "click": 12,
+      "close": 2,
+      "close operation": 1,
+      "cloudflare": 2,
+      "cloudflarenet": 2,
+      "clr version": 1,
+      "cluster": 1,
+      "cname": 3,
+      "cnapple ist": 1,
+      "cnapple public": 1,
+      "cnc": 1,
+      "cnc feodo": 2,
+      "cnc server": 2,
+      "cobalt strike": 12,
+      "cobaltstrike": 4,
+      "code": 6,
+      "code signing": 1,
+      "coinminer": 1,
+      "collection": 1,
+      "collections": 6,
+      "college": 1,
+      "colorado": 1,
+      "com laude": 1,
+      "comment": 1,
+      "communicating": 5,
+      "computers": 1,
+      "conclusion": 1,
+      "conduit": 9,
+      "contact phone": 3,
+      "contacted": 12,
+      "contacted urls": 4,
+      "contained": 1,
+      "content generating": 1,
+      "conti": 1,
+      "control panel": 1,
+      "control server": 4,
+      "cookie": 4,
+      "copy": 7,
+      "copyright": 1,
+      "core": 7,
+      "count blacklist": 5,
+      "country": 2,
+      "country us": 1,
+      "covid19": 8,
+      "covid19 scam": 1,
+      "cowboy": 1,
+      "cp": 1,
+      "crack": 13,
+      "creation date": 5,
+      "critical": 14,
+      "critical risk": 1,
+      "cronup threat": 3,
+      "crowdstrike": 1,
+      "crypto": 3,
+      "cryptocurrencies": 1,
+      "csc corporate": 3,
+      "cus cnapple": 1,
+      "cus cnr3": 1,
+      "customer portal": 1,
+      "cutwail": 4,
+      "cve list": 1,
+      "cve201711882": 4,
+      "cve20188453": 1,
+      "cve202336584": 1,
+      "cve202336884": 1,
+      "cve202346604": 5,
+      "cvss": 1,
+      "cvss v3": 1,
+      "cwe122": 1,
+      "cyber": 2,
+      "cyber harassment": 1,
+      "cyber threat": 14,
+      "cybercrime": 2,
+      "cyberlink": 1,
+      "cyberstalking": 1,
+      "d26a": 1,
+      "d3fend": 1,
+      "daisy": 1,
+      "daisy coleman": 1,
+      "dapato": 1,
+      "dark halo": 1,
+      "darkcomet": 1,
+      "darknet service": 1,
+      "data": 3,
+      "date": 10,
+      "daum": 2,
+      "dbatloader": 3,
+      "dc1542721039132": 1,
+      "dcrat": 2,
+      "ddos": 1,
+      "ddostf": 1,
+      "death threats": 1,
+      "december": 1,
+      "deepscan": 6,
+      "defacement": 1,
+      "defender": 3,
+      "defense": 2,
+      "delay": 1,
+      "delete": 1,
+      "denial": 1,
+      "deploys novel": 1,
+      "description": 1,
+      "detail modified": 1,
+      "details module": 1,
+      "detection list": 16,
+      "detects": 1,
+      "detplock": 1,
+      "dev": 1,
+      "developer": 1,
+      "dgs": 1,
+      "discord": 5,
+      "discord channel": 1,
+      "discord webhook": 1,
+      "djin": 1,
+      "djvu": 2,
+      "djvu ransomware": 1,
+      "dll": 1,
+      "dllinject": 1,
+      "dns replication": 3,
+      "dns server": 1,
+      "dnssec": 3,
+      "doc": 1,
+      "dock": 1,
+      "domain": 5,
+      "domain name": 2,
+      "domain status": 4,
+      "domains": 4,
+      "domaiq": 1,
+      "done": 1,
+      "done adding": 2,
+      "dot net": 1,
+      "dotnet_encrypted": 1,
+      "downer": 4,
+      "downldr": 12,
+      "download": 17,
+      "download csv": 2,
+      "download json": 2,
+      "downloader": 13,
+      "dr-global": 1,
+      "driverpack": 4,
+      "dropped": 3,
+      "dropped-by-PrivateLoader": 3,
+      "dropped-by-SmokeLoader": 2,
+      "dropper": 13,
+      "dstindex": 1,
+      "ec oid": 1,
+      "ecc ca": 1,
+      "edition": 1,
+      "edmonton": 1,
+      "el blog": 1,
+      "elf": 3,
+      "elf collection": 1,
+      "email": 4,
+      "emails": 1,
+      "emailworm": 2,
+      "emotet": 15,
+      "emotet ip": 1,
+      "encdoc": 1,
+      "encpk": 1,
+      "encrypt": 3,
+      "encrypted": 3,
+      "endpoint": 3,
+      "engineering": 9,
+      "enterprise": 1,
+      "entries": 3,
+      "entropy chi2": 1,
+      "ermac": 1,
+      "error": 10,
+      "eset research": 1,
+      "esxi": 1,
+      "esxiargs": 1,
+      "et": 1,
+      "et cins": 2,
+      "et cnc": 1,
+      "et tor": 5,
+      "eternalblue": 1,
+      "europe": 1,
+      "events": 1,
+      "evil": 1,
+      "exe": 3,
+      "execution": 10,
+      "exif standard": 1,
+      "exit": 5,
+      "expiration": 2,
+      "expirestue": 1,
+      "exploit": 15,
+      "exploits & vulnerabilities": 1,
+      "explorer": 3,
+      "fabookie": 1,
+      "facebook": 14,
+      "factory": 2,
+      "faculties": 1,
+      "fakealert": 7,
+      "fakeinstaller": 1,
+      "falcon sandbox": 2,
+      "false": 2,
+      "fareit": 5,
+      "fd ff": 1,
+      "february": 2,
+      "federal credit": 1,
+      "feodo": 1,
+      "ff ff": 1,
+      "figure": 1,
+      "file": 10,
+      "file type": 1,
+      "file version": 1,
+      "filerepmalware": 1,
+      "filerepmetagen": 2,
+      "files": 1,
+      "filetour": 6,
+      "final url": 3,
+      "find": 2,
+      "findertools": 2,
+      "firehol": 4,
+      "firehol et": 1,
+      "firehol gozi": 1,
+      "firehol proxy": 1,
+      "first": 9,
+      "floxif": 3,
+      "format": 3,
+      "formbook": 8,
+      "former yugoslav": 2,
+      "fortigate": 1,
+      "fortiguard labs threat research": 1,
+      "fortimail": 1,
+      "fortinet": 1,
+      "framing": 1,
+      "fraud service": 1,
+      "free djvu": 1,
+      "fri nov": 1,
+      "fuery": 3,
+      "fully protected": 1,
+      "function": 2,
+      "funshion": 1,
+      "fusioncore": 8,
+      "g1 oapple": 1,
+      "g1 validity": 1,
+      "galaxy": 1,
+      "galaxy watch": 2,
+      "gamer123": 1,
+      "gandcrab": 1,
+      "gandi sas": 2,
+      "gcleaner": 1,
+      "gear s": 1,
+      "gear s2": 1,
+      "gear s3": 1,
+      "gear sport": 1,
+      "general": 10,
+      "generator": 8,
+      "generic": 10,
+      "generic malware": 6,
+      "genericm": 1,
+      "genkryptik": 7,
+      "genpack": 2,
+      "geo": 3,
+      "geofenced": 3,
+      "germany": 1,
+      "getprocaddress": 2,
+      "ghost rat": 1,
+      "github": 1,
+      "glupteba": 1,
+      "google": 3,
+      "gopher": 2,
+      "gopuram": 1,
+      "gotitan": 2,
+      "gpcode": 1,
+      "graph summary": 1,
+      "group": 1,
+      "gtmkr32": 1,
+      "guid": 1,
+      "gwisin": 1,
+      "gwisinlocker": 1,
+      "gz": 1,
+      "hackers": 1,
+      "hacktool": 8,
+      "hajime": 3,
+      "hall render denver": 1,
+      "hallrender": 1,
+      "happywifehappylife": 1,
+      "hat advanced": 1,
+      "hat enterprise": 1,
+      "hat openshift": 1,
+      "hat summit": 1,
+      "hawkeye": 1,
+      "header target": 1,
+      "headers": 3,
+      "health": 1,
+      "hell": 1,
+      "hellokitty": 4,
+      "heodo": 2,
+      "heur": 15,
+      "heuristic": 1,
+      "hiddentear": 1,
+      "highly targeted": 3,
+      "hijacker": 1,
+      "historical": 3,
+      "historical ssl": 10,
+      "hive0133": 1,
+      "hloader": 2,
+      "host": 5,
+      "hostname": 5,
+      "hostnames": 3,
+      "hotmail": 2,
+      "hsbc": 1,
+      "hta": 1,
+      "html": 4,
+      "html info": 1,
+      "http attacker": 1,
+      "http digest": 1,
+      "http header": 1,
+      "http response": 3,
+      "http spammer": 2,
+      "httponly": 1,
+      "huntress": 2,
+      "hwp support": 1,
+      "hybrid": 13,
+      "iana id": 2,
+      "icedid": 2,
+      "icefire": 1,
+      "icloud compromise": 1,
+      "icmp": 1,
+      "icon": 1,
+      "id logged": 1,
+      "identity search": 1,
+      "iframe": 12,
+      "ilike search": 1,
+      "illegal": 1,
+      "imaploader": 1,
+      "img": 1,
+      "impact": 1,
+      "impact summary": 1,
+      "imperial kitten": 1,
+      "indicator": 4,
+      "indicator role": 2,
+      "indonesia": 1,
+      "info": 2,
+      "infostealer": 1,
+      "infy": 1,
+      "injector": 4,
+      "inmortal": 1,
+      "insert": 1,
+      "installcore": 12,
+      "installer": 7,
+      "installpack": 5,
+      "intel": 1,
+      "intel malware": 1,
+      "intelligence": 1,
+      "internal": 2,
+      "internal name": 1,
+      "international": 1,
+      "internet storm": 1,
+      "iobit": 7,
+      "iocs": 3,
+      "ios": 1,
+      "ip address": 10,
+      "ip detections": 1,
+      "ip security": 1,
+      "ip summary": 14,
+      "ip tcp": 3,
+      "iphone unlocker": 1,
+      "ipstorm": 1,
+      "iran": 1,
+      "iso": 1,
+      "israel": 1,
+      "issuer": 1,
+      "issuer criteria": 1,
+      "ist ca": 1,
+      "it service": 1,
+      "iz1h9": 1,
+      "jamf": 2,
+      "japan": 3,
+      "java downloader": 1,
+      "javascript": 1,
+      "javascript code": 1,
+      "jeffrey reimer": 1,
+      "jfif standard": 3,
+      "jpeg image": 4,
+      "js": 2,
+      "json data": 1,
+      "json sample": 1,
+      "json url": 1,
+      "jul jan": 5,
+      "july": 1,
+      "june": 7,
+      "junk data": 1,
+      "kamran": 1,
+      "kandykorn": 2,
+      "kandykorn rat": 2,
+      "karkadann": 1,
+      "kb body": 3,
+      "keitaro": 1,
+      "key algorithm": 2,
+      "key identifier": 2,
+      "key info": 1,
+      "key usage": 1,
+      "keybase": 1,
+      "keygen": 5,
+      "keylogger": 5,
+      "keyloggers": 1,
+      "kgs0": 2,
+      "killav": 3,
+      "kinsing malware": 1,
+      "kitten": 1,
+      "kls0": 2,
+      "known exploited": 1,
+      "known tor": 5,
+      "korean": 2,
+      "kraddare": 1,
+      "kraken": 2,
+      "kryptik": 1,
+      "kuaizip": 1,
+      "kyriazhs1975": 1,
+      "lambload": 5,
+      "later": 1,
+      "law": 1,
+      "learn": 1,
+      "lenovo tablet": 1,
+      "life": 2,
+      "lilith rat": 1,
+      "limited": 1,
+      "link": 2,
+      "linux": 1,
+      "lnk file": 1,
+      "loader": 2,
+      "loadmoney": 1,
+      "local": 10,
+      "localappdata": 1,
+      "lockbit": 2,
+      "locky": 1,
+      "log4shell": 1,
+      "loki password": 2,
+      "lookups": 1,
+      "low risk": 1,
+      "lsalford": 1,
+      "lumar": 1,
+      "lumma stealer": 1,
+      "macedonia": 2,
+      "machine intel": 1,
+      "macos": 2,
+      "macro": 1,
+      "magic pe32": 1,
+      "magnitude": 1,
+      "mail spammer": 5,
+      "mailing list": 1,
+      "major": 1,
+      "malcert": 1,
+      "malicious": 18,
+      "malicious host": 2,
+      "malicious site": 15,
+      "malicious url": 11,
+      "maltiverse": 12,
+      "maltiverse safe": 2,
+      "malvertizing": 2,
+      "malware": 25,
+      "malware found": 1,
+      "malware generic": 1,
+      "malware host": 1,
+      "malware hosting": 1,
+      "malware site": 10,
+      "malware_win_zgrat": 1,
+      "marc salinas": 1,
+      "march": 2,
+      "mark": 1,
+      "mark brian sabey": 1,
+      "mark dowd": 1,
+      "matsnu": 6,
+      "mediaget": 4,
+      "mediamagnet": 4,
+      "medium": 1,
+      "medium high": 1,
+      "medusa": 1,
+      "memcommit": 1,
+      "memory": 1,
+      "memory checks": 1,
+      "memscan": 2,
+      "merlin": 1,
+      "meta": 5,
+      "metasploit": 2,
+      "metastealer": 2,
+      "meterpreter": 2,
+      "metro": 6,
+      "metro t-mobile": 2,
+      "metroby": 1,
+      "metroby-tmo": 1,
+      "michael": 1,
+      "microsoft": 5,
+      "microsoft excel": 1,
+      "middle": 1,
+      "middle east": 1,
+      "middle-east-and-africa": 1,
+      "mile high media": 1,
+      "million": 18,
+      "million alexa": 2,
+      "mimikatz": 5,
+      "miner": 1,
+      "minimal low": 1,
+      "mips": 3,
+      "mirai": 8,
+      "misc attack": 4,
+      "missouri": 1,
+      "mitre att": 5,
+      "mon sep": 1,
+      "monitoring": 4,
+      "monopoly": 1,
+      "monti": 1,
+      "motw": 1,
+      "moved": 1,
+      "mozi": 1,
+      "mozilla": 2,
+      "mqtt": 1,
+      "ms windows": 1,
+      "msil": 3,
+      "mtis": 1,
+      "multi family rat detection": 1,
+      "multi scan": 1,
+      "mywebsearch": 1,
+      "n64xtx0vpihxzc": 2,
+      "name servers": 1,
+      "name verdict": 5,
+      "nanjing": 1,
+      "nanocore": 7,
+      "nanocore rat": 1,
+      "neanderthals": 1,
+      "netscan": 1,
+      "netsky": 2,
+      "network": 2,
+      "networm": 3,
+      "neworder.doc": 1,
+      "news": 2,
+      "next": 2,
+      "nimda": 3,
+      "nircmd": 7,
+      "nist": 1,
+      "nitro": 1,
+      "njrat": 1,
+      "no data": 5,
+      "no expiration": 2,
+      "no na": 1,
+      "no no": 1,
+      "node tcp": 5,
+      "node traffic": 4,
+      "noname": 1,
+      "noname057": 9,
+      "november": 1,
+      "nsis installer": 1,
+      "nso group": 2,
+      "nuclear": 1,
+      "nukesped": 3,
+      "null": 3,
+      "number": 3,
+      "nymaim": 9,
+      "nysp": 2,
+      "objcshellz": 2,
+      "object": 1,
+      "occamy": 6,
+      "ocomodo ca": 1,
+      "october": 2,
+      "olet": 1,
+      "open": 3,
+      "opencandy": 14,
+      "opendir": 1,
+      "openshift data": 1,
+      "openssl": 1,
+      "openwire": 1,
+      "organization": 2,
+      "orgid": 1,
+      "orgtechhandle": 1,
+      "orgtechref": 1,
+      "original name": 1,
+      "orkut": 1,
+      "ot security": 1,
+      "otx octoseek": 1,
+      "outbreak": 8,
+      "outbrowse": 2,
+      "outlook": 1,
+      "overwrite": 1,
+      "p155-fmfmobile.icloud.com": 1,
+      "paexec": 1,
+      "paexec utility": 1,
+      "panama": 1,
+      "passive dns": 5,
+      "password": 1,
+      "paste": 1,
+      "patch https": 1,
+      "patcher": 8,
+      "path": 8,
+      "pattern match": 10,
+      "paypal": 3,
+      "pe resource": 1,
+      "pegasus domains": 2,
+      "period": 3,
+      "persistence": 2,
+      "petya": 1,
+      "phase": 1,
+      "phi": 1,
+      "phish": 2,
+      "phishing": 20,
+      "phishing chase": 1,
+      "phishing google": 1,
+      "phishing site": 14,
+      "phishtank": 4,
+      "pix payment": 1,
+      "pixelrz": 1,
+      "platform red": 1,
+      "please": 1,
+      "png file": 3,
+      "png image": 1,
+      "point": 1,
+      "police": 1,
+      "poly1305 mac": 1,
+      "ponmocup": 2,
+      "pony": 9,
+      "poor reputation": 4,
+      "possiblecerber": 1,
+      "postal code": 1,
+      "powershell": 2,
+      "pragma": 1,
+      "prctrl": 1,
+      "predator": 2,
+      "prefetch8": 1,
+      "presenoker": 9,
+      "prevalence": 1,
+      "priority": 1,
+      "privacy admin": 2,
+      "privacy tech": 2,
+      "privateloader": 2,
+      "probe": 2,
+      "procdump": 1,
+      "process cis": 1,
+      "product": 1,
+      "productidis": 1,
+      "project": 4,
+      "protect": 2,
+      "proxy": 3,
+      "ps": 1,
+      "psexec": 5,
+      "public key": 2,
+      "public server": 1,
+      "pulse submit": 1,
+      "pulses url": 2,
+      "push": 2,
+      "pw-1122": 1,
+      "pw-1168": 1,
+      "pw-1220": 1,
+      "pw-1225": 1,
+      "pw-123": 1,
+      "pw-1682": 1,
+      "pw-1885": 1,
+      "pw-2023": 1,
+      "pw-2709": 1,
+      "pw-2764": 1,
+      "pw-3276": 1,
+      "pw-3278": 1,
+      "pw-3289": 1,
+      "pw-3305": 1,
+      "pw-3691": 1,
+      "pw-3701": 1,
+      "pw-3939": 1,
+      "pw-5621": 1,
+      "pw-5674": 1,
+      "pw-5687": 1,
+      "pw-6056": 1,
+      "pw-6512": 1,
+      "pw-7845": 1,
+      "pykspa": 3,
+      "python": 3,
+      "python infostealer": 1,
+      "qakbot": 5,
+      "qbot": 4,
+      "qpyrn6pd": 2,
+      "qpyrn6pd http": 1,
+      "quasar": 4,
+      "quasar rat": 2,
+      "quasarrat": 1,
+      "qwest": 2,
+      "raccoon": 4,
+      "radar ineractive": 1,
+      "ragnar": 1,
+      "ragnar locker": 1,
+      "ramnit": 8,
+      "random domains": 1,
+      "random hosts": 1,
+      "ransomexx": 3,
+      "ransomware": 11,
+      "rar": 3,
+      "raspberry robin": 1,
+      "rat": 1,
+      "ratel": 1,
+      "rauschenberg": 1,
+      "rdp wrapper": 1,
+      "read c": 1,
+      "recent emotet": 1,
+      "record type": 3,
+      "record value": 3,
+      "red": 1,
+      "red hat": 1,
+      "red team": 1,
+      "redacted for": 2,
+      "redir-302": 1,
+      "redirector": 4,
+      "redirme": 2,
+      "redline": 2,
+      "redline stealer": 9,
+      "redlinestealer": 2,
+      "referrer": 11,
+      "refresh": 2,
+      "registrar": 2,
+      "registrar abuse": 4,
+      "registrar url": 3,
+      "registrar whois": 3,
+      "registry arin": 1,
+      "registry domain": 1,
+      "rejected sample": 1,
+      "relayrouter": 5,
+      "relic": 2,
+      "remcos": 4,
+      "replacement": 1,
+      "reports": 1,
+      "reputation ip": 2,
+      "research": 3,
+      "resolutions": 5,
+      "resolver ip": 1,
+      "restart": 1,
+      "revenge": 2,
+      "revengerat": 2,
+      "reveton": 1,
+      "revil": 1,
+      "rftrat": 1,
+      "rftrat dropper": 1,
+      "rgba": 1,
+      "rhysida": 1,
+      "riskware": 15,
+      "rms": 1,
+      "roblox": 1,
+      "romcom": 1,
+      "root ca": 2,
+      "rootkits": 1,
+      "rostpay": 3,
+      "round": 1,
+      "roundup": 1,
+      "royal": 1,
+      "rsa cn": 1,
+      "rtechhandle": 1,
+      "rtechref": 1,
+      "rticon neutral": 1,
+      "runescape": 10,
+      "runtime process": 2,
+      "rust": 3,
+      "rustbucket": 2,
+      "rva entry": 1,
+      "ryuk": 1,
+      "sabey": 1,
+      "sabey data centers": 1,
+      "safe site": 18,
+      "safebae": 1,
+      "safebae.org": 1,
+      "safeguard": 2,
+      "sality": 4,
+      "samesitenone": 1,
+      "sample": 14,
+      "samples": 12,
+      "samsug": 1,
+      "samsung galaxy": 1,
+      "sap solutions": 1,
+      "scan endpoints": 2,
+      "scanning_host": 1,
+      "screen": 2,
+      "script": 4,
+      "search": 6,
+      "secrisk": 5,
+      "security": 2,
+      "security risk": 1,
+      "sentinel": 3,
+      "september": 2,
+      "seraph": 1,
+      "server": 5,
+      "server rsa": 1,
+      "server side": 1,
+      "servers": 2,
+      "service": 13,
+      "services": 1,
+      "serving ip": 1,
+      "setcookie geous": 1,
+      "sha1": 3,
+      "sha256": 9,
+      "sha256 hash": 1,
+      "shell": 4,
+      "shift": 2,
+      "show": 2,
+      "show matching": 1,
+      "show technique": 3,
+      "showing": 5,
+      "siblings": 1,
+      "simda": 8,
+      "singapore": 1,
+      "site": 18,
+      "site safe": 2,
+      "site top": 4,
+      "sites": 1,
+      "size": 1,
+      "size68b type": 1,
+      "skip": 1,
+      "skynet": 3,
+      "slice": 2,
+      "sliver": 2,
+      "small": 1,
+      "smb server": 1,
+      "smokeloader": 1,
+      "smsspy": 3,
+      "sneaky server": 3,
+      "soc": 1,
+      "soc http": 1,
+      "soc https": 1,
+      "social engineering": 3,
+      "sodinokibi": 2,
+      "softcnapp": 3,
+      "softonic": 1,
+      "solimba": 2,
+      "sorano": 1,
+      "south carolina": 1,
+      "south korea": 1,
+      "space systems": 2,
+      "spammer": 6,
+      "span": 5,
+      "sparc": 1,
+      "sport": 1,
+      "spyrixkeylogger": 1,
+      "spyware": 5,
+      "squirrelwaffle": 4,
+      "ssdeep": 1,
+      "ssl certificate": 14,
+      "stalker": 1,
+      "startpage": 6,
+      "static engine": 1,
+      "status": 3,
+      "status code": 3,
+      "stcalifornia": 1,
+      "stealer": 12,
+      "steam": 3,
+      "steam route": 1,
+      "stego": 1,
+      "stevens creek": 1,
+      "stop": 2,
+      "storageguard": 1,
+      "story": 1,
+      "strange": 1,
+      "streams size": 1,
+      "strike": 1,
+      "strings": 10,
+      "strong": 2,
+      "subdomains": 1,
+      "subject public": 1,
+      "submitters": 2,
+      "sugarloader": 2,
+      "sugarrush": 1,
+      "summary": 14,
+      "summary iocs": 2,
+      "supply chain attack": 1,
+      "suppobox": 11,
+      "support": 1,
+      "suspected": 1,
+      "suspic": 1,
+      "suspicious": 2,
+      "sutra": 2,
+      "svg scalable": 1,
+      "swiftloader": 2,
+      "swrort": 12,
+      "systweak": 5,
+      "t": 1,
+      "t-mobile": 3,
+      "ta456": 1,
+      "ta544": 1,
+      "tag count": 10,
+      "tag manager": 1,
+      "tag tag": 4,
+      "tags": 1,
+      "target": 5,
+      "targeting": 1,
+      "tcp traffic": 1,
+      "team": 19,
+      "team alexa": 2,
+      "team malware": 1,
+      "team phishing": 3,
+      "team proxy": 1,
+      "telefonica": 1,
+      "telefonica co": 1,
+      "telegram": 1,
+      "telekopye": 1,
+      "temp": 1,
+      "template": 2,
+      "threat": 1,
+      "threat analyzer": 1,
+      "threat report": 13,
+      "threat roundup": 4,
+      "threats et": 7,
+      "tiff image": 1,
+      "tigerrat": 3,
+      "tiggre": 4,
+      "tinba": 4,
+      "tips": 1,
+      "tld count": 3,
+      "tofsee": 2,
+      "tool": 1,
+      "tools": 4,
+      "tor known": 5,
+      "tor relayrouter": 4,
+      "tortoiseshell": 1,
+      "touchmove": 2,
+      "tour": 1,
+      "tracker": 2,
+      "tracker malware": 1,
+      "trackers google": 1,
+      "tracking": 1,
+      "traffic": 5,
+      "trap": 1,
+      "trend micro": 1,
+      "trend vision": 1,
+      "trickbot": 3,
+      "trid windows": 1,
+      "trident": 2,
+      "trim": 2,
+      "trojan": 3,
+      "trojan-stealer": 1,
+      "trojanspy": 8,
+      "trojanx": 7,
+      "tsara brashears": 10,
+      "tsgeneric": 2,
+      "ttl value": 3,
+      "tue feb": 1,
+      "tue jan": 2,
+      "tue mar": 1,
+      "tulach": 4,
+      "tulach.cc": 1,
+      "twitter": 7,
+      "type": 1,
+      "typelib id": 1,
+      "uchealth": 1,
+      "ukraine": 1,
+      "unauthorized": 1,
+      "unicode text": 1,
+      "union": 12,
+      "unis": 1,
+      "united": 18,
+      "united kingdom": 1,
+      "university": 1,
+      "unknown": 10,
+      "unruy": 11,
+      "unsafe": 16,
+      "update": 2,
+      "upgrade": 1,
+      "upx": 1,
+      "url analysis": 1,
+      "url http": 2,
+      "url https": 2,
+      "url summary": 14,
+      "urlhttps": 1,
+      "urlhxxps": 3,
+      "urls": 8,
+      "urls http": 1,
+      "urls https": 1,
+      "ursnif": 2,
+      "usaid": 1,
+      "utc entry": 1,
+      "utc submissions": 2,
+      "utilizar": 1,
+      "uuid": 1,
+      "v3 serial": 4,
+      "valid": 1,
+      "validity": 1,
+      "vawtrak": 4,
+      "vbs": 1,
+      "verdict": 1,
+      "version id": 1,
+      "vhash": 1,
+      "vidar": 3,
+      "view details": 1,
+      "virustotal": 11,
+      "virut": 10,
+      "wacatac": 11,
+      "wailingcrab": 1,
+      "wannacry": 2,
+      "watch": 2,
+      "watering hole": 1,
+      "web compromise": 1,
+      "webcompanion": 1,
+      "webshell": 5,
+      "webtoolbar": 6,
+      "wed apr": 1,
+      "wed sep": 1,
+      "whatsapp": 1,
+      "whitelisted": 1,
+      "whois": 2,
+      "whois lookup": 2,
+      "whois lookups": 2,
+      "whois record": 14,
+      "whois sslcert": 1,
+      "whois whois": 9,
+      "win32 exe": 1,
+      "win64": 8,
+      "windir": 1,
+      "window": 2,
+      "windows": 4,
+      "windows nt": 2,
+      "winrar": 1,
+      "winscp": 1,
+      "write": 3,
+      "wsf": 1,
+      "x6a4": 2,
+      "x86-32": 1,
+      "xaro": 1,
+      "xaro payload": 1,
+      "xdpid1203": 1,
+      "xmodeargs": 1,
+      "xmrig": 3,
+      "xpubid10839": 1,
+      "xrat": 7,
+      "xtrat": 7,
+      "xtreme": 1,
+      "xworm": 2,
+      "y tor": 1,
+      "yandex": 1,
+      "yara detections": 1,
+      "yellow liderc": 1,
+      "yixun": 1,
+      "zbot": 10,
+      "zeus": 7,
+      "zgRAT": 2,
+      "zimbra": 1,
+      "zip": 2,
+      "zip archive": 1,
+      "zip file": 1,
+      "zip swap": 1,
+      "zombie devices": 1,
+      "zpevdo": 5,
+      "zt7t3wzz": 1
+    }
+  }
+}

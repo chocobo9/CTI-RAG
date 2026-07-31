@@ -1,0 +1,2855 @@
+{
+  "actors": [
+    "Kimsuky",
+    "Cobalt Group",
+    "Lazarus Group",
+    "APT28",
+    "Mustang Panda",
+    "Turla",
+    "APT41",
+    "Sandworm",
+    "APT37",
+    "APT29",
+    "Gamaredon",
+    "APT3",
+    "APT30",
+    "APT32",
+    "APT33",
+    "APT39",
+    "Callisto",
+    "Carbanak",
+    "Cobalt",
+    "DNSpionage",
+    "DarkHydrus",
+    "Earth Berberoka",
+    "FIN8",
+    "Kinsing",
+    "MUMMY SPIDER",
+    "MuddyWater",
+    "Operation C-Major",
+    "PROMETHIUM",
+    "Sea Turtle",
+    "SilverTerrier",
+    "TA428",
+    "TA558",
+    "VICEROY TIGER"
+  ],
+  "decisions": [
+    {
+      "actor": "APT-C-12",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT-C-27",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT-C-36",
+      "decision": "insufficient_support",
+      "event_count": 60,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT1",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT12",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT16",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT17",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT18",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT19",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT20",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT24",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT27",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT28",
+      "decision": "existing",
+      "event_count": 193,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT29",
+      "decision": "existing",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT3",
+      "decision": "added",
+      "event_count": 8,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT30",
+      "decision": "added",
+      "event_count": 8,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT32",
+      "decision": "added",
+      "event_count": 59,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT33",
+      "decision": "added",
+      "event_count": 31,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT35",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT37",
+      "decision": "existing",
+      "event_count": 71,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT39",
+      "decision": "added",
+      "event_count": 9,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT41",
+      "decision": "existing",
+      "event_count": 141,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT42",
+      "decision": "insufficient_support",
+      "event_count": 9,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT45",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "APT5",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Amaranth-Dragon",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Angry Likho",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Aoqin Dragon",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "ArcaneDoor",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Attor",
+      "decision": "insufficient_support",
+      "event_count": 56,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "BackdoorDiplomacy",
+      "decision": "insufficient_support",
+      "event_count": 15,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "BlackJack",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "BlackTech",
+      "decision": "insufficient_support",
+      "event_count": 12,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Blackgear",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Blackwood",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "BladeHawk",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "BladedFeline",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Blue Termite",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "BlueBottle",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "BuhTrap",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "CHRYSENE",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "CIRCUS SPIDER",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Callisto",
+      "decision": "added",
+      "event_count": 8,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Calypso",
+      "decision": "insufficient_support",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Caramel Tsunami",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Carbanak",
+      "decision": "added",
+      "event_count": 23,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Careto",
+      "decision": "insufficient_support",
+      "event_count": 16,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Chamelgang",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Charming Kitten",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Chernovite",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Chimera",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Cleaver",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Cobalt",
+      "decision": "added",
+      "event_count": 284,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Coinbase Cartel",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Common Raven",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Confucious",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Confucius",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Contagious Interview",
+      "decision": "insufficient_support",
+      "event_count": 9,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "CopyKittens",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "CoralRaider",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "CosmicBeetle",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Cutting Kitten",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Cyber Caliphate Army",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DAGGER PANDA",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DEV-0270",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DNSpionage",
+      "decision": "added",
+      "event_count": 9,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Dalbit",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DangerousSavanna",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Dark Caracal",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "DarkHydrus",
+      "decision": "added",
+      "event_count": 5,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "DarkPink",
+      "decision": "insufficient_support",
+      "event_count": 13,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Deadeye Jackal",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Denim Tsunami",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DiceyF",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Domestic Kitten",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DragonBreath",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DragonForce",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "DragonOK",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "DragonSpark",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Dust Storm",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "EXOTIC LILY",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Earth Berberoka",
+      "decision": "added",
+      "event_count": 8,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Earth Estries",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Earth Kapre",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Earth Krahang",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Earth Longzhi",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Earth Lusca",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Earth Wendigo",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Educated Manticore",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Equation",
+      "decision": "insufficient_support",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Equation Group",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Evilnum",
+      "decision": "insufficient_support",
+      "event_count": 18,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "FIN10",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "FIN13",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "FIN6",
+      "decision": "insufficient_support",
+      "event_count": 28,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "FIN7",
+      "decision": "insufficient_support",
+      "event_count": 6,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "FIN8",
+      "decision": "added",
+      "event_count": 9,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Ferocious Kitten",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Fox Kitten",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "FrostyNeighbor",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "FusionCore",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GHOST STADIUM",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GOBLIN PANDA",
+      "decision": "insufficient_support",
+      "event_count": 10,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GOLD CABIN",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GOLD SOUTHFIELD",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GOLD WINTER",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Gamaredon Group",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Gelsemium",
+      "decision": "insufficient_support",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GhostEmperor",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GhostSec",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Ghostwriter",
+      "decision": "insufficient_support",
+      "event_count": 17,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GoldenJackal",
+      "decision": "insufficient_support",
+      "event_count": 9,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GopherWhisper",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GrayBravo",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GrayCharlie",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "GreyVibe",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Groundbait",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "HAFNIUM",
+      "decision": "insufficient_support",
+      "event_count": 19,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Hacking Team",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Hagga",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Hellsing",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Hezb",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Higaisa",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Houndstooth Typhoon",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "HummingBad",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "IndigoZebra",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Indrik Spider",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Infy",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Iron Group",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "IronHusky",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "ItaDuke",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "JuiceLedger",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Karkadann",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Kasablanka",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Killnet",
+      "decision": "insufficient_support",
+      "event_count": 28,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Kimsuky",
+      "decision": "existing",
+      "event_count": 285,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Kinsing",
+      "decision": "added",
+      "event_count": 11,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "LOTUS PANDA",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Larva-24005",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Lazarus Group",
+      "decision": "existing",
+      "event_count": 524,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "LazyScripter",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "LightBasin",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Longhorn",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Lucky Cat",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Luna Moth",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "MALLARD SPIDER",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "MUMMY SPIDER",
+      "decision": "added",
+      "event_count": 9,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "MUSTANG PANDA",
+      "decision": "insufficient_support",
+      "event_count": 16,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "MageCart",
+      "decision": "insufficient_support",
+      "event_count": 67,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Magic Hound",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Markopolo",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Metador",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "MirrorFace",
+      "decision": "insufficient_support",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "ModifiedElephant",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Molerats",
+      "decision": "insufficient_support",
+      "event_count": 48,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Moshen Dragon",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Moskalvzapoe",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "MuddyWater",
+      "decision": "added",
+      "event_count": 132,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Mustang Panda",
+      "decision": "existing",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "NARWHAL SPIDER",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "NEODYMIUM",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Naikon",
+      "decision": "insufficient_support",
+      "event_count": 11,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Nazar",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "NewsPenguin",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Nexus Zeta",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Nitro",
+      "decision": "insufficient_support",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "NoName057(16)",
+      "decision": "insufficient_support",
+      "event_count": 25,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "OilRig",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "OldGremlin",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Opal Sleet",
+      "decision": "insufficient_support",
+      "event_count": 36,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Operation C-Major",
+      "decision": "added",
+      "event_count": 13,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Operation ForumTroll",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Operation ShadowHammer",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Operation Sharpshooter",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Operation WizardOpium",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Orangeworm",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "PLATINUM",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "POISON CARP",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "POLONIUM",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "PROMETHIUM",
+      "decision": "added",
+      "event_count": 16,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Packrat",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "PassCV",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Play",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "PowerPool",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Predatory Sparrow",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Prophet Spider",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "QUILTED TIGER",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RAZOR TIGER",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RTM",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RUBYCARP",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RansomHouse",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Red Menshen",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Red Nue",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RedAlpha",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "RedEcho",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RedGolf",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Redfly",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RevengeHotels",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Roaming Mantis",
+      "decision": "insufficient_support",
+      "event_count": 13,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Roaming Tiger",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Rocke",
+      "decision": "insufficient_support",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "RomCom",
+      "decision": "insufficient_support",
+      "event_count": 30,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SALTY SPIDER",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SAMURAI PANDA",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SNOWGLOBE",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SOLAR SPIDER",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SWEED",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SaintBear",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Scarab",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Scarlet Mimic",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Scattered Spider",
+      "decision": "insufficient_support",
+      "event_count": 13,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Sea Turtle",
+      "decision": "added",
+      "event_count": 11,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Shamoon Group",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SideCopy",
+      "decision": "insufficient_support",
+      "event_count": 17,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Silence group",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Silent Librarian",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SilverTerrier",
+      "decision": "added",
+      "event_count": 5,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Slingshot",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "SloppyLemming",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "SmugX",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Snake Wine",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Sowbug",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Stealth Falcon",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Stolen Pencil",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Storm-2603",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "TA2101",
+      "decision": "insufficient_support",
+      "event_count": 9,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA2541",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA2552",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA2719",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA402",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA406",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA410",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA428",
+      "decision": "added",
+      "event_count": 12,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA455",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA4922",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA499",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA505",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA558",
+      "decision": "added",
+      "event_count": 8,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA570",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA571",
+      "decision": "insufficient_support",
+      "event_count": 6,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA575",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA577",
+      "decision": "insufficient_support",
+      "event_count": 14,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA578",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA584",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA829",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TA866",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TAG-112",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TAG-28",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TEMP.Hermit",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TERBIUM",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "TRACER KITTEN",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Taidoor",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TeamTNT",
+      "decision": "insufficient_support",
+      "event_count": 17,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TeamXRat",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "The Big Bang",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "The Gentlemen",
+      "decision": "insufficient_support",
+      "event_count": 8,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "The Shadow Brokers",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Threat Group-3390",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "ToddyCat",
+      "decision": "insufficient_support",
+      "event_count": 12,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Tonto Team",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "TraderTraitor",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Turla",
+      "decision": "existing",
+      "event_count": 93,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "UAC-0006",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UAC-0020",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UAC-0063",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UAC-0184",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC1549",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC215",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC2447",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC2465",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC2565",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC3886",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC4191",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC4393",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC4487",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC4841",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC5174",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "UNC6040",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC6395",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UNC6619",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "UTA0178",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "UTA0218",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Urpage",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "VICEROY TIGER",
+      "decision": "added",
+      "event_count": 8,
+      "source_count": 2,
+      "sources": [
+        "circl_misp",
+        "otx"
+      ]
+    },
+    {
+      "actor": "Vanilla Tempest",
+      "decision": "insufficient_support",
+      "event_count": 16,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Velvet Tempest",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Void Arachne",
+      "decision": "insufficient_support",
+      "event_count": 5,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Void Balaur",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Void Blizzard",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "Void Rabisu",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Volatile Cedar",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Volt Typhoon",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "WIP19",
+      "decision": "insufficient_support",
+      "event_count": 6,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "WIRTE",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "WageMole",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Watchdog",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Webworm",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "WildNeutron",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "WildPressure",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Winnti Group",
+      "decision": "insufficient_support",
+      "event_count": 7,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Witchetty",
+      "decision": "insufficient_support",
+      "event_count": 4,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "XDSpy",
+      "decision": "insufficient_support",
+      "event_count": 2,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "Yanbian Gang",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "YoroTrooper",
+      "decision": "insufficient_support",
+      "event_count": 3,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "ZooPark",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "[Unnamed group]",
+      "decision": "insufficient_support",
+      "event_count": 25,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    },
+    {
+      "actor": "menuPass",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "circl_misp"
+      ]
+    },
+    {
+      "actor": "puNK-003",
+      "decision": "insufficient_support",
+      "event_count": 1,
+      "source_count": 1,
+      "sources": [
+        "otx"
+      ]
+    }
+  ],
+  "version": "1"
+}
