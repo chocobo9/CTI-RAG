@@ -250,8 +250,14 @@ def _normalize_include_source_ids(values: Iterable[str]) -> set[str]:
 def _create_schema(connection: sqlite3.Connection) -> None:
     connection.executescript(
         """
-        PRAGMA journal_mode=WAL;
-        PRAGMA synchronous=NORMAL;
+        -- The database is disposable staging inside a fresh output directory.
+        -- Final JSONL is written only after the build succeeds, so journaling
+        -- would only duplicate tens of millions of bulk projection writes.
+        PRAGMA journal_mode=OFF;
+        PRAGMA synchronous=OFF;
+        PRAGMA locking_mode=EXCLUSIVE;
+        PRAGMA temp_store=MEMORY;
+        PRAGMA cache_size=-524288;
         CREATE TABLE snapshots(
           event_id TEXT NOT NULL,
           fetched_at TEXT NOT NULL,
