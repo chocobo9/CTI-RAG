@@ -56,6 +56,28 @@ cached-infrastructure observations from the existing 25,985-task terminal
 ledger. It is optional support enrichment with partial coverage: 4,505 of the
 17,454 Pulses, not complete enrichment of the snapshot.
 
+## Bounded OTX enrichment increment
+
+`otx_enrichment_incremental/otx_enrichment.jsonl` adds 44,156 normalized
+cached-infrastructure observations from a bounded 2,000-task collection. The
+round selected 428 complete OTX Events with resolved, source-provided
+adversary claims, excluded the previously covered population and terminal
+tasks, and applied a 1,000-relation per-Event safety gate. Its final state is
+1,899 written, 97 empty, and 4 retry-exhausted tasks. The exact EviTRAIL reader
+accepted all 44,156 observations and materialized 59,381 relations with zero
+rejections.
+
+The selection, collection, finalization, and normalization code is in:
+
+- `scripts/build_otx_evitrail_enrichment_round.py`
+- `scripts/fetch_otx_population_enrichment.py`
+- `scripts/finalize_otx_population_enrichment.py`
+- `scripts/normalize_evitrail_otx_enrichment.py`
+
+The increment can be supplied beside the existing enrichment file; the exact
+reader accepted the two files together as 573,938 enrichment observations and
+742,299 relations with zero rejections.
+
 ## Validation boundary
 
 `otx_validation/` contains one exact-reader smoke and one representative

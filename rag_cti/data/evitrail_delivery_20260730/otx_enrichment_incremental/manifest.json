@@ -1,0 +1,50 @@
+{
+  "consumer_validation": {
+    "collection_status_counts": {
+      "empty": 97,
+      "retry_exhausted": 4,
+      "written": 44055
+    },
+    "reader": "evitrail.data.readers.read_cached_infrastructure",
+    "reader_stats": {
+      "claims": 0,
+      "enrichments": 44156,
+      "events": 0,
+      "indicators": 0,
+      "rejected": 0,
+      "relations": 59381
+    },
+    "relation_counts": {
+      "domain_resolves_to_ip": 30723,
+      "ip_in_asn": 28658
+    },
+    "revision": "da4a29e8ce25cff8cbddebb444b069296f949511",
+    "scope": "full_normalized_input",
+    "status": "passed"
+  },
+  "contract": "evitrail_otx_enrichment_input_v1",
+  "coverage": {
+    "full_snapshot_coverage": false,
+    "scope": "partial",
+    "snapshot_pulse_count": 17454,
+    "subset_pulse_count": 428
+  },
+  "input": {
+    "ledger_hash_scope": "complete_file",
+    "ledger_portable_ref": "enrichment_terminal_states.jsonl",
+    "ledger_sha256": "cf7f10c291190793c0bc21a84ebb13be62ce026a33aeef79b1c1691f9db321d2"
+  },
+  "ledger_rows": 2000,
+  "ledger_rows_examined": 2000,
+  "normalized_output": {
+    "hash_scope": "complete_file",
+    "portable_ref": "otx_enrichment.jsonl",
+    "sha256": "90c2b5d23c4af937db1f6bd7c8d110a22886fd94c46663487ce70a73cf7e5c10"
+  },
+  "output_rows": 44156,
+  "status_counts": {
+    "empty": 97,
+    "retry_exhausted": 4,
+    "written": 1899
+  }
+}
