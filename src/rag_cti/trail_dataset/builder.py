@@ -53,6 +53,22 @@ MISP_TYPE_MAP = {
 
 ORKL_URL_PATTERN = re.compile(r"(?i)\bh(?:tt|xx)ps?://[^\s<>\"']+")
 ORKL_IP_PATTERN = re.compile(r"(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])")
+ORKL_DOMAIN_PATTERN = re.compile(
+    r"(?i)(?<![\w@.-])"
+    r"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.|\[\.]))+"
+    r"(?:com|net|org|io|co|ru|cn|info|biz|online|top|xyz|site|me|de|uk|us|gov|edu|mil|"
+    r"cloud|app|tech|live|pro|cc|pw|tk|work|support|website|shop|store|dev|ai|"
+    r"ca|au|jp|kr|in|br|ch|it|nl|se|no|es|pl|be|fr|ly|tv|mobi|name|onion)"
+    r"(?![\w-])"
+)
+ORKL_SECTION_BOUNDARY_PATTERN = re.compile(
+    r"(?im)^\s*(?:#{1,6}\s*)?(?:\d+(?:\.\d+)*[.)]?\s+)?"
+    r"(?:"
+    r"(?:ioc|iocs|indicator|indicators|observable|observables|network\s+indicators?)"
+    r"(?:\s+(?:appendix|appendices|list|inventory))?"
+    r"|appendix(?:\s+[a-z0-9]+)?(?:\s*[:\-].*)?"
+    r")\s*:?\s*$"
+)
 
 
 @dataclass(frozen=True)
@@ -587,6 +603,25 @@ def _extract_orkl_indicators(record: dict[str, Any]) -> list[dict[str, Any]]:
         ):
             continue
         observations.append(_orkl_observation("url", raw_value, value, match.start(), end))
+    for match in ORKL_DOMAIN_PATTERN.finditer(body):
+        if any(start <= match.start() < end for start, end in url_spans):
+            continue
+        raw_value = match.group().rstrip(".,;:!?)]}\"")
+        normalized = _normalise_domain(raw_value)
+        if (
+            normalized is None
+            or any(start <= match.start() < end for start, end in body_reference_spans)
+        ):
+            continue
+        observations.append(
+            _orkl_observation(
+                "domain",
+                raw_value,
+                normalized,
+                match.start(),
+                match.start() + len(raw_value),
+            )
+        )
     for match in ORKL_IP_PATTERN.finditer(body):
         if any(start <= match.start() < end for start, end in url_spans):
             continue
@@ -627,11 +662,21 @@ def _orkl_body_reference_spans(body: str) -> list[tuple[int, int]]:
     Only standalone, conventional headings are classified. Text that cannot be
     classified this way remains a body mention and is not promoted by inference.
     """
-    return [(match.start(), len(body)) for match in re.finditer(
+    spans: list[tuple[int, int]] = []
+    for match in re.finditer(
         r"(?im)^\s*(?:\d+(?:\.\d+)*\.?\s+)?(?:recommended\s+reading\s+)?"
         r"(?:references?|citations?|bibliography|websites?)\s*:?\s*$",
         body,
-    )]
+    ):
+        next_boundary = next(
+            (
+                boundary.start()
+                for boundary in ORKL_SECTION_BOUNDARY_PATTERN.finditer(body, match.end())
+            ),
+            len(body),
+        )
+        spans.append((match.start(), next_boundary))
+    return spans
 
 
 def _orkl_url_is_inline_citation(body: str, offset: int) -> bool:
@@ -642,9 +687,7 @@ def _orkl_url_is_inline_citation(body: str, offset: int) -> bool:
     preceding_context = body[max(0, line_start - 160):line_start]
     if re.search(r"(?i)\b(?:accessed|published|retrieved)\b", line + preceding_context):
         return True
-    return bool(
-        re.match(r"\s*(?:\[\d+\]|\(\d+\)|\d+[.)])\s+", line)
-    )
+    return False
 
 
 def _misp_attribute_groups(event: dict[str, Any]) -> Iterable[tuple[str, list[Any]]]:
@@ -685,7 +728,7 @@ def _normalise_indicator(raw_type: Any, raw_value: Any, source: str) -> tuple[st
 
 
 def _normalise_domain(value: str) -> str | None:
-    value = value.strip().rstrip(".").lower()
+    value = value.strip().rstrip(".").replace("[.]", ".").lower()
     if value.startswith("*.") or len(value) > 253 or "." not in value:
         return None
     try:
@@ -951,7 +994,7 @@ def _source_mapping() -> dict[str, Any]:
             "provenance": "raw source reference plus body character offsets and raw matched value",
             "actor_candidates": "provenance_only_not_graph_label",
             "external_references": "not_reinterpreted_as_iocs",
-            "standalone_body_domains": "omitted_to_avoid_file_extension_and_tool_name_false_positives",
+            "standalone_body_domains": "deterministic_domain_pattern_with_tld_allowlist_and_reference_section_exclusion",
         },
         "urlhaus_normalized_mapping": {
             "source_field": "normalized/urls.jsonl.url_raw",

@@ -1,0 +1,18 @@
+﻿{
+  "document_hash_methods": {},
+  "error_count": 0,
+  "errors": [],
+  "metadata_records": 21973,
+  "provenance_records": 21973,
+  "raw_ref_count": 122582,
+  "raw_ref_existing_count": 122582,
+  "raw_value_checks": {
+    "raw_value_verified": 122128
+  },
+  "source_raw_records": {
+    "circl_misp:found": 201,
+    "orkl:found": 19075,
+    "otx:found": 2697
+  },
+  "status": "pass"
+}

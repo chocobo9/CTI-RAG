@@ -168,6 +168,8 @@ def _date_value(value: Any) -> str | None:
     text = _clean(value)
     if not text:
         return None
+    if text.startswith("0001-01-01"):
+        return None
     if text.isdigit() and len(text) in {10, 13}:
         try:
             seconds = int(text) / (1000 if len(text) == 13 else 1)
@@ -293,6 +295,33 @@ def _record_path(source: str, source_record_id: str, raw_root: Path) -> list[Pat
         path = raw_root / "circl_misp" / "raw" / "events" / f"{source_record_id}.json"
         return [path] if path.exists() else []
     return []
+
+
+def _load_orkl_normalized_index(raw_root: Path) -> dict[str, dict[str, Any]]:
+    """Index source-normalized ORKL metadata without downloading documents."""
+    path = raw_root / "orkl" / "normalized" / "reports.jsonl"
+    if not path.is_file():
+        return {}
+    index: dict[str, dict[str, Any]] = {}
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(row, dict):
+                continue
+            source_record_id = _clean(row.get("source_record_id") or row.get("id"))
+            if not source_record_id:
+                continue
+            index[source_record_id] = {
+                "record": row,
+                "raw_ref": _portable_raw_ref("orkl", path, raw_root),
+                "line_number": line_number,
+            }
+    return index
 
 
 def _load_raw(source: str, source_record_id: str, raw_root: Path, retries: int) -> tuple[list[tuple[Path, dict[str, Any]]], list[dict[str, Any]]]:
@@ -473,6 +502,7 @@ def _extract_one(
     claims: list[dict[str, Any]],
     raw_root: Path,
     retries: int,
+    normalized_orkl: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
     event_id = str(event["event_id"])
     source = str(event.get("source") or "")
@@ -480,6 +510,22 @@ def _extract_one(
     dataset_raw_ref = _portable_raw_ref(source, event.get("raw_ref"), raw_root)
     values: dict[str, dict[str, dict[str, Any]]] = {field: {} for field in ARRAY_FIELDS}
     title_candidates: dict[str, dict[str, Any]] = {}
+
+    if source == "orkl" and normalized_orkl:
+        normalized_record = normalized_orkl.get("record") or {}
+        normalized_raw_ref = normalized_orkl.get("raw_ref")
+        line_number = normalized_orkl.get("line_number")
+        published_at = _date_value(normalized_record.get("published_at"))
+        if published_at and normalized_raw_ref and line_number:
+            _add(
+                values,
+                "publish_dates",
+                published_at,
+                layer="raw",
+                path=f"reports.jsonl[{line_number}].published_at",
+                raw_ref=normalized_raw_ref,
+                method="normalized_source_timestamp",
+            )
 
     def add_title(value: Any, *, layer: str, path: str, raw_ref: str | None, method: str) -> None:
         text = _clean(value)
@@ -508,6 +554,7 @@ def _extract_one(
         payload = _raw_payload(source, raw)
         if source == "otx":
             add_title(payload.get("name"), layer="raw", path="payload.name", raw_ref=raw_ref, method="structured_key")
+            _add(values, "external_report_ids", payload.get("id"), layer="raw", path="payload.id", raw_ref=raw_ref, method="source_record_identifier")
             for indicator_index, indicator in enumerate(payload.get("indicators") or []):
                 if isinstance(indicator, dict) and "cve" in str(indicator.get("type", "")).casefold():
                     _add_regex_values(values, "cve_ids", str(indicator.get("indicator", "")), layer="raw", path=f"payload.indicators[{indicator_index}].indicator", raw_ref=raw_ref, method="structured_key", pattern=CVE_RE)
@@ -519,6 +566,7 @@ def _extract_one(
         elif source == "orkl":
             title_key = "title" if _clean(payload.get("title")) else "llm_title"
             add_title(payload.get("title") or payload.get("llm_title"), layer="raw", path=title_key, raw_ref=raw_ref, method="structured_key")
+            _add(values, "external_report_ids", payload.get("id"), layer="raw", path="id", raw_ref=raw_ref, method="source_record_identifier")
             for key in ("references",):
                 for text in _flatten_text(payload.get(key)):
                     for url in URL_RE.findall(text):
@@ -620,12 +668,13 @@ def _extract_with_retries(
     claims: list[dict[str, Any]],
     raw_root: Path,
     retries: int,
+    normalized_orkl: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
     """Retry an unexpected per-event extraction failure at most three times."""
     last_error: Exception | None = None
     for attempt in range(1, retries + 1):
         try:
-            return _extract_one(event, claims, raw_root, retries)
+            return _extract_one(event, claims, raw_root, retries, normalized_orkl)
         except Exception as exc:  # pragma: no cover - defensive boundary
             last_error = exc
             if attempt < retries:
@@ -729,6 +778,7 @@ def main() -> int:
 
     dataset_root = args.dataset_root.resolve()
     raw_root = args.raw_root.resolve()
+    orkl_normalized_index = _load_orkl_normalized_index(raw_root)
     if not args.dry_run and args.output_dir is None:
         raise SystemExit("--output-dir is required unless --dry-run is used")
     output_dir = args.output_dir.resolve() if args.output_dir else None
@@ -765,7 +815,16 @@ def main() -> int:
     results: dict[str, tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]] = {}
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
         future_map = {
-            executor.submit(_extract_with_retries, event, claims, raw_root, args.retries): event["event_id"]
+            executor.submit(
+                _extract_with_retries,
+                event,
+                claims,
+                raw_root,
+                args.retries,
+                orkl_normalized_index.get(str(event.get("source_record_id") or ""))
+                if event.get("source") == "orkl"
+                else None,
+            ): event["event_id"]
             for event, claims in tasks
         }
         for future in as_completed(future_map):

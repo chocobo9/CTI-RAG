@@ -28,6 +28,7 @@ ARRAY_FIELDS = set(OUTPUT_FIELDS) - {"event_id", "source_name", "title"}
 ABSOLUTE_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|/|\\\\)")
 TOKEN_RE = re.compile(r"([^\.\[\]]+)|\[(\d+)\]")
 URL_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
+ORKL_NORMALIZED_PATH_RE = re.compile(r"^reports\.jsonl\[(?P<line>\d+)\]\.(?P<field>.+)$")
 
 
 def _jsonl(path: Path) -> list[dict[str, Any]]:
@@ -118,6 +119,24 @@ def _flatten_text(value: Any) -> Iterable[str]:
             yield from _flatten_text(item)
 
 
+def _orkl_normalized_records(raw_root: Path) -> dict[int, dict[str, Any]]:
+    path = raw_root / "orkl" / "normalized" / "reports.jsonl"
+    if not path.is_file():
+        return {}
+    rows: dict[int, dict[str, Any]] = {}
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                value = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(value, dict):
+                rows[line_number] = value
+    return rows
+
+
 def _raw_value_matches(field: str, expected: str, values: Iterable[Any]) -> bool:
     texts = [text for value in values for text in _flatten_text(value)]
     expected_text = str(expected)
@@ -138,10 +157,18 @@ def _entry_raw_match(
     *,
     source: str,
     raw_records: list[dict[str, Any]],
+    normalized_orkl: dict[int, dict[str, Any]],
     field: str,
     value: str,
     path: str,
 ) -> bool:
+    if source == "orkl":
+        match = ORKL_NORMALIZED_PATH_RE.fullmatch(path)
+        if match:
+            row = normalized_orkl.get(int(match.group("line")))
+            if row is None:
+                return False
+            return _raw_value_matches(field, value, _at_path(row, match.group("field")))
     if path.startswith("events."):
         return False
     for raw in raw_records:
@@ -165,6 +192,7 @@ def audit(metadata_dir: Path, raw_root: Path) -> dict[str, Any]:
     raw_value_checks = Counter()
     source_record_counts = Counter()
     document_hash_methods: Counter[str] = Counter()
+    normalized_orkl = _orkl_normalized_records(raw_root)
 
     if len(metadata) != len(metadata_by_id):
         errors.append({"kind": "duplicate_metadata_event_id"})
@@ -224,7 +252,14 @@ def audit(metadata_dir: Path, raw_root: Path) -> dict[str, Any]:
                     raw_value_checks["dataset_layer_value"] += 1
                     continue
                 matched = any(
-                    _entry_raw_match(source=source, raw_records=raw_records, field=field, value=entry_value, path=str(path))
+                    _entry_raw_match(
+                        source=source,
+                        raw_records=raw_records,
+                        normalized_orkl=normalized_orkl,
+                        field=field,
+                        value=entry_value,
+                        path=str(path),
+                    )
                     for path in raw_paths
                 )
                 raw_value_checks["raw_value_verified" if matched else "raw_value_mismatch"] += 1
