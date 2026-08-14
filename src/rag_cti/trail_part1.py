@@ -325,7 +325,9 @@ def _extract_orkl_iocs(
     projected: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
     for observation in _extract_orkl_indicators(record):
-        kind = {"ip": "IP", "url": "URL"}.get(str(observation["type"]))
+        kind = {"ip": "IP", "url": "URL", "domain": "Domain"}.get(
+            str(observation["type"])
+        )
         if kind is None:
             continue
         value = str(observation["value"])
