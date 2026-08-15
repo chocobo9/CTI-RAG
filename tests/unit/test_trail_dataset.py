@@ -529,6 +529,39 @@ def test_builder_reports_rejection_taxonomy_separately(tmp_path: Path) -> None:
     assert coverage["isolated_event_count"] == 0
 
 
+def test_builder_retains_no_ioc_events_for_rejection_and_metric_closure(tmp_path: Path) -> None:
+    source_root = tmp_path / "misp"
+    source_root.mkdir()
+    (source_root / "event.json").write_text(
+        json.dumps(
+            {
+                "Event": {
+                    "uuid": "misp-no-ioc-1",
+                    "Attribute": [{"type": "md5", "value": "a" * 32}],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    output_dir = tmp_path / "output"
+    build_dataset(SourceRoots(circl_misp=source_root), output_dir)
+    events = [json.loads(line) for line in (output_dir / "events.jsonl").read_text().splitlines()]
+    rejected = [
+        json.loads(line)
+        for line in (output_dir / "rejected_records.jsonl").read_text().splitlines()
+    ]
+    coverage = json.loads((output_dir / "coverage_audit.json").read_text())
+
+    event_id = "event:circl_misp:misp-no-ioc-1"
+    assert [row["event_id"] for row in events] == [event_id]
+    assert {row["event_id"] for row in rejected} == {event_id}
+    assert coverage["zero_network_ioc_event_count"] == 1
+    assert coverage["all_evidence_event_count"] == 0
+    assert coverage["isolated_event_count"] == 1
+    assert coverage["dropped_event_count"] == 1
+
+
 def test_event_evidence_metrics_separate_network_zero_and_non_network_only() -> None:
     metrics = _event_evidence_metrics(
         [

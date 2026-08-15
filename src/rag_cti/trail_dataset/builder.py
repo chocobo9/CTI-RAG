@@ -223,6 +223,29 @@ def build_dataset(
                     "reason": "no_supported_iocs",
                 }
             )
+            _add_node(nodes, "event", event.event_id, event.event_id, {"source": event.source})
+            source_claim_ids = sorted(
+                str(claim["claim_id"])
+                for claim in event.claims
+                if claim.get("claim_id")
+            )
+            event_rows.append(
+                {
+                    "event_id": event.event_id,
+                    "source": event.source,
+                    "source_record_id": event.source_record_id,
+                    "raw_ref": event.raw_ref,
+                    "event_time": event.event_time,
+                    "fetched_at": event.fetched_at,
+                    "raw_ioc_count": len(event.indicators),
+                    "deduplicated_supported_ioc_count": 0,
+                    "duplicate_supported_ioc_count": 0,
+                    "rejected_ioc_count": event_rejected,
+                    "ioc_type_counts": {},
+                    "source_claim_ids": source_claim_ids,
+                }
+            )
+            claims.extend(event.claims)
             continue
 
         _add_node(nodes, "event", event.event_id, event.event_id, {"source": event.source})
