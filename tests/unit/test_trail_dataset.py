@@ -6,6 +6,7 @@ from pathlib import Path
 from rag_cti.trail_dataset.builder import (
     SourceRoots,
     _deduplicate_rejected,
+    _event_evidence_metrics,
     _extract_orkl_indicators,
     build_dataset,
 )
@@ -72,6 +73,38 @@ def test_orkl_domain_observations_reach_event_graph_projection() -> None:
     }
 
 
+def test_builder_projects_orkl_body_iocs_into_event_graph(tmp_path: Path) -> None:
+    source_root = tmp_path / "orkl"
+    intermediate = source_root / "intermediate"
+    intermediate.mkdir(parents=True)
+    (intermediate / "intermediate_records.jsonl").write_text(
+        json.dumps(
+            {
+                "record_id": "report-graph-1",
+                "source": {
+                    "report_identifier": "report-graph-1",
+                    "source_record_id": "report-graph-1",
+                },
+                "raw_ref": {"raw_path": "data/raw/orkl/report-graph-1.json"},
+                "timestamps": {"published_at": "2026-01-01T00:00:00Z"},
+                "body": "C2 evil-c2-server.com and 2001:db8::1",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    output_dir = tmp_path / "output"
+    build_dataset(SourceRoots(orkl_intermediate=source_root), output_dir)
+    nodes = [json.loads(line) for line in (output_dir / "nodes.jsonl").read_text().splitlines()]
+
+    assert {row["value"] for row in nodes} >= {
+        "event:orkl:report-graph-1",
+        "evil-c2-server.com",
+        "2001:db8::1",
+    }
+
+
 def test_orkl_defanged_url_and_ipv6_are_projected_canonically() -> None:
     observations = _extract_orkl_indicators(
         {"body": "C2 hxxps://evil[.]com/gate.php and 2001:db8::1"}
@@ -85,7 +118,7 @@ def test_orkl_defanged_url_and_ipv6_are_projected_canonically() -> None:
 
 def test_generic_text_does_not_truncate_defanged_url_and_extracts_ipv6() -> None:
     projected, _ = extract_text_iocs(
-        "C2 hxxps://evil[.]com/path and 2001:db8::1",
+        "C2 hxxps://evil[.]com/path and hxxps[:]//second[.]example/gate and 2001:db8::1",
         "fixture",
         "record-1",
         "data/raw/fixture/record-1.json",
@@ -93,6 +126,7 @@ def test_generic_text_does_not_truncate_defanged_url_and_extracts_ipv6() -> None
 
     assert {(row["ioc_type"], row["ioc_value"]) for row in projected} == {
         ("URL", "https://evil.com/path"),
+        ("URL", "https://second.example/gate"),
         ("IP", "2001:db8::1"),
     }
 
@@ -101,6 +135,32 @@ def test_url_canonicalization_preserves_ipv6_brackets_and_drops_fragment() -> No
     assert normalize_url("HTTPS://[2001:0DB8:0:0::1]:443/x#fragment") == (
         "https://[2001:db8::1]:443/x"
     )
+    assert normalize_url("hxxps[://]evil[.]example/gate") == (
+        "https://evil.example/gate"
+    )
+
+
+def test_url_boundary_preserves_balanced_parentheses_and_trims_sentence_punctuation() -> None:
+    projected, _ = extract_text_iocs(
+        "See https://example.com/path(foo), then stop.",
+        "fixture",
+        "record-boundary",
+        "data/raw/fixture/record-boundary.json",
+    )
+
+    assert [(row["ioc_type"], row["ioc_value"]) for row in projected] == [
+        ("URL", "https://example.com/path(foo)")
+    ]
+
+
+def test_orkl_url_boundary_preserves_balanced_parentheses() -> None:
+    observations = _extract_orkl_indicators(
+        {"body": "C2 https://example.com/path(foo), then stop."}
+    )
+
+    assert [(row["type"], row["value"]) for row in observations] == [
+        ("url", "https://example.com/path(foo)")
+    ]
 
 
 def test_orkl_stores_canonical_url_value() -> None:
@@ -115,6 +175,22 @@ def test_defanged_reference_is_excluded_after_normalization() -> None:
     observations = _extract_orkl_indicators(
         {
             "references": ["hxxps://citation[.]example/source"],
+            "body": (
+                "Citation mention: hxxps://citation[.]example/source\n"
+                "C2: hxxps://evil[.]example/gate.php"
+            ),
+        }
+    )
+
+    assert [(row["type"], row["value"]) for row in observations] == [
+        ("url", "https://evil.example/gate.php")
+    ]
+
+
+def test_scalar_reference_url_is_excluded_after_normalization() -> None:
+    observations = _extract_orkl_indicators(
+        {
+            "references": "hxxps://citation[.]example/source",
             "body": (
                 "Citation mention: hxxps://citation[.]example/source\n"
                 "C2: hxxps://evil[.]example/gate.php"
@@ -146,6 +222,40 @@ def test_reference_section_stops_at_network_indicators_heading() -> None:
     }
 
 
+def test_sources_and_further_reading_are_citation_sections() -> None:
+    observations = _extract_orkl_indicators(
+        {
+            "body": (
+                "Sources\n"
+                "1. hxxps://citation[.]example/source\n\n"
+                "Further Reading\n"
+                "1. https://reading.example/report\n\n"
+                "IOC Appendix\n"
+                "1. hxxps://evil[.]example/gate.php"
+            )
+        }
+    )
+
+    assert [(row["type"], row["value"]) for row in observations] == [
+        ("url", "https://evil.example/gate.php")
+    ]
+
+
+def test_inline_source_url_is_excluded_but_body_ioc_is_kept() -> None:
+    observations = _extract_orkl_indicators(
+        {
+            "body": (
+                "Source: hxxps://citation[.]example/source\n"
+                "C2: hxxps://evil[.]example/gate.php"
+            )
+        }
+    )
+
+    assert [(row["type"], row["value"]) for row in observations] == [
+        ("url", "https://evil.example/gate.php")
+    ]
+
+
 def test_domain_boundaries_accept_valid_tlds_and_reject_malformed_values() -> None:
     projected, _ = extract_text_iocs(
         "foo.museum foo.network foo.onion a..com -bad.com",
@@ -164,16 +274,59 @@ def test_domain_boundaries_accept_valid_tlds_and_reject_malformed_values() -> No
     assert normalize_domain("numeric.123") is None
 
 
+def test_malformed_ip_is_not_projected_as_network_evidence() -> None:
+    projected, _ = extract_text_iocs(
+        "not an IP: 999.999.999.999",
+        "fixture",
+        "record-invalid-ip",
+        "data/raw/fixture/record-invalid-ip.json",
+    )
+
+    assert projected == []
+
+
+def test_shared_url_identity_is_consistent_across_active_paths() -> None:
+    raw_url = "HTTPS://Example.Museum/path#fragment"
+    expected = "https://example.museum/path"
+
+    generic, _ = extract_text_iocs(
+        raw_url,
+        "fixture",
+        "record-shared-url",
+        "data/raw/fixture/record-shared-url.json",
+    )
+    orkl = _extract_orkl_indicators({"body": raw_url})
+
+    assert normalize_url(raw_url) == expected
+    assert normalize_misp_url(raw_url) == expected
+    assert [(row["ioc_type"], row["ioc_value"]) for row in generic] == [
+        ("URL", expected)
+    ]
+    assert [(row["type"], row["value"]) for row in orkl] == [("url", expected)]
+
+
 def test_misp_scheme_less_ipv6_url_is_bracketed_canonically() -> None:
     assert normalize_misp_url("2001:db8::1/path") == "http://[2001:db8::1]/path"
+    assert normalize_misp_url("[2001:db8::1]:443/path") == (
+        "http://[2001:db8::1]:443/path"
+    )
+    projected, _ = _extract_misp_iocs(
+        {"Attribute": [{"type": "url", "value": "evil.example/path"}]},
+        "misp-scheme-less",
+        "data/raw/misp/misp-scheme-less.json",
+    )
+    assert [(row["ioc_type"], row["ioc_value"]) for row in projected] == [
+        ("URL", "http://evil.example/path")
+    ]
 
 
 def test_misp_deleted_attributes_are_ignored_and_ports_are_preserved() -> None:
     projected, _ = _extract_misp_iocs(
         {
-            "Attribute": [
-                {"type": "ip-src|port", "value": "192.0.2.1|443"},
-                {"type": "domain", "value": "deleted.example", "deleted": True},
+                "Attribute": [
+                    {"type": "ip-src|port", "value": "192.0.2.1|443"},
+                    {"type": "ip-dst|port", "value": "198.51.100.2|8443"},
+                    {"type": "domain", "value": "deleted.example", "deleted": True},
             ],
             "Object": [
                 {
@@ -187,8 +340,18 @@ def test_misp_deleted_attributes_are_ignored_and_ports_are_preserved() -> None:
     )
 
     assert [(row["ioc_type"], row["ioc_value"], row["network_port"]) for row in projected] == [
-        ("IP", "192.0.2.1", 443)
+        ("IP", "192.0.2.1", 443),
+        ("IP", "198.51.100.2", 8443),
     ]
+    deleted_projected, _ = _extract_misp_iocs(
+        {
+            "deleted": True,
+            "Attribute": [{"type": "domain", "value": "event-deleted.example"}],
+        },
+        "misp-deleted-event",
+        "data/raw/misp/misp-deleted-event.json",
+    )
+    assert deleted_projected == []
 
 
 def test_builder_filters_deleted_misp_and_accepts_scheme_less_url(tmp_path: Path) -> None:
@@ -336,6 +499,31 @@ def test_builder_reports_rejection_taxonomy_separately(tmp_path: Path) -> None:
     assert coverage["zero_network_ioc_event_count"] == 0
     assert coverage["non_network_only_event_count"] == 0
     assert coverage["isolated_event_count"] == 0
+
+
+def test_event_evidence_metrics_separate_network_zero_and_non_network_only() -> None:
+    metrics = _event_evidence_metrics(
+        [
+            {"event_id": "event:network", "ioc_type_counts": {"domain": 1}},
+            {"event_id": "event:hash", "ioc_type_counts": {"hash": 1}},
+            {"event_id": "event:empty", "ioc_type_counts": {}},
+        ],
+        [
+            {
+                "source_id": "event:network",
+                "relation": "event_contains_domain",
+            }
+        ],
+        attempted_event_count=3,
+    )
+
+    assert metrics == {
+        "all_evidence_event_count": 2,
+        "network_ioc_event_count": 1,
+        "zero_network_ioc_event_count": 2,
+        "non_network_only_event_count": 1,
+        "isolated_event_count": 2,
+    }
 
 
 def test_event_rows_reference_source_claim_ids(tmp_path: Path) -> None:

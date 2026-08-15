@@ -4,7 +4,9 @@ import ipaddress
 import re
 from urllib.parse import SplitResult, urlsplit, urlunsplit
 
-URL_TOKEN_RE = re.compile(r"(?i)\b(?:https?|hxxps?)://[^\s<>{}\"']+")
+URL_TOKEN_RE = re.compile(
+    r"(?i)\b(?:https?|hxxps?)(?:://|\[:\]//|\[://\])[^\s<>{}\"']+"
+)
 IP_TOKEN_RE = re.compile(
     r"(?<![\w.])(?:"
     r"(?:\d{1,3}\.){3}\d{1,3}|"
@@ -19,13 +21,34 @@ DOMAIN_TOKEN_RE = re.compile(
     r"(?![\w.-])"
 )
 
-_TRAILING_URL_PUNCTUATION = ".,;:!?)]}\"'"
+_TRAILING_URL_PUNCTUATION = ".,;:!?}\"'"
 _DEFANGED_SCHEME_RE = re.compile(r"(?i)^hxxps?://")
 
 
+def strip_url_boundary(value: str) -> str:
+    cleaned = value.strip()
+    while True:
+        changed = False
+        while cleaned and cleaned[-1] in _TRAILING_URL_PUNCTUATION:
+            cleaned = cleaned[:-1]
+            changed = True
+        for opening, closing in (("(", ")"), ("[", "]"), ("{", "}")):
+            while cleaned.endswith(closing) and cleaned.count(closing) > cleaned.count(opening):
+                cleaned = cleaned[:-1]
+                changed = True
+        if not changed:
+            return cleaned
+
+
 def restore_defanged_url(value: str) -> str:
-    cleaned = value.strip().rstrip(_TRAILING_URL_PUNCTUATION)
-    cleaned = cleaned.replace("[.]", ".").replace("(.)", ".").replace("[:]", ":")
+    cleaned = strip_url_boundary(value)
+    cleaned = (
+        cleaned.replace("[.]", ".")
+        .replace("(.)", ".")
+        .replace("[://]", "://")
+        .replace("[:]//", "://")
+        .replace("[:]", ":")
+    )
     return _DEFANGED_SCHEME_RE.sub(
         lambda match: "https://" if match.group().lower() == "hxxps://" else "http://",
         cleaned,
@@ -144,7 +167,7 @@ def normalize_misp_url(value: str) -> str | None:
     if "." not in host_candidate and normalize_ip(host_candidate)[0] is None:
         return None
     ip_candidate, _ = normalize_ip(host_candidate)
-    if ip_candidate and ":" in ip_candidate:
+    if ip_candidate and ":" in ip_candidate and not host_candidate.startswith("["):
         suffix = cleaned[len(host_candidate):]
         cleaned = f"[{host_candidate}]{suffix}"
     return normalize_url(f"http://{cleaned}")

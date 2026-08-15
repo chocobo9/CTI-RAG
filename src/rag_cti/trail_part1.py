@@ -315,14 +315,16 @@ def _extract_orkl_iocs(
 
 
 def _iter_misp_attributes(event: dict[str, Any]) -> Iterator[tuple[str, dict[str, Any]]]:
+    if event.get("deleted"):
+        return
     for index, attribute in enumerate(event.get("Attribute") or []):
-        if isinstance(attribute, dict):
+        if isinstance(attribute, dict) and not attribute.get("deleted"):
             yield f"Event.Attribute[{index}]", attribute
     for object_index, obj in enumerate(event.get("Object") or []):
         if not isinstance(obj, dict) or obj.get("deleted"):
             continue
         for attribute_index, attribute in enumerate(obj.get("Attribute") or []):
-            if isinstance(attribute, dict):
+            if isinstance(attribute, dict) and not attribute.get("deleted"):
                 yield f"Event.Object[{object_index}].Attribute[{attribute_index}]", attribute
 
 

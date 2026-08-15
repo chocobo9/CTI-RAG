@@ -157,7 +157,7 @@ def _flatten_text(value: Any) -> Iterable[str]:
 
 
 def _strip_url(value: str) -> str:
-    return value.strip().rstrip(TRAILING_URL_CHARS)
+    return value.strip()
 
 
 def _valid_url(value: str) -> str | None:
@@ -168,7 +168,7 @@ def _date_value(value: Any) -> str | None:
     text = _clean(value)
     if not text:
         return None
-    if text in {"0", "0.0", "0000-00-00", "0000-00-00T00:00:00"}:
+    if text in {"0", "0.0"} or text.startswith("0000-00-00"):
         return None
     if text.startswith("0001-01-01"):
         return None

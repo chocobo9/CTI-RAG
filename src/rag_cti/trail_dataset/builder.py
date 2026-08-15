@@ -26,6 +26,7 @@ from rag_cti.ioc_normalization import (
     normalize_domain,
     normalize_misp_url,
     normalize_url,
+    strip_url_boundary,
 )
 
 NODE_TYPES = ("event", "domain", "ip", "url", "asn")
@@ -533,12 +534,11 @@ def _load_orkl_intermediate(
     max_input_files: int | None = None,
     allowed_event_ids: set[str] | None = None,
 ) -> list[_Event]:
-    """Expose ORKL reports to the compatibility gate without reinterpreting them.
+    """Load ORKL reports and deterministically project network observations from body text.
 
-    The ORKL intermediate contract intentionally records reports, actor candidates,
-    and external references, but not source-asserted domain/IP/URL IOC fields.
-    Returning zero indicators makes that absence visible in rejected_records rather
-    than fabricating graph observations from narrative or attribution metadata.
+    Actor candidates and external references remain provenance-only.  Network
+    values are extracted only from the report body through the shared ORKL
+    extractor, with citation sections excluded by its explicit policy.
     """
     path = root / "intermediate" / "intermediate_records.jsonl"
     if not path.is_file():
@@ -647,7 +647,7 @@ def _extract_orkl_indicators(record: dict[str, Any]) -> list[dict[str, Any]]:
     observations: list[dict[str, Any]] = []
     url_spans: list[tuple[int, int]] = []
     for match in ORKL_URL_PATTERN.finditer(body):
-        raw_value = match.group().rstrip(".,;:!?)]}\"")
+        raw_value = strip_url_boundary(match.group())
         if not raw_value:
             continue
         end = match.start() + len(raw_value)
@@ -706,8 +706,17 @@ def _orkl_observation(indicator_type: str, raw_value: str, value: str, start: in
 
 
 def _orkl_reference_urls(record: dict[str, Any]) -> set[str]:
-    values: list[Any] = list(record.get("references") or [])
-    for document in record.get("document_refs") or []:
+    references = record.get("references")
+    if isinstance(references, str):
+        values: list[Any] = [references]
+    elif isinstance(references, (list, tuple, set)):
+        values = list(references)
+    else:
+        values = []
+    document_refs = record.get("document_refs")
+    if isinstance(document_refs, dict):
+        document_refs = [document_refs]
+    for document in document_refs or []:
         if isinstance(document, dict):
             values.append(document.get("url"))
     result: set[str] = set()
@@ -727,7 +736,8 @@ def _orkl_body_reference_spans(body: str) -> list[tuple[int, int]]:
     spans: list[tuple[int, int]] = []
     for match in re.finditer(
         r"(?im)^\s*(?:\d+(?:\.\d+)*\.?\s+)?(?:recommended\s+reading\s+)?"
-        r"(?:references?|citations?|bibliography|websites?)\s*:?\s*$",
+        r"(?:references?|citations?|bibliography|websites?|sources?|"
+        r"further\s+reading|recommended\s+reading)\s*:?\s*$",
         body,
     ):
         next_boundary = next(
@@ -747,7 +757,10 @@ def _orkl_url_is_inline_citation(body: str, offset: int) -> bool:
     line_end = body.find("\n", offset)
     line = body[line_start:len(body) if line_end < 0 else line_end]
     preceding_context = body[max(0, line_start - 160):line_start]
-    if re.search(r"(?i)\b(?:accessed|published|retrieved)\b", line + preceding_context):
+    if (
+        re.search(r"(?i)\b(?:accessed|published|retrieved)\b", line + preceding_context)
+        or re.match(r"(?i)^\s*(?:source|sources|reference|references|citation|citations)\s*[:\-]", line)
+    ):
         return True
     return False
 

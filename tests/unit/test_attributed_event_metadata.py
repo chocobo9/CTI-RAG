@@ -68,6 +68,7 @@ def test_orkl_metadata_uses_normalized_publication_timestamp_and_source_id(tmp_p
 def test_zero_date_sentinel_is_not_published_as_a_date() -> None:
     assert _date_value(0) is None
     assert _date_value("0") is None
+    assert _date_value("0000-00-00T00:00:00Z") is None
     assert _date_value("2024-01-02T03:04:05Z") == "2024-01-02T03:04:05Z"
 
 
