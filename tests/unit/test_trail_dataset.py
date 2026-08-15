@@ -105,6 +105,36 @@ def test_builder_projects_orkl_body_iocs_into_event_graph(tmp_path: Path) -> Non
     }
 
 
+def test_builder_applies_event_allowlist_to_otx(tmp_path: Path) -> None:
+    source_root = tmp_path / "otx"
+    source_root.mkdir(parents=True)
+    for event_id in ("keep-me", "exclude-me"):
+        (source_root / f"{event_id}.json").write_text(
+            json.dumps(
+                {
+                    "id": event_id,
+                    "indicators": [
+                        {"type": "domain", "indicator": f"{event_id}.example"}
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    output_dir = tmp_path / "output"
+    build_dataset(
+        SourceRoots(otx=source_root),
+        output_dir,
+        event_allowlist={"otx": {"keep-me"}},
+    )
+
+    events = [
+        json.loads(line)
+        for line in (output_dir / "events.jsonl").read_text().splitlines()
+    ]
+    assert [row["event_id"] for row in events] == ["event:otx:keep-me"]
+
+
 def test_orkl_defanged_url_and_ipv6_are_projected_canonically() -> None:
     observations = _extract_orkl_indicators(
         {"body": "C2 hxxps://evil[.]com/gate.php and 2001:db8::1"}

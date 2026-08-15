@@ -155,7 +155,12 @@ def build_dataset(
     rejected: list[dict[str, Any]] = []
     candidates: list[_Event] = []
     if sources.otx is not None:
-        candidates.extend(_load_otx(Path(sources.otx), rejected, policy.max_input_files))
+        candidates.extend(_load_otx(
+            Path(sources.otx),
+            rejected,
+            policy.max_input_files,
+            (event_allowlist or {}).get("otx"),
+        ))
     if sources.circl_misp is not None:
         candidates.extend(_load_misp(
             Path(sources.circl_misp), rejected, policy.max_input_files,
@@ -431,7 +436,12 @@ def build_dataset(
     )
 
 
-def _load_otx(root: Path, rejected: list[dict[str, Any]], max_input_files: int | None = None) -> list[_Event]:
+def _load_otx(
+    root: Path,
+    rejected: list[dict[str, Any]],
+    max_input_files: int | None = None,
+    allowed_event_ids: set[str] | None = None,
+) -> list[_Event]:
     events: list[_Event] = []
     paths = sorted(root.rglob("*.json"))
     if max_input_files is not None:
@@ -453,6 +463,10 @@ def _load_otx(root: Path, rejected: list[dict[str, Any]], max_input_files: int |
         event_id = str(payload.get("id") or document.get("source_id") or "").strip()
         if not event_id:
             rejected.append({"source": "otx", "raw_ref": raw_ref, "reason": "missing_event_id"})
+            continue
+        if allowed_event_ids is not None and not _event_is_allowed(
+            "otx", event_id, allowed_event_ids
+        ):
             continue
         indicators = tuple(
             {
@@ -613,6 +627,8 @@ def _load_orkl_intermediate(
 def _event_is_allowed(source: str, source_record_id: str, allowed: set[str]) -> bool:
     if source_record_id in allowed:
         return True
+    if source == "otx":
+        return False
     if source == "circl_misp":
         return f"circl-misp:event:{source_record_id}" in allowed
     if source == "orkl":
