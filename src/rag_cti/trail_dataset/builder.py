@@ -16,9 +16,17 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import SplitResult, urlsplit, urlunsplit
+from urllib.parse import urlsplit
 
 from rag_cti.connectors.pdns_projection import project_pdns_raw
+from rag_cti.ioc_normalization import (
+    DOMAIN_TOKEN_RE,
+    IP_TOKEN_RE,
+    URL_TOKEN_RE,
+    normalize_domain,
+    normalize_misp_url,
+    normalize_url,
+)
 
 NODE_TYPES = ("event", "domain", "ip", "url", "asn")
 RELATION_MAP = {
@@ -51,8 +59,8 @@ MISP_TYPE_MAP = {
     "uri": "url",
 }
 
-ORKL_URL_PATTERN = re.compile(r"(?i)\bh(?:tt|xx)ps?://[^\s<>\"']+")
-ORKL_IP_PATTERN = re.compile(r"(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])")
+ORKL_URL_PATTERN = URL_TOKEN_RE
+ORKL_IP_PATTERN = IP_TOKEN_RE
 ORKL_DOMAIN_PATTERN = re.compile(
     r"(?i)(?<![\w@.-])"
     r"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.|\[\.]))+"
@@ -61,6 +69,7 @@ ORKL_DOMAIN_PATTERN = re.compile(
     r"ca|au|jp|kr|in|br|ch|it|nl|se|no|es|pl|be|fr|ly|tv|mobi|name|onion)"
     r"(?![\w-])"
 )
+ORKL_DOMAIN_PATTERN = DOMAIN_TOKEN_RE
 ORKL_SECTION_BOUNDARY_PATTERN = re.compile(
     r"(?im)^\s*(?:#{1,6}\s*)?(?:\d+(?:\.\d+)*[.)]?\s+)?"
     r"(?:"
@@ -68,6 +77,12 @@ ORKL_SECTION_BOUNDARY_PATTERN = re.compile(
     r"(?:\s+(?:appendix|appendices|list|inventory))?"
     r"|appendix(?:\s+[a-z0-9]+)?(?:\s*[:\-].*)?"
     r")\s*:?\s*$"
+)
+ORKL_SECTION_BOUNDARY_PATTERN = re.compile(
+    r"(?im)^\s*(?:#{1,6}\s*)?(?:\d+(?:\.\d+)*[.)]?\s+)?"
+    r"(?:(?:(?:network\s+)?(?:ioc|iocs|indicator|indicators)|observable|observables)"
+    r"(?:\s+(?:appendix|appendices|list|inventory))?|"
+    r"appendix(?:\s+[a-z0-9]+)?(?:\s*[:\-].*)?)\s*:?\s*$"
 )
 
 
@@ -237,6 +252,7 @@ def build_dataset(
                 record_path=indicator.get("path"),
                 raw_value=indicator.get("raw_value", indicator.get("value")),
                 extraction_method=indicator.get("extraction_method"),
+                network_port=indicator.get("network_port"),
             )
             if node_type == "url":
                 _project_url(value, event, indicator, nodes, evidence_by_edge)
@@ -444,15 +460,26 @@ def _load_misp(
             for index, item in enumerate(attributes):
                 if not isinstance(item, dict):
                     continue
-                for raw_type, value in _split_misp_attribute(item.get("type"), item.get("value")):
-                    indicators.append(
-                        {
-                            "type": raw_type,
-                            "value": value,
-                            "first_seen": item.get("first_seen"),
-                            "path": f"{prefix}.Attribute[{index}]",
-                        }
-                    )
+                parts = _split_misp_attribute(item.get("type"), item.get("value"))
+                for part_index, (raw_type, value) in enumerate(parts):
+                    if raw_type == "port":
+                        continue
+                    indicator = {
+                        "type": raw_type,
+                        "value": value,
+                        "first_seen": item.get("first_seen"),
+                        "path": f"{prefix}.Attribute[{index}]",
+                    }
+                    if raw_type in {"ip-src", "ip-dst"} and part_index + 1 < len(parts):
+                        next_type, next_value = parts[part_index + 1]
+                        if next_type == "port":
+                            try:
+                                port = int(next_value)
+                            except (TypeError, ValueError):
+                                port = None
+                            if port is not None and 0 < port <= 65535:
+                                indicator["network_port"] = port
+                    indicators.append(indicator)
         events.append(
             _Event(
                 event_id=f"event:circl_misp:{source_id}",
@@ -593,8 +620,7 @@ def _extract_orkl_indicators(record: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         end = match.start() + len(raw_value)
         url_spans.append((match.start(), end))
-        value = re.sub(r"(?i)^hxxp", "http", raw_value)
-        normalized = _normalise_url(value)
+        normalized = _normalise_url(raw_value)
         if (
             normalized is None
             or normalized in excluded_urls
@@ -602,7 +628,7 @@ def _extract_orkl_indicators(record: dict[str, Any]) -> list[dict[str, Any]]:
             or _orkl_url_is_inline_citation(body, match.start())
         ):
             continue
-        observations.append(_orkl_observation("url", raw_value, value, match.start(), end))
+        observations.append(_orkl_observation("url", raw_value, normalized, match.start(), end))
     for match in ORKL_DOMAIN_PATTERN.finditer(body):
         if any(start <= match.start() < end for start, end in url_spans):
             continue
@@ -626,7 +652,11 @@ def _extract_orkl_indicators(record: dict[str, Any]) -> list[dict[str, Any]]:
         if any(start <= match.start() < end for start, end in url_spans):
             continue
         raw_value = match.group()
-        observations.append(_orkl_observation("ip", raw_value, raw_value, match.start(), match.end()))
+        try:
+            normalized_ip = ipaddress.ip_address(raw_value).compressed.lower()
+        except ValueError:
+            continue
+        observations.append(_orkl_observation("ip", raw_value, normalized_ip, match.start(), match.end()))
     return observations
 
 
@@ -691,15 +721,26 @@ def _orkl_url_is_inline_citation(body: str, offset: int) -> bool:
 
 
 def _misp_attribute_groups(event: dict[str, Any]) -> Iterable[tuple[str, list[Any]]]:
-    yield "Event", event.get("Attribute") or []
+    if event.get("deleted"):
+        return
+    yield "Event", [
+        item for item in (event.get("Attribute") or [])
+        if isinstance(item, dict) and not item.get("deleted")
+    ]
     for index, obj in enumerate(event.get("Object") or []):
-        if isinstance(obj, dict):
-            yield f"Event.Object[{index}]", obj.get("Attribute") or []
+        if isinstance(obj, dict) and not obj.get("deleted"):
+            yield f"Event.Object[{index}]", [
+                item for item in (obj.get("Attribute") or [])
+                if isinstance(item, dict) and not item.get("deleted")
+            ]
 
 
 def _split_misp_attribute(raw_type: Any, raw_value: Any) -> list[tuple[str, Any]]:
     type_text = str(raw_type or "").lower()
     if "|" not in type_text:
+        if type_text in {"ip-src", "ip-dst"} and "|" in str(raw_value or ""):
+            value, port = str(raw_value).split("|", 1)
+            return [(type_text, value), ("port", port)]
         return [(type_text, raw_value)]
     types = type_text.split("|")
     values = str(raw_value or "").split("|", len(types) - 1)
@@ -723,50 +764,16 @@ def _normalise_indicator(raw_type: Any, raw_value: Any, source: str) -> tuple[st
     if node_type == "domain":
         domain = _normalise_domain(value)
         return (node_type, domain) if domain else None
-    url = _normalise_url(value)
+    url = normalize_misp_url(value) if source == "circl_misp" else _normalise_url(value)
     return (node_type, url) if url else None
 
 
 def _normalise_domain(value: str) -> str | None:
-    value = value.strip().rstrip(".").replace("[.]", ".").lower()
-    if value.startswith("*.") or len(value) > 253 or "." not in value:
-        return None
-    try:
-        value = value.encode("idna").decode("ascii")
-        ipaddress.ip_address(value)
-        return None
-    except UnicodeError:
-        return None
-    except ValueError:
-        pass
-    labels = value.split(".")
-    if any(not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", label) for label in labels):
-        return None
-    return value
+    return normalize_domain(value)
 
 
 def _normalise_url(value: str) -> str | None:
-    try:
-        parsed = urlsplit(value)
-        if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
-            return None
-        host = parsed.hostname.lower()
-        try:
-            host = ipaddress.ip_address(host).compressed.lower()
-            host_text = f"[{host}]" if ":" in host else host
-        except ValueError:
-            host = _normalise_domain(host) or ""
-            if not host:
-                return None
-            host_text = host
-        port = f":{parsed.port}" if parsed.port is not None else ""
-        userinfo = ""
-        if parsed.username:
-            userinfo = parsed.username + (f":{parsed.password}" if parsed.password else "") + "@"
-        normalised = SplitResult(parsed.scheme.lower(), userinfo + host_text + port, parsed.path, parsed.query, parsed.fragment)
-        return urlunsplit(normalised)
-    except (ValueError, UnicodeError):
-        return None
+    return normalize_url(value)
 
 
 def _project_url(
@@ -903,6 +910,7 @@ def _add_evidence(
     record_path: Any,
     raw_value: Any = None,
     extraction_method: Any = None,
+    network_port: Any = None,
 ) -> None:
     evidence = {
         "source": source,
@@ -915,6 +923,8 @@ def _add_evidence(
         evidence["raw_value"] = _text(raw_value)
     if extraction_method is not None:
         evidence["extraction_method"] = _text(extraction_method)
+    if network_port is not None:
+        evidence["network_port"] = int(network_port)
     bucket = edges[(source_id, relation, target_id)]
     if evidence not in bucket:
         bucket.append(evidence)

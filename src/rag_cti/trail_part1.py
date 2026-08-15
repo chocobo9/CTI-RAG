@@ -15,22 +15,26 @@ from collections.abc import Iterable, Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlsplit
 
+from rag_cti.ioc_normalization import (
+    DOMAIN_TOKEN_RE,
+    IP_TOKEN_RE,
+    URL_TOKEN_RE,
+    normalize_domain as _normalize_domain,
+    normalize_ip as _normalize_ip,
+    normalize_misp_url as _normalize_misp_url,
+    normalize_url as _normalize_url,
+)
 from rag_cti.trail_dataset.builder import _extract_orkl_indicators
 
 WINDOW_START = datetime(2018, 2, 3, tzinfo=UTC)
 WINDOW_END = datetime(2026, 7, 24, 23, 59, 59, tzinfo=UTC)
 NODE_TYPES = {"Event", "IP", "URL", "Domain", "ASN"}
 
-URL_RE = re.compile(r"\b(?:https?|hxxps?)://[^\s<>{}\[\]\"']+", re.I)
-IP_RE = re.compile(r"(?<![\w:])(?:\d{1,3}\.){3}\d{1,3}(?![\w:])")
-DOMAIN_RE = re.compile(
-    r"(?<![@\w.-])(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
-    r"(?:com|net|org|io|co|ru|cn|info|biz|online|top|xyz|site|me|de|uk|us|gov|edu|mil|"
-    r"cloud|app|tech|live|pro|cc|pw|tk|work|support|website|shop|store|dev)(?![\w.-])",
-    re.I,
-)
+URL_RE = URL_TOKEN_RE
+IP_RE = IP_TOKEN_RE
+DOMAIN_RE = DOMAIN_TOKEN_RE
 HASH_RE = re.compile(r"(?<![0-9a-f])(?:[0-9a-f]{64}|[0-9a-f]{40}|[0-9a-f]{32})(?![0-9a-f])", re.I)
 GENERIC_ACTORS = re.compile(
     r"^(?:malicious\s+)?(?:cyber\s+)?(?:threat\s+)?actors?$|"
@@ -174,78 +178,20 @@ class AliasResolver:
 
 
 def normalize_url(value: str) -> str | None:
-    cleaned = value.strip().rstrip(".,;:!?)").replace("[.]", ".")
-    cleaned = re.sub(r"^hxxps", "https", cleaned, flags=re.I)
-    cleaned = re.sub(r"^hxxp", "http", cleaned, flags=re.I)
-    try:
-        parts = urlsplit(cleaned)
-    except ValueError:
-        return None
-    if parts.scheme.lower() not in {"http", "https"} or not parts.hostname:
-        return None
-    host = parts.hostname.rstrip(".").lower()
-    try:
-        host = ipaddress.ip_address(host).compressed
-    except ValueError:
-        pass
-    netloc = host
-    try:
-        port = parts.port
-    except ValueError:
-        return None
-    if port:
-        netloc += f":{port}"
-    return urlunsplit((parts.scheme.lower(), netloc, parts.path or "/", parts.query, ""))
+    return _normalize_url(value)
 
 
 def normalize_misp_url(value: str) -> str | None:
     """Normalize a MISP URL, including source-typed host/path values without a scheme."""
-    normalized = normalize_url(value)
-    if normalized:
-        return normalized
-    cleaned = value.strip().rstrip(".,;:!?)").replace("[.]", ".")
-    if not cleaned or cleaned.startswith(("/", "#")) or any(char.isspace() for char in cleaned):
-        return None
-    if cleaned.startswith("//"):
-        return normalize_url(f"http:{cleaned}")
-    # MISP URL attributes occasionally contain a host/path without http(s)://.
-    # Treat it as a URL only when it has a host-like prefix; relative text is not an IOC.
-    host_candidate = cleaned.split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
-    if "." not in host_candidate and not normalize_ip(host_candidate)[0]:
-        return None
-    return normalize_url(f"http://{cleaned}")
+    return _normalize_misp_url(value)
 
 
 def normalize_domain(value: str) -> str | None:
-    value = value.strip().strip(".").replace("[.]", ".").lower()
-    if not value or " " in value:
-        return None
-    try:
-        ipaddress.ip_address(value)
-        return None
-    except ValueError:
-        pass
-    if "." not in value or len(value) > 253:
-        return None
-    return value
+    return _normalize_domain(value)
 
 
 def normalize_ip(value: str) -> tuple[str | None, int | None]:
-    raw = value.strip().strip("[]")
-    port: int | None = None
-    try:
-        return ipaddress.ip_address(raw).compressed, None
-    except ValueError:
-        host, sep, port_text = raw.rpartition(":")
-        if sep:
-            try:
-                parsed = ipaddress.ip_address(host).compressed
-                port = int(port_text)
-                if 0 < port <= 65535:
-                    return parsed, port
-            except (ValueError, TypeError):
-                pass
-    return None, None
+    return _normalize_ip(value)
 
 
 def extract_text_iocs(
@@ -392,12 +338,19 @@ def _extract_misp_iocs(
             continue
         raw_value = str(attribute.get("value") or "")
         raw_type = str(attribute.get("type") or "").lower()
-        value = raw_value.split("|", 1)[0]
+        value, port_text = (raw_value.split("|", 1) + [None])[:2] if "|" in raw_value else (raw_value, None)
         kind: str | None = None
         normalized: str | None = None
         port: int | None = None
         if raw_type in {"ip-src", "ip-dst", "ip-src|port", "ip-dst|port"}:
             normalized, port = normalize_ip(value)
+            if port is None and port_text is not None:
+                try:
+                    parsed_port = int(port_text)
+                except ValueError:
+                    parsed_port = None
+                if parsed_port is not None and 0 < parsed_port <= 65535:
+                    port = parsed_port
             kind = "IP"
         elif raw_type in {"url", "uri"}:
             normalized = normalize_misp_url(value)
