@@ -257,6 +257,11 @@ def build_dataset(
             if node_type == "url":
                 _project_url(value, event, indicator, nodes, evidence_by_edge)
 
+        source_claim_ids = sorted(
+            str(claim["claim_id"])
+            for claim in event.claims
+            if claim.get("claim_id")
+        )
         event_rows.append(
             {
                 "event_id": event.event_id,
@@ -270,6 +275,7 @@ def build_dataset(
                 "duplicate_supported_ioc_count": event_supported_count - len(seen),
                 "rejected_ioc_count": event_rejected,
                 "ioc_type_counts": dict(sorted(event_counts.items())),
+                "source_claim_ids": source_claim_ids,
             }
         )
         claims.extend(event.claims)
@@ -282,6 +288,10 @@ def build_dataset(
     event_rows.sort(key=lambda row: row["event_id"])
     claims.sort(key=lambda row: row["claim_id"])
     rejected.sort(key=lambda row: (str(row.get("raw_ref")), str(row.get("record_path")), str(row.get("reason"))))
+    rejected, duplicate_rejected_row_count = _deduplicate_rejected(rejected)
+    rejection_metrics = _rejection_metrics(rejected)
+    claim_validation = _validate_claim_provenance(event_rows, claims)
+    event_evidence_metrics = _event_evidence_metrics(event_rows, edges, len(events))
 
     asn_linked_ips = {edge["source_id"] for edge in edges if edge["relation"] == "ip_in_asn"}
     all_ips = {row["node_id"] for row in node_rows if row["type"] == "ip"}
@@ -302,6 +312,12 @@ def build_dataset(
         "missing_asn_evidence_count": len(missing_asn),
         "ip_nodes_without_asn_evidence": missing_asn,
         "rejected_record_count": len(rejected),
+        "duplicate_rejected_row_count": duplicate_rejected_row_count,
+        "source_claim_count": len(claims),
+        "events_with_source_claims": sum(bool(row["source_claim_ids"]) for row in event_rows),
+        "unreferenced_source_claim_count": claim_validation["unreferenced_claim_count"],
+        **event_evidence_metrics,
+        **rejection_metrics,
     }
     source_mapping = _source_mapping()
     compatibility_validation = _validate_graph(node_rows, edges)
@@ -316,6 +332,13 @@ def build_dataset(
             "raw_inputs_are_read_only": True,
             "source_attribution_used_as_graph_label": False,
         },
+        "claim_provenance": claim_validation,
+        "event_evidence_metrics": {
+            "network_ioc_types": ["domain", "ip", "url"],
+            "zero_network_ioc_event_count": "attempted events minus events with a supported network IOC",
+            "non_network_only_event_count": "events with supported evidence but no supported network IOC",
+            "isolated_event_count": "selected Event rows with no materialized outgoing relation",
+        },
         "rejected_records_artifact": "rejected_records.jsonl",
         "coverage_artifact": "coverage_audit.json",
         "coverage_gaps": {
@@ -324,6 +347,14 @@ def build_dataset(
                 1 for row in rejected if row.get("reason") == "no_supported_iocs"
                 and row.get("source") == "orkl"
             ),
+        },
+        "rejection_taxonomy": {
+            "rejected_record_count": "unique rejected-record rows written to rejected_records.jsonl",
+            "duplicate_rejected_row_count": "exact duplicate rejected rows suppressed before publication",
+            "rejected_event_count": "unique event_id values represented by a rejection row",
+            "unsupported_ioc_type_count": "rejected IOC rows whose type is outside the source mapping",
+            "invalid_ioc_value_count": "rejected IOC rows with empty or malformed values",
+            "dropped_event_count": "unique events with no supported IOC after normalization",
         },
     }
 
@@ -409,10 +440,11 @@ def _load_otx(root: Path, rejected: list[dict[str, Any]], max_input_files: int |
             for index, item in enumerate(payload.get("indicators", []))
             if isinstance(item, dict)
         )
-        claims = _otx_claims(payload, event_id, raw_ref)
+        canonical_event_id = f"event:otx:{event_id}"
+        claims = _otx_claims(payload, canonical_event_id, raw_ref)
         events.append(
             _Event(
-                event_id=f"event:otx:{event_id}",
+                event_id=canonical_event_id,
                 source="otx",
                 source_record_id=event_id,
                 raw_ref=raw_ref,
@@ -978,6 +1010,7 @@ def _claim(event_id: str, source: str, value: str, field: str, raw_ref: str) -> 
         "source_field": field,
         "raw_value": value,
         "raw_ref": raw_ref,
+        "claim_status": "candidate",
         "usage": "provenance_only_not_graph_label",
     }
 
@@ -1110,3 +1143,115 @@ def _text(value: Any) -> str | None:
 
 def _stable_value(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _deduplicate_rejected(rows: Iterable[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+    """Remove exact duplicate rejection rows while preserving deterministic order."""
+    unique: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    duplicate_count = 0
+    for row in rows:
+        key = _stable_value(row)
+        if key in seen:
+            duplicate_count += 1
+            continue
+        seen.add(key)
+        unique.append(row)
+    return unique, duplicate_count
+
+
+def _rejection_metrics(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    rows = list(rows)
+    reason_counts = Counter(str(row.get("reason") or "unknown") for row in rows)
+    rejected_event_ids = {
+        str(row["event_id"])
+        for row in rows
+        if row.get("event_id")
+    }
+    dropped_event_ids = {
+        str(row["event_id"])
+        for row in rows
+        if row.get("reason") == "no_supported_iocs" and row.get("event_id")
+    }
+    invalid_value_reasons = {"empty_ioc_value", "invalid_ioc_format"}
+    return {
+        "rejected_event_count": len(rejected_event_ids),
+        "unsupported_ioc_type_count": reason_counts.get("unsupported_ioc_type", 0),
+        "invalid_ioc_value_count": sum(reason_counts.get(reason, 0) for reason in invalid_value_reasons),
+        "dropped_event_count": len(dropped_event_ids),
+        "rejection_reason_counts": dict(sorted(reason_counts.items())),
+    }
+
+
+def _validate_claim_provenance(
+    event_rows: Iterable[dict[str, Any]], claims: Iterable[dict[str, Any]]
+) -> dict[str, Any]:
+    """Verify the separate claim artifact is reachable from its Event rows."""
+    events = {str(row.get("event_id")): row for row in event_rows}
+    claim_rows = list(claims)
+    claims_by_id = {str(row.get("claim_id")): row for row in claim_rows if row.get("claim_id")}
+    referenced_ids = {
+        str(claim_id)
+        for row in events.values()
+        for claim_id in row.get("source_claim_ids") or []
+    }
+    errors: list[str] = []
+    duplicate_claim_ids = len(claims_by_id) != len(claim_rows)
+    if duplicate_claim_ids:
+        errors.append("duplicate or missing source claim IDs")
+    unknown_references = sorted(referenced_ids - set(claims_by_id))
+    if unknown_references:
+        errors.append("Event rows reference unknown source claim IDs")
+    missing_references = sorted(set(claims_by_id) - referenced_ids)
+    if missing_references:
+        errors.append("source claims are not referenced by an Event row")
+    wrong_event_references = sorted(
+        claim_id
+        for claim_id, claim in claims_by_id.items()
+        if str(claim.get("event_id")) not in events
+        or claim_id not in set(events.get(str(claim.get("event_id")), {}).get("source_claim_ids") or [])
+    )
+    if wrong_event_references:
+        errors.append("source claim event_id does not match its Event reference")
+    return {
+        "status": "passed" if not errors else "failed",
+        "claim_count": len(claim_rows),
+        "event_count": len(events),
+        "events_with_claims": sum(bool(row.get("source_claim_ids")) for row in events.values()),
+        "unreferenced_claim_count": len(missing_references),
+        "unknown_reference_count": len(unknown_references),
+        "errors": errors,
+        "claim_status_policy": "candidate provenance only; never a graph label",
+    }
+
+
+def _event_evidence_metrics(
+    event_rows: Iterable[dict[str, Any]],
+    edges: Iterable[dict[str, Any]],
+    attempted_event_count: int,
+) -> dict[str, int]:
+    """Keep zero-network, evidence-bearing, and isolated populations distinct."""
+    rows = list(event_rows)
+    network_types = {"domain", "ip", "url"}
+    all_evidence_ids = {
+        str(row["event_id"])
+        for row in rows
+        if row.get("ioc_type_counts")
+    }
+    network_evidence_ids = {
+        str(row["event_id"])
+        for row in rows
+        if set(row.get("ioc_type_counts") or {}) & network_types
+    }
+    edge_source_ids = {
+        str(edge.get("source_id"))
+        for edge in edges
+        if str(edge.get("relation") or "").startswith("event_contains_")
+    }
+    return {
+        "all_evidence_event_count": len(all_evidence_ids),
+        "network_ioc_event_count": len(network_evidence_ids),
+        "zero_network_ioc_event_count": max(0, attempted_event_count - len(network_evidence_ids)),
+        "non_network_only_event_count": len(all_evidence_ids - network_evidence_ids),
+        "isolated_event_count": len({str(row["event_id"]) for row in rows} - edge_source_ids),
+    }

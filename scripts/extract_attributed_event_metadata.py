@@ -20,7 +20,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
-from urllib.parse import urlsplit
+
+from rag_cti.ioc_normalization import URL_TOKEN_RE, normalize_url
 
 
 EXPECTED = {
@@ -47,7 +48,7 @@ OUTPUT_FIELDS = (
 )
 ARRAY_FIELDS = set(OUTPUT_FIELDS) - {"event_id", "source_name", "title"}
 
-URL_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
+URL_RE = URL_TOKEN_RE
 CVE_RE = re.compile(r"\bCVE-\d{4}-\d{4,7}\b", re.IGNORECASE)
 CISA_RE = re.compile(
     r"\b(?:(?:AA|AR|TA)\d{2}-\d{3}[A-Z]?|ICSA-\d{2}-\d{3}-\d{2}|"
@@ -121,7 +122,13 @@ def _clean(value: Any) -> str | None:
 
 
 def _key_name(path: str) -> str:
-    return path.rsplit(".", 1)[-1].casefold().replace("-", "_")
+    leaf = path.rsplit(".", 1)[-1]
+    # _walk includes list indexes in leaf paths (for example
+    # ``external_report_ids[0]``).  The field policy is keyed by the
+    # structured key, so retain the path for provenance but normalize the
+    # index only for matching.
+    leaf = re.sub(r"\[\d+\]$", "", leaf)
+    return leaf.casefold().replace("-", "_")
 
 
 def _walk(obj: Any, path: str = "") -> Iterable[tuple[str, Any]]:
@@ -154,19 +161,14 @@ def _strip_url(value: str) -> str:
 
 
 def _valid_url(value: str) -> str | None:
-    candidate = _strip_url(value)
-    try:
-        parsed = urlsplit(candidate)
-    except ValueError:
-        return None
-    if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc:
-        return None
-    return candidate
+    return normalize_url(_strip_url(value))
 
 
 def _date_value(value: Any) -> str | None:
     text = _clean(value)
     if not text:
+        return None
+    if text in {"0", "0.0", "0000-00-00", "0000-00-00T00:00:00"}:
         return None
     if text.startswith("0001-01-01"):
         return None
@@ -211,7 +213,7 @@ def _portable_raw_ref(source: str, value: Any, raw_root: Path) -> str | None:
 
     if suffix.startswith("data/raw/"):
         return suffix
-    if suffix.startswith(f"data/deliveries/") and "/data/raw/" in suffix:
+    if suffix.startswith("data/deliveries/") and "/data/raw/" in suffix:
         return suffix
     if suffix.startswith(f"{source}/"):
         return f"data/raw/{suffix}"

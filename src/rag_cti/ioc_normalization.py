@@ -52,6 +52,8 @@ def normalize_domain(value: str) -> str | None:
         for label in labels
     ):
         return None
+    if not re.fullmatch(r"(?:[a-z]{2,63}|xn--[a-z0-9-]{2,59})", labels[-1]):
+        return None
     return value
 
 
@@ -141,4 +143,8 @@ def normalize_misp_url(value: str) -> str | None:
     host_candidate = cleaned.split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
     if "." not in host_candidate and normalize_ip(host_candidate)[0] is None:
         return None
+    ip_candidate, _ = normalize_ip(host_candidate)
+    if ip_candidate and ":" in ip_candidate:
+        suffix = cleaned[len(host_candidate):]
+        cleaned = f"[{host_candidate}]{suffix}"
     return normalize_url(f"http://{cleaned}")

@@ -3,12 +3,18 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from rag_cti.trail_dataset.builder import SourceRoots, _extract_orkl_indicators, build_dataset
+from rag_cti.trail_dataset.builder import (
+    SourceRoots,
+    _deduplicate_rejected,
+    _extract_orkl_indicators,
+    build_dataset,
+)
 from rag_cti.trail_part1 import (
     _extract_misp_iocs,
     _extract_orkl_iocs,
     extract_text_iocs,
     normalize_domain,
+    normalize_misp_url,
     normalize_url,
 )
 
@@ -155,6 +161,11 @@ def test_domain_boundaries_accept_valid_tlds_and_reject_malformed_values() -> No
     }
     assert normalize_domain("a..com") is None
     assert normalize_domain("-bad.com") is None
+    assert normalize_domain("numeric.123") is None
+
+
+def test_misp_scheme_less_ipv6_url_is_bracketed_canonically() -> None:
+    assert normalize_misp_url("2001:db8::1/path") == "http://[2001:db8::1]/path"
 
 
 def test_misp_deleted_attributes_are_ignored_and_ports_are_preserved() -> None:
@@ -278,3 +289,78 @@ def test_builder_joins_projected_pdns_facts(tmp_path: Path) -> None:
     edges = [json.loads(line) for line in (output_dir / "edges.jsonl").read_text().splitlines()]
 
     assert {row["relation"] for row in edges} >= {"domain_resolves_to_ip", "ip_in_asn"}
+
+
+def test_rejected_records_are_deduplicated_and_duplicates_are_reported() -> None:
+    row = {
+        "source": "otx",
+        "raw_ref": "data/raw/otx/event-1.json",
+        "reason": "unsupported_ioc_type",
+    }
+
+    unique, duplicate_count = _deduplicate_rejected([row, dict(row)])
+
+    assert unique == [row]
+    assert duplicate_count == 1
+
+
+def test_builder_reports_rejection_taxonomy_separately(tmp_path: Path) -> None:
+    source_root = tmp_path / "misp"
+    source_root.mkdir()
+    (source_root / "event.json").write_text(
+        json.dumps(
+            {
+                "Event": {
+                    "uuid": "misp-rejection-1",
+                    "Attribute": [
+                        {"type": "domain", "value": "valid.example"},
+                        {"type": "domain", "value": "not a domain"},
+                    ],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    output_dir = tmp_path / "output"
+    build_dataset(SourceRoots(circl_misp=source_root), output_dir)
+    coverage = json.loads((output_dir / "coverage_audit.json").read_text())
+
+    assert coverage["rejected_record_count"] == 1
+    assert coverage["rejected_event_count"] == 1
+    assert coverage["unsupported_ioc_type_count"] == 0
+    assert coverage["invalid_ioc_value_count"] == 1
+    assert coverage["dropped_event_count"] == 0
+    assert coverage["all_evidence_event_count"] == 1
+    assert coverage["network_ioc_event_count"] == 1
+    assert coverage["zero_network_ioc_event_count"] == 0
+    assert coverage["non_network_only_event_count"] == 0
+    assert coverage["isolated_event_count"] == 0
+
+
+def test_event_rows_reference_source_claim_ids(tmp_path: Path) -> None:
+    source_root = tmp_path / "otx"
+    source_root.mkdir()
+    (source_root / "pulse.json").write_text(
+        json.dumps(
+            {
+                "id": "pulse-claim-1",
+                "adversary": "Candidate Actor",
+                "indicators": [{"type": "domain", "indicator": "example.com"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    output_dir = tmp_path / "output"
+    build_dataset(SourceRoots(otx=source_root), output_dir)
+    event = json.loads((output_dir / "events.jsonl").read_text().splitlines()[0])
+    claim = json.loads((output_dir / "source_claims.jsonl").read_text().splitlines()[0])
+    coverage = json.loads((output_dir / "coverage_audit.json").read_text())
+    validation = json.loads((output_dir / "validation_audit.json").read_text())
+
+    assert event["source_claim_ids"] == [claim["claim_id"]]
+    assert claim["event_id"] == event["event_id"]
+    assert claim["claim_status"] == "candidate"
+    assert coverage["unreferenced_source_claim_count"] == 0
+    assert validation["claim_provenance"]["status"] == "passed"
