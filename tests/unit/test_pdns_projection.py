@@ -81,3 +81,21 @@ def test_load_pdns_raw_dir_uses_latest_snapshot_per_domain(tmp_path: Path) -> No
     records = load_pdns_raw_dir(tmp_path)
 
     assert [row["resolutions"][0]["ip"] for row in records] == ["192.0.2.2"]
+
+
+def test_project_pdns_raw_normalizes_ipv6_resolution_addresses() -> None:
+    projected = project_pdns_raw(
+        {
+            "source_id": "example.com",
+            "payload": {
+                "passive_dns": [
+                    {
+                        "record_type": "AAAA",
+                        "address": "2001:0DB8:0:0::1",
+                    }
+                ]
+            },
+        }
+    )
+
+    assert projected["resolutions"][0]["ip"] == "2001:db8::1"

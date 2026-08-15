@@ -809,7 +809,7 @@ def _normalise_indicator(raw_type: Any, raw_value: Any, source: str) -> tuple[st
     if node_type == "domain":
         domain = _normalise_domain(value)
         return (node_type, domain) if domain else None
-    url = normalize_misp_url(value) if source == "circl_misp" else _normalise_url(value)
+    url = normalize_misp_url(value) if source in {"circl_misp", "otx"} else _normalise_url(value)
     return (node_type, url) if url else None
 
 

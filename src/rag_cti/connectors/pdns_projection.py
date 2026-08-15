@@ -1,11 +1,9 @@
 from __future__ import annotations
 
+import ipaddress
 import json
-import re
 from pathlib import Path
 from typing import Any
-
-_IPV4_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
 
 def project_pdns_raw(raw: dict[str, Any]) -> dict[str, Any]:
@@ -40,7 +38,7 @@ def project_pdns_raw(raw: dict[str, Any]) -> dict[str, Any]:
         resolutions.append(
             {
                 "value": address,
-                "ip": address if _IPV4_RE.match(address) else "",
+                "ip": _normalise_ip(address),
                 "record_type": record_type,
                 "asset_type": str(item.get("asset_type") or "").strip(),
                 "hostname": hostname,
@@ -82,3 +80,12 @@ def _split_asn(value: str) -> tuple[str, str]:
     asn = parts[0] if parts[0].upper().startswith("AS") else ""
     asn_name = parts[1] if len(parts) > 1 and asn else value if not asn else ""
     return asn, asn_name
+
+
+def _normalise_ip(value: str) -> str:
+    if not value:
+        return ""
+    try:
+        return ipaddress.ip_address(value).compressed.lower()
+    except ValueError:
+        return ""

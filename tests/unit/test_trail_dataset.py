@@ -272,6 +272,10 @@ def test_domain_boundaries_accept_valid_tlds_and_reject_malformed_values() -> No
     assert normalize_domain("a..com") is None
     assert normalize_domain("-bad.com") is None
     assert normalize_domain("numeric.123") is None
+    assert normalize_domain("w3wp.exe") is None
+    assert normalize_domain("cat.png") is None
+    assert normalize_domain("temp.hex") is None
+    assert normalize_domain("foo.py") == "foo.py"
 
 
 def test_malformed_ip_is_not_projected_as_network_evidence() -> None:
@@ -452,6 +456,30 @@ def test_builder_joins_projected_pdns_facts(tmp_path: Path) -> None:
     edges = [json.loads(line) for line in (output_dir / "edges.jsonl").read_text().splitlines()]
 
     assert {row["relation"] for row in edges} >= {"domain_resolves_to_ip", "ip_in_asn"}
+
+
+def test_builder_accepts_scheme_less_otx_url_indicators(tmp_path: Path) -> None:
+    source_root = tmp_path / "otx"
+    source_root.mkdir()
+    (source_root / "pulse.json").write_text(
+        json.dumps(
+            {
+                "id": "pulse-scheme-less-url",
+                "indicators": [
+                    {"type": "url", "indicator": "evil.example/path"}
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    output_dir = tmp_path / "output"
+    build_dataset(SourceRoots(otx=source_root), output_dir)
+    nodes = [json.loads(line) for line in (output_dir / "nodes.jsonl").read_text().splitlines()]
+    coverage = json.loads((output_dir / "coverage_audit.json").read_text())
+
+    assert {row["value"] for row in nodes} >= {"http://evil.example/path"}
+    assert coverage["rejected_record_count"] == 0
 
 
 def test_rejected_records_are_deduplicated_and_duplicates_are_reported() -> None:
