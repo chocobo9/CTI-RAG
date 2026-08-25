@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1580" viewBox="0 0 3200 1580" role="img" aria-labelledby="title desc">
+  <title id="title">Pi Agent Runtime and Agent Loop</title>
+  <desc id="desc">A detailed hand-drawn style diagram of the Pi Agent Harness and Agent Loop, showing Workspace inputs, tool registry, controlled provider dispatch, tool execution, Session save points and Memory lifecycle.</desc>
+  <defs>
+    <marker id="aBlue" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="none" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="aGreen" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="aOrange" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="none" stroke="#c2410c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="aPurple" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="none" stroke="#7e22ce" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      .title { font:700 43px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Segoe UI",sans-serif; fill:#1f2937; }
+      .sub { font:20px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Segoe UI",sans-serif; fill:#475569; }
+      .cap { font:700 17px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Segoe UI",sans-serif; letter-spacing:1.3px; }
+      .label { font:700 25px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Segoe UI",sans-serif; fill:#1f2937; }
+      .small { font:17px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Segoe UI",sans-serif; fill:#334155; }
+      .tiny { font:15px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Segoe UI",sans-serif; fill:#475569; }
+      .box { fill:#fff; stroke:#334155; stroke-width:2.7; stroke-linecap:round; stroke-linejoin:round; }
+      .wire { fill:none; stroke-width:2.8; stroke-linecap:round; stroke-linejoin:round; }
+      .dash { stroke-dasharray:9 8; }
+    </style>
+  </defs>
+  <rect width="3200" height="1580" fill="#fffefb"/>
+  <path d="M52 77 C570 65 2300 77 3135 70" class="wire" stroke="#ef4444" opacity=".58"/>
+  <text x="60" y="58" class="title">Pi Agent Runtime · Harness &amp; Agent Loop</text>
+  <text x="62" y="103" class="sub">展开图：Harness 是 Pi 内的控制层；Session 是持久历史；Agent Loop 在 Harness 中运行，并受 Workspace 的上下文与能力规则约束。</text>
+
+  <!-- Workspace input -->
+  <text x="70" y="185" class="cap" fill="#15803d">WORKSPACE INPUTS</text>
+  <rect x="55" y="208" width="355" height="410" rx="28" fill="#f0fdf4" stroke="#16a34a" stroke-width="3"/>
+  <text x="85" y="252" class="label" fill="#15803d">Workspace Context Assembly</text>
+  <text x="85" y="280" class="small">只交给 Pi 当前任务允许进入的内容</text>
+  <rect x="88" y="317" width="286" height="60" rx="14" class="box" stroke="#16a34a" fill="#fff"/>
+  <text x="110" y="354" class="label" font-size="21">Task State + User Task</text>
+  <rect x="88" y="398" width="286" height="60" rx="14" class="box" stroke="#ef4444" fill="#fff"/>
+  <text x="110" y="435" class="label" font-size="21" fill="#dc2626">Case Orientation</text>
+  <rect x="88" y="479" width="286" height="60" rx="14" class="box" stroke="#2563eb" fill="#fff"/>
+  <text x="110" y="516" class="label" font-size="21" fill="#1d4ed8">Selected Session History</text>
+  <rect x="88" y="560" width="286" height="38" rx="12" class="box" stroke="#7e22ce" fill="#faf5ff"/>
+  <text x="112" y="586" class="small" fill="#7e22ce">qualified Memory View</text>
+
+  <!-- Tool authority -->
+  <text x="70" y="695" class="cap" fill="#c2410c">TOOL AUTHORITY</text>
+  <rect x="55" y="718" width="355" height="277" rx="28" fill="#fff7ed" stroke="#c2410c" stroke-width="3"/>
+  <text x="85" y="760" class="label" fill="#c2410c">Tool Registry + Workspace Policy</text>
+  <text x="85" y="790" class="small">工具的定义和是否可用，是两个层次</text>
+  <rect x="88" y="827" width="286" height="67" rx="14" class="box" stroke="#c2410c" fill="#fff"/>
+  <text x="110" y="857" class="label" font-size="20">Tool definition</text>
+  <text x="110" y="880" class="tiny">name · schema · execute · execution mode</text>
+  <rect x="88" y="912" width="286" height="57" rx="14" class="box" stroke="#c2410c" fill="#fff"/>
+  <text x="110" y="946" class="small">当前任务：权限 · 预算 · active tools</text>
+
+  <!-- PI outer -->
+  <text x="490" y="185" class="cap" fill="#2563eb">PI AGENT RUNTIME</text>
+  <rect x="470" y="208" width="1860" height="1080" rx="34" fill="#eff6ff" stroke="#2563eb" stroke-width="3.2"/>
+  <path d="M473 210 C930 201 1880 218 2327 210" class="wire" stroke="#2563eb" opacity=".5"/>
+  <text x="505" y="253" class="label" fill="#1d4ed8">Pi Runtime</text>
+  <text x="505" y="281" class="small">执行、事件、Session 与 Provider 调用的通用底座；不拥有 Case、I&amp;E 或 Memory 的业务权威。</text>
+
+  <!-- harness layer -->
+  <rect x="505" y="310" width="1785" height="678" rx="30" fill="#faf5ff" stroke="#7e22ce" stroke-width="3.2"/>
+  <path d="M508 313 C1000 302 1835 322 2287 312" class="wire" stroke="#7e22ce" opacity=".5"/>
+  <text x="540" y="353" class="label" fill="#7e22ce">AgentHarness · Workspace-lifetime execution control layer</text>
+  <text x="540" y="381" class="small">一个打开的 Workspace 构造一个 Harness；多次 prompt / Agent Run 复用它；关闭、Lease 丢失或崩溃后丢弃并重建。</text>
+
+  <!-- configuration row -->
+  <rect x="545" y="420" width="267" height="104" rx="17" class="box" stroke="#7e22ce" fill="#fff"/>
+  <text x="573" y="457" class="label" font-size="21">Runtime Config</text>
+  <text x="573" y="483" class="tiny">model · thinking level</text>
+  <text x="573" y="505" class="tiny">skills · prompt resources</text>
+
+  <rect x="855" y="420" width="330" height="104" rx="17" class="box" stroke="#2563eb" fill="#fff"/>
+  <text x="882" y="457" class="label" font-size="21" fill="#1d4ed8">Provider Dispatch</text>
+  <text x="882" y="483" class="tiny">最终 canonicalize：messages + tools</text>
+  <text x="882" y="505" class="tiny">计数、绑定、认证、调用回执</text>
+
+  <rect x="1228" y="420" width="337" height="104" rx="17" class="box" stroke="#15803d" fill="#fff"/>
+  <text x="1257" y="457" class="label" font-size="21" fill="#15803d">Context Entry Policy</text>
+  <text x="1257" y="483" class="tiny">选择 / 复查 Session entries</text>
+  <text x="1257" y="505" class="tiny">注入一份临时 Workspace Context</text>
+
+  <rect x="1608" y="420" width="625" height="104" rx="17" class="box" stroke="#e11d48" fill="#fff"/>
+  <text x="1637" y="457" class="label" font-size="21" fill="#e11d48">Run Generation + Cancellation Fence</text>
+  <text x="1637" y="483" class="tiny">abort · retire · close barrier · 防止迟到的模型 / 工具 / 事件写入</text>
+
+  <!-- Loop boundary -->
+  <rect x="545" y="571" width="1688" height="365" rx="26" fill="#fffdf6" stroke="#f59e0b" stroke-width="3.2"/>
+  <path d="M548 574 C980 564 1840 581 2230 573" class="wire" stroke="#f59e0b" opacity=".55"/>
+  <text x="578" y="615" class="label" fill="#c2410c">Pi Agent Loop · one Agent Run</text>
+  <text x="578" y="643" class="small">每一轮都由“模型回答 → 可选工具批次 → 工具结果 → 下一次模型调用”组成；没有工具调用时才可正常收束。</text>
+
+  <!-- loop nodes -->
+  <rect x="595" y="686" width="255" height="128" rx="19" class="box" stroke="#2563eb" fill="#eff6ff"/>
+  <text x="626" y="727" class="label" font-size="21" fill="#1d4ed8">1. Model turn</text>
+  <text x="626" y="753" class="tiny">Provider stream → assistant message</text>
+  <text x="626" y="776" class="tiny">文本或 Tool Calls</text>
+
+  <rect x="913" y="686" width="288" height="128" rx="19" class="box" stroke="#c2410c" fill="#fff7ed"/>
+  <text x="944" y="727" class="label" font-size="21" fill="#c2410c">2. Tool preflight</text>
+  <text x="944" y="753" class="tiny">schema 已验证后，beforeToolCall</text>
+  <text x="944" y="776" class="tiny">可拒绝或规范化本次调用</text>
+
+  <rect x="1265" y="686" width="289" height="128" rx="19" class="box" stroke="#c2410c" fill="#fff7ed"/>
+  <text x="1296" y="727" class="label" font-size="21" fill="#c2410c">3. Tool execution</text>
+  <text x="1296" y="753" class="tiny">parallel 默认；sequential 可强制</text>
+  <text x="1296" y="776" class="tiny">工具进度 / 成功 / 失败</text>
+
+  <rect x="1618" y="686" width="268" height="128" rx="19" class="box" stroke="#15803d" fill="#f0fdf4"/>
+  <text x="1649" y="727" class="label" font-size="21" fill="#15803d">4. Tool results</text>
+  <text x="1649" y="753" class="tiny">afterToolCall 后形成结果</text>
+  <text x="1649" y="776" class="tiny">按 assistant 原顺序回到模型</text>
+
+  <path d="M850 750 C876 750 885 750 912 750" class="wire" stroke="#c2410c" marker-end="url(#aOrange)"/>
+  <path d="M1201 750 C1227 750 1238 750 1264 750" class="wire" stroke="#c2410c" marker-end="url(#aOrange)"/>
+  <path d="M1554 750 C1581 750 1591 750 1617 750" class="wire" stroke="#15803d" marker-end="url(#aGreen)"/>
+  <path d="M1752 816 C1752 866 1005 870 745 817" class="wire" stroke="#2563eb" marker-end="url(#aBlue)"/>
+  <text x="1100" y="875" class="tiny" fill="#1d4ed8">工具结果成为下一轮模型输入；直到没有 Tool Call 或被停止策略终止</text>
+
+  <path d="M1150 524 C1150 562 1120 583 1085 685" class="wire" stroke="#2563eb" marker-end="url(#aBlue)"/>
+  <path d="M406 864 C498 864 520 763 911 763" class="wire" stroke="#c2410c" marker-end="url(#aOrange)"/>
+  <text x="462" y="842" class="tiny" fill="#c2410c">active tool set + policy</text>
+
+  <!-- Session layer -->
+  <rect x="505" y="1024" width="1785" height="218" rx="28" fill="#fff" stroke="#334155" stroke-width="3"/>
+  <path d="M508 1027 C1020 1017 1810 1036 2286 1026" class="wire" stroke="#334155" opacity=".45"/>
+  <text x="540" y="1068" class="label" fill="#334155">Pi Session · durable conversation and control facts</text>
+  <text x="540" y="1097" class="small">Harness 使用同一个 guarded Session；Session 跨 Workspace close / restart 存活，但不拥有 Agent Loop。</text>
+
+  <rect x="544" y="1131" width="312" height="68" rx="15" class="box" stroke="#334155" fill="#f8fafc"/>
+  <text x="572" y="1160" class="label" font-size="20">Conversation tree</text>
+  <text x="572" y="1184" class="tiny">user / assistant / tool results</text>
+  <rect x="908" y="1131" width="316" height="68" rx="15" class="box" stroke="#15803d" fill="#f0fdf4"/>
+  <text x="938" y="1160" class="label" font-size="20" fill="#15803d">Save Point groups</text>
+  <text x="938" y="1184" class="tiny">一次可提交的受控批次</text>
+  <rect x="1276" y="1131" width="326" height="68" rx="15" class="box" stroke="#e11d48" fill="#fff1f2"/>
+  <text x="1306" y="1160" class="label" font-size="20" fill="#e11d48">Run settlement</text>
+  <text x="1306" y="1184" class="tiny">最终状态与结算依据</text>
+  <rect x="1654" y="1131" width="581" height="68" rx="15" class="box" stroke="#2563eb" fill="#eff6ff"/>
+  <text x="1684" y="1160" class="label" font-size="20" fill="#1d4ed8">Events, configuration, compaction and branch facts</text>
+  <text x="1684" y="1184" class="tiny">模型配置、启用工具、摘要、分支与运行可观察性</text>
+  <path d="M1410 936 C1410 974 1410 991 1410 1023" class="wire" stroke="#334155" marker-end="url(#aBlue)"/>
+  <text x="1424" y="986" class="tiny">commit + settle</text>
+
+  <!-- memory -->
+  <text x="81" y="1080" class="cap" fill="#7e22ce">MEMORY LIFECYCLE</text>
+  <rect x="55" y="1104" width="355" height="260" rx="28" fill="#faf5ff" stroke="#7e22ce" stroke-width="3"/>
+  <text x="85" y="1146" class="label" fill="#7e22ce">Memory Management</text>
+  <text x="85" y="1174" class="small">运行前：精确选择与复查</text>
+  <text x="85" y="1201" class="small">运行后：只从已结算 Run 准入</text>
+  <rect x="88" y="1232" width="286" height="45" rx="12" class="box" stroke="#7e22ce" fill="#fff"/>
+  <text x="108" y="1261" class="small">prepare → qualified view → revalidate</text>
+  <rect x="88" y="1292" width="286" height="45" rx="12" class="box" stroke="#7e22ce" fill="#fff"/>
+  <text x="108" y="1321" class="small">candidate → admit → revision / tombstone</text>
+  <path d="M410 1254 C468 1254 473 573 544 573" class="wire dash" stroke="#7e22ce" marker-end="url(#aPurple)"/>
+  <text x="424" y="710" class="tiny" fill="#7e22ce">safe contribution</text>
+  <path d="M1274 1199 C1180 1324 815 1324 410 1317" class="wire dash" stroke="#7e22ce" marker-end="url(#aPurple)"/>
+  <text x="785" y="1350" class="tiny" fill="#7e22ce">settled Session / tool / audit facts → structured Memory Candidate</text>
+
+  <!-- External authorities and execution dependencies: deliberately outside Pi -->
+  <text x="2445" y="185" class="cap" fill="#64748b">EXTERNAL OWNERS &amp; DEPENDENCIES</text>
+
+  <rect x="2425" y="208" width="700" height="168" rx="28" fill="#f8fafc" stroke="#475569" stroke-width="3"/>
+  <text x="2458" y="253" class="label" fill="#334155">Model Provider / Models Registry</text>
+  <text x="2458" y="283" class="small">模型实现、认证与传输；Pi Provider Dispatch 受控地调用它</text>
+  <rect x="2460" y="307" width="625" height="41" rx="12" class="box" stroke="#2563eb" fill="#eff6ff"/>
+  <text x="2482" y="334" class="small" fill="#1d4ed8">streamed model response / provider terminal result</text>
+  <path d="M1565 454 C1840 454 2170 290 2423 290" class="wire" stroke="#2563eb" marker-end="url(#aBlue)"/>
+  <path d="M2425 330 C2190 330 1790 455 1565 455" class="wire" stroke="#2563eb" marker-end="url(#aBlue)"/>
+  <text x="1960" y="400" class="tiny" fill="#1d4ed8">controlled provider invocation</text>
+
+  <rect x="2425" y="433" width="700" height="220" rx="28" fill="#fff1f2" stroke="#ef4444" stroke-width="3"/>
+  <text x="2458" y="478" class="label" fill="#dc2626">Case Management · authority</text>
+  <text x="2458" y="508" class="small">案件状态、人工方向、正式事实与后续受控写入</text>
+  <rect x="2460" y="539" width="625" height="76" rx="14" class="box" stroke="#ef4444" fill="#fff"/>
+  <text x="2484" y="572" class="label" font-size="20" fill="#dc2626">Actor-scoped Case Orientation</text>
+  <text x="2484" y="596" class="tiny">只投影当前用户、当前用途可见的案件上下文</text>
+  <path d="M2425 578 C2150 578 1420 410 410 427" class="wire" stroke="#ef4444" marker-end="url(#aOrange)"/>
+  <text x="1810" y="548" class="tiny" fill="#dc2626">qualified Case context → Workspace</text>
+
+  <rect x="2425" y="711" width="700" height="272" rx="28" fill="#fff7ed" stroke="#c2410c" stroke-width="3"/>
+  <text x="2458" y="756" class="label" fill="#c2410c">I&amp;E Platform · sources &amp; evidence</text>
+  <text x="2458" y="786" class="small">OpenCTI 资源、精确资料、来源版本、span、lineage、retrieval receipt</text>
+  <rect x="2460" y="817" width="625" height="55" rx="14" class="box" stroke="#c2410c" fill="#fff"/>
+  <text x="2484" y="851" class="small">受 Workspace 准入的 I&amp;E retrieval request</text>
+  <rect x="2460" y="892" width="625" height="55" rx="14" class="box" stroke="#c2410c" fill="#fff"/>
+  <text x="2484" y="926" class="small">qualified material + provenance → Tool Result</text>
+  <path d="M1554 750 C1870 750 2098 844 2423 844" class="wire" stroke="#c2410c" marker-end="url(#aOrange)"/>
+  <text x="1840" y="816" class="tiny" fill="#c2410c">admitted retrieval through a typed tool</text>
+  <path d="M2425 918 C2180 918 2050 780 1885 780" class="wire" stroke="#c2410c" marker-end="url(#aOrange)"/>
+  <text x="2050" y="886" class="tiny" fill="#c2410c">qualified result returns to the loop</text>
+
+  <rect x="2425" y="1040" width="700" height="326" rx="28" fill="#faf5ff" stroke="#7e22ce" stroke-width="3"/>
+  <text x="2458" y="1085" class="label" fill="#7e22ce">Memory sources &amp; durable store</text>
+  <text x="2458" y="1115" class="small">用户可编辑来源与 Memory 的正式生命周期状态分离</text>
+  <rect x="2460" y="1147" width="283" height="86" rx="14" class="box" stroke="#15803d" fill="#f0fdf4"/>
+  <text x="2484" y="1180" class="label" font-size="20" fill="#15803d">Git Markdown</text>
+  <text x="2484" y="1206" class="tiny">用户编辑 → immutable commit/blob</text>
+  <rect x="2793" y="1147" width="292" height="86" rx="14" class="box" stroke="#7e22ce" fill="#fff"/>
+  <text x="2818" y="1180" class="label" font-size="20" fill="#7e22ce">SQLite Memory Store</text>
+  <text x="2818" y="1206" class="tiny">entries · revisions · receipts · tombstones</text>
+  <path d="M2743 1190 C2760 1190 2772 1190 2792 1190" class="wire" stroke="#7e22ce" marker-end="url(#aPurple)"/>
+  <rect x="2460" y="1262" width="625" height="71" rx="14" class="box" stroke="#7e22ce" fill="#fff"/>
+  <text x="2484" y="1291" class="label" font-size="20" fill="#7e22ce">No direct raw-transcript copy</text>
+  <text x="2484" y="1316" class="tiny">已结算的 Session / Tool / audit facts 形成结构化候选，再 admit 为 revision</text>
+  <path d="M2425 1298 C2100 1298 1500 1320 1274 1198" class="wire dash" stroke="#7e22ce" marker-end="url(#aPurple)"/>
+  <path d="M2460 1190 C2240 1190 1500 1360 410 1318" class="wire dash" stroke="#7e22ce" marker-end="url(#aPurple)"/>
+  <text x="1700" y="1376" class="tiny" fill="#7e22ce">user-edited source and settled-runtime evidence both enter the Memory lifecycle through verified admission</text>
+
+  <text x="58" y="1460" class="tiny">实线：一次 Agent Run 内的主控制流　·　虚线：Memory 的“运行前复查 / 运行后准入”闭环。图保留模块边界与关键行为，不展开协议字段、错误码或固定 Tool 数量。</text>
+</svg>

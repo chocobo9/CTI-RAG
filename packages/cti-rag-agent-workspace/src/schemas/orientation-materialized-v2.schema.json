@@ -1,0 +1,142 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "cti-rag://opencti-case-orientation/materialized-v2",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["protocol", "schemaVersion", "caseRef", "principalRef", "usePurpose", "selectionDigest", "source", "blocks", "semanticDigest"],
+	"properties": {
+		"protocol": { "const": "opencti-case-orientation/v2" },
+		"schemaVersion": { "const": "opencti-case-orientation-v2" },
+		"caseRef": { "type": "string", "minLength": 1 },
+		"principalRef": { "type": "string", "minLength": 1 },
+		"usePurpose": { "const": "case_investigation" },
+		"selectionDigest": { "type": "string", "minLength": 1 },
+		"source": { "$ref": "#/$defs/source" },
+		"blocks": { "$ref": "#/$defs/blocks" },
+		"semanticDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+	},
+	"$defs": {
+		"source": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["instanceId", "adapterArtifactDigest", "targetFingerprint", "schemaDigest", "qualificationId", "observationStartedAt", "observationFinishedAt", "materialization", "comparisonDigest"],
+			"properties": {
+				"instanceId": { "type": "string", "minLength": 1 },
+				"adapterArtifactDigest": { "type": "string", "minLength": 1 },
+				"targetFingerprint": { "type": "string", "minLength": 1 },
+				"schemaDigest": { "type": "string", "minLength": 1 },
+				"qualificationId": { "type": "string", "minLength": 1 },
+				"observationStartedAt": { "type": "string", "minLength": 1 },
+				"observationFinishedAt": { "type": "string", "minLength": 1 },
+				"materialization": { "const": "bounded_double_observation" },
+				"comparisonDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+			}
+		},
+		"blocks": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["case_identity", "visible_work", "visible_object_membership"],
+			"properties": {
+				"case_identity": { "$ref": "#/$defs/caseIdentityBlock" },
+				"visible_work": { "$ref": "#/$defs/workBlock" },
+				"visible_object_membership": { "$ref": "#/$defs/objectBlock" }
+			}
+		},
+		"caseIdentityBlock": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["presence", "semanticDigest"],
+			"properties": {
+				"presence": {
+					"type": "object",
+					"additionalProperties": false,
+					"required": ["kind", "value"],
+					"properties": {
+						"kind": { "const": "populated" },
+						"value": { "$ref": "orientation-observation-v1.schema.json#/$defs/caseIdentity" }
+					}
+				},
+				"semanticDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+			}
+		},
+		"workBlock": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["presence", "semanticDigest"],
+			"properties": {
+				"presence": { "$ref": "#/$defs/workPresence" },
+				"semanticDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+			}
+		},
+		"objectBlock": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["presence", "semanticDigest"],
+			"properties": {
+				"presence": { "$ref": "#/$defs/objectPresence" },
+				"semanticDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+			}
+		},
+		"workPresence": {
+			"oneOf": [
+				{ "$ref": "#/$defs/emptyPresence" },
+				{ "$ref": "#/$defs/workPopulatedPresence" },
+				{ "$ref": "#/$defs/workUnavailablePresence" }
+			]
+		},
+		"objectPresence": {
+			"oneOf": [
+				{ "$ref": "#/$defs/emptyPresence" },
+				{ "$ref": "#/$defs/objectPopulatedPresence" },
+				{ "$ref": "#/$defs/objectUnavailablePresence" }
+			]
+		},
+		"emptyPresence": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["kind", "selectedScopeDigest"],
+			"properties": {
+				"kind": { "const": "empty" },
+				"selectedScopeDigest": { "type": "string", "minLength": 1 }
+			}
+		},
+		"workPopulatedPresence": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["kind", "value"],
+			"properties": {
+				"kind": { "const": "populated" },
+				"value": { "type": "array", "items": { "$ref": "orientation-observation-v1.schema.json#/$defs/visibleWork" } }
+			}
+		},
+		"objectPopulatedPresence": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["kind", "value"],
+			"properties": {
+				"kind": { "const": "populated" },
+				"value": { "type": "array", "items": { "$ref": "orientation-observation-v1.schema.json#/$defs/visibleObjectMembership" } }
+			}
+		},
+		"workUnavailablePresence": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["kind", "reasonCode", "retryable"],
+			"properties": {
+				"kind": { "const": "unavailable" },
+				"reasonCode": { "const": "incomplete_task_traversal" },
+				"retryable": { "const": true }
+			}
+		},
+		"objectUnavailablePresence": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["kind", "reasonCode", "retryable"],
+			"properties": {
+				"kind": { "const": "unavailable" },
+				"reasonCode": { "const": "incomplete_object_traversal" },
+				"retryable": { "const": true }
+			}
+		}
+	}
+}

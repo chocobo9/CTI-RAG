@@ -1,5 +1,8 @@
 # Development Rules
 
+Pi is a TypeScript monorepo for the Pi agent harness. Product code belongs to an
+owned package under `packages/`; repository infrastructure stays at the root.
+
 ## Conversational Style
 
 - Keep answers short and concise
@@ -11,6 +14,42 @@
 - Prefer concrete behavior and small illustrations over abstract summaries, dense terminology, or unexplained lists of changes.
 - When the user asks a question, answer it first before making edits or running implementation commands.
 - When responding to user feedback or an analysis, explicitly say whether you agree or disagree before saying what you changed.
+
+## Routing Gate
+
+Before changing files:
+
+1. Locate the owning module in the Code Map. If a change crosses modules, resolve
+   every owner separately.
+2. Read this file, the nearest `AGENTS.md` for every target path, and every item in
+   its `Must Read` section. More deeply nested `AGENTS.md` files may narrow or add
+   rules, but may not weaken this file.
+3. Treat documents marked `Frozen`, `Deferred`, or `Reference-only` as context, not
+   authorization to implement that scope.
+4. If no route owns the proposed change, perform read-only investigation only and
+   report the routing gap before editing.
+
+If root and local rules conflict, stop and report the conflict. Do not choose the
+less restrictive rule.
+
+## Code Map
+
+| Capability | Owning path | Notes |
+| --- | --- | --- |
+| Model providers, authentication, transport, model metadata | `packages/ai/` | Provider-neutral LLM layer |
+| Telemetry contracts and sinks | `packages/telemetry/` | Provider-neutral telemetry layer |
+| Agent loop, tool execution, harness, session state | `packages/agent/` | Core agent runtime |
+| SQLite-backed session persistence | `packages/session-backends/sqlite-node/` | Node SQLite session backend |
+| Client/server protocol and runtime transport | `packages/protocol/`, `packages/client/`, `packages/server/` | Runtime protocol stack |
+| Agent-owned memory lifecycle, qualification, persistence, recall, and revision management | `packages/agent-memory/` | Independent Memory module; no Workspace, Case, or I&E authority |
+| Terminal rendering and input primitives | `packages/tui/` | Terminal UI library |
+| CLI, SDK, RPC, extensions, interactive product | `packages/coding-agent/` | User-facing coding agent |
+| Evaluation infrastructure | `packages/evals/` | Agent and harness evaluations |
+| CTI Workspace, Orientation, Working Set, Assessment | `packages/cti-rag-agent-workspace/` | CTI-RAG Agent Workspace implementation |
+| CTI Intelligence Resources, derivation, retrieval, enrichment admission | `packages/cti-rag-intelligence-evidence/` | I&E implementation; create only under an accepted active contract |
+| CTI domain language, contracts, ADRs, research, progress | `docs/cti-rag/` | Design authority; its `CONTEXT-MAP.md` maps bounded contexts, not code ownership |
+| Repository build, check, release, and CI infrastructure | root files, `scripts/`, `.github/` | Cross-package infrastructure |
+| Repository-local agent configuration and development extensions | `.pi/` | Not product extension source |
 
 ## Code Quality
 
@@ -47,6 +86,7 @@
 - If dep metadata changes, refresh `package-lock.json` with `npm install --package-lock-only --ignore-scripts`.
 - If `packages/coding-agent/npm-shrinkwrap.json` needs regen, run `node scripts/generate-coding-agent-shrinkwrap.mjs` (verify with `--check` or `npm run check`). New deps with lifecycle scripts require review and an explicit allowlist entry in that script; never add one silently.
 - Pre-commit blocks lockfile commits unless `PI_ALLOW_LOCKFILE_CHANGE=1`. Don't bypass unless the user wants the lockfile change committed.
+- Package-specific generated lock artifacts and allowlists are governed by the owning package's `AGENTS.md`; never update them silently.
 
 ## Git
 
@@ -58,7 +98,7 @@ Committing:
 - Stage explicit paths (`git add <path1> <path2>`); never `git add -A` / `git add .`.
 - Before committing, run `git status` and verify you are only staging your files.
 - `packages/ai/src/models.generated.ts` may always be included alongside your files.
-- Message format: `{feat,fix,docs}[(ai,tui,agent,coding-agent)]: <commit message> (optionally multiple lines)`. Message is informative and concise.
+- Message format: `{feat,fix,docs}[(ai,tui,agent,coding-agent,telemetry,protocol,client,server,cti-rag)]: <commit message> (optionally multiple lines)`. Message is informative and concise.
 
 Never run (destroys other agents' work or bypasses checks):
 

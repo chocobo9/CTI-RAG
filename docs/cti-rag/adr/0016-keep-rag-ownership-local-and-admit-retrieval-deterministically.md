@@ -1,0 +1,11 @@
+---
+status: accepted
+---
+
+# Keep RAG ownership local and admit retrieval deterministically
+
+Agent RAG is one end-to-end capability across Intelligence and Evidence, Agent Investigation Workspace, and Pi-native Workspace lifecycle Modules, but it is not a fourth bounded context or shared schema owner. I&E owns captures, derivation, retrieval, corpus ranking, declared retrieval coverage, receipts, capsules, and I&E-issued retrieval candidates; Workspace owns Task Context, Workspace-issued Orientation candidates, deterministic retrieval admission, Working Set selection/commit, rendering, and disclosure policy; Pi owns generic Session lifecycle and Provider Dispatch proof. Existing RAG infrastructure may enter only as an I&E-internal Adapter, never as a backend-selection Interface exposed to Workspace.
+
+The model may suggest an opaque I&E Retrieval Candidate Reference, but only trusted Workspace admission may authorize exact materialization. The fixed execution order is model suggestion, Workspace admission, I&E exact materialization, Workspace Receipt/Capsule verification, then atomic Working Set CAS commit. Workspace-issued Resource Candidate References and I&E-issued Retrieval Candidate References have distinct authorities and namespaces and cannot be converted through OpenCTI or other backend identifiers. Workspace compiles trusted Scope and Budget and evaluates a minimum-coverage policy; I&E alone proves actual Declared Retrieval Coverage, Index Generation, Lag, and Omissions. A bounded search is complete only when its declared Scope is fully executed, and scores are interpretable only inside one query/request, Retrieval Receipt, Index Generation, and Ranking Profile.
+
+This decision supersedes ADR 0015 only where that ADR assigned generic provider-proof authority to the Workspace Working Set contract. ADR 0015's one-Session authority and pre-dispatch-proof requirement remain accepted. Future IWS activation supplies only Workspace application material through an Adapter to the Pi-owned Provider Dispatch transaction; it cannot recreate `prepare/commit/lookup`, provider canonicalization, permit, or acknowledgement semantics. Shared RAG acceptance reuses scenario identifiers and cross-seam expectations, not common owned schemas.

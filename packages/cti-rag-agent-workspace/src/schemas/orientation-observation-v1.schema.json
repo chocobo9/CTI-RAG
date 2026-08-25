@@ -1,0 +1,117 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "cti-rag://opencti-case-orientation/observation-v1",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["caseIdentity", "visibleWork", "visibleObjectMembership"],
+	"properties": {
+		"caseIdentity": { "$ref": "#/$defs/caseIdentity" },
+		"visibleWork": { "$ref": "#/$defs/workCollection" },
+		"visibleObjectMembership": { "$ref": "#/$defs/objectCollection" }
+	},
+	"$defs": {
+		"observedVersion": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["contentDigest"],
+			"properties": {
+				"modified": { "type": "string", "minLength": 1 },
+				"updatedAt": { "type": "string", "minLength": 1 },
+				"contentDigest": { "type": "string", "minLength": 1 }
+			}
+		},
+		"sourceStatus": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["id", "name"],
+			"properties": {
+				"id": { "type": "string", "minLength": 1 },
+				"name": { "type": "string", "minLength": 1 }
+			}
+		},
+		"caseIdentity": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["internalId", "entityType", "displayName", "observedVersion"],
+			"properties": {
+				"internalId": { "type": "string", "minLength": 1 },
+				"standardId": { "type": "string", "minLength": 1 },
+				"entityType": { "enum": ["Case-Incident", "Case-Rfi", "Case-Rft"] },
+				"displayName": { "type": "string", "minLength": 1 },
+				"sourceStatus": { "$ref": "#/$defs/sourceStatus" },
+				"createdAt": { "type": "string", "minLength": 1 },
+				"observedVersion": { "$ref": "#/$defs/observedVersion" }
+			}
+		},
+		"visibleWork": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["taskRef", "name", "assigneeRefs", "observedVersion"],
+			"properties": {
+				"taskRef": { "type": "string", "minLength": 1 },
+				"name": { "type": "string", "minLength": 1 },
+				"sourceStatus": { "$ref": "#/$defs/sourceStatus" },
+				"dueAt": { "type": "string", "minLength": 1 },
+				"assigneeRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+				"observedVersion": { "$ref": "#/$defs/observedVersion" }
+			}
+		},
+		"visibleObjectMembership": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["objectRef", "entityType", "displayLabel", "membership", "observedVersion"],
+			"properties": {
+				"objectRef": { "type": "string", "minLength": 1 },
+				"standardId": { "type": "string", "minLength": 1 },
+				"entityType": { "type": "string", "minLength": 1 },
+				"displayLabel": { "type": "string", "minLength": 1 },
+				"membership": { "const": "visible_case_object_reference" },
+				"observedVersion": { "$ref": "#/$defs/observedVersion" }
+			}
+		},
+		"workCollection": {
+			"oneOf": [
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": ["kind", "items"],
+					"properties": {
+						"kind": { "const": "complete" },
+						"items": { "type": "array", "items": { "$ref": "#/$defs/visibleWork" } }
+					}
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": ["kind", "reasonCode"],
+					"properties": {
+						"kind": { "const": "unavailable" },
+						"reasonCode": { "const": "incomplete_task_traversal" }
+					}
+				}
+			]
+		},
+		"objectCollection": {
+			"oneOf": [
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": ["kind", "items"],
+					"properties": {
+						"kind": { "const": "complete" },
+						"items": { "type": "array", "items": { "$ref": "#/$defs/visibleObjectMembership" } }
+					}
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": ["kind", "reasonCode"],
+					"properties": {
+						"kind": { "const": "unavailable" },
+						"reasonCode": { "const": "incomplete_object_traversal" }
+					}
+				}
+			]
+		}
+	}
+}

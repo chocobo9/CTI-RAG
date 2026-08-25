@@ -1,0 +1,12 @@
+{
+	"name": "@earendil-works/pi-agent-memory",
+	"version": "0.80.7",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"}},
+	"scripts": {"clean": "shx rm -rf dist", "build": "tsgo -p tsconfig.build.json", "test": "vitest --run"},
+	"dependencies": {"sql.js": "1.13.0"},
+	"devDependencies": {"@types/node": "22.19.19", "shx": "0.4.0", "vitest": "4.1.9"},
+	"engines": {"node": ">=22.19.0"}
+}
