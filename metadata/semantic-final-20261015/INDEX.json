@@ -1,0 +1,2446 @@
+{
+  "schema_version": 1,
+  "checkpoint_id": "live-checkpoint-20261016-0409",
+  "indexed_at_utc": "2026-10-16T13:37:58+00:00",
+  "upload_scope": "index_only",
+  "payload_files_uploaded": false,
+  "note": "仅上传索引元数据；results.jsonl、MERGED-RESULTS.jsonl、batch payload 与源事件正文未上传。路径均相对于本地 semantic-final-20261015 工作区。",
+  "total": {
+    "assignment_rows": 21657,
+    "result_rows": 10740,
+    "missing_result_rows": 10917,
+    "coverage_pct": 49.59,
+    "review_status": {
+      "resolved": 10042,
+      "blocked": 607,
+      "policy_pending": 91
+    },
+    "conclusion": {
+      "attributed": 5543,
+      "unresolved": 607,
+      "actor_profile": 341,
+      "no_attribution": 3138,
+      "non_event": 1022,
+      "None": 79,
+      "policy_pending": 9,
+      "null": 1
+    },
+    "worker_artifacts_size_bytes": 10755869,
+    "results_jsonl_total_size_bytes": 10107525,
+    "five_batch_indexes_size_bytes": 82665
+  },
+  "shards": [
+    {
+      "shard_id": "A",
+      "assignment_total": 4332,
+      "result_rows": 4332,
+      "missing_result_rows": 0,
+      "coverage_pct": 100.0,
+      "review_status": {
+        "resolved": 4265,
+        "blocked": 41,
+        "policy_pending": 26
+      },
+      "conclusion": {
+        "attributed": 2152,
+        "unresolved": 41,
+        "actor_profile": 237,
+        "no_attribution": 1386,
+        "non_event": 490,
+        "None": 26
+      },
+      "batch_index": {
+        "path": "dispatch/batches/A/INDEX.json",
+        "size_bytes": 16533,
+        "sha256": "4ed5b4a9bb1a2b23bc1f1db89b3444397b8d27a55bd580f38fa0a27c07abac6b",
+        "batch_count": 87
+      },
+      "batches": [
+        {
+          "batch_id": "A-001",
+          "count": 50,
+          "path": "dispatch/batches/A/A-001.jsonl"
+        },
+        {
+          "batch_id": "A-002",
+          "count": 50,
+          "path": "dispatch/batches/A/A-002.jsonl"
+        },
+        {
+          "batch_id": "A-003",
+          "count": 50,
+          "path": "dispatch/batches/A/A-003.jsonl"
+        },
+        {
+          "batch_id": "A-004",
+          "count": 50,
+          "path": "dispatch/batches/A/A-004.jsonl"
+        },
+        {
+          "batch_id": "A-005",
+          "count": 50,
+          "path": "dispatch/batches/A/A-005.jsonl"
+        },
+        {
+          "batch_id": "A-006",
+          "count": 50,
+          "path": "dispatch/batches/A/A-006.jsonl"
+        },
+        {
+          "batch_id": "A-007",
+          "count": 50,
+          "path": "dispatch/batches/A/A-007.jsonl"
+        },
+        {
+          "batch_id": "A-008",
+          "count": 50,
+          "path": "dispatch/batches/A/A-008.jsonl"
+        },
+        {
+          "batch_id": "A-009",
+          "count": 50,
+          "path": "dispatch/batches/A/A-009.jsonl"
+        },
+        {
+          "batch_id": "A-010",
+          "count": 50,
+          "path": "dispatch/batches/A/A-010.jsonl"
+        },
+        {
+          "batch_id": "A-011",
+          "count": 50,
+          "path": "dispatch/batches/A/A-011.jsonl"
+        },
+        {
+          "batch_id": "A-012",
+          "count": 50,
+          "path": "dispatch/batches/A/A-012.jsonl"
+        },
+        {
+          "batch_id": "A-013",
+          "count": 50,
+          "path": "dispatch/batches/A/A-013.jsonl"
+        },
+        {
+          "batch_id": "A-014",
+          "count": 50,
+          "path": "dispatch/batches/A/A-014.jsonl"
+        },
+        {
+          "batch_id": "A-015",
+          "count": 50,
+          "path": "dispatch/batches/A/A-015.jsonl"
+        },
+        {
+          "batch_id": "A-016",
+          "count": 50,
+          "path": "dispatch/batches/A/A-016.jsonl"
+        },
+        {
+          "batch_id": "A-017",
+          "count": 50,
+          "path": "dispatch/batches/A/A-017.jsonl"
+        },
+        {
+          "batch_id": "A-018",
+          "count": 50,
+          "path": "dispatch/batches/A/A-018.jsonl"
+        },
+        {
+          "batch_id": "A-019",
+          "count": 50,
+          "path": "dispatch/batches/A/A-019.jsonl"
+        },
+        {
+          "batch_id": "A-020",
+          "count": 50,
+          "path": "dispatch/batches/A/A-020.jsonl"
+        },
+        {
+          "batch_id": "A-021",
+          "count": 50,
+          "path": "dispatch/batches/A/A-021.jsonl"
+        },
+        {
+          "batch_id": "A-022",
+          "count": 50,
+          "path": "dispatch/batches/A/A-022.jsonl"
+        },
+        {
+          "batch_id": "A-023",
+          "count": 50,
+          "path": "dispatch/batches/A/A-023.jsonl"
+        },
+        {
+          "batch_id": "A-024",
+          "count": 50,
+          "path": "dispatch/batches/A/A-024.jsonl"
+        },
+        {
+          "batch_id": "A-025",
+          "count": 50,
+          "path": "dispatch/batches/A/A-025.jsonl"
+        },
+        {
+          "batch_id": "A-026",
+          "count": 50,
+          "path": "dispatch/batches/A/A-026.jsonl"
+        },
+        {
+          "batch_id": "A-027",
+          "count": 50,
+          "path": "dispatch/batches/A/A-027.jsonl"
+        },
+        {
+          "batch_id": "A-028",
+          "count": 50,
+          "path": "dispatch/batches/A/A-028.jsonl"
+        },
+        {
+          "batch_id": "A-029",
+          "count": 50,
+          "path": "dispatch/batches/A/A-029.jsonl"
+        },
+        {
+          "batch_id": "A-030",
+          "count": 50,
+          "path": "dispatch/batches/A/A-030.jsonl"
+        },
+        {
+          "batch_id": "A-031",
+          "count": 50,
+          "path": "dispatch/batches/A/A-031.jsonl"
+        },
+        {
+          "batch_id": "A-032",
+          "count": 50,
+          "path": "dispatch/batches/A/A-032.jsonl"
+        },
+        {
+          "batch_id": "A-033",
+          "count": 50,
+          "path": "dispatch/batches/A/A-033.jsonl"
+        },
+        {
+          "batch_id": "A-034",
+          "count": 50,
+          "path": "dispatch/batches/A/A-034.jsonl"
+        },
+        {
+          "batch_id": "A-035",
+          "count": 50,
+          "path": "dispatch/batches/A/A-035.jsonl"
+        },
+        {
+          "batch_id": "A-036",
+          "count": 50,
+          "path": "dispatch/batches/A/A-036.jsonl"
+        },
+        {
+          "batch_id": "A-037",
+          "count": 50,
+          "path": "dispatch/batches/A/A-037.jsonl"
+        },
+        {
+          "batch_id": "A-038",
+          "count": 50,
+          "path": "dispatch/batches/A/A-038.jsonl"
+        },
+        {
+          "batch_id": "A-039",
+          "count": 50,
+          "path": "dispatch/batches/A/A-039.jsonl"
+        },
+        {
+          "batch_id": "A-040",
+          "count": 50,
+          "path": "dispatch/batches/A/A-040.jsonl"
+        },
+        {
+          "batch_id": "A-041",
+          "count": 50,
+          "path": "dispatch/batches/A/A-041.jsonl"
+        },
+        {
+          "batch_id": "A-042",
+          "count": 50,
+          "path": "dispatch/batches/A/A-042.jsonl"
+        },
+        {
+          "batch_id": "A-043",
+          "count": 50,
+          "path": "dispatch/batches/A/A-043.jsonl"
+        },
+        {
+          "batch_id": "A-044",
+          "count": 50,
+          "path": "dispatch/batches/A/A-044.jsonl"
+        },
+        {
+          "batch_id": "A-045",
+          "count": 50,
+          "path": "dispatch/batches/A/A-045.jsonl"
+        },
+        {
+          "batch_id": "A-046",
+          "count": 50,
+          "path": "dispatch/batches/A/A-046.jsonl"
+        },
+        {
+          "batch_id": "A-047",
+          "count": 50,
+          "path": "dispatch/batches/A/A-047.jsonl"
+        },
+        {
+          "batch_id": "A-048",
+          "count": 50,
+          "path": "dispatch/batches/A/A-048.jsonl"
+        },
+        {
+          "batch_id": "A-049",
+          "count": 50,
+          "path": "dispatch/batches/A/A-049.jsonl"
+        },
+        {
+          "batch_id": "A-050",
+          "count": 50,
+          "path": "dispatch/batches/A/A-050.jsonl"
+        },
+        {
+          "batch_id": "A-051",
+          "count": 50,
+          "path": "dispatch/batches/A/A-051.jsonl"
+        },
+        {
+          "batch_id": "A-052",
+          "count": 50,
+          "path": "dispatch/batches/A/A-052.jsonl"
+        },
+        {
+          "batch_id": "A-053",
+          "count": 50,
+          "path": "dispatch/batches/A/A-053.jsonl"
+        },
+        {
+          "batch_id": "A-054",
+          "count": 50,
+          "path": "dispatch/batches/A/A-054.jsonl"
+        },
+        {
+          "batch_id": "A-055",
+          "count": 50,
+          "path": "dispatch/batches/A/A-055.jsonl"
+        },
+        {
+          "batch_id": "A-056",
+          "count": 50,
+          "path": "dispatch/batches/A/A-056.jsonl"
+        },
+        {
+          "batch_id": "A-057",
+          "count": 50,
+          "path": "dispatch/batches/A/A-057.jsonl"
+        },
+        {
+          "batch_id": "A-058",
+          "count": 50,
+          "path": "dispatch/batches/A/A-058.jsonl"
+        },
+        {
+          "batch_id": "A-059",
+          "count": 50,
+          "path": "dispatch/batches/A/A-059.jsonl"
+        },
+        {
+          "batch_id": "A-060",
+          "count": 50,
+          "path": "dispatch/batches/A/A-060.jsonl"
+        },
+        {
+          "batch_id": "A-061",
+          "count": 50,
+          "path": "dispatch/batches/A/A-061.jsonl"
+        },
+        {
+          "batch_id": "A-062",
+          "count": 50,
+          "path": "dispatch/batches/A/A-062.jsonl"
+        },
+        {
+          "batch_id": "A-063",
+          "count": 50,
+          "path": "dispatch/batches/A/A-063.jsonl"
+        },
+        {
+          "batch_id": "A-064",
+          "count": 50,
+          "path": "dispatch/batches/A/A-064.jsonl"
+        },
+        {
+          "batch_id": "A-065",
+          "count": 50,
+          "path": "dispatch/batches/A/A-065.jsonl"
+        },
+        {
+          "batch_id": "A-066",
+          "count": 50,
+          "path": "dispatch/batches/A/A-066.jsonl"
+        },
+        {
+          "batch_id": "A-067",
+          "count": 50,
+          "path": "dispatch/batches/A/A-067.jsonl"
+        },
+        {
+          "batch_id": "A-068",
+          "count": 50,
+          "path": "dispatch/batches/A/A-068.jsonl"
+        },
+        {
+          "batch_id": "A-069",
+          "count": 50,
+          "path": "dispatch/batches/A/A-069.jsonl"
+        },
+        {
+          "batch_id": "A-070",
+          "count": 50,
+          "path": "dispatch/batches/A/A-070.jsonl"
+        },
+        {
+          "batch_id": "A-071",
+          "count": 50,
+          "path": "dispatch/batches/A/A-071.jsonl"
+        },
+        {
+          "batch_id": "A-072",
+          "count": 50,
+          "path": "dispatch/batches/A/A-072.jsonl"
+        },
+        {
+          "batch_id": "A-073",
+          "count": 50,
+          "path": "dispatch/batches/A/A-073.jsonl"
+        },
+        {
+          "batch_id": "A-074",
+          "count": 50,
+          "path": "dispatch/batches/A/A-074.jsonl"
+        },
+        {
+          "batch_id": "A-075",
+          "count": 50,
+          "path": "dispatch/batches/A/A-075.jsonl"
+        },
+        {
+          "batch_id": "A-076",
+          "count": 50,
+          "path": "dispatch/batches/A/A-076.jsonl"
+        },
+        {
+          "batch_id": "A-077",
+          "count": 50,
+          "path": "dispatch/batches/A/A-077.jsonl"
+        },
+        {
+          "batch_id": "A-078",
+          "count": 50,
+          "path": "dispatch/batches/A/A-078.jsonl"
+        },
+        {
+          "batch_id": "A-079",
+          "count": 50,
+          "path": "dispatch/batches/A/A-079.jsonl"
+        },
+        {
+          "batch_id": "A-080",
+          "count": 50,
+          "path": "dispatch/batches/A/A-080.jsonl"
+        },
+        {
+          "batch_id": "A-081",
+          "count": 50,
+          "path": "dispatch/batches/A/A-081.jsonl"
+        },
+        {
+          "batch_id": "A-082",
+          "count": 50,
+          "path": "dispatch/batches/A/A-082.jsonl"
+        },
+        {
+          "batch_id": "A-083",
+          "count": 50,
+          "path": "dispatch/batches/A/A-083.jsonl"
+        },
+        {
+          "batch_id": "A-084",
+          "count": 50,
+          "path": "dispatch/batches/A/A-084.jsonl"
+        },
+        {
+          "batch_id": "A-085",
+          "count": 50,
+          "path": "dispatch/batches/A/A-085.jsonl"
+        },
+        {
+          "batch_id": "A-086",
+          "count": 50,
+          "path": "dispatch/batches/A/A-086.jsonl"
+        },
+        {
+          "batch_id": "A-087",
+          "count": 32,
+          "path": "dispatch/batches/A/A-087.jsonl"
+        }
+      ],
+      "local_artifacts": [
+        {
+          "path": "workers/A/results.jsonl",
+          "size_bytes": 4104509,
+          "sha256": "32accbc4895ee164e3d6edc923375a930783070045061425cd5300a1550bae54"
+        },
+        {
+          "path": "workers/A/progress.json",
+          "size_bytes": 696,
+          "sha256": "11bd5714ba93cdd7b2101e2e3b238cb4346c8c176031acff0ffcdca43a080022"
+        },
+        {
+          "path": "workers/A/SUMMARY.md",
+          "size_bytes": 577,
+          "sha256": "2cf3d1d6a7ac31cefef3811ca4f3f71b7f2b3fa9deb5e67de8b21e099b70c539"
+        },
+        {
+          "path": "workers/A/HANDOFF-A.md",
+          "size_bytes": 6064,
+          "sha256": "70d080e7655d2444c889712b8951a12eb290c25786f45d5b3e091bffe483ed75"
+        }
+      ]
+    },
+    {
+      "shard_id": "B",
+      "assignment_total": 4332,
+      "result_rows": 2181,
+      "missing_result_rows": 2151,
+      "coverage_pct": 50.35,
+      "review_status": {
+        "resolved": 2088,
+        "blocked": 47,
+        "policy_pending": 46
+      },
+      "conclusion": {
+        "attributed": 975,
+        "unresolved": 47,
+        "non_event": 273,
+        "actor_profile": 16,
+        "no_attribution": 824,
+        "None": 37,
+        "policy_pending": 9
+      },
+      "batch_index": {
+        "path": "dispatch/batches/B/INDEX.json",
+        "size_bytes": 16533,
+        "sha256": "6e6e09afcaf50e508c21ce7db6ea4b1a86b93e852eb9ddb1f33fc6c898b18b9e",
+        "batch_count": 87
+      },
+      "batches": [
+        {
+          "batch_id": "B-001",
+          "count": 50,
+          "path": "dispatch/batches/B/B-001.jsonl"
+        },
+        {
+          "batch_id": "B-002",
+          "count": 50,
+          "path": "dispatch/batches/B/B-002.jsonl"
+        },
+        {
+          "batch_id": "B-003",
+          "count": 50,
+          "path": "dispatch/batches/B/B-003.jsonl"
+        },
+        {
+          "batch_id": "B-004",
+          "count": 50,
+          "path": "dispatch/batches/B/B-004.jsonl"
+        },
+        {
+          "batch_id": "B-005",
+          "count": 50,
+          "path": "dispatch/batches/B/B-005.jsonl"
+        },
+        {
+          "batch_id": "B-006",
+          "count": 50,
+          "path": "dispatch/batches/B/B-006.jsonl"
+        },
+        {
+          "batch_id": "B-007",
+          "count": 50,
+          "path": "dispatch/batches/B/B-007.jsonl"
+        },
+        {
+          "batch_id": "B-008",
+          "count": 50,
+          "path": "dispatch/batches/B/B-008.jsonl"
+        },
+        {
+          "batch_id": "B-009",
+          "count": 50,
+          "path": "dispatch/batches/B/B-009.jsonl"
+        },
+        {
+          "batch_id": "B-010",
+          "count": 50,
+          "path": "dispatch/batches/B/B-010.jsonl"
+        },
+        {
+          "batch_id": "B-011",
+          "count": 50,
+          "path": "dispatch/batches/B/B-011.jsonl"
+        },
+        {
+          "batch_id": "B-012",
+          "count": 50,
+          "path": "dispatch/batches/B/B-012.jsonl"
+        },
+        {
+          "batch_id": "B-013",
+          "count": 50,
+          "path": "dispatch/batches/B/B-013.jsonl"
+        },
+        {
+          "batch_id": "B-014",
+          "count": 50,
+          "path": "dispatch/batches/B/B-014.jsonl"
+        },
+        {
+          "batch_id": "B-015",
+          "count": 50,
+          "path": "dispatch/batches/B/B-015.jsonl"
+        },
+        {
+          "batch_id": "B-016",
+          "count": 50,
+          "path": "dispatch/batches/B/B-016.jsonl"
+        },
+        {
+          "batch_id": "B-017",
+          "count": 50,
+          "path": "dispatch/batches/B/B-017.jsonl"
+        },
+        {
+          "batch_id": "B-018",
+          "count": 50,
+          "path": "dispatch/batches/B/B-018.jsonl"
+        },
+        {
+          "batch_id": "B-019",
+          "count": 50,
+          "path": "dispatch/batches/B/B-019.jsonl"
+        },
+        {
+          "batch_id": "B-020",
+          "count": 50,
+          "path": "dispatch/batches/B/B-020.jsonl"
+        },
+        {
+          "batch_id": "B-021",
+          "count": 50,
+          "path": "dispatch/batches/B/B-021.jsonl"
+        },
+        {
+          "batch_id": "B-022",
+          "count": 50,
+          "path": "dispatch/batches/B/B-022.jsonl"
+        },
+        {
+          "batch_id": "B-023",
+          "count": 50,
+          "path": "dispatch/batches/B/B-023.jsonl"
+        },
+        {
+          "batch_id": "B-024",
+          "count": 50,
+          "path": "dispatch/batches/B/B-024.jsonl"
+        },
+        {
+          "batch_id": "B-025",
+          "count": 50,
+          "path": "dispatch/batches/B/B-025.jsonl"
+        },
+        {
+          "batch_id": "B-026",
+          "count": 50,
+          "path": "dispatch/batches/B/B-026.jsonl"
+        },
+        {
+          "batch_id": "B-027",
+          "count": 50,
+          "path": "dispatch/batches/B/B-027.jsonl"
+        },
+        {
+          "batch_id": "B-028",
+          "count": 50,
+          "path": "dispatch/batches/B/B-028.jsonl"
+        },
+        {
+          "batch_id": "B-029",
+          "count": 50,
+          "path": "dispatch/batches/B/B-029.jsonl"
+        },
+        {
+          "batch_id": "B-030",
+          "count": 50,
+          "path": "dispatch/batches/B/B-030.jsonl"
+        },
+        {
+          "batch_id": "B-031",
+          "count": 50,
+          "path": "dispatch/batches/B/B-031.jsonl"
+        },
+        {
+          "batch_id": "B-032",
+          "count": 50,
+          "path": "dispatch/batches/B/B-032.jsonl"
+        },
+        {
+          "batch_id": "B-033",
+          "count": 50,
+          "path": "dispatch/batches/B/B-033.jsonl"
+        },
+        {
+          "batch_id": "B-034",
+          "count": 50,
+          "path": "dispatch/batches/B/B-034.jsonl"
+        },
+        {
+          "batch_id": "B-035",
+          "count": 50,
+          "path": "dispatch/batches/B/B-035.jsonl"
+        },
+        {
+          "batch_id": "B-036",
+          "count": 50,
+          "path": "dispatch/batches/B/B-036.jsonl"
+        },
+        {
+          "batch_id": "B-037",
+          "count": 50,
+          "path": "dispatch/batches/B/B-037.jsonl"
+        },
+        {
+          "batch_id": "B-038",
+          "count": 50,
+          "path": "dispatch/batches/B/B-038.jsonl"
+        },
+        {
+          "batch_id": "B-039",
+          "count": 50,
+          "path": "dispatch/batches/B/B-039.jsonl"
+        },
+        {
+          "batch_id": "B-040",
+          "count": 50,
+          "path": "dispatch/batches/B/B-040.jsonl"
+        },
+        {
+          "batch_id": "B-041",
+          "count": 50,
+          "path": "dispatch/batches/B/B-041.jsonl"
+        },
+        {
+          "batch_id": "B-042",
+          "count": 50,
+          "path": "dispatch/batches/B/B-042.jsonl"
+        },
+        {
+          "batch_id": "B-043",
+          "count": 50,
+          "path": "dispatch/batches/B/B-043.jsonl"
+        },
+        {
+          "batch_id": "B-044",
+          "count": 50,
+          "path": "dispatch/batches/B/B-044.jsonl"
+        },
+        {
+          "batch_id": "B-045",
+          "count": 50,
+          "path": "dispatch/batches/B/B-045.jsonl"
+        },
+        {
+          "batch_id": "B-046",
+          "count": 50,
+          "path": "dispatch/batches/B/B-046.jsonl"
+        },
+        {
+          "batch_id": "B-047",
+          "count": 50,
+          "path": "dispatch/batches/B/B-047.jsonl"
+        },
+        {
+          "batch_id": "B-048",
+          "count": 50,
+          "path": "dispatch/batches/B/B-048.jsonl"
+        },
+        {
+          "batch_id": "B-049",
+          "count": 50,
+          "path": "dispatch/batches/B/B-049.jsonl"
+        },
+        {
+          "batch_id": "B-050",
+          "count": 50,
+          "path": "dispatch/batches/B/B-050.jsonl"
+        },
+        {
+          "batch_id": "B-051",
+          "count": 50,
+          "path": "dispatch/batches/B/B-051.jsonl"
+        },
+        {
+          "batch_id": "B-052",
+          "count": 50,
+          "path": "dispatch/batches/B/B-052.jsonl"
+        },
+        {
+          "batch_id": "B-053",
+          "count": 50,
+          "path": "dispatch/batches/B/B-053.jsonl"
+        },
+        {
+          "batch_id": "B-054",
+          "count": 50,
+          "path": "dispatch/batches/B/B-054.jsonl"
+        },
+        {
+          "batch_id": "B-055",
+          "count": 50,
+          "path": "dispatch/batches/B/B-055.jsonl"
+        },
+        {
+          "batch_id": "B-056",
+          "count": 50,
+          "path": "dispatch/batches/B/B-056.jsonl"
+        },
+        {
+          "batch_id": "B-057",
+          "count": 50,
+          "path": "dispatch/batches/B/B-057.jsonl"
+        },
+        {
+          "batch_id": "B-058",
+          "count": 50,
+          "path": "dispatch/batches/B/B-058.jsonl"
+        },
+        {
+          "batch_id": "B-059",
+          "count": 50,
+          "path": "dispatch/batches/B/B-059.jsonl"
+        },
+        {
+          "batch_id": "B-060",
+          "count": 50,
+          "path": "dispatch/batches/B/B-060.jsonl"
+        },
+        {
+          "batch_id": "B-061",
+          "count": 50,
+          "path": "dispatch/batches/B/B-061.jsonl"
+        },
+        {
+          "batch_id": "B-062",
+          "count": 50,
+          "path": "dispatch/batches/B/B-062.jsonl"
+        },
+        {
+          "batch_id": "B-063",
+          "count": 50,
+          "path": "dispatch/batches/B/B-063.jsonl"
+        },
+        {
+          "batch_id": "B-064",
+          "count": 50,
+          "path": "dispatch/batches/B/B-064.jsonl"
+        },
+        {
+          "batch_id": "B-065",
+          "count": 50,
+          "path": "dispatch/batches/B/B-065.jsonl"
+        },
+        {
+          "batch_id": "B-066",
+          "count": 50,
+          "path": "dispatch/batches/B/B-066.jsonl"
+        },
+        {
+          "batch_id": "B-067",
+          "count": 50,
+          "path": "dispatch/batches/B/B-067.jsonl"
+        },
+        {
+          "batch_id": "B-068",
+          "count": 50,
+          "path": "dispatch/batches/B/B-068.jsonl"
+        },
+        {
+          "batch_id": "B-069",
+          "count": 50,
+          "path": "dispatch/batches/B/B-069.jsonl"
+        },
+        {
+          "batch_id": "B-070",
+          "count": 50,
+          "path": "dispatch/batches/B/B-070.jsonl"
+        },
+        {
+          "batch_id": "B-071",
+          "count": 50,
+          "path": "dispatch/batches/B/B-071.jsonl"
+        },
+        {
+          "batch_id": "B-072",
+          "count": 50,
+          "path": "dispatch/batches/B/B-072.jsonl"
+        },
+        {
+          "batch_id": "B-073",
+          "count": 50,
+          "path": "dispatch/batches/B/B-073.jsonl"
+        },
+        {
+          "batch_id": "B-074",
+          "count": 50,
+          "path": "dispatch/batches/B/B-074.jsonl"
+        },
+        {
+          "batch_id": "B-075",
+          "count": 50,
+          "path": "dispatch/batches/B/B-075.jsonl"
+        },
+        {
+          "batch_id": "B-076",
+          "count": 50,
+          "path": "dispatch/batches/B/B-076.jsonl"
+        },
+        {
+          "batch_id": "B-077",
+          "count": 50,
+          "path": "dispatch/batches/B/B-077.jsonl"
+        },
+        {
+          "batch_id": "B-078",
+          "count": 50,
+          "path": "dispatch/batches/B/B-078.jsonl"
+        },
+        {
+          "batch_id": "B-079",
+          "count": 50,
+          "path": "dispatch/batches/B/B-079.jsonl"
+        },
+        {
+          "batch_id": "B-080",
+          "count": 50,
+          "path": "dispatch/batches/B/B-080.jsonl"
+        },
+        {
+          "batch_id": "B-081",
+          "count": 50,
+          "path": "dispatch/batches/B/B-081.jsonl"
+        },
+        {
+          "batch_id": "B-082",
+          "count": 50,
+          "path": "dispatch/batches/B/B-082.jsonl"
+        },
+        {
+          "batch_id": "B-083",
+          "count": 50,
+          "path": "dispatch/batches/B/B-083.jsonl"
+        },
+        {
+          "batch_id": "B-084",
+          "count": 50,
+          "path": "dispatch/batches/B/B-084.jsonl"
+        },
+        {
+          "batch_id": "B-085",
+          "count": 50,
+          "path": "dispatch/batches/B/B-085.jsonl"
+        },
+        {
+          "batch_id": "B-086",
+          "count": 50,
+          "path": "dispatch/batches/B/B-086.jsonl"
+        },
+        {
+          "batch_id": "B-087",
+          "count": 32,
+          "path": "dispatch/batches/B/B-087.jsonl"
+        }
+      ],
+      "local_artifacts": [
+        {
+          "path": "workers/B/results.jsonl",
+          "size_bytes": 1899766,
+          "sha256": "cd79e0690b5f6bfb43fb8469ae68bca4b49f7c0d9f6e89243e6732eedb2d7c05"
+        },
+        {
+          "path": "workers/B/progress.json",
+          "size_bytes": 265273,
+          "sha256": "ac0048626393d561ee7683ba76c741b837944b40f7f5d851932bf049aa386ba8"
+        },
+        {
+          "path": "workers/B/SUMMARY.md",
+          "size_bytes": 2101,
+          "sha256": "9d461f9288ab81cc7f664e3e3f63ca97ae46da9c125a65b7d1a80d652a967c21"
+        }
+      ]
+    },
+    {
+      "shard_id": "C",
+      "assignment_total": 4331,
+      "result_rows": 764,
+      "missing_result_rows": 3567,
+      "coverage_pct": 17.64,
+      "review_status": {
+        "resolved": 720,
+        "blocked": 40,
+        "policy_pending": 4
+      },
+      "conclusion": {
+        "attributed": 658,
+        "unresolved": 40,
+        "no_attribution": 32,
+        "non_event": 28,
+        "None": 3,
+        "actor_profile": 3
+      },
+      "batch_index": {
+        "path": "dispatch/batches/C/INDEX.json",
+        "size_bytes": 16533,
+        "sha256": "b33eaba1b8f14b5f60ddf86b3440f3585f99cfa507592020fa2af6b3f5c14323",
+        "batch_count": 87
+      },
+      "batches": [
+        {
+          "batch_id": "C-001",
+          "count": 50,
+          "path": "dispatch/batches/C/C-001.jsonl"
+        },
+        {
+          "batch_id": "C-002",
+          "count": 50,
+          "path": "dispatch/batches/C/C-002.jsonl"
+        },
+        {
+          "batch_id": "C-003",
+          "count": 50,
+          "path": "dispatch/batches/C/C-003.jsonl"
+        },
+        {
+          "batch_id": "C-004",
+          "count": 50,
+          "path": "dispatch/batches/C/C-004.jsonl"
+        },
+        {
+          "batch_id": "C-005",
+          "count": 50,
+          "path": "dispatch/batches/C/C-005.jsonl"
+        },
+        {
+          "batch_id": "C-006",
+          "count": 50,
+          "path": "dispatch/batches/C/C-006.jsonl"
+        },
+        {
+          "batch_id": "C-007",
+          "count": 50,
+          "path": "dispatch/batches/C/C-007.jsonl"
+        },
+        {
+          "batch_id": "C-008",
+          "count": 50,
+          "path": "dispatch/batches/C/C-008.jsonl"
+        },
+        {
+          "batch_id": "C-009",
+          "count": 50,
+          "path": "dispatch/batches/C/C-009.jsonl"
+        },
+        {
+          "batch_id": "C-010",
+          "count": 50,
+          "path": "dispatch/batches/C/C-010.jsonl"
+        },
+        {
+          "batch_id": "C-011",
+          "count": 50,
+          "path": "dispatch/batches/C/C-011.jsonl"
+        },
+        {
+          "batch_id": "C-012",
+          "count": 50,
+          "path": "dispatch/batches/C/C-012.jsonl"
+        },
+        {
+          "batch_id": "C-013",
+          "count": 50,
+          "path": "dispatch/batches/C/C-013.jsonl"
+        },
+        {
+          "batch_id": "C-014",
+          "count": 50,
+          "path": "dispatch/batches/C/C-014.jsonl"
+        },
+        {
+          "batch_id": "C-015",
+          "count": 50,
+          "path": "dispatch/batches/C/C-015.jsonl"
+        },
+        {
+          "batch_id": "C-016",
+          "count": 50,
+          "path": "dispatch/batches/C/C-016.jsonl"
+        },
+        {
+          "batch_id": "C-017",
+          "count": 50,
+          "path": "dispatch/batches/C/C-017.jsonl"
+        },
+        {
+          "batch_id": "C-018",
+          "count": 50,
+          "path": "dispatch/batches/C/C-018.jsonl"
+        },
+        {
+          "batch_id": "C-019",
+          "count": 50,
+          "path": "dispatch/batches/C/C-019.jsonl"
+        },
+        {
+          "batch_id": "C-020",
+          "count": 50,
+          "path": "dispatch/batches/C/C-020.jsonl"
+        },
+        {
+          "batch_id": "C-021",
+          "count": 50,
+          "path": "dispatch/batches/C/C-021.jsonl"
+        },
+        {
+          "batch_id": "C-022",
+          "count": 50,
+          "path": "dispatch/batches/C/C-022.jsonl"
+        },
+        {
+          "batch_id": "C-023",
+          "count": 50,
+          "path": "dispatch/batches/C/C-023.jsonl"
+        },
+        {
+          "batch_id": "C-024",
+          "count": 50,
+          "path": "dispatch/batches/C/C-024.jsonl"
+        },
+        {
+          "batch_id": "C-025",
+          "count": 50,
+          "path": "dispatch/batches/C/C-025.jsonl"
+        },
+        {
+          "batch_id": "C-026",
+          "count": 50,
+          "path": "dispatch/batches/C/C-026.jsonl"
+        },
+        {
+          "batch_id": "C-027",
+          "count": 50,
+          "path": "dispatch/batches/C/C-027.jsonl"
+        },
+        {
+          "batch_id": "C-028",
+          "count": 50,
+          "path": "dispatch/batches/C/C-028.jsonl"
+        },
+        {
+          "batch_id": "C-029",
+          "count": 50,
+          "path": "dispatch/batches/C/C-029.jsonl"
+        },
+        {
+          "batch_id": "C-030",
+          "count": 50,
+          "path": "dispatch/batches/C/C-030.jsonl"
+        },
+        {
+          "batch_id": "C-031",
+          "count": 50,
+          "path": "dispatch/batches/C/C-031.jsonl"
+        },
+        {
+          "batch_id": "C-032",
+          "count": 50,
+          "path": "dispatch/batches/C/C-032.jsonl"
+        },
+        {
+          "batch_id": "C-033",
+          "count": 50,
+          "path": "dispatch/batches/C/C-033.jsonl"
+        },
+        {
+          "batch_id": "C-034",
+          "count": 50,
+          "path": "dispatch/batches/C/C-034.jsonl"
+        },
+        {
+          "batch_id": "C-035",
+          "count": 50,
+          "path": "dispatch/batches/C/C-035.jsonl"
+        },
+        {
+          "batch_id": "C-036",
+          "count": 50,
+          "path": "dispatch/batches/C/C-036.jsonl"
+        },
+        {
+          "batch_id": "C-037",
+          "count": 50,
+          "path": "dispatch/batches/C/C-037.jsonl"
+        },
+        {
+          "batch_id": "C-038",
+          "count": 50,
+          "path": "dispatch/batches/C/C-038.jsonl"
+        },
+        {
+          "batch_id": "C-039",
+          "count": 50,
+          "path": "dispatch/batches/C/C-039.jsonl"
+        },
+        {
+          "batch_id": "C-040",
+          "count": 50,
+          "path": "dispatch/batches/C/C-040.jsonl"
+        },
+        {
+          "batch_id": "C-041",
+          "count": 50,
+          "path": "dispatch/batches/C/C-041.jsonl"
+        },
+        {
+          "batch_id": "C-042",
+          "count": 50,
+          "path": "dispatch/batches/C/C-042.jsonl"
+        },
+        {
+          "batch_id": "C-043",
+          "count": 50,
+          "path": "dispatch/batches/C/C-043.jsonl"
+        },
+        {
+          "batch_id": "C-044",
+          "count": 50,
+          "path": "dispatch/batches/C/C-044.jsonl"
+        },
+        {
+          "batch_id": "C-045",
+          "count": 50,
+          "path": "dispatch/batches/C/C-045.jsonl"
+        },
+        {
+          "batch_id": "C-046",
+          "count": 50,
+          "path": "dispatch/batches/C/C-046.jsonl"
+        },
+        {
+          "batch_id": "C-047",
+          "count": 50,
+          "path": "dispatch/batches/C/C-047.jsonl"
+        },
+        {
+          "batch_id": "C-048",
+          "count": 50,
+          "path": "dispatch/batches/C/C-048.jsonl"
+        },
+        {
+          "batch_id": "C-049",
+          "count": 50,
+          "path": "dispatch/batches/C/C-049.jsonl"
+        },
+        {
+          "batch_id": "C-050",
+          "count": 50,
+          "path": "dispatch/batches/C/C-050.jsonl"
+        },
+        {
+          "batch_id": "C-051",
+          "count": 50,
+          "path": "dispatch/batches/C/C-051.jsonl"
+        },
+        {
+          "batch_id": "C-052",
+          "count": 50,
+          "path": "dispatch/batches/C/C-052.jsonl"
+        },
+        {
+          "batch_id": "C-053",
+          "count": 50,
+          "path": "dispatch/batches/C/C-053.jsonl"
+        },
+        {
+          "batch_id": "C-054",
+          "count": 50,
+          "path": "dispatch/batches/C/C-054.jsonl"
+        },
+        {
+          "batch_id": "C-055",
+          "count": 50,
+          "path": "dispatch/batches/C/C-055.jsonl"
+        },
+        {
+          "batch_id": "C-056",
+          "count": 50,
+          "path": "dispatch/batches/C/C-056.jsonl"
+        },
+        {
+          "batch_id": "C-057",
+          "count": 50,
+          "path": "dispatch/batches/C/C-057.jsonl"
+        },
+        {
+          "batch_id": "C-058",
+          "count": 50,
+          "path": "dispatch/batches/C/C-058.jsonl"
+        },
+        {
+          "batch_id": "C-059",
+          "count": 50,
+          "path": "dispatch/batches/C/C-059.jsonl"
+        },
+        {
+          "batch_id": "C-060",
+          "count": 50,
+          "path": "dispatch/batches/C/C-060.jsonl"
+        },
+        {
+          "batch_id": "C-061",
+          "count": 50,
+          "path": "dispatch/batches/C/C-061.jsonl"
+        },
+        {
+          "batch_id": "C-062",
+          "count": 50,
+          "path": "dispatch/batches/C/C-062.jsonl"
+        },
+        {
+          "batch_id": "C-063",
+          "count": 50,
+          "path": "dispatch/batches/C/C-063.jsonl"
+        },
+        {
+          "batch_id": "C-064",
+          "count": 50,
+          "path": "dispatch/batches/C/C-064.jsonl"
+        },
+        {
+          "batch_id": "C-065",
+          "count": 50,
+          "path": "dispatch/batches/C/C-065.jsonl"
+        },
+        {
+          "batch_id": "C-066",
+          "count": 50,
+          "path": "dispatch/batches/C/C-066.jsonl"
+        },
+        {
+          "batch_id": "C-067",
+          "count": 50,
+          "path": "dispatch/batches/C/C-067.jsonl"
+        },
+        {
+          "batch_id": "C-068",
+          "count": 50,
+          "path": "dispatch/batches/C/C-068.jsonl"
+        },
+        {
+          "batch_id": "C-069",
+          "count": 50,
+          "path": "dispatch/batches/C/C-069.jsonl"
+        },
+        {
+          "batch_id": "C-070",
+          "count": 50,
+          "path": "dispatch/batches/C/C-070.jsonl"
+        },
+        {
+          "batch_id": "C-071",
+          "count": 50,
+          "path": "dispatch/batches/C/C-071.jsonl"
+        },
+        {
+          "batch_id": "C-072",
+          "count": 50,
+          "path": "dispatch/batches/C/C-072.jsonl"
+        },
+        {
+          "batch_id": "C-073",
+          "count": 50,
+          "path": "dispatch/batches/C/C-073.jsonl"
+        },
+        {
+          "batch_id": "C-074",
+          "count": 50,
+          "path": "dispatch/batches/C/C-074.jsonl"
+        },
+        {
+          "batch_id": "C-075",
+          "count": 50,
+          "path": "dispatch/batches/C/C-075.jsonl"
+        },
+        {
+          "batch_id": "C-076",
+          "count": 50,
+          "path": "dispatch/batches/C/C-076.jsonl"
+        },
+        {
+          "batch_id": "C-077",
+          "count": 50,
+          "path": "dispatch/batches/C/C-077.jsonl"
+        },
+        {
+          "batch_id": "C-078",
+          "count": 50,
+          "path": "dispatch/batches/C/C-078.jsonl"
+        },
+        {
+          "batch_id": "C-079",
+          "count": 50,
+          "path": "dispatch/batches/C/C-079.jsonl"
+        },
+        {
+          "batch_id": "C-080",
+          "count": 50,
+          "path": "dispatch/batches/C/C-080.jsonl"
+        },
+        {
+          "batch_id": "C-081",
+          "count": 50,
+          "path": "dispatch/batches/C/C-081.jsonl"
+        },
+        {
+          "batch_id": "C-082",
+          "count": 50,
+          "path": "dispatch/batches/C/C-082.jsonl"
+        },
+        {
+          "batch_id": "C-083",
+          "count": 50,
+          "path": "dispatch/batches/C/C-083.jsonl"
+        },
+        {
+          "batch_id": "C-084",
+          "count": 50,
+          "path": "dispatch/batches/C/C-084.jsonl"
+        },
+        {
+          "batch_id": "C-085",
+          "count": 50,
+          "path": "dispatch/batches/C/C-085.jsonl"
+        },
+        {
+          "batch_id": "C-086",
+          "count": 50,
+          "path": "dispatch/batches/C/C-086.jsonl"
+        },
+        {
+          "batch_id": "C-087",
+          "count": 31,
+          "path": "dispatch/batches/C/C-087.jsonl"
+        }
+      ],
+      "local_artifacts": [
+        {
+          "path": "workers/C/results.jsonl",
+          "size_bytes": 827589,
+          "sha256": "ee6071a3f300c54452ece1f2a85d26ef0e3771922ef6f4f49046b3506408c7c9"
+        },
+        {
+          "path": "workers/C/progress.json",
+          "size_bytes": 84562,
+          "sha256": "9f57593cd334e75178c490d60609a76bdd4e8cf9c87dc2de34e27feb1506c0e2"
+        },
+        {
+          "path": "workers/C/SUMMARY.md",
+          "size_bytes": 6753,
+          "sha256": "9eac46a499ef984d6cc5f6f080784a4684a0b4dc248d648e4999e246ea06c411"
+        },
+        {
+          "path": "workers/C/actor_takeover_audit_report.md",
+          "size_bytes": 134325,
+          "sha256": "e47699e968c055d8d4c421ee501e54b99593d3aede4616b2ab49b4435ec92799"
+        }
+      ]
+    },
+    {
+      "shard_id": "D",
+      "assignment_total": 4331,
+      "result_rows": 1394,
+      "missing_result_rows": 2937,
+      "coverage_pct": 32.19,
+      "review_status": {
+        "resolved": 1102,
+        "blocked": 286,
+        "policy_pending": 6
+      },
+      "conclusion": {
+        "attributed": 899,
+        "unresolved": 286,
+        "no_attribution": 86,
+        "None": 6,
+        "non_event": 62,
+        "actor_profile": 55
+      },
+      "batch_index": {
+        "path": "dispatch/batches/D/INDEX.json",
+        "size_bytes": 16533,
+        "sha256": "102912b4136f94c31c0e7455db72b63335bb7b788caaf4c736a58022fc2f073b",
+        "batch_count": 87
+      },
+      "batches": [
+        {
+          "batch_id": "D-001",
+          "count": 50,
+          "path": "dispatch/batches/D/D-001.jsonl"
+        },
+        {
+          "batch_id": "D-002",
+          "count": 50,
+          "path": "dispatch/batches/D/D-002.jsonl"
+        },
+        {
+          "batch_id": "D-003",
+          "count": 50,
+          "path": "dispatch/batches/D/D-003.jsonl"
+        },
+        {
+          "batch_id": "D-004",
+          "count": 50,
+          "path": "dispatch/batches/D/D-004.jsonl"
+        },
+        {
+          "batch_id": "D-005",
+          "count": 50,
+          "path": "dispatch/batches/D/D-005.jsonl"
+        },
+        {
+          "batch_id": "D-006",
+          "count": 50,
+          "path": "dispatch/batches/D/D-006.jsonl"
+        },
+        {
+          "batch_id": "D-007",
+          "count": 50,
+          "path": "dispatch/batches/D/D-007.jsonl"
+        },
+        {
+          "batch_id": "D-008",
+          "count": 50,
+          "path": "dispatch/batches/D/D-008.jsonl"
+        },
+        {
+          "batch_id": "D-009",
+          "count": 50,
+          "path": "dispatch/batches/D/D-009.jsonl"
+        },
+        {
+          "batch_id": "D-010",
+          "count": 50,
+          "path": "dispatch/batches/D/D-010.jsonl"
+        },
+        {
+          "batch_id": "D-011",
+          "count": 50,
+          "path": "dispatch/batches/D/D-011.jsonl"
+        },
+        {
+          "batch_id": "D-012",
+          "count": 50,
+          "path": "dispatch/batches/D/D-012.jsonl"
+        },
+        {
+          "batch_id": "D-013",
+          "count": 50,
+          "path": "dispatch/batches/D/D-013.jsonl"
+        },
+        {
+          "batch_id": "D-014",
+          "count": 50,
+          "path": "dispatch/batches/D/D-014.jsonl"
+        },
+        {
+          "batch_id": "D-015",
+          "count": 50,
+          "path": "dispatch/batches/D/D-015.jsonl"
+        },
+        {
+          "batch_id": "D-016",
+          "count": 50,
+          "path": "dispatch/batches/D/D-016.jsonl"
+        },
+        {
+          "batch_id": "D-017",
+          "count": 50,
+          "path": "dispatch/batches/D/D-017.jsonl"
+        },
+        {
+          "batch_id": "D-018",
+          "count": 50,
+          "path": "dispatch/batches/D/D-018.jsonl"
+        },
+        {
+          "batch_id": "D-019",
+          "count": 50,
+          "path": "dispatch/batches/D/D-019.jsonl"
+        },
+        {
+          "batch_id": "D-020",
+          "count": 50,
+          "path": "dispatch/batches/D/D-020.jsonl"
+        },
+        {
+          "batch_id": "D-021",
+          "count": 50,
+          "path": "dispatch/batches/D/D-021.jsonl"
+        },
+        {
+          "batch_id": "D-022",
+          "count": 50,
+          "path": "dispatch/batches/D/D-022.jsonl"
+        },
+        {
+          "batch_id": "D-023",
+          "count": 50,
+          "path": "dispatch/batches/D/D-023.jsonl"
+        },
+        {
+          "batch_id": "D-024",
+          "count": 50,
+          "path": "dispatch/batches/D/D-024.jsonl"
+        },
+        {
+          "batch_id": "D-025",
+          "count": 50,
+          "path": "dispatch/batches/D/D-025.jsonl"
+        },
+        {
+          "batch_id": "D-026",
+          "count": 50,
+          "path": "dispatch/batches/D/D-026.jsonl"
+        },
+        {
+          "batch_id": "D-027",
+          "count": 50,
+          "path": "dispatch/batches/D/D-027.jsonl"
+        },
+        {
+          "batch_id": "D-028",
+          "count": 50,
+          "path": "dispatch/batches/D/D-028.jsonl"
+        },
+        {
+          "batch_id": "D-029",
+          "count": 50,
+          "path": "dispatch/batches/D/D-029.jsonl"
+        },
+        {
+          "batch_id": "D-030",
+          "count": 50,
+          "path": "dispatch/batches/D/D-030.jsonl"
+        },
+        {
+          "batch_id": "D-031",
+          "count": 50,
+          "path": "dispatch/batches/D/D-031.jsonl"
+        },
+        {
+          "batch_id": "D-032",
+          "count": 50,
+          "path": "dispatch/batches/D/D-032.jsonl"
+        },
+        {
+          "batch_id": "D-033",
+          "count": 50,
+          "path": "dispatch/batches/D/D-033.jsonl"
+        },
+        {
+          "batch_id": "D-034",
+          "count": 50,
+          "path": "dispatch/batches/D/D-034.jsonl"
+        },
+        {
+          "batch_id": "D-035",
+          "count": 50,
+          "path": "dispatch/batches/D/D-035.jsonl"
+        },
+        {
+          "batch_id": "D-036",
+          "count": 50,
+          "path": "dispatch/batches/D/D-036.jsonl"
+        },
+        {
+          "batch_id": "D-037",
+          "count": 50,
+          "path": "dispatch/batches/D/D-037.jsonl"
+        },
+        {
+          "batch_id": "D-038",
+          "count": 50,
+          "path": "dispatch/batches/D/D-038.jsonl"
+        },
+        {
+          "batch_id": "D-039",
+          "count": 50,
+          "path": "dispatch/batches/D/D-039.jsonl"
+        },
+        {
+          "batch_id": "D-040",
+          "count": 50,
+          "path": "dispatch/batches/D/D-040.jsonl"
+        },
+        {
+          "batch_id": "D-041",
+          "count": 50,
+          "path": "dispatch/batches/D/D-041.jsonl"
+        },
+        {
+          "batch_id": "D-042",
+          "count": 50,
+          "path": "dispatch/batches/D/D-042.jsonl"
+        },
+        {
+          "batch_id": "D-043",
+          "count": 50,
+          "path": "dispatch/batches/D/D-043.jsonl"
+        },
+        {
+          "batch_id": "D-044",
+          "count": 50,
+          "path": "dispatch/batches/D/D-044.jsonl"
+        },
+        {
+          "batch_id": "D-045",
+          "count": 50,
+          "path": "dispatch/batches/D/D-045.jsonl"
+        },
+        {
+          "batch_id": "D-046",
+          "count": 50,
+          "path": "dispatch/batches/D/D-046.jsonl"
+        },
+        {
+          "batch_id": "D-047",
+          "count": 50,
+          "path": "dispatch/batches/D/D-047.jsonl"
+        },
+        {
+          "batch_id": "D-048",
+          "count": 50,
+          "path": "dispatch/batches/D/D-048.jsonl"
+        },
+        {
+          "batch_id": "D-049",
+          "count": 50,
+          "path": "dispatch/batches/D/D-049.jsonl"
+        },
+        {
+          "batch_id": "D-050",
+          "count": 50,
+          "path": "dispatch/batches/D/D-050.jsonl"
+        },
+        {
+          "batch_id": "D-051",
+          "count": 50,
+          "path": "dispatch/batches/D/D-051.jsonl"
+        },
+        {
+          "batch_id": "D-052",
+          "count": 50,
+          "path": "dispatch/batches/D/D-052.jsonl"
+        },
+        {
+          "batch_id": "D-053",
+          "count": 50,
+          "path": "dispatch/batches/D/D-053.jsonl"
+        },
+        {
+          "batch_id": "D-054",
+          "count": 50,
+          "path": "dispatch/batches/D/D-054.jsonl"
+        },
+        {
+          "batch_id": "D-055",
+          "count": 50,
+          "path": "dispatch/batches/D/D-055.jsonl"
+        },
+        {
+          "batch_id": "D-056",
+          "count": 50,
+          "path": "dispatch/batches/D/D-056.jsonl"
+        },
+        {
+          "batch_id": "D-057",
+          "count": 50,
+          "path": "dispatch/batches/D/D-057.jsonl"
+        },
+        {
+          "batch_id": "D-058",
+          "count": 50,
+          "path": "dispatch/batches/D/D-058.jsonl"
+        },
+        {
+          "batch_id": "D-059",
+          "count": 50,
+          "path": "dispatch/batches/D/D-059.jsonl"
+        },
+        {
+          "batch_id": "D-060",
+          "count": 50,
+          "path": "dispatch/batches/D/D-060.jsonl"
+        },
+        {
+          "batch_id": "D-061",
+          "count": 50,
+          "path": "dispatch/batches/D/D-061.jsonl"
+        },
+        {
+          "batch_id": "D-062",
+          "count": 50,
+          "path": "dispatch/batches/D/D-062.jsonl"
+        },
+        {
+          "batch_id": "D-063",
+          "count": 50,
+          "path": "dispatch/batches/D/D-063.jsonl"
+        },
+        {
+          "batch_id": "D-064",
+          "count": 50,
+          "path": "dispatch/batches/D/D-064.jsonl"
+        },
+        {
+          "batch_id": "D-065",
+          "count": 50,
+          "path": "dispatch/batches/D/D-065.jsonl"
+        },
+        {
+          "batch_id": "D-066",
+          "count": 50,
+          "path": "dispatch/batches/D/D-066.jsonl"
+        },
+        {
+          "batch_id": "D-067",
+          "count": 50,
+          "path": "dispatch/batches/D/D-067.jsonl"
+        },
+        {
+          "batch_id": "D-068",
+          "count": 50,
+          "path": "dispatch/batches/D/D-068.jsonl"
+        },
+        {
+          "batch_id": "D-069",
+          "count": 50,
+          "path": "dispatch/batches/D/D-069.jsonl"
+        },
+        {
+          "batch_id": "D-070",
+          "count": 50,
+          "path": "dispatch/batches/D/D-070.jsonl"
+        },
+        {
+          "batch_id": "D-071",
+          "count": 50,
+          "path": "dispatch/batches/D/D-071.jsonl"
+        },
+        {
+          "batch_id": "D-072",
+          "count": 50,
+          "path": "dispatch/batches/D/D-072.jsonl"
+        },
+        {
+          "batch_id": "D-073",
+          "count": 50,
+          "path": "dispatch/batches/D/D-073.jsonl"
+        },
+        {
+          "batch_id": "D-074",
+          "count": 50,
+          "path": "dispatch/batches/D/D-074.jsonl"
+        },
+        {
+          "batch_id": "D-075",
+          "count": 50,
+          "path": "dispatch/batches/D/D-075.jsonl"
+        },
+        {
+          "batch_id": "D-076",
+          "count": 50,
+          "path": "dispatch/batches/D/D-076.jsonl"
+        },
+        {
+          "batch_id": "D-077",
+          "count": 50,
+          "path": "dispatch/batches/D/D-077.jsonl"
+        },
+        {
+          "batch_id": "D-078",
+          "count": 50,
+          "path": "dispatch/batches/D/D-078.jsonl"
+        },
+        {
+          "batch_id": "D-079",
+          "count": 50,
+          "path": "dispatch/batches/D/D-079.jsonl"
+        },
+        {
+          "batch_id": "D-080",
+          "count": 50,
+          "path": "dispatch/batches/D/D-080.jsonl"
+        },
+        {
+          "batch_id": "D-081",
+          "count": 50,
+          "path": "dispatch/batches/D/D-081.jsonl"
+        },
+        {
+          "batch_id": "D-082",
+          "count": 50,
+          "path": "dispatch/batches/D/D-082.jsonl"
+        },
+        {
+          "batch_id": "D-083",
+          "count": 50,
+          "path": "dispatch/batches/D/D-083.jsonl"
+        },
+        {
+          "batch_id": "D-084",
+          "count": 50,
+          "path": "dispatch/batches/D/D-084.jsonl"
+        },
+        {
+          "batch_id": "D-085",
+          "count": 50,
+          "path": "dispatch/batches/D/D-085.jsonl"
+        },
+        {
+          "batch_id": "D-086",
+          "count": 50,
+          "path": "dispatch/batches/D/D-086.jsonl"
+        },
+        {
+          "batch_id": "D-087",
+          "count": 31,
+          "path": "dispatch/batches/D/D-087.jsonl"
+        }
+      ],
+      "local_artifacts": [
+        {
+          "path": "workers/D/results.jsonl",
+          "size_bytes": 1419369,
+          "sha256": "472ce7d46b565d9795d3e53f628ee382e34b4cc00ba53098ea8dd1d886bf82d9"
+        },
+        {
+          "path": "workers/D/progress.json",
+          "size_bytes": 691,
+          "sha256": "74c32d76320b4d4034d6e594d93e2a8cfa8fb7901e95eccc783011bf484fcfd8"
+        },
+        {
+          "path": "workers/D/SUMMARY.md",
+          "size_bytes": 8224,
+          "sha256": "58712579e5fc578310e02d9dcd7caf55a3652b7c0c70dbf004899908a16ea124"
+        }
+      ]
+    },
+    {
+      "shard_id": "E",
+      "assignment_total": 4331,
+      "result_rows": 2069,
+      "missing_result_rows": 2262,
+      "coverage_pct": 47.77,
+      "review_status": {
+        "resolved": 1867,
+        "blocked": 193,
+        "policy_pending": 9
+      },
+      "conclusion": {
+        "attributed": 859,
+        "no_attribution": 810,
+        "unresolved": 193,
+        "non_event": 169,
+        "actor_profile": 30,
+        "None": 7,
+        "null": 1
+      },
+      "batch_index": {
+        "path": "dispatch/batches/E/INDEX.json",
+        "size_bytes": 16533,
+        "sha256": "a3a7a1112670143ce4a65b071409921aed166b2eee0715b4a3589b9842cda5a6",
+        "batch_count": 87
+      },
+      "batches": [
+        {
+          "batch_id": "E-001",
+          "count": 50,
+          "path": "dispatch/batches/E/E-001.jsonl"
+        },
+        {
+          "batch_id": "E-002",
+          "count": 50,
+          "path": "dispatch/batches/E/E-002.jsonl"
+        },
+        {
+          "batch_id": "E-003",
+          "count": 50,
+          "path": "dispatch/batches/E/E-003.jsonl"
+        },
+        {
+          "batch_id": "E-004",
+          "count": 50,
+          "path": "dispatch/batches/E/E-004.jsonl"
+        },
+        {
+          "batch_id": "E-005",
+          "count": 50,
+          "path": "dispatch/batches/E/E-005.jsonl"
+        },
+        {
+          "batch_id": "E-006",
+          "count": 50,
+          "path": "dispatch/batches/E/E-006.jsonl"
+        },
+        {
+          "batch_id": "E-007",
+          "count": 50,
+          "path": "dispatch/batches/E/E-007.jsonl"
+        },
+        {
+          "batch_id": "E-008",
+          "count": 50,
+          "path": "dispatch/batches/E/E-008.jsonl"
+        },
+        {
+          "batch_id": "E-009",
+          "count": 50,
+          "path": "dispatch/batches/E/E-009.jsonl"
+        },
+        {
+          "batch_id": "E-010",
+          "count": 50,
+          "path": "dispatch/batches/E/E-010.jsonl"
+        },
+        {
+          "batch_id": "E-011",
+          "count": 50,
+          "path": "dispatch/batches/E/E-011.jsonl"
+        },
+        {
+          "batch_id": "E-012",
+          "count": 50,
+          "path": "dispatch/batches/E/E-012.jsonl"
+        },
+        {
+          "batch_id": "E-013",
+          "count": 50,
+          "path": "dispatch/batches/E/E-013.jsonl"
+        },
+        {
+          "batch_id": "E-014",
+          "count": 50,
+          "path": "dispatch/batches/E/E-014.jsonl"
+        },
+        {
+          "batch_id": "E-015",
+          "count": 50,
+          "path": "dispatch/batches/E/E-015.jsonl"
+        },
+        {
+          "batch_id": "E-016",
+          "count": 50,
+          "path": "dispatch/batches/E/E-016.jsonl"
+        },
+        {
+          "batch_id": "E-017",
+          "count": 50,
+          "path": "dispatch/batches/E/E-017.jsonl"
+        },
+        {
+          "batch_id": "E-018",
+          "count": 50,
+          "path": "dispatch/batches/E/E-018.jsonl"
+        },
+        {
+          "batch_id": "E-019",
+          "count": 50,
+          "path": "dispatch/batches/E/E-019.jsonl"
+        },
+        {
+          "batch_id": "E-020",
+          "count": 50,
+          "path": "dispatch/batches/E/E-020.jsonl"
+        },
+        {
+          "batch_id": "E-021",
+          "count": 50,
+          "path": "dispatch/batches/E/E-021.jsonl"
+        },
+        {
+          "batch_id": "E-022",
+          "count": 50,
+          "path": "dispatch/batches/E/E-022.jsonl"
+        },
+        {
+          "batch_id": "E-023",
+          "count": 50,
+          "path": "dispatch/batches/E/E-023.jsonl"
+        },
+        {
+          "batch_id": "E-024",
+          "count": 50,
+          "path": "dispatch/batches/E/E-024.jsonl"
+        },
+        {
+          "batch_id": "E-025",
+          "count": 50,
+          "path": "dispatch/batches/E/E-025.jsonl"
+        },
+        {
+          "batch_id": "E-026",
+          "count": 50,
+          "path": "dispatch/batches/E/E-026.jsonl"
+        },
+        {
+          "batch_id": "E-027",
+          "count": 50,
+          "path": "dispatch/batches/E/E-027.jsonl"
+        },
+        {
+          "batch_id": "E-028",
+          "count": 50,
+          "path": "dispatch/batches/E/E-028.jsonl"
+        },
+        {
+          "batch_id": "E-029",
+          "count": 50,
+          "path": "dispatch/batches/E/E-029.jsonl"
+        },
+        {
+          "batch_id": "E-030",
+          "count": 50,
+          "path": "dispatch/batches/E/E-030.jsonl"
+        },
+        {
+          "batch_id": "E-031",
+          "count": 50,
+          "path": "dispatch/batches/E/E-031.jsonl"
+        },
+        {
+          "batch_id": "E-032",
+          "count": 50,
+          "path": "dispatch/batches/E/E-032.jsonl"
+        },
+        {
+          "batch_id": "E-033",
+          "count": 50,
+          "path": "dispatch/batches/E/E-033.jsonl"
+        },
+        {
+          "batch_id": "E-034",
+          "count": 50,
+          "path": "dispatch/batches/E/E-034.jsonl"
+        },
+        {
+          "batch_id": "E-035",
+          "count": 50,
+          "path": "dispatch/batches/E/E-035.jsonl"
+        },
+        {
+          "batch_id": "E-036",
+          "count": 50,
+          "path": "dispatch/batches/E/E-036.jsonl"
+        },
+        {
+          "batch_id": "E-037",
+          "count": 50,
+          "path": "dispatch/batches/E/E-037.jsonl"
+        },
+        {
+          "batch_id": "E-038",
+          "count": 50,
+          "path": "dispatch/batches/E/E-038.jsonl"
+        },
+        {
+          "batch_id": "E-039",
+          "count": 50,
+          "path": "dispatch/batches/E/E-039.jsonl"
+        },
+        {
+          "batch_id": "E-040",
+          "count": 50,
+          "path": "dispatch/batches/E/E-040.jsonl"
+        },
+        {
+          "batch_id": "E-041",
+          "count": 50,
+          "path": "dispatch/batches/E/E-041.jsonl"
+        },
+        {
+          "batch_id": "E-042",
+          "count": 50,
+          "path": "dispatch/batches/E/E-042.jsonl"
+        },
+        {
+          "batch_id": "E-043",
+          "count": 50,
+          "path": "dispatch/batches/E/E-043.jsonl"
+        },
+        {
+          "batch_id": "E-044",
+          "count": 50,
+          "path": "dispatch/batches/E/E-044.jsonl"
+        },
+        {
+          "batch_id": "E-045",
+          "count": 50,
+          "path": "dispatch/batches/E/E-045.jsonl"
+        },
+        {
+          "batch_id": "E-046",
+          "count": 50,
+          "path": "dispatch/batches/E/E-046.jsonl"
+        },
+        {
+          "batch_id": "E-047",
+          "count": 50,
+          "path": "dispatch/batches/E/E-047.jsonl"
+        },
+        {
+          "batch_id": "E-048",
+          "count": 50,
+          "path": "dispatch/batches/E/E-048.jsonl"
+        },
+        {
+          "batch_id": "E-049",
+          "count": 50,
+          "path": "dispatch/batches/E/E-049.jsonl"
+        },
+        {
+          "batch_id": "E-050",
+          "count": 50,
+          "path": "dispatch/batches/E/E-050.jsonl"
+        },
+        {
+          "batch_id": "E-051",
+          "count": 50,
+          "path": "dispatch/batches/E/E-051.jsonl"
+        },
+        {
+          "batch_id": "E-052",
+          "count": 50,
+          "path": "dispatch/batches/E/E-052.jsonl"
+        },
+        {
+          "batch_id": "E-053",
+          "count": 50,
+          "path": "dispatch/batches/E/E-053.jsonl"
+        },
+        {
+          "batch_id": "E-054",
+          "count": 50,
+          "path": "dispatch/batches/E/E-054.jsonl"
+        },
+        {
+          "batch_id": "E-055",
+          "count": 50,
+          "path": "dispatch/batches/E/E-055.jsonl"
+        },
+        {
+          "batch_id": "E-056",
+          "count": 50,
+          "path": "dispatch/batches/E/E-056.jsonl"
+        },
+        {
+          "batch_id": "E-057",
+          "count": 50,
+          "path": "dispatch/batches/E/E-057.jsonl"
+        },
+        {
+          "batch_id": "E-058",
+          "count": 50,
+          "path": "dispatch/batches/E/E-058.jsonl"
+        },
+        {
+          "batch_id": "E-059",
+          "count": 50,
+          "path": "dispatch/batches/E/E-059.jsonl"
+        },
+        {
+          "batch_id": "E-060",
+          "count": 50,
+          "path": "dispatch/batches/E/E-060.jsonl"
+        },
+        {
+          "batch_id": "E-061",
+          "count": 50,
+          "path": "dispatch/batches/E/E-061.jsonl"
+        },
+        {
+          "batch_id": "E-062",
+          "count": 50,
+          "path": "dispatch/batches/E/E-062.jsonl"
+        },
+        {
+          "batch_id": "E-063",
+          "count": 50,
+          "path": "dispatch/batches/E/E-063.jsonl"
+        },
+        {
+          "batch_id": "E-064",
+          "count": 50,
+          "path": "dispatch/batches/E/E-064.jsonl"
+        },
+        {
+          "batch_id": "E-065",
+          "count": 50,
+          "path": "dispatch/batches/E/E-065.jsonl"
+        },
+        {
+          "batch_id": "E-066",
+          "count": 50,
+          "path": "dispatch/batches/E/E-066.jsonl"
+        },
+        {
+          "batch_id": "E-067",
+          "count": 50,
+          "path": "dispatch/batches/E/E-067.jsonl"
+        },
+        {
+          "batch_id": "E-068",
+          "count": 50,
+          "path": "dispatch/batches/E/E-068.jsonl"
+        },
+        {
+          "batch_id": "E-069",
+          "count": 50,
+          "path": "dispatch/batches/E/E-069.jsonl"
+        },
+        {
+          "batch_id": "E-070",
+          "count": 50,
+          "path": "dispatch/batches/E/E-070.jsonl"
+        },
+        {
+          "batch_id": "E-071",
+          "count": 50,
+          "path": "dispatch/batches/E/E-071.jsonl"
+        },
+        {
+          "batch_id": "E-072",
+          "count": 50,
+          "path": "dispatch/batches/E/E-072.jsonl"
+        },
+        {
+          "batch_id": "E-073",
+          "count": 50,
+          "path": "dispatch/batches/E/E-073.jsonl"
+        },
+        {
+          "batch_id": "E-074",
+          "count": 50,
+          "path": "dispatch/batches/E/E-074.jsonl"
+        },
+        {
+          "batch_id": "E-075",
+          "count": 50,
+          "path": "dispatch/batches/E/E-075.jsonl"
+        },
+        {
+          "batch_id": "E-076",
+          "count": 50,
+          "path": "dispatch/batches/E/E-076.jsonl"
+        },
+        {
+          "batch_id": "E-077",
+          "count": 50,
+          "path": "dispatch/batches/E/E-077.jsonl"
+        },
+        {
+          "batch_id": "E-078",
+          "count": 50,
+          "path": "dispatch/batches/E/E-078.jsonl"
+        },
+        {
+          "batch_id": "E-079",
+          "count": 50,
+          "path": "dispatch/batches/E/E-079.jsonl"
+        },
+        {
+          "batch_id": "E-080",
+          "count": 50,
+          "path": "dispatch/batches/E/E-080.jsonl"
+        },
+        {
+          "batch_id": "E-081",
+          "count": 50,
+          "path": "dispatch/batches/E/E-081.jsonl"
+        },
+        {
+          "batch_id": "E-082",
+          "count": 50,
+          "path": "dispatch/batches/E/E-082.jsonl"
+        },
+        {
+          "batch_id": "E-083",
+          "count": 50,
+          "path": "dispatch/batches/E/E-083.jsonl"
+        },
+        {
+          "batch_id": "E-084",
+          "count": 50,
+          "path": "dispatch/batches/E/E-084.jsonl"
+        },
+        {
+          "batch_id": "E-085",
+          "count": 50,
+          "path": "dispatch/batches/E/E-085.jsonl"
+        },
+        {
+          "batch_id": "E-086",
+          "count": 50,
+          "path": "dispatch/batches/E/E-086.jsonl"
+        },
+        {
+          "batch_id": "E-087",
+          "count": 31,
+          "path": "dispatch/batches/E/E-087.jsonl"
+        }
+      ],
+      "local_artifacts": [
+        {
+          "path": "workers/E/results.jsonl",
+          "size_bytes": 1856292,
+          "sha256": "2eff7afcac07aca11215188777f4b795275a6fb9407ff47605937b2ef40d83fc"
+        },
+        {
+          "path": "workers/E/progress.json",
+          "size_bytes": 136647,
+          "sha256": "e424b4e7a7206360eecb5683d3b5acc3b8dbc97bef682559328c4864e15fe15b"
+        },
+        {
+          "path": "workers/E/SUMMARY.md",
+          "size_bytes": 2431,
+          "sha256": "6bc75e389e90c71cd3a6522936454486d5ffe7c9c52461216db66dbb4112c599"
+        }
+      ]
+    }
+  ]
+}
